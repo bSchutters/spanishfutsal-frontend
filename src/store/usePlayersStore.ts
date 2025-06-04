@@ -6,7 +6,7 @@ type Stat = {
   assists: number;
   yellowCards: number;
   redCards: number;
-  matches_played: number;
+  matchesPlayed: number;
 };
 type Player = {
   id: number;
@@ -38,22 +38,25 @@ export const usePlayersStore = create<State>((set) => ({
       const json = await res.json();
 
       console.log("Fetched players:", json.data);
+      console.log("Photo:", json.data[0].photo?.url);
 
       set({
         players: json.data.map((p: any) => ({
           id: p.id,
           nom: p.nom,
           prenom: p.prenom,
-          photo: p.photo?.data?.url ? `${API_URL}${p.photo.data.url}` : "",
+          photo: p.photo?.url
+            ? `${API_URL}${p.photo.url}`
+            : "/assets/images/webp/placeholder.webp",
           numero: p.numero,
           poste: p.poste,
           stats: p.stats.map((s: any) => ({
             id: s.id,
             goals: s.goals,
             assists: s.assists,
-            yellowCards: s.yellowCards,
-            redCards: s.redCards,
-            matches_played: s.matches_played,
+            yellowCards: s.yellow_cards,
+            redCards: s.red_cards,
+            matchesPlayed: s.matches_played,
           })),
           actif: p.actif,
           capitaine: p.capitaine,

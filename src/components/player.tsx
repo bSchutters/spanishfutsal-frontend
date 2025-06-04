@@ -35,6 +35,7 @@ export default function Player({
   className,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+
   return (
     <BoxModule
       className={cn(
@@ -123,7 +124,7 @@ export default function Player({
       </BoxModule>
       <div className="-mb-4">
         <Image
-          src={`/assets/images/joueurs/${photo}`}
+          src={photo}
           alt={`${firstname} ${lastname}`}
           height={0}
           width={0}
