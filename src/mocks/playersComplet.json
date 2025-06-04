@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "position": "Forward",
+    "team": "Team A",
+    "age": 25,
+    "nationality": "USA",
+    "height": 180,
+    "weight": 75,
+    "image": "https://example.com/images/john_doe.jpg",
+    "stats": {
+      "goals": 10,
+      "assists": 5,
+      "matches_played": 20
+    },
+    "injury_status": "Healthy",
+    "contract_expiry": "2025-06-30",
+    "social_media": {
+      "twitter": "https://twitter.com/johndoe",
+      "instagram": "https://instagram.com/johndoe"
+    },
+    "bio": "John Doe is a professional futsal player known for his speed and agility on the court. He has been playing for Team A since 2020 and has quickly become a fan favorite."
+  },
+  {}
+]

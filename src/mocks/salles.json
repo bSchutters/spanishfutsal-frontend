@@ -1,0 +1,3929 @@
+[
+  {
+    "short_name": "AUBR",
+    "reference": "AUBR",
+    "street": "Rue Pierre Vienot",
+    "street2": "27",
+    "zip": "08320",
+    "city": "Aubrives (F)",
+    "id": 413
+  },
+  {
+    "short_name": "MIDI",
+    "reference": "MIDI",
+    "street": "Rue Van Der Weyden",
+    "street2": "3",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "country": "BE",
+    "id": 10
+  },
+  {
+    "short_name": "POLN",
+    "reference": "POLN",
+    "street": "Ch\u00e9e d\u2019Anvers",
+    "street2": "208",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "country": "BE",
+    "id": 11
+  },
+  {
+    "short_name": "VDPU",
+    "reference": "VDPU",
+    "street": "Boulevard de l\u2019Abattoir",
+    "street2": "51",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "country": "BE",
+    "id": 13
+  },
+  {
+    "short_name": "ROUE",
+    "reference": "ROUE",
+    "street": "Rue de la Roue",
+    "street2": "24",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "country": "BE",
+    "id": 334
+  },
+  {
+    "short_name": "ROU2",
+    "reference": "ROU2",
+    "street": "Rue Terre Neuve",
+    "street2": "83",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "id": 390
+  },
+  {
+    "short_name": "TENE",
+    "reference": "TENE",
+    "street": "Rue Terre Neuve",
+    "street2": "83",
+    "zip": "1000",
+    "city": "Bruxelles",
+    "id": 394
+  },
+  {
+    "short_name": "LAEK",
+    "reference": "LAEK",
+    "street": "Rue Champ de l\u2019Eglise",
+    "street2": "73/89",
+    "zip": "1020",
+    "city": "Laeken",
+    "country": "BE",
+    "id": 12
+  },
+  {
+    "short_name": "CROS",
+    "reference": "CROS",
+    "street": "Avenue Louis Bertrand",
+    "street2": "132",
+    "zip": "1030",
+    "city": "Schaerbeek",
+    "country": "BE",
+    "id": 27
+  },
+  {
+    "short_name": "HIEL",
+    "reference": "HIEL",
+    "street": "All\u00e9e des Freesias, 7",
+    "zip": "1030",
+    "city": "Schaerbeek",
+    "country": "BE",
+    "id": 28
+  },
+  {
+    "short_name": "SCHA",
+    "reference": "SCHA",
+    "street": "Boulevard Lamberont",
+    "street2": "236",
+    "zip": "1030",
+    "city": "Schaerbeek",
+    "country": "BE",
+    "id": 29
+  },
+  {
+    "short_name": "VRTS",
+    "reference": "VRTS",
+    "street": "Boulevard A Reyers 52",
+    "zip": "1030",
+    "city": "Schaerbeek",
+    "country": "BE",
+    "id": 30
+  },
+  {
+    "short_name": "OOST",
+    "reference": "OOST",
+    "street": "Rue Van Oost",
+    "street2": "52",
+    "zip": "1030",
+    "city": "Schaerbeek",
+    "id": 335
+  },
+  {
+    "short_name": "ETTE",
+    "reference": "ETTE",
+    "street": "Rue des Champs",
+    "street2": "71",
+    "zip": "1040",
+    "city": "Etterbeek",
+    "country": "BE",
+    "id": 15
+  },
+  {
+    "short_name": "VUBR",
+    "reference": "VUBR",
+    "street": "Boulevard du Triomphe",
+    "street2": "8",
+    "zip": "1050",
+    "city": "Bruxelles",
+    "country": "BE",
+    "id": 19
+  },
+  {
+    "short_name": "IXEL",
+    "reference": "IXEL",
+    "street": "Rue Volta",
+    "street2": "18",
+    "zip": "1050",
+    "city": "Ixelles",
+    "country": "BE",
+    "id": 20
+  },
+  {
+    "short_name": "ACJI",
+    "reference": "ACJI",
+    "street": "Chauss\u00e9e de Wavre, 152",
+    "zip": "1050",
+    "city": "Ixelles",
+    "id": 324
+  },
+  {
+    "short_name": "VUB2",
+    "reference": "VUB2",
+    "street": "Boulevard du Triomphe",
+    "street2": "8",
+    "zip": "1050",
+    "city": "Ixelles",
+    "id": 407
+  },
+  {
+    "short_name": "STGI",
+    "reference": "STGI",
+    "street": "Rue de Russie",
+    "street2": "41",
+    "zip": "1060",
+    "city": "Saint-Gilles",
+    "country": "BE",
+    "id": 25
+  },
+  {
+    "short_name": "BAYU",
+    "reference": "BAYU",
+    "street": "DREVE OLYMPIQUE",
+    "street2": "60",
+    "zip": "107",
+    "city": "ANDERLECHT",
+    "id": 420
+  },
+  {
+    "short_name": "SIMO",
+    "reference": "SIMO",
+    "street": "Avenue Th\u00e9o Verbeeck",
+    "street2": "10-12",
+    "zip": "1070",
+    "city": "Anderlecht",
+    "country": "BE",
+    "id": 4
+  },
+  {
+    "short_name": "CERI",
+    "reference": "CERI",
+    "street": "Avenue E. Gryson - Dr\u00e8ve du CERIA",
+    "street2": "1",
+    "zip": "1070",
+    "city": "Anderlecht",
+    "country": "BE",
+    "id": 5
+  },
+  {
+    "short_name": "ANTR",
+    "reference": "ANTR",
+    "street": "Rue Delwart",
+    "street2": "38",
+    "zip": "1070",
+    "city": "Anderlecht",
+    "id": 325
+  },
+  {
+    "short_name": "ERAS",
+    "reference": "ERAS",
+    "street": "Route de Lennik, 808",
+    "zip": "1070",
+    "city": "Anderlecht",
+    "id": 327
+  },
+  {
+    "short_name": "VERH",
+    "reference": "VERH",
+    "street": "Rue Verheyden",
+    "street2": "39",
+    "zip": "1070",
+    "city": "Anderlecht",
+    "id": 369
+  },
+  {
+    "short_name": "MOLE",
+    "reference": "MOLE",
+    "street": "Avenue Mahatma Gandhi",
+    "street2": "5",
+    "zip": "1080",
+    "city": "Molenbeek",
+    "country": "BE",
+    "id": 24
+  },
+  {
+    "short_name": "HEYM",
+    "reference": "HEYM",
+    "street": "Quai de l'Industrie",
+    "street2": "31",
+    "zip": "1080",
+    "city": "Molenbeek",
+    "id": 328
+  },
+  {
+    "short_name": "AMAL",
+    "reference": "AMAL",
+    "street": "Quai des charbonnages",
+    "street2": "86",
+    "zip": "1080",
+    "city": "Molenbeek",
+    "id": 381
+  },
+  {
+    "short_name": "FLEN",
+    "reference": "FLEN",
+    "street": "Rue de la Fl\u00fbte Enchant\u00e9e",
+    "street2": "18",
+    "zip": "1080",
+    "city": "Molenbeek-Saint-Jean",
+    "id": 388
+  },
+  {
+    "short_name": "KVUB",
+    "reference": "KVUB",
+    "street": "Rue F\u00e9lix Vande Sande",
+    "street2": "15",
+    "zip": "1081",
+    "city": "Koekelberg",
+    "country": "BE",
+    "id": 23
+  },
+  {
+    "short_name": "KOEK",
+    "reference": "KOEK",
+    "street": "Rue L\u00e9on Autrique",
+    "street2": "4",
+    "zip": "1081",
+    "city": "Koekelberg",
+    "country": "BE",
+    "id": 49
+  },
+  {
+    "short_name": "COMK",
+    "reference": "COMK",
+    "street": "Rue des Braves",
+    "street2": "20",
+    "zip": "1081",
+    "city": "Koekelberg",
+    "id": 359
+  },
+  {
+    "short_name": "BSAG",
+    "reference": "BSAG",
+    "street": "Rue des Chalets",
+    "street2": "1/11",
+    "zip": "1082",
+    "city": "Berchem-Sainte-Agathe",
+    "country": "BE",
+    "id": 9
+  },
+  {
+    "short_name": "CLBE",
+    "reference": "CLBE",
+    "street": "Avenue de la Basilique",
+    "street2": "14",
+    "zip": "1082",
+    "city": "Berchem-Sainte-Agathe",
+    "id": 326
+  },
+  {
+    "short_name": "GANS",
+    "reference": "GANS",
+    "street": "Rue Vanderveken",
+    "street2": "114",
+    "zip": "1083",
+    "city": "Ganshoren",
+    "country": "BE",
+    "id": 42
+  },
+  {
+    "short_name": "JEAZ",
+    "reference": "JEAZ",
+    "street": "Avenue du Laerbeek",
+    "street2": "125",
+    "zip": "1090",
+    "city": "Jette",
+    "country": "BE",
+    "id": 21
+  },
+  {
+    "short_name": "ARJE",
+    "reference": "ARJE",
+    "street": "Avenue Odon Warland",
+    "street2": "32",
+    "zip": "1090",
+    "city": "Jette",
+    "country": "BE",
+    "id": 22
+  },
+  {
+    "short_name": "JETT",
+    "reference": "JETT",
+    "street": "Avenue du Comte de Jette",
+    "street2": "3",
+    "zip": "1090",
+    "city": "Jette",
+    "id": 329
+  },
+  {
+    "short_name": "NOHE",
+    "reference": "NOHE",
+    "street": "Lombartzijdestraat 120",
+    "zip": "1120",
+    "city": "Neder-over-Hembeek",
+    "country": "BE",
+    "id": 14
+  },
+  {
+    "short_name": "HARE",
+    "reference": "HARE",
+    "street": "Rue Harenheyde",
+    "street2": "23",
+    "zip": "1130",
+    "city": "Haren",
+    "country": "BE",
+    "id": 44
+  },
+  {
+    "short_name": "STIB",
+    "reference": "STIB",
+    "street": "Rue du Biplan, 22",
+    "zip": "1130",
+    "city": "Haren",
+    "country": "BE",
+    "id": 45
+  },
+  {
+    "short_name": "AUBE",
+    "reference": "AUBE",
+    "street": "Rue des Deux Maisons",
+    "street2": "31",
+    "zip": "1140",
+    "city": "Evere",
+    "country": "BE",
+    "id": 40
+  },
+  {
+    "short_name": "EVER",
+    "reference": "EVER",
+    "street": "Avenue des Anciens Combattants",
+    "street2": "300",
+    "zip": "1140",
+    "city": "Evere",
+    "country": "BE",
+    "id": 41
+  },
+  {
+    "short_name": "WOSP",
+    "reference": "WOSP",
+    "street": "Avenue Salom\u00e9 2",
+    "zip": "1150",
+    "city": "Woluwe-Saint-Pierre",
+    "country": "BE",
+    "id": 37
+  },
+  {
+    "short_name": "WSTP",
+    "reference": "WSTP",
+    "street": "Avenue Salome",
+    "street2": "2",
+    "zip": "1150",
+    "city": "Woluwe-Saint-Pierre",
+    "id": 330
+  },
+  {
+    "short_name": "SOI1",
+    "reference": "SOI1",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "2057",
+    "zip": "1160",
+    "city": "Auderghem",
+    "country": "BE",
+    "id": 6
+  },
+  {
+    "short_name": "WIL1",
+    "reference": "WIL1",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "1690",
+    "zip": "1160",
+    "city": "Auderghem",
+    "country": "BE",
+    "id": 7
+  },
+  {
+    "short_name": "VRYD",
+    "reference": "VRYD",
+    "street": "Chauss\u00e9e de Wavre, 1690/1",
+    "zip": "1160",
+    "city": "Auderghem",
+    "country": "BE",
+    "id": 8
+  },
+  {
+    "short_name": "SOI2",
+    "reference": "SOI2",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "2057",
+    "zip": "1160",
+    "city": "Auderghem",
+    "id": 319
+  },
+  {
+    "short_name": "SOI3",
+    "reference": "SOI3",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "2057",
+    "zip": "1160",
+    "city": "Auderghem",
+    "id": 320
+  },
+  {
+    "short_name": "WIL2",
+    "reference": "WIL2",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "1690",
+    "zip": "1160",
+    "city": "Auderghem",
+    "country": "BE",
+    "id": 323
+  },
+  {
+    "short_name": "CSHB",
+    "reference": "CSHB",
+    "street": "Avenue Charles Albert",
+    "street2": "9",
+    "zip": "1170",
+    "city": "Watermael-Boitsfort",
+    "country": "BE",
+    "id": 33
+  },
+  {
+    "short_name": "3TIL",
+    "reference": "3TIL",
+    "street": "Avenu L\u00e9opold Wiener",
+    "street2": "60",
+    "zip": "1170",
+    "city": "Watermael-Boitsfort",
+    "country": "BE",
+    "id": 34
+  },
+  {
+    "short_name": "CSPU",
+    "reference": "CSPU",
+    "street": "Avenue Coghen",
+    "street2": "213",
+    "zip": "1180",
+    "city": "Uccle",
+    "country": "BE",
+    "id": 31
+  },
+  {
+    "short_name": "NEER",
+    "reference": "NEER",
+    "street": "Rue Zwartebeek",
+    "street2": "23",
+    "zip": "1180",
+    "city": "Uccle",
+    "country": "BE",
+    "id": 32
+  },
+  {
+    "short_name": "PPSF",
+    "reference": "PPSF",
+    "street": "Rue Roosendael",
+    "street2": "2",
+    "zip": "1190",
+    "city": "Forest",
+    "country": "BE",
+    "id": 16
+  },
+  {
+    "short_name": "FOPR",
+    "reference": "FOPR",
+    "street": "Rue des Primeurs",
+    "street2": "5",
+    "zip": "1190",
+    "city": "Forest",
+    "country": "BE",
+    "id": 17
+  },
+  {
+    "short_name": "FOVV",
+    "reference": "FOVV",
+    "street": "Avenue Van Volxem",
+    "street2": "391",
+    "zip": "1190",
+    "city": "Forest",
+    "country": "BE",
+    "id": 18
+  },
+  {
+    "short_name": "BEMP",
+    "reference": "BEMP",
+    "street": "Boulevard 2e Arm\u00e9e britannique",
+    "street2": "600",
+    "zip": "1190",
+    "city": "Forest",
+    "id": 383
+  },
+  {
+    "short_name": "UCL1",
+    "reference": "UCL1",
+    "street": "Avenue E.Mounier",
+    "street2": "87",
+    "zip": "1200",
+    "city": "Woluwe-Saint-Lambert",
+    "country": "BE",
+    "id": 35
+  },
+  {
+    "short_name": "UCL2",
+    "reference": "UCL2",
+    "street": "Avenue E.Mounier",
+    "street2": "87",
+    "zip": "1200",
+    "city": "Woluwe-Saint-Lambert",
+    "id": 321
+  },
+  {
+    "short_name": "UCL3",
+    "reference": "UCL3",
+    "street": "Avenue E.Mounier",
+    "street2": "87",
+    "zip": "1200",
+    "city": "Woluwe-Saint-Lambert",
+    "id": 322
+  },
+  {
+    "short_name": "WOEE",
+    "reference": "WOEE",
+    "street": "Avenue Oscar Jespers",
+    "street2": "75",
+    "zip": "1200",
+    "city": "Woluwe-Saint-Lambert",
+    "id": 331
+  },
+  {
+    "short_name": "DOBO",
+    "reference": "DOBO",
+    "street": "Rue Konkel",
+    "street2": "208",
+    "zip": "1200",
+    "city": "Woluwe-Saint-Pierre",
+    "country": "BE",
+    "id": 393
+  },
+  {
+    "short_name": "STJO",
+    "reference": "STJO",
+    "street": "Rue des Deux Eglises",
+    "street2": "107",
+    "zip": "1210",
+    "city": "Saint-Josse-ten-Noode",
+    "country": "BE",
+    "id": 26
+  },
+  {
+    "short_name": "LIMA",
+    "reference": "LIMA",
+    "street": "Rue Charles Jaumotte",
+    "street2": "156",
+    "zip": "1300",
+    "city": "Limal",
+    "country": "BE",
+    "id": 54
+  },
+  {
+    "short_name": "WAVR",
+    "reference": "WAVR",
+    "street": "Avenue du Centre Sportif",
+    "zip": "1300",
+    "city": "Wavre",
+    "country": "BE",
+    "id": 78
+  },
+  {
+    "short_name": "WAND",
+    "reference": "WAND",
+    "street": "Avenue du Calvaire",
+    "street2": "4",
+    "zip": "1300",
+    "city": "Wavre",
+    "country": "BE",
+    "id": 79
+  },
+  {
+    "short_name": "LAHU",
+    "reference": "LAHU",
+    "street": "Rue G\u00e9n\u00e9ral de Gaulle",
+    "street2": "53",
+    "zip": "1310",
+    "city": "La Hulpe",
+    "country": "BE",
+    "id": 51
+  },
+  {
+    "short_name": "CHAU",
+    "reference": "CHAU",
+    "street": "Avenue du Ronvau",
+    "street2": "8",
+    "zip": "1325",
+    "city": "Chaumont",
+    "country": "BE",
+    "id": 38
+  },
+  {
+    "short_name": "RIXE",
+    "reference": "RIXE",
+    "street": "Avenue Clermont Tonnerre",
+    "street2": "26",
+    "zip": "1330",
+    "city": "Rixensart",
+    "country": "BE",
+    "id": 66
+  },
+  {
+    "short_name": "OTTI",
+    "reference": "OTTI",
+    "street": "Rue des Coquer\u00e9es",
+    "street2": "50",
+    "zip": "1341",
+    "city": "Ottignies",
+    "country": "BE",
+    "id": 60
+  },
+  {
+    "short_name": "BLO1",
+    "reference": "BLO1",
+    "street": "Place des Sports",
+    "street2": "1",
+    "zip": "1348",
+    "city": "Ottignies",
+    "country": "BE",
+    "id": 61
+  },
+  {
+    "short_name": "BLO2",
+    "reference": "BLO2",
+    "street": "Place des Sports",
+    "street2": "1",
+    "zip": "1348",
+    "city": "Ottignies",
+    "id": 317
+  },
+  {
+    "short_name": "HELE",
+    "reference": "HELE",
+    "street": "Rue Le Brouc",
+    "street2": "2",
+    "zip": "1357",
+    "city": "H\u00e9lecine",
+    "country": "BE",
+    "id": 46
+  },
+  {
+    "short_name": "PERW",
+    "reference": "PERW",
+    "street": "Rue des Marronniers",
+    "street2": "17",
+    "zip": "1360",
+    "city": "Perwez",
+    "country": "BE",
+    "id": 62
+  },
+  {
+    "short_name": "RAMI",
+    "reference": "RAMI",
+    "street": "Avenue des D\u00e9port\u00e9s",
+    "street2": "48A",
+    "zip": "1367",
+    "city": "Ramillies",
+    "country": "BE",
+    "id": 63
+  },
+  {
+    "short_name": "JODO",
+    "reference": "JODO",
+    "street": "Chauss\u00e9e de Tirlemont",
+    "street2": "79",
+    "zip": "1370",
+    "city": "Jodoigne",
+    "country": "BE",
+    "id": 48
+  },
+  {
+    "short_name": "JDSP",
+    "reference": "JDSP",
+    "street": "Plaine de la Gadale",
+    "zip": "1370",
+    "city": "JODOIGNE",
+    "id": 410
+  },
+  {
+    "short_name": "LASN",
+    "reference": "LASN",
+    "street": "Route d'Ohain",
+    "street2": "9A",
+    "zip": "1380",
+    "city": "Lasne",
+    "country": "BE",
+    "id": 52
+  },
+  {
+    "short_name": "SVLA",
+    "reference": "SVLA",
+    "street": "Vieux Chemin de Wavre",
+    "street2": "117",
+    "zip": "1380",
+    "city": "Lasne",
+    "id": 367
+  },
+  {
+    "short_name": "GREZ",
+    "reference": "GREZ",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "99",
+    "zip": "1390",
+    "city": "Grez-Doiceau",
+    "country": "BE",
+    "id": 43
+  },
+  {
+    "short_name": "NIVD",
+    "reference": "NIVD",
+    "street": "Avenue Jules Mathieu",
+    "zip": "1400",
+    "city": "Nivelles",
+    "country": "BE",
+    "id": 58
+  },
+  {
+    "short_name": "NSTG",
+    "reference": "NSTG",
+    "street": "Faubourg de Mons, 1",
+    "zip": "1400",
+    "city": "Nivelles",
+    "country": "BE",
+    "id": 59
+  },
+  {
+    "short_name": "NIVH",
+    "reference": "NIVH",
+    "street": "Rue des Heures Claires",
+    "zip": "1400",
+    "city": "Nivelles",
+    "country": "BE",
+    "id": 137
+  },
+  {
+    "short_name": "WAPA",
+    "reference": "WAPA",
+    "street": "Rue Th\u00e9ophile Delbar 33",
+    "zip": "1410",
+    "city": "Waterloo",
+    "country": "BE",
+    "id": 75
+  },
+  {
+    "short_name": "WABE",
+    "reference": "WABE",
+    "street": "Dr\u00e8ve d\u2019Argenteuil",
+    "street2": "10A",
+    "zip": "1410",
+    "city": "Waterloo",
+    "country": "BE",
+    "id": 76
+  },
+  {
+    "short_name": "WASS",
+    "reference": "WASS",
+    "street": "Square d'Argenteuil",
+    "street2": "5",
+    "zip": "1410",
+    "city": "Waterloo",
+    "id": 332
+  },
+  {
+    "short_name": "AREN",
+    "reference": "AREN",
+    "street": "Dr\u00e8ve de Richelle, 146",
+    "zip": "1410",
+    "city": "Waterloo",
+    "country": "BE",
+    "id": 77
+  },
+  {
+    "short_name": "REI1",
+    "reference": "REI1",
+    "street": "Rue Ernest Laurent",
+    "street2": "215",
+    "zip": "1420",
+    "city": "Braine-l'Alleud",
+    "country": "BE",
+    "id": 2
+  },
+  {
+    "short_name": "REI2",
+    "reference": "REI2",
+    "street": "Rue Ernest Laurent",
+    "street2": "215",
+    "zip": "1420",
+    "city": "Braine-l'Alleud",
+    "id": 318
+  },
+  {
+    "short_name": "REBE",
+    "reference": "REBE",
+    "street": "Chemin Trieu du Bois",
+    "street2": "1",
+    "zip": "1430",
+    "city": "Rebecq",
+    "country": "BE",
+    "id": 64
+  },
+  {
+    "short_name": "MSGU",
+    "reference": "MSGU",
+    "street": "Rue des Hayeffes, 27 a",
+    "street2": "",
+    "zip": "1435",
+    "city": "Mont-Saint-Guibert",
+    "country": "BE",
+    "id": 56
+  },
+  {
+    "short_name": "WALH",
+    "reference": "WALH",
+    "street": "Rue Chapelle Sainte-Anne",
+    "street2": "13",
+    "zip": "1457",
+    "city": "Walhain-Saint-Paul",
+    "country": "BE",
+    "id": 74
+  },
+  {
+    "short_name": "ITTR",
+    "reference": "ITTR",
+    "street": "Rue de Samme",
+    "street2": "20",
+    "zip": "1460",
+    "city": "Ittre / Virginal",
+    "country": "BE",
+    "id": 336
+  },
+  {
+    "short_name": "GENA",
+    "reference": "GENA",
+    "street": "Rue Couture Mathy",
+    "street2": "5",
+    "zip": "1470",
+    "city": "Genappe",
+    "country": "BE",
+    "id": 110
+  },
+  {
+    "short_name": "TUBI",
+    "reference": "TUBI",
+    "street": "All\u00e9e des sports",
+    "street2": "7",
+    "zip": "1480",
+    "city": "Tubize",
+    "country": "BE",
+    "id": 151
+  },
+  {
+    "short_name": "SDAV",
+    "reference": "SDAV",
+    "street": "Chemin de la Bruy\u00e8re du Coq",
+    "street2": "51",
+    "zip": "1495",
+    "city": "Villers-la-Ville",
+    "id": 333
+  },
+  {
+    "short_name": "HADB",
+    "reference": "HADB",
+    "street": "Lenniksesteenweg",
+    "street2": "2",
+    "zip": "15",
+    "city": "HALLE",
+    "id": 411
+  },
+  {
+    "short_name": "LEMB",
+    "reference": "LEMB",
+    "street": "Mimosastraat, 30",
+    "zip": "1502",
+    "city": "Lembeek",
+    "country": "BE",
+    "id": 53
+  },
+  {
+    "short_name": "HOEI",
+    "reference": "HOEI",
+    "street": "Koldamstraat",
+    "street2": "9A",
+    "zip": "1560",
+    "city": "Hoeilaart",
+    "country": "BE",
+    "id": 47
+  },
+  {
+    "short_name": "STPL",
+    "reference": "STPL",
+    "street": "Sportlaan",
+    "street2": "11",
+    "zip": "1600",
+    "city": "Sint-Pieters-Leeuw",
+    "id": 392
+  },
+  {
+    "short_name": "RUIS",
+    "reference": "RUIS",
+    "street": "Wandelingstraat",
+    "street2": "54",
+    "zip": "1601",
+    "city": "Ruisbroeck",
+    "id": 403
+  },
+  {
+    "short_name": "DROG",
+    "reference": "DROG",
+    "street": "Chauss\u00e9e de Drogenbos",
+    "street2": "250",
+    "zip": "1620",
+    "city": "Drogenbos",
+    "country": "BE",
+    "id": 39
+  },
+  {
+    "short_name": "RHOD",
+    "reference": "RHOD",
+    "street": "Rue T\u00eate d\u2019Epine",
+    "street2": "3",
+    "zip": "1640",
+    "city": "Rhode-Saint-Gen\u00e8se",
+    "country": "BE",
+    "id": 65
+  },
+  {
+    "short_name": "BEER",
+    "reference": "BEER",
+    "street": "Schoolstraat",
+    "street2": "46",
+    "zip": "1650",
+    "city": "Beersel",
+    "id": 399
+  },
+  {
+    "short_name": "DILB",
+    "reference": "DILB",
+    "street": "Stationsstraat",
+    "street2": "301",
+    "zip": "1700",
+    "city": "Dilbeek",
+    "id": 400
+  },
+  {
+    "short_name": "GRBG",
+    "reference": "GRBG",
+    "street": "Mertenstraat",
+    "street2": "27 A",
+    "zip": "1702",
+    "city": "Groot-Bijgaarden",
+    "id": 316
+  },
+  {
+    "short_name": "DBDB",
+    "reference": "DBDB",
+    "street": "Bosstraat",
+    "street2": "74",
+    "zip": "1702",
+    "city": "DILBEEK",
+    "id": 415
+  },
+  {
+    "short_name": "WAAL",
+    "reference": "WAAL",
+    "street": "Potaarde",
+    "street2": "14",
+    "zip": "1730",
+    "city": "Asse",
+    "id": 406
+  },
+  {
+    "short_name": "ZELL",
+    "reference": "ZELL",
+    "street": "Molenbos 1",
+    "street2": "",
+    "zip": "1731",
+    "city": "Zellik",
+    "country": "BE",
+    "id": 84
+  },
+  {
+    "short_name": "ASSE",
+    "reference": "ASSE",
+    "street": "Poverstraat",
+    "street2": "75",
+    "zip": "1731",
+    "city": "Asse",
+    "id": 368
+  },
+  {
+    "short_name": "ROOS",
+    "reference": "ROOS",
+    "street": "Omer De Vidtslaan",
+    "street2": "52",
+    "zip": "1760",
+    "city": "Roosdaal",
+    "country": "BE",
+    "id": 67
+  },
+  {
+    "short_name": "WEMM",
+    "reference": "WEMM",
+    "street": "Dijk",
+    "street2": "34",
+    "zip": "1780",
+    "city": "Wemmel",
+    "country": "BE",
+    "id": 80
+  },
+  {
+    "short_name": "VILV",
+    "reference": "VILV",
+    "street": "Beneluxlaan",
+    "street2": "22",
+    "zip": "1800",
+    "city": "Vilvoorde",
+    "country": "BE",
+    "id": 72
+  },
+  {
+    "short_name": "HAZE",
+    "reference": "HAZE",
+    "street": "Tulpenstraat",
+    "zip": "1800",
+    "city": "Vilvoorde",
+    "country": "BE",
+    "id": 73
+  },
+  {
+    "short_name": "STEE",
+    "reference": "STEE",
+    "street": "Orchidee\u00ebnlaan",
+    "street2": "18",
+    "zip": "1820",
+    "city": "Steenokkerzeel",
+    "country": "BE",
+    "id": 69
+  },
+  {
+    "short_name": "GRIM",
+    "reference": "GRIM",
+    "street": "Vaartstraat",
+    "street2": "198",
+    "zip": "1850",
+    "city": "GRIMBERGEN",
+    "id": 409
+  },
+  {
+    "short_name": "MEIS",
+    "reference": "MEIS",
+    "street": "Brusselsesteenweg",
+    "street2": "65A",
+    "zip": "1860",
+    "city": "Meise",
+    "country": "BE",
+    "id": 55
+  },
+  {
+    "short_name": "DRIE",
+    "reference": "DRIE",
+    "street": "Populierenstraat",
+    "street2": "20",
+    "zip": "1861",
+    "city": "Wolvertem",
+    "country": "BE",
+    "id": 82
+  },
+  {
+    "short_name": "ZAVE",
+    "reference": "ZAVE",
+    "street": "Hoogstraat 3",
+    "street2": "",
+    "zip": "1930",
+    "city": "Zaventem",
+    "country": "BE",
+    "id": 83
+  },
+  {
+    "short_name": "WSTS",
+    "reference": "WSTS",
+    "street": "Leuvensesteenweg",
+    "street2": "194",
+    "zip": "1940",
+    "city": "Sint-Stevens-Woluwe",
+    "country": "BE",
+    "id": 68
+  },
+  {
+    "short_name": "KRAA",
+    "reference": "KRAA",
+    "street": "Rue du Patronage",
+    "street2": "10",
+    "zip": "1950",
+    "city": "Kraainem",
+    "country": "BE",
+    "id": 50
+  },
+  {
+    "short_name": "WEZE",
+    "reference": "WEZE",
+    "street": "Avenue Astrid",
+    "street2": "85",
+    "zip": "1970",
+    "city": "Wezembeek-Oppem",
+    "country": "BE",
+    "id": 81
+  },
+  {
+    "short_name": "ZEMS",
+    "reference": "ZEMS",
+    "street": "Waterleestweg, 12",
+    "street2": "",
+    "zip": "1980",
+    "city": "Zemst",
+    "country": "BE",
+    "id": 85
+  },
+  {
+    "short_name": "MOOR",
+    "reference": "MOOR",
+    "street": "Spechtenlaan, 8",
+    "street2": "",
+    "zip": "3080",
+    "city": "Moorsel",
+    "country": "BE",
+    "id": 57
+  },
+  {
+    "short_name": "TERV",
+    "reference": "TERV",
+    "street": "Lindeboomstraat 30",
+    "street2": "",
+    "zip": "3080",
+    "city": "Tervuren",
+    "country": "BE",
+    "id": 70
+  },
+  {
+    "short_name": "FSTM",
+    "reference": "FSTM",
+    "street": "Vogelstang",
+    "street2": "7",
+    "zip": "3790",
+    "city": "Fouron St Martin",
+    "country": "BE",
+    "id": 176
+  },
+  {
+    "short_name": "MONT",
+    "reference": "MONT",
+    "street": "Hannuistraat",
+    "street2": "8",
+    "zip": "3890",
+    "city": "Montenaken",
+    "country": "BE",
+    "id": 208
+  },
+  {
+    "short_name": "BGRA",
+    "reference": "BGRA",
+    "street": "All\u00e9e des sports",
+    "street2": "2/6",
+    "zip": "4000",
+    "city": "Li\u00e8ge",
+    "country": "BE",
+    "id": 196
+  },
+  {
+    "short_name": "DBOS",
+    "reference": "DBOS",
+    "street": "Rue des Wallons",
+    "street2": "69",
+    "zip": "4000",
+    "city": "Liege",
+    "country": "BE",
+    "id": 198
+  },
+  {
+    "short_name": "LGOU",
+    "reference": "LGOU",
+    "street": "Rue des Meuniers",
+    "street2": "27",
+    "zip": "4000",
+    "city": "Liege",
+    "country": "BE",
+    "id": 199
+  },
+  {
+    "short_name": "STBA",
+    "reference": "STBA",
+    "street": "Rue Hors Ch\u00e2teau",
+    "street2": "31",
+    "zip": "4000",
+    "city": "Liege",
+    "country": "BE",
+    "id": 200
+  },
+  {
+    "short_name": "STSE",
+    "reference": "STSE",
+    "street": "Rue St Gilles",
+    "street2": "104",
+    "zip": "4000",
+    "city": "Liege",
+    "country": "BE",
+    "id": 201
+  },
+  {
+    "short_name": "BRES",
+    "reference": "BRES",
+    "street": "Rue Ernest Malvoz",
+    "street2": "11",
+    "zip": "4020",
+    "city": "Bressoux",
+    "country": "BE",
+    "id": 160
+  },
+  {
+    "short_name": "CONS",
+    "reference": "CONS",
+    "street": "Bd de la Constitution",
+    "street2": "82",
+    "zip": "4020",
+    "city": "Liege",
+    "country": "BE",
+    "id": 197
+  },
+  {
+    "short_name": "GRIV",
+    "reference": "GRIV",
+    "street": "Rue Nicolas Spiroux",
+    "street2": "55",
+    "zip": "4030",
+    "city": "Grivegnee",
+    "country": "BE",
+    "id": 179
+  },
+  {
+    "short_name": "COUN",
+    "reference": "COUN",
+    "street": "All\u00e9e du Bol d'Air",
+    "street2": "13",
+    "zip": "4031",
+    "city": "Angleur",
+    "country": "BE",
+    "id": 153
+  },
+  {
+    "short_name": "ANGL",
+    "reference": "ANGL",
+    "street": "Rue Sous les Bois",
+    "street2": "2",
+    "zip": "4031",
+    "city": "Angleur\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0",
+    "country": "BE",
+    "id": 154
+  },
+  {
+    "short_name": "HERS",
+    "reference": "HERS",
+    "street": "Petite-Voie",
+    "street2": "42",
+    "zip": "4040",
+    "city": "Herstal",
+    "country": "BE",
+    "id": 186
+  },
+  {
+    "short_name": "HRMD",
+    "reference": "HRMD",
+    "street": "Rue de l'Abattoir",
+    "street2": "65",
+    "zip": "4040",
+    "city": "Herstal",
+    "country": "BE",
+    "id": 187
+  },
+  {
+    "short_name": "LPRE",
+    "reference": "LPRE",
+    "street": "Rue Emile Muraille",
+    "street2": "158",
+    "zip": "4040",
+    "city": "Herstal",
+    "country": "BE",
+    "id": 188
+  },
+  {
+    "short_name": "VAUX",
+    "reference": "VAUX",
+    "street": "Rue de la Vesdre",
+    "zip": "4051",
+    "city": "Vaux-Sous-Chevremont",
+    "country": "BE",
+    "id": 226
+  },
+  {
+    "short_name": "EMBO",
+    "reference": "EMBO",
+    "street": "Avenue Au Chession",
+    "street2": "8",
+    "zip": "4053",
+    "city": "Embourg",
+    "country": "BE",
+    "id": 165
+  },
+  {
+    "short_name": "SERA",
+    "reference": "SERA",
+    "street": "Avenue des Puddleurs",
+    "street2": "51",
+    "zip": "4100",
+    "city": "Seraing",
+    "country": "BE",
+    "id": 217
+  },
+  {
+    "short_name": "STMA",
+    "reference": "STMA",
+    "street": "Rue de la Province",
+    "street2": "101",
+    "zip": "4100",
+    "city": "Seraing",
+    "country": "BE",
+    "id": 218
+  },
+  {
+    "short_name": "JEME",
+    "reference": "JEME",
+    "street": "Avenue Roseli\u00e8re",
+    "street2": "152",
+    "zip": "4101",
+    "city": "Jemeppe-sur-Meuse",
+    "country": "BE",
+    "id": 192
+  },
+  {
+    "short_name": "OUGR",
+    "reference": "OUGR",
+    "street": "Avenue du Centenaire",
+    "street2": "39",
+    "zip": "4102",
+    "city": "Ougr\u00e9e",
+    "country": "BE",
+    "id": 212
+  },
+  {
+    "short_name": "NEUP",
+    "reference": "NEUP",
+    "street": "Rue Biens Lefebvre",
+    "street2": "11",
+    "zip": "4120",
+    "city": "Neupre",
+    "country": "BE",
+    "id": 209
+  },
+  {
+    "short_name": "ESNE",
+    "reference": "ESNE",
+    "street": "Rue de l'Ath\u00e9n\u00e9e",
+    "street2": "5",
+    "zip": "4130",
+    "city": "Esneux",
+    "country": "BE",
+    "id": 167
+  },
+  {
+    "short_name": "SPRI",
+    "reference": "SPRI",
+    "street": "Rue Joseph Potier",
+    "zip": "4140",
+    "city": "Sprimont",
+    "country": "BE",
+    "id": 221
+  },
+  {
+    "short_name": "HAMO",
+    "reference": "HAMO",
+    "street": "Rue du Moulin",
+    "street2": "10B",
+    "zip": "4180",
+    "city": "Hamoir",
+    "country": "BE",
+    "id": 180
+  },
+  {
+    "short_name": "FERR",
+    "reference": "FERR",
+    "street": "All\u00e9e de Bernard Fagne",
+    "street2": "7",
+    "zip": "4190",
+    "city": "Ferrieres",
+    "country": "BE",
+    "id": 171
+  },
+  {
+    "short_name": "HERO",
+    "reference": "HERO",
+    "street": "Chauss\u00e9e de Wavre",
+    "street2": "41A",
+    "zip": "4217",
+    "city": "Heron",
+    "country": "BE",
+    "id": 290
+  },
+  {
+    "short_name": "FALL",
+    "reference": "FALL",
+    "street": "Rue de la Dreye",
+    "street2": "13",
+    "zip": "4260",
+    "city": "Fallais",
+    "country": "BE",
+    "id": 170
+  },
+  {
+    "short_name": "HANN",
+    "reference": "HANN",
+    "street": "Route de Landen",
+    "zip": "4280",
+    "city": "Hannut",
+    "country": "BE",
+    "id": 182
+  },
+  {
+    "short_name": "LINC",
+    "reference": "LINC",
+    "street": "Rue des Ecoles",
+    "street2": "6",
+    "zip": "4287",
+    "city": "Lincent",
+    "country": "BE",
+    "id": 203
+  },
+  {
+    "short_name": "SLWA",
+    "reference": "SLWA",
+    "street": "Rue du Prince R\u00e9gent",
+    "street2": "30",
+    "zip": "4300",
+    "city": "Waremme",
+    "country": "BE",
+    "id": 234
+  },
+  {
+    "short_name": "WARE",
+    "reference": "WARE",
+    "street": "Rue des Pr\u00e9s",
+    "street2": "43",
+    "zip": "4300",
+    "city": "Waremme",
+    "country": "BE",
+    "id": 235
+  },
+  {
+    "short_name": "AWAN",
+    "reference": "AWAN",
+    "street": "Rue de l'Eglise",
+    "street2": "21",
+    "zip": "4340",
+    "city": "Awans",
+    "country": "BE",
+    "id": 156
+  },
+  {
+    "short_name": "DONC",
+    "reference": "DONC",
+    "street": "Rue des Templiers",
+    "street2": "83",
+    "zip": "4357",
+    "city": "Haneffe-Donceel",
+    "country": "BE",
+    "id": 181
+  },
+  {
+    "short_name": "OREY",
+    "reference": "OREY",
+    "street": "Rue de la Cit\u00e9",
+    "street2": "18",
+    "zip": "4360",
+    "city": "Oreye",
+    "country": "BE",
+    "id": 211
+  },
+  {
+    "short_name": "ATFL",
+    "reference": "ATFL",
+    "street": "Grand-Route",
+    "street2": "317",
+    "zip": "4400",
+    "city": "Fl\u00e9malle",
+    "country": "BE",
+    "id": 395
+  },
+  {
+    "short_name": "FLEC",
+    "reference": "FLEC",
+    "street": "Rue du Beau Site",
+    "street2": "1",
+    "zip": "4400",
+    "city": "Flemalle",
+    "country": "BE",
+    "id": 172
+  },
+  {
+    "short_name": "FLEM",
+    "reference": "FLEM",
+    "street": "Rue du Passage d'Eau",
+    "zip": "4400",
+    "city": "Flemalle",
+    "country": "BE",
+    "id": 173
+  },
+  {
+    "short_name": "HMON",
+    "reference": "HMON",
+    "street": "Rue Pasteur",
+    "street2": "14",
+    "zip": "4420",
+    "city": "Montegnee",
+    "country": "BE",
+    "id": 207
+  },
+  {
+    "short_name": "LONC",
+    "reference": "LONC",
+    "street": "Rue des Charrons",
+    "zip": "4431",
+    "city": "Loncin",
+    "country": "BE",
+    "id": 204
+  },
+  {
+    "short_name": "JUPR",
+    "reference": "JUPR",
+    "street": "Rue Chainay",
+    "street2": "61",
+    "zip": "4450",
+    "city": "Juprelle",
+    "country": "BE",
+    "id": 193
+  },
+  {
+    "short_name": "GRAC",
+    "reference": "GRAC",
+    "street": "Rue des XVIII Bonniers",
+    "zip": "4460",
+    "city": "Grace-Hollogne",
+    "country": "BE",
+    "id": 177
+  },
+  {
+    "short_name": "ENGI",
+    "reference": "ENGI",
+    "street": "Rue reine Astrid",
+    "street2": "179",
+    "zip": "4480",
+    "city": "Engis",
+    "country": "BE",
+    "id": 166
+  },
+  {
+    "short_name": "AHUY",
+    "reference": "AHUY",
+    "street": "Cit\u00e9 Emile Vierset",
+    "street2": "1",
+    "zip": "4500",
+    "city": "Huy",
+    "country": "BE",
+    "id": 190
+  },
+  {
+    "short_name": "HHUY",
+    "reference": "HHUY",
+    "street": "Avenue de la Croix Rouge",
+    "street2": "4",
+    "zip": "4500",
+    "city": "Huy",
+    "country": "BE",
+    "id": 191
+  },
+  {
+    "short_name": "WANZ",
+    "reference": "WANZ",
+    "street": "Rue G\u00e9o Warz\u00e9e",
+    "street2": "19",
+    "zip": "4520",
+    "city": "Wanze",
+    "country": "BE",
+    "id": 233
+  },
+  {
+    "short_name": "VBOU",
+    "reference": "VBOU",
+    "street": "Rue de Waremme",
+    "street2": "5/1",
+    "zip": "4530",
+    "city": "Villers-Le-Bouillet",
+    "country": "BE",
+    "id": 231
+  },
+  {
+    "short_name": "VERL",
+    "reference": "VERL",
+    "street": "Rue de la Station",
+    "street2": "37",
+    "zip": "4537",
+    "city": "Verlaine",
+    "country": "BE",
+    "id": 227
+  },
+  {
+    "short_name": "AMAY",
+    "reference": "AMAY",
+    "street": "Chauss\u00e9e de Tongres",
+    "street2": "235",
+    "zip": "4540",
+    "city": "Amay\u00a0 \u00a0 \u00a0\u00a0\u00a0\u00a0\u00a0",
+    "country": "BE",
+    "id": 152
+  },
+  {
+    "short_name": "MARC",
+    "reference": "MARC",
+    "street": "Place Belle Maison",
+    "street2": "1A",
+    "zip": "4570",
+    "city": "Marchin",
+    "country": "BE",
+    "id": 206
+  },
+  {
+    "short_name": "VIER",
+    "reference": "VIER",
+    "street": "Tige de Hestreux",
+    "zip": "4577",
+    "city": "Vierset-Barse",
+    "country": "BE",
+    "id": 230
+  },
+  {
+    "short_name": "DLPO",
+    "reference": "DLPO",
+    "street": "Rue de Tongres",
+    "street2": "10",
+    "zip": "4600",
+    "city": "Vis\u00e9",
+    "country": "BE",
+    "id": 375
+  },
+  {
+    "short_name": "VISE",
+    "reference": "VISE",
+    "street": "Rue de Berneau",
+    "street2": "30",
+    "zip": "4600",
+    "city": "Vise",
+    "country": "BE",
+    "id": 232
+  },
+  {
+    "short_name": "CHER",
+    "reference": "CHER",
+    "street": "Rue de Vis\u00e9",
+    "street2": "105",
+    "zip": "4602",
+    "city": "Cheratte",
+    "country": "BE",
+    "id": 162
+  },
+  {
+    "short_name": "BEYN",
+    "reference": "BEYN",
+    "street": "Rue de Heusay",
+    "street2": "19",
+    "zip": "4610",
+    "city": "Beyne",
+    "country": "BE",
+    "id": 158
+  },
+  {
+    "short_name": "FLES",
+    "reference": "FLES",
+    "street": "Avenue de l'Espace Sport",
+    "street2": "4",
+    "zip": "4620",
+    "city": "Fl\u00e9ron",
+    "id": 360
+  },
+  {
+    "short_name": "FLER",
+    "reference": "FLER",
+    "street": "Avenue de l'Espace Sport",
+    "street2": "4",
+    "zip": "4620",
+    "city": "Fleron",
+    "country": "BE",
+    "id": 174
+  },
+  {
+    "short_name": "MICH",
+    "reference": "MICH",
+    "street": "Rue Paul d\u2019Andrimont",
+    "street2": "24",
+    "zip": "4630",
+    "city": "Micheroux",
+    "id": 382
+  },
+  {
+    "short_name": "SOUM",
+    "reference": "SOUM",
+    "street": "Place de la Gare",
+    "street2": "1",
+    "zip": "4630",
+    "city": "Soumagne",
+    "country": "BE",
+    "id": 219
+  },
+  {
+    "short_name": "RECH",
+    "reference": "RECH",
+    "street": "Avenue des Platanes",
+    "street2": "73",
+    "zip": "4650",
+    "city": "Grand-Rechain",
+    "country": "BE",
+    "id": 178
+  },
+  {
+    "short_name": "HERV",
+    "reference": "HERV",
+    "street": "Rue du Stade",
+    "street2": "6",
+    "zip": "4650",
+    "city": "Herve",
+    "country": "BE",
+    "id": 189
+  },
+  {
+    "short_name": "SAIV",
+    "reference": "SAIV",
+    "street": "Rue Haute",
+    "street2": "1A",
+    "zip": "4671",
+    "city": "Saive",
+    "country": "BE",
+    "id": 216
+  },
+  {
+    "short_name": "HERM",
+    "reference": "HERM",
+    "street": "Rue Vall\u00e9e",
+    "street2": "15",
+    "zip": "4681",
+    "city": "Hermalle-Sous-Argenteau",
+    "country": "BE",
+    "id": 185
+  },
+  {
+    "short_name": "EUPE",
+    "reference": "EUPE",
+    "street": "Stockbergerweg",
+    "street2": "5",
+    "zip": "4700",
+    "city": "Eupen",
+    "country": "BE",
+    "id": 168
+  },
+  {
+    "short_name": "HERB",
+    "reference": "HERB",
+    "street": "Rue de l'Eglise",
+    "street2": "50",
+    "zip": "4710",
+    "city": "Herbesthal",
+    "country": "BE",
+    "id": 184
+  },
+  {
+    "short_name": "CALA",
+    "reference": "CALA",
+    "street": "Rue du Patronage",
+    "street2": "53",
+    "zip": "4720",
+    "city": "La Calamine",
+    "country": "BE",
+    "id": 194
+  },
+  {
+    "short_name": "RAER",
+    "reference": "RAER",
+    "street": "Bergscheid",
+    "street2": "5",
+    "zip": "4730",
+    "city": "Raeren",
+    "country": "BE",
+    "id": 214
+  },
+  {
+    "short_name": "EYNA",
+    "reference": "EYNA",
+    "street": "Lichtenbuscherstrasse",
+    "street2": "24",
+    "zip": "4731",
+    "city": "Eynatten",
+    "country": "BE",
+    "id": 169
+  },
+  {
+    "short_name": "BUTG",
+    "reference": "BUTG",
+    "street": "Centre Sportif\u00a0 Worriken",
+    "zip": "4750",
+    "city": "Butgenbach",
+    "country": "BE",
+    "id": 161
+  },
+  {
+    "short_name": "RECT",
+    "reference": "RECT",
+    "street": "Am Kuhnenbrunnen",
+    "zip": "4780",
+    "city": "Recht",
+    "country": "BE",
+    "id": 215
+  },
+  {
+    "short_name": "STVI",
+    "reference": "STVI",
+    "street": "Rodterstrasse",
+    "street2": "9A",
+    "zip": "4780",
+    "city": "St Vith",
+    "country": "BE",
+    "id": 222
+  },
+  {
+    "short_name": "DBOV",
+    "reference": "DBOV",
+    "street": "Rue des Alli\u00e9s",
+    "street2": "82",
+    "zip": "4800",
+    "city": "Verviers",
+    "country": "BE",
+    "id": 228
+  },
+  {
+    "short_name": "VERV",
+    "reference": "VERV",
+    "street": "Quai de la Vesdre",
+    "zip": "4800",
+    "city": "Verviers",
+    "country": "BE",
+    "id": 229
+  },
+  {
+    "short_name": "DISO",
+    "reference": "DISO",
+    "street": "Rue Pirre-Pierre",
+    "street2": "30 bis",
+    "zip": "4821",
+    "city": "Dison",
+    "country": "BE",
+    "id": 163
+  },
+  {
+    "short_name": "DOLH",
+    "reference": "DOLH",
+    "street": "Rue Wilson",
+    "street2": "36",
+    "zip": "4830",
+    "city": "Dolhain-Limbourg",
+    "country": "BE",
+    "id": 164
+  },
+  {
+    "short_name": "WELK",
+    "reference": "WELK",
+    "street": "Rue Gretry",
+    "street2": "9",
+    "zip": "4840",
+    "city": "Welkenraedt",
+    "country": "BE",
+    "id": 237
+  },
+  {
+    "short_name": "HRCH",
+    "reference": "HRCH",
+    "street": "Chauss\u00e9e de Li\u00e8ge",
+    "street2": "26",
+    "zip": "4841",
+    "city": "Henri-Chapelle",
+    "country": "BE",
+    "id": 183
+  },
+  {
+    "short_name": "GEMM",
+    "reference": "GEMM",
+    "street": "Rue C\u00e9sar Franck",
+    "street2": "163",
+    "zip": "4851",
+    "city": "Plombieres",
+    "country": "BE",
+    "id": 213
+  },
+  {
+    "short_name": "WEGN",
+    "reference": "WEGN",
+    "street": "Rue du Paire",
+    "zip": "4860",
+    "city": "Wegnez",
+    "country": "BE",
+    "id": 236
+  },
+  {
+    "short_name": "TROO",
+    "reference": "TROO",
+    "street": "Rue de l'Eglise",
+    "street2": "22",
+    "zip": "4870",
+    "city": "Foret-Trooz",
+    "country": "BE",
+    "id": 175
+  },
+  {
+    "short_name": "OLNE",
+    "reference": "OLNE",
+    "street": "Rue Bouteille",
+    "street2": "1",
+    "zip": "4877",
+    "city": "Olne",
+    "country": "BE",
+    "id": 210
+  },
+  {
+    "short_name": "AUBV",
+    "reference": "AUBV",
+    "street": "Chemin de la Kan",
+    "street2": "1",
+    "zip": "4880",
+    "city": "Aubel",
+    "country": "BE",
+    "id": 358
+  },
+  {
+    "short_name": "AUBB",
+    "reference": "AUBB",
+    "street": "Ruelle de la Kan",
+    "street2": "1",
+    "zip": "4880",
+    "city": "Aubel",
+    "country": "BE",
+    "id": 155
+  },
+  {
+    "short_name": "THIM",
+    "reference": "THIM",
+    "street": "Rue cavalier Fonck",
+    "street2": "15",
+    "zip": "4890",
+    "city": "Thimister",
+    "country": "BE",
+    "id": 225
+  },
+  {
+    "short_name": "SPAF",
+    "reference": "SPAF",
+    "street": "Avenue A.Hesse",
+    "street2": "41",
+    "zip": "4900",
+    "city": "Spa",
+    "country": "BE",
+    "id": 220
+  },
+  {
+    "short_name": "SROC",
+    "reference": "SROC",
+    "street": "Rue du March\u00e9",
+    "street2": "2",
+    "zip": "4910",
+    "city": "Theux",
+    "id": 370
+  },
+  {
+    "short_name": "REID",
+    "reference": "REID",
+    "street": "Rue du Canada",
+    "street2": "157",
+    "zip": "4910",
+    "city": "La Reid",
+    "country": "BE",
+    "id": 195
+  },
+  {
+    "short_name": "THEU",
+    "reference": "THEU",
+    "street": "Avenue du Stade",
+    "street2": "29",
+    "zip": "4910",
+    "city": "Theux",
+    "country": "BE",
+    "id": 224
+  },
+  {
+    "short_name": "AYWA",
+    "reference": "AYWA",
+    "street": "Esplanade du Fair-Play",
+    "street2": "1",
+    "zip": "4920",
+    "city": "Aywaille",
+    "country": "BE",
+    "id": 157
+  },
+  {
+    "short_name": "MALM",
+    "reference": "MALM",
+    "street": "Pont de Warche",
+    "street2": "1",
+    "zip": "4960",
+    "city": "Malmedy",
+    "country": "BE",
+    "id": 205
+  },
+  {
+    "short_name": "STAV",
+    "reference": "STAV",
+    "street": "Quai des Vieux Moulins",
+    "street2": "6",
+    "zip": "4970",
+    "city": "Stavelot",
+    "country": "BE",
+    "id": 223
+  },
+  {
+    "short_name": "LIER",
+    "reference": "LIER",
+    "street": "Stade Communal",
+    "zip": "4990",
+    "city": "Lierneux",
+    "country": "BE",
+    "id": 202
+  },
+  {
+    "short_name": "PLAN",
+    "reference": "PLAN",
+    "street": "Chauss\u00e9e de Dinant",
+    "street2": "220",
+    "zip": "5000",
+    "city": "La Plante",
+    "country": "BE",
+    "id": 294
+  },
+  {
+    "short_name": "TABO",
+    "reference": "TABO",
+    "street": "Avenue de Tabora",
+    "street2": "21",
+    "zip": "5000",
+    "city": "Namur",
+    "country": "BE",
+    "id": 298
+  },
+  {
+    "short_name": "BOUG",
+    "reference": "BOUG",
+    "street": "Rue des Etourneaux",
+    "street2": "28",
+    "zip": "5004",
+    "city": "Bouge",
+    "country": "BE",
+    "id": 277
+  },
+  {
+    "short_name": "TEMP",
+    "reference": "TEMP",
+    "street": "Rue Visart de Bocarm\u00e9",
+    "street2": "66",
+    "zip": "5020",
+    "city": "Temploux",
+    "country": "BE",
+    "id": 307
+  },
+  {
+    "short_name": "MALO",
+    "reference": "MALO",
+    "street": "Route de la Navine",
+    "street2": "81",
+    "zip": "5020",
+    "city": "Malonne",
+    "country": "BE",
+    "id": 380
+  },
+  {
+    "short_name": "GEMB",
+    "reference": "GEMB",
+    "street": "Chauss\u00e9e de Namur",
+    "street2": "28",
+    "zip": "5030",
+    "city": "Gembloux",
+    "country": "BE",
+    "id": 288
+  },
+  {
+    "short_name": "CORR",
+    "reference": "CORR",
+    "street": "Rue Maison d'Orbais",
+    "street2": "25",
+    "zip": "5032",
+    "city": "Corroy-le-Ch\u00e2teau",
+    "country": "BE",
+    "id": 279
+  },
+  {
+    "short_name": "AUVE",
+    "reference": "AUVE",
+    "street": "Rue Pont Sainte Maxence",
+    "street2": "1",
+    "zip": "5060",
+    "city": "Auvelais",
+    "country": "BE",
+    "id": 273
+  },
+  {
+    "short_name": "STAN",
+    "reference": "STAN",
+    "street": "Rue des Auges",
+    "street2": "22",
+    "zip": "5060",
+    "city": "Auvelais",
+    "country": "BE",
+    "id": 274
+  },
+  {
+    "short_name": "FOSS",
+    "reference": "FOSS",
+    "street": "Chauss\u00e9e de Namur",
+    "street2": "69",
+    "zip": "5070",
+    "city": "Sart-Saint-Laurent",
+    "country": "BE",
+    "id": 304
+  },
+  {
+    "short_name": "EMIN",
+    "reference": "EMIN",
+    "street": "Rue de Rhisnes",
+    "street2": "33",
+    "zip": "5080",
+    "city": "Emines",
+    "id": 405
+  },
+  {
+    "short_name": "ISMJ",
+    "reference": "ISMJ",
+    "street": "Rue de l'Aurore",
+    "street2": "227",
+    "zip": "5100",
+    "city": "Jambes",
+    "country": "BE",
+    "id": 291
+  },
+  {
+    "short_name": "SOUV",
+    "reference": "SOUV",
+    "street": "Rue A. Michiels",
+    "street2": "8",
+    "zip": "5100",
+    "city": "Jambes",
+    "country": "BE",
+    "id": 292
+  },
+  {
+    "short_name": "DAVE",
+    "reference": "DAVE",
+    "street": "Rue Saint-Hubert",
+    "street2": "84",
+    "zip": "5100",
+    "city": "Dave",
+    "country": "BE",
+    "id": 356
+  },
+  {
+    "short_name": "JAMB",
+    "reference": "JAMB",
+    "street": "All\u00e9e du Stade",
+    "street2": "3",
+    "zip": "5100",
+    "city": "Jambes",
+    "country": "BE",
+    "id": 373
+  },
+  {
+    "short_name": "LOYE",
+    "reference": "LOYE",
+    "street": "Rue Comognes de Loyers",
+    "street2": "50",
+    "zip": "5101",
+    "city": "Loyers",
+    "country": "BE",
+    "id": 296
+  },
+  {
+    "short_name": "SOMB",
+    "reference": "SOMB",
+    "street": "All\u00e9e de Ch\u00e2teau Chinon",
+    "street2": "6",
+    "zip": "5140",
+    "city": "Sombreffe",
+    "country": "BE",
+    "id": 306
+  },
+  {
+    "short_name": "FLOF",
+    "reference": "FLOF",
+    "street": "Avenue Joseph Hanse",
+    "street2": "6",
+    "zip": "5150",
+    "city": "Floreffe",
+    "country": "BE",
+    "id": 286
+  },
+  {
+    "short_name": "PROF",
+    "reference": "PROF",
+    "street": "Avenue de Roquebrune",
+    "street2": "32",
+    "zip": "5170",
+    "city": "Profondeville",
+    "country": "BE",
+    "id": 303
+  },
+  {
+    "short_name": "JEM1",
+    "reference": "JEM1",
+    "street": "Rue Saint-Martin",
+    "street2": "21",
+    "zip": "5190",
+    "city": "Jemeppe-sur-Sambre",
+    "country": "BE",
+    "id": 293
+  },
+  {
+    "short_name": "JEM2",
+    "reference": "JEM2",
+    "street": "Rue Saint-Martin",
+    "street2": "21",
+    "zip": "5190",
+    "city": "Jemeppe-sur-Sambre",
+    "country": "BE",
+    "id": 377
+  },
+  {
+    "short_name": "ANDE",
+    "reference": "ANDN",
+    "street": "Square Docteur M\u00e9lin",
+    "street2": "14",
+    "zip": "5300",
+    "city": "Andenne",
+    "country": "BE",
+    "id": 271
+  },
+  {
+    "short_name": "SEIL",
+    "reference": "SEIL",
+    "street": "Rue Henschel",
+    "street2": "40",
+    "zip": "5300",
+    "city": "Seilles",
+    "country": "BE",
+    "id": 305
+  },
+  {
+    "short_name": "VEZI",
+    "reference": "VEZI",
+    "street": "Rue de Leuze",
+    "street2": "393",
+    "zip": "5300",
+    "city": "Vezin",
+    "id": 372
+  },
+  {
+    "short_name": "EGHE",
+    "reference": "EGHE",
+    "street": "Rue de la Gare",
+    "street2": "5",
+    "zip": "5310",
+    "city": "Eghezee",
+    "country": "BE",
+    "id": 285
+  },
+  {
+    "short_name": "EGH2",
+    "reference": "EGH2",
+    "street": "Rue du Coll\u00e8ge",
+    "street2": "8-20",
+    "zip": "5310",
+    "city": "Eghez\u00e9e",
+    "id": 365
+  },
+  {
+    "short_name": "MAIL",
+    "reference": "MAIL",
+    "street": "Rue de Crupet",
+    "street2": "45",
+    "zip": "5330",
+    "city": "Maillen",
+    "country": "BE",
+    "id": 310
+  },
+  {
+    "short_name": "OHEY",
+    "reference": "OHEY",
+    "street": "Voie du Rauyisse",
+    "street2": "1",
+    "zip": "5350",
+    "city": "Ohey",
+    "country": "BE",
+    "id": 376
+  },
+  {
+    "short_name": "NATO",
+    "reference": "NATO",
+    "street": "Rue du Ch\u00e2teau d'Eau",
+    "zip": "5360",
+    "city": "Natoye",
+    "country": "BE",
+    "id": 299
+  },
+  {
+    "short_name": "HAVE",
+    "reference": "HAVE",
+    "street": "Rue d\u2019Ocolna",
+    "street2": "1",
+    "zip": "5370",
+    "city": "Havelange",
+    "country": "BE",
+    "id": 289
+  },
+  {
+    "short_name": "FERN",
+    "reference": "FERN",
+    "street": "Avenue de la R\u00e9novation",
+    "street2": "8",
+    "zip": "5380",
+    "city": "Noville-Les-Bois",
+    "country": "BE",
+    "id": 300
+  },
+  {
+    "short_name": "DINA",
+    "reference": "DINA",
+    "street": "Rue de Bonsecours",
+    "street2": "2",
+    "zip": "5500",
+    "city": "Dinant",
+    "country": "BE",
+    "id": 282
+  },
+  {
+    "short_name": "DIN1",
+    "reference": "DIN1",
+    "street": "Rue d\u2019Herbuchenne",
+    "zip": "5500",
+    "city": "Dinant",
+    "country": "BE",
+    "id": 283
+  },
+  {
+    "short_name": "DIN2",
+    "reference": "DIN2",
+    "street": "Chauss\u00e9e d\u2019Yvoir",
+    "street2": "1",
+    "zip": "5500",
+    "city": "Dinant",
+    "country": "BE",
+    "id": 284
+  },
+  {
+    "short_name": "MIAV",
+    "reference": "MIAV",
+    "street": "Rue Sous-Lieutenant Pierard",
+    "street2": "1",
+    "zip": "5520",
+    "city": "Anth\u00e9e",
+    "country": "BE",
+    "id": 312
+  },
+  {
+    "short_name": "YVOI",
+    "reference": "YVOI",
+    "street": "Rue du Maka",
+    "street2": "1",
+    "zip": "5530",
+    "city": "Yvoir",
+    "country": "BE",
+    "id": 309
+  },
+  {
+    "short_name": "ANHE",
+    "reference": "ANHE",
+    "street": "Rue St Stamp",
+    "street2": "1",
+    "zip": "5537",
+    "city": "Anhee",
+    "country": "BE",
+    "id": 272
+  },
+  {
+    "short_name": "BEA1",
+    "reference": "BEA1",
+    "street": "Rue de la Couture",
+    "street2": "46",
+    "zip": "5570",
+    "city": "Beauraing",
+    "country": "BE",
+    "id": 275
+  },
+  {
+    "short_name": "BEA2",
+    "reference": "BEA2",
+    "street": "Chemin Nicaise",
+    "zip": "5570",
+    "city": "Beauraing",
+    "country": "BE",
+    "id": 276
+  },
+  {
+    "short_name": "GEDI",
+    "reference": "GEDI",
+    "street": "Rue de la Morie",
+    "street2": "7",
+    "zip": "5575",
+    "city": "Gedinne",
+    "country": "BE",
+    "id": 311
+  },
+  {
+    "short_name": "ROCH",
+    "reference": "ROCH",
+    "street": "Rue des Jardins",
+    "street2": "46",
+    "zip": "5580",
+    "city": "Jemelle",
+    "id": 384
+  },
+  {
+    "short_name": "JEME",
+    "reference": "JEML",
+    "street": "Domaine de Harzir",
+    "zip": "5580",
+    "city": "Jemelle",
+    "country": "BE",
+    "id": 255
+  },
+  {
+    "short_name": "CINE",
+    "reference": "CINE",
+    "street": "Place Roi Baudouin 1er",
+    "street2": "7",
+    "zip": "5590",
+    "city": "Ciney",
+    "country": "BE",
+    "id": 278
+  },
+  {
+    "short_name": "PHIL",
+    "reference": "PHIL",
+    "street": "Rue de la Gendarmerie",
+    "street2": "30B",
+    "zip": "5600",
+    "city": "Philippeville",
+    "country": "BE",
+    "id": 302
+  },
+  {
+    "short_name": "FLOR",
+    "reference": "FLOR",
+    "street": "Rue du Chesl\u00e9",
+    "street2": "25",
+    "zip": "5620",
+    "city": "Florennes",
+    "country": "BE",
+    "id": 287
+  },
+  {
+    "short_name": "CERF",
+    "reference": "CERF",
+    "street": "Rue Fouery",
+    "street2": "4",
+    "zip": "5630",
+    "city": "Cerfontaine",
+    "country": "BE",
+    "id": 313
+  },
+  {
+    "short_name": "METT",
+    "reference": "METT",
+    "street": "Rue Saint-Donat",
+    "street2": "15",
+    "zip": "5640",
+    "city": "Mettet",
+    "country": "BE",
+    "id": 297
+  },
+  {
+    "short_name": "WALC",
+    "reference": "WALC",
+    "street": "All\u00e9e du 125e R\u00e9giment Infanterie",
+    "zip": "5650",
+    "city": "Walcourt",
+    "country": "BE",
+    "id": 308
+  },
+  {
+    "short_name": "LANE",
+    "reference": "LANE",
+    "street": "Rue des Batis",
+    "street2": "1",
+    "zip": "5651",
+    "city": "Laneffe",
+    "country": "BE",
+    "id": 295
+  },
+  {
+    "short_name": "COU1",
+    "reference": "COU1",
+    "street": "Rue de la Foulerie",
+    "street2": "12/2",
+    "zip": "5660",
+    "city": "Couvin",
+    "country": "BE",
+    "id": 280
+  },
+  {
+    "short_name": "COU2",
+    "reference": "COU2",
+    "street": "Rue Croisette",
+    "street2": "1",
+    "zip": "5660",
+    "city": "Couvin",
+    "country": "BE",
+    "id": 281
+  },
+  {
+    "short_name": "ALBA",
+    "reference": "ALBA",
+    "street": "Chemin du Bois",
+    "street2": "5",
+    "zip": "5660",
+    "city": "Petite-Chapelle",
+    "country": "BE",
+    "id": 301
+  },
+  {
+    "short_name": "GARE",
+    "reference": "GARE",
+    "street": "Rue des Olympiades, 2",
+    "street2": "",
+    "zip": "6000",
+    "city": "Charleroi",
+    "country": "BE",
+    "id": 94
+  },
+  {
+    "short_name": "ASIE",
+    "reference": "ASIE",
+    "street": "Rue de l'Asie",
+    "street2": "1",
+    "zip": "6001",
+    "city": "Marcinelle",
+    "country": "BE",
+    "id": 127
+  },
+  {
+    "short_name": "MARM",
+    "reference": "MARM",
+    "street": "Rue des Monts, 68",
+    "zip": "6001",
+    "city": "Marcinelle",
+    "country": "BE",
+    "id": 128
+  },
+  {
+    "short_name": "IPSM",
+    "reference": "IPSM",
+    "street": "Rue Debarcad\u00e8re, 151",
+    "zip": "6001",
+    "city": "Marcinelle",
+    "country": "BE",
+    "id": 129
+  },
+  {
+    "short_name": "DAMP",
+    "reference": "DAMP",
+    "street": "Rue des Fran",
+    "zip": "6020",
+    "city": "Dampremy",
+    "country": "BE",
+    "id": 100
+  },
+  {
+    "short_name": "OMPA",
+    "reference": "OMPA",
+    "street": "Route de Mons",
+    "street2": "80",
+    "zip": "6030",
+    "city": "Marchienne-au-Pont",
+    "country": "BE",
+    "id": 385
+  },
+  {
+    "short_name": "JUME",
+    "reference": "JUME",
+    "street": "Place du Prieur\u00e9, 22",
+    "zip": "6040",
+    "city": "Jumet",
+    "country": "BE",
+    "id": 117
+  },
+  {
+    "short_name": "LODE",
+    "reference": "LODE",
+    "street": "Rue du Chemin Vert",
+    "street2": "125",
+    "zip": "6042",
+    "city": "Lodelinsart",
+    "country": "BE",
+    "id": 124
+  },
+  {
+    "short_name": "RANS",
+    "reference": "RANS",
+    "street": "Rue Tantenne",
+    "street2": "20",
+    "zip": "6043",
+    "city": "Ransart",
+    "country": "BE",
+    "id": 142
+  },
+  {
+    "short_name": "ROUX",
+    "reference": "ROUX",
+    "street": "Rue des Couturelles",
+    "street2": "2",
+    "zip": "6044",
+    "city": "Roux",
+    "country": "BE",
+    "id": 143
+  },
+  {
+    "short_name": "GILY",
+    "reference": "GILY",
+    "street": "Place Destr\u00e9e",
+    "zip": "6060",
+    "city": "Gilly",
+    "country": "BE",
+    "id": 111
+  },
+  {
+    "short_name": "MSS",
+    "reference": "MSSA",
+    "street": "Rue Grimard",
+    "zip": "6061",
+    "city": "Montignies-Sur-Sambre",
+    "country": "BE",
+    "id": 133
+  },
+  {
+    "short_name": "MONT",
+    "reference": "MTLL",
+    "street": "Rue Bois Frion",
+    "zip": "6110",
+    "city": "Montigny-le-Tilleul",
+    "country": "BE",
+    "id": 134
+  },
+  {
+    "short_name": "NALI",
+    "reference": "NALI",
+    "street": "Rue des Monts",
+    "street2": "18",
+    "zip": "6120",
+    "city": "Nalinnes",
+    "country": "BE",
+    "id": 136
+  },
+  {
+    "short_name": "FONT",
+    "reference": "FONT",
+    "street": "Cit\u00e9 des Oiseaux",
+    "zip": "6140",
+    "city": "Fontaine-L\u2019Ev\u00eaque",
+    "country": "BE",
+    "id": 107
+  },
+  {
+    "short_name": "FORC",
+    "reference": "FORC",
+    "street": "Cit\u00e9 des 3 Bonniers",
+    "zip": "6141",
+    "city": "Forchies-La-Marche",
+    "country": "BE",
+    "id": 108
+  },
+  {
+    "short_name": "LEER",
+    "reference": "LEER",
+    "street": "Rue Berteau",
+    "zip": "6142",
+    "city": "Leernes",
+    "country": "BE",
+    "id": 120
+  },
+  {
+    "short_name": "ANDE",
+    "reference": "ANDE",
+    "street": "Rue de Maubeuge",
+    "zip": "6150",
+    "city": "Anderlues",
+    "country": "BE",
+    "id": 86
+  },
+  {
+    "short_name": "TRAZ",
+    "reference": "TRAZ",
+    "street": "Avenue de l'Europe",
+    "street2": "1",
+    "zip": "6183",
+    "city": "Trazegnies",
+    "country": "BE",
+    "id": 150
+  },
+  {
+    "short_name": "CHAT",
+    "reference": "CHAT",
+    "street": "Place Wilson",
+    "street2": "26",
+    "zip": "6200",
+    "city": "Ch\u00e2telineau",
+    "country": "BE",
+    "id": 95
+  },
+  {
+    "short_name": "CHEC",
+    "reference": "CHEC",
+    "street": "Place Destr\u00e9e",
+    "zip": "6200",
+    "city": "Ch\u00e2telineau",
+    "country": "BE",
+    "id": 96
+  },
+  {
+    "short_name": "LBVI",
+    "reference": "LBVI",
+    "street": "Rue J.-B. Loriaux, 3a",
+    "zip": "6210",
+    "city": "Les Bons Villers",
+    "country": "BE",
+    "id": 121
+  },
+  {
+    "short_name": "WANF",
+    "reference": "WANF",
+    "street": "Rue Joseph Wauters",
+    "zip": "6224",
+    "city": "Wanferc\u00e9e-Baulet",
+    "id": 351
+  },
+  {
+    "short_name": "PACE",
+    "reference": "PACE",
+    "street": "Avenue de la Gare",
+    "street2": "10",
+    "zip": "6230",
+    "city": "Pont-\u00c0-Celles",
+    "country": "BE",
+    "id": 140
+  },
+  {
+    "short_name": "FARC",
+    "reference": "FARC",
+    "street": "Rue du Puits Communal, 103",
+    "zip": "6240",
+    "city": "Farciennes",
+    "country": "BE",
+    "id": 105
+  },
+  {
+    "short_name": "AISE",
+    "reference": "AISE",
+    "street": "Rue J.-F Kennedy",
+    "street2": "150",
+    "zip": "6250",
+    "city": "Roselies",
+    "country": "BE",
+    "id": 1
+  },
+  {
+    "short_name": "CHIJ",
+    "reference": "CHIJ",
+    "street": "Rue de Virelles",
+    "street2": "75",
+    "zip": "6460",
+    "city": "Chimay",
+    "country": "BE",
+    "id": 97
+  },
+  {
+    "short_name": "CHIC",
+    "reference": "CHIC",
+    "street": "Avenue du Ch\u00e2lon",
+    "street2": "1B",
+    "zip": "6460",
+    "city": "Chimay",
+    "country": "BE",
+    "id": 98
+  },
+  {
+    "short_name": "RANC",
+    "reference": "RANC",
+    "street": "Rue Pauline Hubert",
+    "street2": "32",
+    "zip": "6470",
+    "city": "Rance",
+    "country": "BE",
+    "id": 141
+  },
+  {
+    "short_name": "BEAU",
+    "reference": "BEAU",
+    "street": "Rue du Vivier",
+    "street2": "4",
+    "zip": "6500",
+    "city": "Beaumont",
+    "country": "BE",
+    "id": 87
+  },
+  {
+    "short_name": "THUI",
+    "reference": "THUI",
+    "street": "Dr\u00e8ve des Alli\u00e9s",
+    "street2": "124",
+    "zip": "6530",
+    "city": "Thuin",
+    "country": "BE",
+    "id": 149
+  },
+  {
+    "short_name": "LOBB",
+    "reference": "LOBB",
+    "street": "Rue Entreville",
+    "zip": "6540",
+    "city": "Lobbes",
+    "country": "BE",
+    "id": 123
+  },
+  {
+    "short_name": "ERQU",
+    "reference": "ERQU",
+    "street": "Rue Libotte-Mozin",
+    "street2": "1",
+    "zip": "6560",
+    "city": "Erquelinnes",
+    "country": "BE",
+    "id": 104
+  },
+  {
+    "short_name": "LIB1",
+    "reference": "LIB1",
+    "street": "Place communale",
+    "street2": "3",
+    "zip": "6600",
+    "city": "Libramont",
+    "country": "BE",
+    "id": 258
+  },
+  {
+    "short_name": "LIB2",
+    "reference": "LIB2",
+    "street": "Place Communale",
+    "street2": "3",
+    "zip": "6600",
+    "city": "Libramont",
+    "id": 374
+  },
+  {
+    "short_name": "INS\u00c9",
+    "reference": "INS\u00c9",
+    "street": "Rue des Remparts",
+    "street2": "35",
+    "zip": "6600",
+    "city": "Bastogne",
+    "id": 387
+  },
+  {
+    "short_name": "BAST",
+    "reference": "BAST",
+    "street": "Rue Gustave Delperdange",
+    "street2": "1",
+    "zip": "6600",
+    "city": "Bastogne",
+    "country": "BE",
+    "id": 241
+  },
+  {
+    "short_name": "MART",
+    "reference": "MART",
+    "street": "Rue de Radelange",
+    "street2": "43D",
+    "zip": "6630",
+    "city": "Martelange",
+    "country": "BE",
+    "id": 345
+  },
+  {
+    "short_name": "HOUF",
+    "reference": "HOUF",
+    "street": "Cour de l'Abbaye",
+    "street2": "15",
+    "zip": "6660",
+    "city": "Houffalize",
+    "country": "BE",
+    "id": 254
+  },
+  {
+    "short_name": "ENGR",
+    "reference": "ENGR",
+    "street": "Centre ADEPS",
+    "zip": "6663",
+    "city": "Engreux",
+    "id": 364
+  },
+  {
+    "short_name": "VIEL",
+    "reference": "VIEL",
+    "street": "Rue de la Station",
+    "street2": "6",
+    "zip": "6690",
+    "city": "VIELSALM",
+    "country": "BE",
+    "id": 408
+  },
+  {
+    "short_name": "HYDR",
+    "reference": "HYDR",
+    "street": "Rue de l'Hydrion",
+    "street2": "108",
+    "zip": "6700",
+    "city": "Arlon",
+    "country": "BE",
+    "id": 341
+  },
+  {
+    "short_name": "SPE2",
+    "reference": "SPE2",
+    "street": "Carrefour de la Spetz",
+    "street2": "2",
+    "zip": "6700",
+    "city": "Arlon",
+    "id": 366
+  },
+  {
+    "short_name": "SPE1",
+    "reference": "SPE1",
+    "street": "Carrefour de la Spetz",
+    "street2": "2",
+    "zip": "6700",
+    "city": "Arlon",
+    "country": "BE",
+    "id": 238
+  },
+  {
+    "short_name": "WEYL",
+    "reference": "WEYL",
+    "street": "Chemin de Weyler",
+    "street2": "2",
+    "zip": "6700",
+    "city": "Arlon",
+    "country": "BE",
+    "id": 239
+  },
+  {
+    "short_name": "CLAI",
+    "reference": "CLAI",
+    "street": "Rue du Clo\u00eetre, 81",
+    "zip": "6706",
+    "city": "Clairefontaine",
+    "country": "BE",
+    "id": 245
+  },
+  {
+    "short_name": "TONT",
+    "reference": "TONT",
+    "street": "Au Village",
+    "street2": "3",
+    "zip": "6717",
+    "city": "Tontelange",
+    "country": "BE",
+    "id": 379
+  },
+  {
+    "short_name": "HAB1",
+    "reference": "HAB1",
+    "street": "Place Nothomb",
+    "street2": "5",
+    "zip": "6720",
+    "city": "Habay-La-Neuve",
+    "country": "BE",
+    "id": 251
+  },
+  {
+    "short_name": "HAB2",
+    "reference": "HAB2",
+    "street": "Rue Belle-Vue, 26",
+    "zip": "6720",
+    "city": "Habay-La-Neuve",
+    "country": "BE",
+    "id": 252
+  },
+  {
+    "short_name": "TINT",
+    "reference": "TINT",
+    "street": "Rue du Tileul",
+    "street2": "22",
+    "zip": "6730",
+    "city": "Tintigny",
+    "country": "BE",
+    "id": 339
+  },
+  {
+    "short_name": "ETAL",
+    "reference": "ETAL",
+    "street": "Rue des Ecoles",
+    "street2": "82A",
+    "zip": "6740",
+    "city": "Etalle",
+    "country": "BE",
+    "id": 248
+  },
+  {
+    "short_name": "FRAT",
+    "reference": "FRAT",
+    "street": "Rue du Magenot",
+    "zip": "6740",
+    "city": "Etalle",
+    "country": "BE",
+    "id": 249
+  },
+  {
+    "short_name": "CHAN",
+    "reference": "CHAN",
+    "street": "Rue de Gravalle, 57",
+    "street2": "",
+    "zip": "6742",
+    "city": "Chantemelle",
+    "country": "BE",
+    "id": 244
+  },
+  {
+    "short_name": "STLG",
+    "reference": "STLG",
+    "street": "Rue du Stade",
+    "street2": "1",
+    "zip": "6747",
+    "city": "Saint-L\u00e9ger",
+    "country": "BE",
+    "id": 266
+  },
+  {
+    "short_name": "MUSS",
+    "reference": "MUSS",
+    "street": "Rue de France",
+    "street2": "1",
+    "zip": "6750",
+    "city": "Musson",
+    "country": "BE",
+    "id": 262
+  },
+  {
+    "short_name": "VIRT",
+    "reference": "VIRT",
+    "street": "Cour Marchal",
+    "street2": "8",
+    "zip": "6760",
+    "city": "Virton",
+    "country": "BE",
+    "id": 269
+  },
+  {
+    "short_name": "MARD",
+    "reference": "MARD",
+    "street": "Rue du Stade, 1",
+    "street2": "",
+    "zip": "6761",
+    "city": "Saint-Mard",
+    "country": "BE",
+    "id": 267
+  },
+  {
+    "short_name": "ROUV",
+    "reference": "ROUV",
+    "street": "Avenue Adam",
+    "street2": "9",
+    "zip": "6767",
+    "city": "ROUVROY",
+    "country": "BE",
+    "id": 402
+  },
+  {
+    "short_name": "MESS",
+    "reference": "MESS",
+    "street": "Rue d'Arlon",
+    "street2": "50",
+    "zip": "6780",
+    "city": "Messancy",
+    "country": "BE",
+    "id": 261
+  },
+  {
+    "short_name": "DIFF",
+    "reference": "DIFF",
+    "street": "Rue de l'Institut",
+    "street2": "15",
+    "zip": "6780",
+    "city": "Differt-Messancy",
+    "country": "BE",
+    "id": 246
+  },
+  {
+    "short_name": "CLEM",
+    "reference": "CLEM",
+    "street": "Rue du Cl\u00e9marais",
+    "street2": "30",
+    "zip": "6790",
+    "city": "Aubange",
+    "country": "BE",
+    "id": 240
+  },
+  {
+    "short_name": "JAMO",
+    "reference": "JAMO",
+    "street": "Rue du Faing",
+    "street2": "16",
+    "zip": "6810",
+    "city": "JAMOIGNE",
+    "country": "BE",
+    "id": 414
+  },
+  {
+    "short_name": "FLOR",
+    "reference": "FLOV",
+    "street": "Rue de Carignan",
+    "street2": "62",
+    "zip": "6820",
+    "city": "Florenville",
+    "country": "BE",
+    "id": 250
+  },
+  {
+    "short_name": "CHEN",
+    "reference": "CHEN",
+    "street": "Chemion du Hays",
+    "zip": "6840",
+    "city": "Neufch\u00e2teau",
+    "country": "BE",
+    "id": 344
+  },
+  {
+    "short_name": "NEUF",
+    "reference": "NEUF",
+    "street": "Cheravoie",
+    "street2": "2",
+    "zip": "6840",
+    "city": "Neufch\u00e2teau",
+    "country": "BE",
+    "id": 349
+  },
+  {
+    "short_name": "CARL",
+    "reference": "CARL",
+    "street": "Route de Bi\u00e8vre",
+    "zip": "6850",
+    "city": "Carlsbourg",
+    "country": "BE",
+    "id": 242
+  },
+  {
+    "short_name": "LEGL",
+    "reference": "LEGL",
+    "street": "Rue Haut des Bruy\u00e8res",
+    "street2": "26",
+    "zip": "6860",
+    "city": "L\u00e9glise",
+    "country": "BE",
+    "id": 401
+  },
+  {
+    "short_name": "SHU1",
+    "reference": "SHU1",
+    "street": "Rue du Parc",
+    "street2": "21",
+    "zip": "6870",
+    "city": "Saint-Hubert",
+    "country": "BE",
+    "id": 264
+  },
+  {
+    "short_name": "SHU2",
+    "reference": "SHU2",
+    "street": "Rue des 9 Courtils, 2",
+    "street2": "",
+    "zip": "6870",
+    "city": "Saint-Hubert",
+    "country": "BE",
+    "id": 265
+  },
+  {
+    "short_name": "SHU3",
+    "reference": "SHU3",
+    "street": "Rue des Rogations",
+    "street2": "9",
+    "zip": "6870",
+    "city": "Saint-Hubert",
+    "id": 378
+  },
+  {
+    "short_name": "LACL",
+    "reference": "LACL",
+    "street": "Rue des Ardoisi\u00e8res",
+    "street2": "100",
+    "zip": "6880",
+    "city": "Bertrix",
+    "country": "BE",
+    "id": 340
+  },
+  {
+    "short_name": "BERT",
+    "reference": "BERT",
+    "street": "Rue du Culot",
+    "street2": "44",
+    "zip": "6880",
+    "city": "Bertrix",
+    "country": "BE",
+    "id": 396
+  },
+  {
+    "short_name": "LIBI",
+    "reference": "LIBI",
+    "street": "Rue d'Hatrival",
+    "street2": "173A",
+    "zip": "6890",
+    "city": "Libin",
+    "country": "BE",
+    "id": 257
+  },
+  {
+    "short_name": "MEF1",
+    "reference": "MEF1",
+    "street": "Rue Victor Libert",
+    "street2": "36",
+    "zip": "6900",
+    "city": "Marche-en-Famenne",
+    "country": "BE",
+    "id": 259
+  },
+  {
+    "short_name": "MEF2",
+    "reference": "MEF2",
+    "street": "Avenue de la Toison d'Or 71",
+    "zip": "6900",
+    "city": "Marche-En-Famenne",
+    "country": "BE",
+    "id": 260
+  },
+  {
+    "short_name": "WELL",
+    "reference": "WELL",
+    "street": "Rue Pachis Lamkin",
+    "street2": "47",
+    "zip": "6920",
+    "city": "Wellin",
+    "country": "BE",
+    "id": 270
+  },
+  {
+    "short_name": "TELL",
+    "reference": "TELL",
+    "street": "Rue de Rochefort, 33 G",
+    "street2": "",
+    "zip": "6927",
+    "city": "Tellin",
+    "country": "BE",
+    "id": 268
+  },
+  {
+    "short_name": "BOMA",
+    "reference": "BOMA",
+    "street": "Rue Nofiot",
+    "street2": "1",
+    "zip": "6941",
+    "city": "Bomal-Sur-Ourthe",
+    "country": "BE",
+    "id": 159
+  },
+  {
+    "short_name": "NASS",
+    "reference": "NASS",
+    "street": "Rue du Vivier",
+    "street2": "8",
+    "zip": "6950",
+    "city": "Nassogne",
+    "country": "BE",
+    "id": 263
+  },
+  {
+    "short_name": "MANH",
+    "reference": "MANH",
+    "street": "Chemin de la Salle",
+    "street2": "10",
+    "zip": "6960",
+    "city": "Manhay",
+    "id": 371
+  },
+  {
+    "short_name": "CHAM",
+    "reference": "CHAM",
+    "street": "Rue Saint-Quoilin",
+    "street2": "17",
+    "zip": "6971",
+    "city": "Tenneville",
+    "country": "BE",
+    "id": 243
+  },
+  {
+    "short_name": "LARO",
+    "reference": "LARO",
+    "street": "Rue des Ev\u00eats",
+    "street2": "4",
+    "zip": "6980",
+    "city": "La Roche-en-Ardenne",
+    "country": "BE",
+    "id": 256
+  },
+  {
+    "short_name": "HOTT",
+    "reference": "HOTT",
+    "street": "Rue des Vergers, 7",
+    "street2": "",
+    "zip": "6990",
+    "city": "Hotton",
+    "country": "BE",
+    "id": 253
+  },
+  {
+    "short_name": "EREZ",
+    "reference": "EREZ",
+    "street": "Avenue des Nations Unies",
+    "street2": "10A",
+    "zip": "6997",
+    "city": "Erez\u00e9e",
+    "country": "BE",
+    "id": 247
+  },
+  {
+    "short_name": "MONA",
+    "reference": "MONA",
+    "street": "Le Grand Large",
+    "zip": "7000",
+    "city": "Mons",
+    "country": "BE",
+    "id": 131
+  },
+  {
+    "short_name": "MONC",
+    "reference": "MONC",
+    "street": "Avenue Gouverneur E Cornet",
+    "zip": "7000",
+    "city": "Mons",
+    "country": "BE",
+    "id": 132
+  },
+  {
+    "short_name": "CUES",
+    "reference": "CUES",
+    "street": "Rue de Frameries",
+    "zip": "7033",
+    "city": "Cuesmes",
+    "country": "BE",
+    "id": 99
+  },
+  {
+    "short_name": "BLAR",
+    "reference": "BLAR",
+    "street": "Rue des Sars",
+    "street2": "5",
+    "zip": "7040",
+    "city": "Blaregnies",
+    "country": "BE",
+    "id": 90
+  },
+  {
+    "short_name": "SOAR",
+    "reference": "SOAR",
+    "street": "Boulevard Roosevelt, 27",
+    "zip": "7060",
+    "city": "Soignies",
+    "country": "BE",
+    "id": 145
+  },
+  {
+    "short_name": "SOCS",
+    "reference": "SOCS",
+    "street": "Rue Cognebeau",
+    "street2": "62",
+    "zip": "7060",
+    "city": "Soignies",
+    "country": "BE",
+    "id": 146
+  },
+  {
+    "short_name": "THIE",
+    "reference": "THIE",
+    "street": "Rue du Manoir St-Jean",
+    "street2": "2",
+    "zip": "7070",
+    "city": "Thieu",
+    "id": 315
+  },
+  {
+    "short_name": "FRAM",
+    "reference": "FRAM",
+    "street": "Rue du Chapitre",
+    "street2": "3",
+    "zip": "7080",
+    "city": "Frameries",
+    "country": "BE",
+    "id": 109
+  },
+  {
+    "short_name": "BRLC",
+    "reference": "BRLC",
+    "street": "Rue d\u2019Horrues - Site \"Le champ de la Lune\"",
+    "street2": "53",
+    "zip": "7090",
+    "city": "Braine-le-Comte",
+    "country": "BE",
+    "id": 3
+  },
+  {
+    "short_name": "HAIN",
+    "reference": "HAIN",
+    "street": "Rue des Longues Haies",
+    "zip": "7100",
+    "city": "Haine-Saint-Paul",
+    "country": "BE",
+    "id": 112
+  },
+  {
+    "short_name": "BOUV",
+    "reference": "BOUV",
+    "street": "Rue de Bouvy",
+    "street2": "127",
+    "zip": "7100",
+    "city": "La Louvi\u00e8re",
+    "country": "BE",
+    "id": 119
+  },
+  {
+    "short_name": "STRE",
+    "reference": "STRE",
+    "street": "Rue des Canadiens",
+    "street2": "83",
+    "zip": "7110",
+    "city": "Strepy-Bracquegnies",
+    "country": "BE",
+    "id": 148
+  },
+  {
+    "short_name": "BINC",
+    "reference": "BINC",
+    "street": "Rue du Moulin Blanc",
+    "zip": "7130",
+    "city": "Binche",
+    "country": "BE",
+    "id": 89
+  },
+  {
+    "short_name": "MORL",
+    "reference": "MORL",
+    "street": "Rue du Pont du Nil",
+    "zip": "7140",
+    "city": "Morlanwelz",
+    "country": "BE",
+    "id": 135
+  },
+  {
+    "short_name": "WALR",
+    "reference": "WALR",
+    "street": "Rue de l'Enseignement",
+    "street2": "1",
+    "zip": "7140",
+    "city": "Morlanwelz",
+    "country": "BE",
+    "id": 416
+  },
+  {
+    "short_name": "CHAP",
+    "reference": "CHAP",
+    "street": "Rue de La Hestre",
+    "street2": "67",
+    "zip": "7160",
+    "city": "Chapelle-lez-Herlaimont",
+    "country": "BE",
+    "id": 93
+  },
+  {
+    "short_name": "PIET",
+    "reference": "PIET",
+    "street": "Rue de L\u2019Avenir",
+    "zip": "7160",
+    "city": "Pi\u00e9ton",
+    "country": "BE",
+    "id": 139
+  },
+  {
+    "short_name": "HEST",
+    "reference": "HEST",
+    "street": "Rue Vanhulst, 15",
+    "zip": "7170",
+    "city": "La Hestre",
+    "country": "BE",
+    "id": 118
+  },
+  {
+    "short_name": "MANA",
+    "reference": "MANA",
+    "street": "Rue J Empain, 43",
+    "zip": "7170",
+    "city": "Manage",
+    "country": "BE",
+    "id": 125
+  },
+  {
+    "short_name": "SCAI",
+    "reference": "SCAI",
+    "street": "Ave du Scailmont",
+    "zip": "7170",
+    "city": "Manage",
+    "country": "BE",
+    "id": 126
+  },
+  {
+    "short_name": "ECAU",
+    "reference": "ECAU",
+    "street": "Rue de la Haie",
+    "zip": "7190",
+    "city": "Ecaussinnes",
+    "country": "BE",
+    "id": 101
+  },
+  {
+    "short_name": "BOUS",
+    "reference": "BOUS",
+    "street": "Rue du Centenaire",
+    "street2": "120",
+    "zip": "7300",
+    "city": "Boussu",
+    "country": "BE",
+    "id": 91
+  },
+  {
+    "short_name": "HAVR",
+    "reference": "HAVR",
+    "street": "Rue Irma Fievet",
+    "zip": "7301",
+    "city": "Havre",
+    "country": "BE",
+    "id": 113
+  },
+  {
+    "short_name": "HORN",
+    "reference": "HORN",
+    "street": "Rue Barbet 86",
+    "zip": "7301",
+    "city": "Hornu",
+    "country": "BE",
+    "id": 115
+  },
+  {
+    "short_name": "BERN",
+    "reference": "BERN",
+    "street": "Rue des Pr\u00e9aux",
+    "zip": "7320",
+    "city": "Bernissart",
+    "country": "BE",
+    "id": 88
+  },
+  {
+    "short_name": "BAPE",
+    "reference": "BAPE",
+    "street": "Rue du Parc, 62",
+    "zip": "7331",
+    "city": "Baudour",
+    "id": 361
+  },
+  {
+    "short_name": "HENS",
+    "reference": "HENS",
+    "street": "Rue A Lecomte, 9",
+    "zip": "7350",
+    "city": "Hensies",
+    "country": "BE",
+    "id": 114
+  },
+  {
+    "short_name": "ELOU",
+    "reference": "ELOU",
+    "street": "Rue de la Tournelle",
+    "zip": "7370",
+    "city": "Elouges",
+    "country": "BE",
+    "id": 102
+  },
+  {
+    "reference": "HONN",
+    "street": "Rue de la Roquette",
+    "street2": "6",
+    "zip": "7387",
+    "city": "HONNELLES",
+    "id": 417
+  },
+  {
+    "short_name": "HON2",
+    "reference": "HON2",
+    "street": "Rue de la Roquette",
+    "street2": "6",
+    "zip": "7387",
+    "city": "HONNELLES",
+    "id": 418
+  },
+  {
+    "short_name": "PERU",
+    "reference": "PERU",
+    "street": "Rue Cornefin",
+    "zip": "7600",
+    "city": "Peruwelz",
+    "country": "BE",
+    "id": 138
+  },
+  {
+    "short_name": "BLEH",
+    "reference": "BLEH",
+    "street": "Rue Wuibault Bouchart 1",
+    "zip": "7620",
+    "city": "Bl\u00e9haries",
+    "id": 352
+  },
+  {
+    "short_name": "ESTA",
+    "reference": "ESTA",
+    "street": "Rue Moulin Masure",
+    "street2": "9",
+    "zip": "7730",
+    "city": "Estaimpuis",
+    "id": 404
+  },
+  {
+    "short_name": "MESL",
+    "reference": "MESL",
+    "street": "Chauss\u00e9e Preuscamps, 16",
+    "zip": "7822",
+    "city": "Meslin-L\u2019Ev\u00eaque",
+    "country": "BE",
+    "id": 130
+  },
+  {
+    "short_name": "SILL",
+    "reference": "SILL",
+    "street": "Rue Thabor, 70",
+    "zip": "7830",
+    "city": "Silly",
+    "country": "BE",
+    "id": 144
+  },
+  {
+    "short_name": "ENGH",
+    "reference": "ENGH",
+    "street": "Chauss\u00e9e de Soignies, 36",
+    "zip": "7850",
+    "city": "Enghien",
+    "country": "BE",
+    "id": 103
+  },
+  {
+    "short_name": "LESI",
+    "reference": "LESS",
+    "street": "Boulevard E Schevenels",
+    "zip": "7866",
+    "city": "Lessines",
+    "country": "BE",
+    "id": 122
+  },
+  {
+    "short_name": "FLOB",
+    "reference": "FLOB",
+    "street": "Rue de la Cr\u00e8te",
+    "street2": "28b",
+    "zip": "7880",
+    "city": "Flobecq",
+    "country": "BE",
+    "id": 106
+  },
+  {
+    "short_name": "LEUZ",
+    "reference": "LEUZ",
+    "street": "Rue Pont de la Cure",
+    "street2": "16",
+    "zip": "7900",
+    "city": "Leuze-en-Hainaut",
+    "id": 391
+  },
+  {
+    "short_name": "FRAS",
+    "reference": "FRAS",
+    "street": "Rue de la Fauvette",
+    "street2": "6",
+    "zip": "7910",
+    "city": "Frasnes-lez-Anvaing",
+    "id": 337
+  },
+  {
+    "short_name": "BRUG",
+    "reference": "BRUG",
+    "street": "Rue Gabriel Petit, 62",
+    "street2": "",
+    "zip": "7940",
+    "city": "Brugelette",
+    "country": "BE",
+    "id": 92
+  },
+  {
+    "short_name": "HUIS",
+    "reference": "HUIS",
+    "street": "Rue de l'Eglise, 12",
+    "zip": "7950",
+    "city": "Huissignies",
+    "country": "BE",
+    "id": 116
+  },
+  {
+    "short_name": "STAM",
+    "reference": "STAM",
+    "street": "Centre sportifs B Hecquet",
+    "zip": "7973",
+    "city": "Stambruges",
+    "country": "BE",
+    "id": 147
+  },
+  {
+    "short_name": "MSTM",
+    "reference": "MSTM",
+    "street": "Rue de Marseille",
+    "zip": "F-54350",
+    "city": "Mont-Saint-Martin",
+    "id": 363
+  },
+  {
+    "short_name": "COSN",
+    "reference": "COSN",
+    "street": "Rue Robert Schuman",
+    "zip": "F-54400",
+    "city": "Cosnes et Romain",
+    "country": "FR",
+    "id": 342
+  },
+  {
+    "short_name": "LEXY",
+    "reference": "LEXY",
+    "street": "Rue Albert Lebrun",
+    "street2": "23",
+    "zip": "F-54720",
+    "city": "Lexy",
+    "country": "FR",
+    "id": 338
+  },
+  {
+    "short_name": "LEUD",
+    "reference": "LEUD",
+    "street": "Place des Martyrs",
+    "street2": "7",
+    "zip": "L-3361",
+    "city": "Leudelange",
+    "country": "LU",
+    "id": 348
+  },
+  {
+    "short_name": "WOIW",
+    "reference": "WOIW",
+    "street": "Rue Neuwies",
+    "zip": "L-4635",
+    "city": "Differdange",
+    "country": "LU",
+    "id": 343
+  },
+  {
+    "short_name": "NIED",
+    "reference": "NIED",
+    "street": "Rue J-B Scharl\u00e9",
+    "street2": "86",
+    "zip": "L-4666",
+    "city": "NIEDERKORN",
+    "country": "LU",
+    "id": 419
+  },
+  {
+    "short_name": "OBER",
+    "reference": "OBER",
+    "street": "Avenue du Parc des Sports",
+    "zip": "L-4671",
+    "city": "Differdange",
+    "country": "LU",
+    "id": 347
+  },
+  {
+    "short_name": "FOUS",
+    "reference": "FOUS",
+    "street": "Place des Alli\u00e9s",
+    "zip": "L-4684",
+    "city": "Differdange",
+    "country": "LU",
+    "id": 346
+  },
+  {
+    "short_name": "RODA",
+    "reference": "RODA",
+    "street": "Rue Jos Moscardo",
+    "zip": "L-4804",
+    "city": "Rodange",
+    "country": "LU",
+    "id": 350
+  },
+  {
+    "short_name": "SANM",
+    "reference": "SANM",
+    "street": "Route de Niederkorn",
+    "zip": "L-4990",
+    "city": "Sanem",
+    "country": "LU",
+    "id": 386
+  }
+]
