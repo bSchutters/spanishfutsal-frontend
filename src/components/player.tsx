@@ -20,7 +20,7 @@ interface PlayerProps {
   lastname: string;
   number: number;
   photo: string;
-  stats: PlayerStats;
+  stats?: PlayerStats;
   active: boolean;
   className?: string;
 }
@@ -43,64 +43,67 @@ export default function Player({
         className
       )}
     >
-      <div
-        className={cn(
-          "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-all duration-700 flex flex-col  justify-between",
-          isStatsOpen
-            ? "opacity-100 pointer-events-auto -translate-y-0"
-            : "opacity-0 pointer-events-none -translate-y-10"
-        )}
-      >
-        <div className="flex items-center justify-between w-full">
-          <p className="">STATS</p>
-          <X
-            className="hover:cursor-pointer hover:text-spanish-accent transition-all"
-            onClick={() => setIsStatsOpen(!isStatsOpen)}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 items-center justify-center">
-          <div className="flex flex-col items-center justify-center ">
-            <p className="text-2xl font-marjorie font-bold italic">
-              {stats.matchesPlayed}
-            </p>
-            <p className="text-xs uppercase">matchs joués</p>
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-2xl font-marjorie font-bold italic">
-              {stats.goals}
-            </p>
-            <p className="text-xs uppercase">goals</p>
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-2xl font-marjorie font-bold italic">
-              {stats.assists}
-            </p>
-            <p className="text-xs uppercase">assists</p>
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-2xl font-marjorie font-bold italic">
-              {stats.yellowCards}
-            </p>
-            <p className="text-xs uppercase">carton jaune</p>
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-2xl font-marjorie font-bold italic">
-              {stats.redCards}
-            </p>
-            <p className="text-xs uppercase">carton rouge</p>
-          </div>
-        </div>
-        <div className="w-full flex items-center justify-center gap-2 uppercase">
-          {active && (
-            <p className="font-bold italic font-marjorie text-xl">{number}</p>
+      {stats && (
+        <div
+          className={cn(
+            "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-all duration-700 flex flex-col  justify-between",
+            isStatsOpen
+              ? "opacity-100 pointer-events-auto -translate-y-0"
+              : "opacity-0 pointer-events-none -translate-y-10"
           )}
-          <p>
-            {active && "/"} {lastname}{" "}
-            <span className="font-bold"> {firstname} </span>
-          </p>
+        >
+          <div className="flex items-center justify-between w-full">
+            <p className="">STATS</p>
+            <X
+              className="hover:cursor-pointer hover:text-spanish-accent transition-all"
+              onClick={() => setIsStatsOpen(!isStatsOpen)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 items-center justify-center">
+            <div className="flex flex-col items-center justify-center ">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {stats?.matchesPlayed}
+              </p>
+              <p className="text-xs uppercase">matchs joués</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {stats?.goals}
+              </p>
+              <p className="text-xs uppercase">goals</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {stats?.assists}
+              </p>
+              <p className="text-xs uppercase">assists</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {stats?.yellowCards}
+              </p>
+              <p className="text-xs uppercase">carton jaune</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {stats?.redCards}
+              </p>
+              <p className="text-xs uppercase">carton rouge</p>
+            </div>
+          </div>
+          <div className="w-full flex items-center justify-center gap-2 uppercase">
+            {active && (
+              <p className="font-bold italic font-marjorie text-xl">{number}</p>
+            )}
+            <p>
+              {active && "/"} {lastname}{" "}
+              <span className="font-bold"> {firstname} </span>
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+
       <div
         className={cn(
           "flex items-center  w-full",
@@ -110,12 +113,14 @@ export default function Player({
         {active && (
           <p className="font-bold font-marjorie italic text-3xl">{number}</p>
         )}
-        <Badge
-          className="hover:bg-spanish-bg-lighter hover:cursor-pointer transition-all"
-          onClick={() => setIsStatsOpen(!isStatsOpen)}
-        >
-          STATS
-        </Badge>
+        {stats && (
+          <Badge
+            className="hover:bg-spanish-bg-lighter hover:cursor-pointer transition-all"
+            onClick={() => setIsStatsOpen(!isStatsOpen)}
+          >
+            STATS
+          </Badge>
+        )}
       </div>
       <BoxModule className="absolute bottom-3 w-11/12 p-2 flex items-center justify-center rounded-lg z-10">
         <p className="uppercase">

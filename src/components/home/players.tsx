@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import {
   Carousel,
@@ -9,9 +9,21 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import Player from "../player";
-import players from "@/mocks/playersOld.json";
+import { usePlayersStore } from "@/store/usePlayersStore";
 
 export default function Players() {
+  const { players, isLoading, fetchPlayers } = usePlayersStore();
+
+  useEffect(() => {
+    fetchPlayers();
+  }, []);
+
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   return (
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
@@ -41,7 +53,7 @@ export default function Players() {
                   lastname={player.nom}
                   photo={player.photo}
                   number={player.numero}
-                  stats={player.stats}
+                  stats={player.stats[0]}
                   active={player.actif}
                 />
               </CarouselItem>

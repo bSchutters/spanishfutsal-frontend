@@ -4,7 +4,6 @@ import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
 import { usePlayersStore } from "@/store/usePlayersStore";
 import { useEffect } from "react";
-import playersOld from "@/mocks/playersOld.json";
 
 export default function Equipe() {
   const { players, isLoading, fetchPlayers } = usePlayersStore();
