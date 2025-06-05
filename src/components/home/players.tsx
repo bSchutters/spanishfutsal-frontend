@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "../ui/button";
 import {
   Carousel,
@@ -9,21 +9,9 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import Player from "../player";
-import { usePlayersStore } from "@/store/usePlayersStore";
+import players from "@/mocks/playersOld.json";
 
 export default function Players() {
-  const { players, isLoading, fetchPlayers } = usePlayersStore();
-
-  useEffect(() => {
-    fetchPlayers();
-  }, []);
-
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
   return (
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
@@ -42,11 +30,7 @@ export default function Players() {
       >
         <CarouselContent>
           {players
-            .filter(
-              (player) =>
-                player.actif === true &&
-                (player.poste === "Joueur" || player.poste === "Gardien")
-            )
+            .filter((player) => player.actif === true)
             .map((player) => (
               <CarouselItem
                 key={player.id}
@@ -57,9 +41,8 @@ export default function Players() {
                   lastname={player.nom}
                   photo={player.photo}
                   number={player.numero}
-                  stats={player.stats[0]}
+                  stats={player.stats}
                   active={player.actif}
-                  poste={player.poste}
                 />
               </CarouselItem>
             ))}
