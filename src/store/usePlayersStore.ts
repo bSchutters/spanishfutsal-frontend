@@ -6,7 +6,10 @@ type Stat = {
   assists: number;
   yellowCards: number;
   redCards: number;
-  matches_played: number;
+  matchesPlayed: number;
+  mvp: number;
+  cleanSheets: number;
+  saves: number;
 };
 type Player = {
   id: number;
@@ -17,6 +20,7 @@ type Player = {
   stats: Stat[];
   actif: boolean;
   capitaine: boolean;
+  poste: "Joueur" | "Gardien" | "Staff";
 };
 
 type State = {
@@ -37,23 +41,26 @@ export const usePlayersStore = create<State>((set) => ({
       const res = await fetch("http://localhost:1337/api/joueurs?populate=*");
       const json = await res.json();
 
-      console.log("Fetched players:", json.data);
-
       set({
         players: json.data.map((p: any) => ({
           id: p.id,
           nom: p.nom,
           prenom: p.prenom,
-          photo: p.photo?.data?.url ? `${API_URL}${p.photo.data.url}` : "",
+          photo: p.photo?.url
+            ? `${API_URL}${p.photo.url}`
+            : "/assets/images/webp/placeholder.webp",
           numero: p.numero,
           poste: p.poste,
           stats: p.stats.map((s: any) => ({
             id: s.id,
-            goals: s.goals,
-            assists: s.assists,
-            yellowCards: s.yellowCards,
-            redCards: s.redCards,
-            matches_played: s.matches_played,
+            goals: s.goals || 0,
+            assists: s.assists || 0,
+            yellowCards: s.yellow_cards || 0,
+            redCards: s.red_cards || 0,
+            matchesPlayed: s.matches_played || 0,
+            mvp: s.mvp || 0,
+            saves: s.saves || 0,
+            cleanSheets: s.clean_sheets || 0,
           })),
           actif: p.actif,
           capitaine: p.capitaine,
