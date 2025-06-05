@@ -13,6 +13,9 @@ interface PlayerStats {
   assists: number;
   yellowCards: number;
   redCards: number;
+  mvp: number;
+  cleanSheets: number;
+  saves: number;
 }
 
 interface PlayerProps {
@@ -23,6 +26,7 @@ interface PlayerProps {
   stats?: PlayerStats;
   active: boolean;
   className?: string;
+  poste?: "Joueur" | "Gardien" | "Staff";
 }
 
 export default function Player({
@@ -33,6 +37,7 @@ export default function Player({
   stats,
   active,
   className,
+  poste,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
 
@@ -67,17 +72,27 @@ export default function Player({
               </p>
               <p className="text-xs uppercase">matchs joués</p>
             </div>
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center ">
               <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.goals}
+                {stats?.mvp}
               </p>
-              <p className="text-xs uppercase">goals</p>
+              <p className="text-xs uppercase">homme du match</p>
             </div>
             <div className="flex flex-col items-center justify-center">
               <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.assists}
+                {poste === "Gardien" ? stats?.saves : stats?.goals}
               </p>
-              <p className="text-xs uppercase">assists</p>
+              <p className="text-xs uppercase">
+                {poste === "Gardien" ? "saves" : "goals"}
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-2xl font-marjorie font-bold italic">
+                {poste === "Gardien" ? stats?.cleanSheets : stats?.assists}
+              </p>
+              <p className="text-xs uppercase">
+                {poste === "Gardien" ? "clean sheets" : "assists"}
+              </p>
             </div>
             <div className="flex flex-col items-center justify-center">
               <p className="text-2xl font-marjorie font-bold italic">
@@ -110,10 +125,17 @@ export default function Player({
           active ? "justify-between" : "justify-end"
         )}
       >
-        {active && (
+        {active && (poste === "Joueur" || poste === "Gardien") && (
           <p className="font-bold font-marjorie italic text-3xl">{number}</p>
         )}
-        {stats && (
+
+        {active && poste !== "Joueur" && poste !== "Gardien" && (
+          <p className="font-bold font-marjorie italic text-xl lowercase">
+            {poste}
+          </p>
+        )}
+
+        {stats && (poste === "Gardien" || poste === "Joueur") && (
           <Badge
             className="hover:bg-spanish-bg-lighter hover:cursor-pointer transition-all"
             onClick={() => setIsStatsOpen(!isStatsOpen)}
@@ -135,6 +157,7 @@ export default function Player({
           width={0}
           sizes="100vw"
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
+          priority
         />
       </div>
     </BoxModule>

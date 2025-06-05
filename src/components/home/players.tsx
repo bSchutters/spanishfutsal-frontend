@@ -42,7 +42,11 @@ export default function Players() {
       >
         <CarouselContent>
           {players
-            .filter((player) => player.actif === true)
+            .filter(
+              (player) =>
+                player.actif === true &&
+                (player.poste === "Joueur" || player.poste === "Gardien")
+            )
             .map((player) => (
               <CarouselItem
                 key={player.id}
@@ -55,6 +59,7 @@ export default function Players() {
                   number={player.numero}
                   stats={player.stats[0]}
                   active={player.actif}
+                  poste={player.poste}
                 />
               </CarouselItem>
             ))}
