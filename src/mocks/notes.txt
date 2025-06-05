@@ -29,5 +29,5 @@ La liste de nos joueurs :
     - Sacha (-)
     - Georges (+)
     - Adrianno (+)
-    - Alan (?)
+   
     
