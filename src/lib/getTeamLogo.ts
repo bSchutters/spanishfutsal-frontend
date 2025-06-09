@@ -2,7 +2,7 @@ export function getTeamLogo(name: string) {
   switch (name) {
     case "Atletico Madrid":
       return "/assets/images/svg/teams/atm.svg";
-    case "FC Barcelona":
+    case "MAKASI BRUXELLES 2":
       return "/assets/images/svg/teams/fcb.svg";
     case "Sevilla FC":
       return "/assets/images/svg/teams/sevilla.svg";
