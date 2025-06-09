@@ -20,14 +20,15 @@ La liste de nos joueurs :
     - Bryan (Gardien 2)
     - Adrien
     - Esteban
-    - Jimmy
     - Lorenzo 
+    - Jimmy
+    - Adrianno
+    - Georges Staff 
+
+    - Alan (?)
     - Ruben (?)
     - Ali (-)
-    - Nawfel (-)
     - Tommy (-)
     - Sacha (-)
-    - Georges (+)
-    - Adrianno (+)
-    - Alan (?)
+    - Nawfel (-)
     

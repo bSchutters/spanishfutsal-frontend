@@ -38,8 +38,10 @@ export const usePlayersStore = create<State>((set) => ({
     set({ isLoading: true });
 
     try {
-      const res = await fetch("http://localhost:1337/api/joueurs?populate=*");
+      const res = await fetch(`${API_URL}/api/joueurs?populate=*`);
       const json = await res.json();
+
+      console.log("Fetched players:", json);
 
       set({
         players: json.data.map((p: any) => ({
