@@ -35,8 +35,6 @@ export const useMatchsStore = create<State>((set) => ({
       );
       const json = await res.json();
 
-      console.log("Fetched matchs:", json);
-
       set({
         matchs: json.data.map((m: any) => ({
           id: m.id,
