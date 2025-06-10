@@ -22,8 +22,6 @@ export default function Matchs() {
     fetchMatchs();
   }, []);
 
-  console.log("matchs", matchs);
-
   const now = new Date();
 
   // Filtrer les matchs valides (ceux qui ont une date ET time valide)
