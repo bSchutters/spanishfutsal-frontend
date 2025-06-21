@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
 
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { cn } from "@/lib/utils";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
-import { Button } from "../ui/button";
 import Team from "../team";
+import { Button } from "../ui/button";
 
 export default function NextMatch() {
   const { isMobile } = useBreakpoint();
@@ -40,7 +39,7 @@ export default function NextMatch() {
       >
         <Team
           logo={getTeamLogo("Spanish Futsal")}
-          teamName="SPANISH FUTSAL"
+          teamName="SPANISH ROJA FUTSAL"
           isNextMatch
           {...(isMobile && { logoFirst: true })}
         />
