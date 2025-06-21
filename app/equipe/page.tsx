@@ -1,13 +1,9 @@
 "use client";
 
-import BoxModule from "@/components/layout/boxModule";
 import PlayerLoader from "@/components/loaders/playerLoader";
 import Player from "@/components/player";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { usePlayersStore } from "@/store/usePlayersStore";
-import Image from "next/image";
 import { useEffect } from "react";
 
 export default function Equipe() {
@@ -15,7 +11,7 @@ export default function Equipe() {
 
   useEffect(() => {
     fetchPlayers();
-  }, []);
+  }, [fetchPlayers]);
 
   if (isLoading)
     return (

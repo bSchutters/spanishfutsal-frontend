@@ -29,6 +29,28 @@ type State = {
   fetchPlayers: () => Promise<void>;
 };
 
+type PlayerAPIResponse = {
+  id: number;
+  nom: string;
+  prenom: string;
+  numero: number;
+  poste: "Joueur" | "Gardien" | "Staff";
+  photo: { url: string } | null;
+  stats: {
+    id: number;
+    goals: number;
+    assists: number;
+    yellow_cards: number;
+    red_cards: number;
+    matches_played: number;
+    mvp: number;
+    clean_sheets: number;
+    saves: number;
+  }[];
+  actif: boolean;
+  capitaine: boolean;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
 export const usePlayersStore = create<State>((set) => ({
@@ -42,7 +64,7 @@ export const usePlayersStore = create<State>((set) => ({
       const json = await res.json();
 
       set({
-        players: json.data.map((p: any) => ({
+        players: (json.data as PlayerAPIResponse[]).map((p) => ({
           id: p.id,
           nom: p.nom,
           prenom: p.prenom,
@@ -51,7 +73,7 @@ export const usePlayersStore = create<State>((set) => ({
             : "/assets/images/webp/placeholder.webp",
           numero: p.numero,
           poste: p.poste,
-          stats: p.stats.map((s: any) => ({
+          stats: p.stats.map((s) => ({
             id: s.id,
             goals: s.goals || 0,
             assists: s.assists || 0,

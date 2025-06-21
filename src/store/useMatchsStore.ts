@@ -21,6 +21,21 @@ type State = {
   fetchMatchs: () => Promise<void>;
 };
 
+type MatchAPIResponse = {
+  id: number;
+  date: string;
+  time: string | null;
+  home_team: string;
+  away_team: string;
+  score_home: number;
+  score_away: number;
+  venue_id: number;
+  venue_name: string;
+  serie_reference: string;
+  live_link: string;
+  replay_link: string;
+};
+
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
 export const useMatchsStore = create<State>((set) => ({
@@ -36,7 +51,7 @@ export const useMatchsStore = create<State>((set) => ({
       const json = await res.json();
 
       set({
-        matchs: json.data.map((m: any) => ({
+        matchs: (json.data as MatchAPIResponse[]).map((m) => ({
           id: m.id,
           date: m.date,
           time: m.time ? m.time.slice(0, 5) : "",

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { soccerBall } from "@lucide/lab";
 import { ChevronsUp, Icon, Trophy } from "lucide-react";

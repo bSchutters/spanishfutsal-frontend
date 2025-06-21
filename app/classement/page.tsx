@@ -1,15 +1,14 @@
 "use client";
 
+import Graphiques from "@/components/classement/graphiques";
 import BoxModule from "@/components/layout/boxModule";
 import { Button } from "@/components/ui/button";
+import { getTeamLogo } from "@/lib/getTeamLogo";
 import { cn } from "@/lib/utils";
+import { useRankingStore } from "@/store/useRankingStore";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import standing from "@/mocks/classement.json";
-import { getTeamLogo } from "@/lib/getTeamLogo";
-import Graphiques from "@/components/classement/graphiques";
-import { useRankingStore } from "@/store/useRankingStore";
 import { Key, useEffect } from "react";
 
 export default function Equipe() {
@@ -17,7 +16,7 @@ export default function Equipe() {
 
   useEffect(() => {
     fetchRankings();
-  }, []);
+  }, [fetchRankings]);
 
   const statsForTeams = [
     "played",
@@ -29,6 +28,13 @@ export default function Equipe() {
     "goalDifference",
     "points",
   ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-bold">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">

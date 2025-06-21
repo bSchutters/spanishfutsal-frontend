@@ -1,5 +1,7 @@
+import { usePlayersStore } from "@/store/usePlayersStore";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+import Player from "../player";
 import { Button } from "../ui/button";
 import {
   Carousel,
@@ -8,15 +10,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
-import Player from "../player";
-import { usePlayersStore } from "@/store/usePlayersStore";
 
 export default function Players() {
   const { players, isLoading, fetchPlayers } = usePlayersStore();
 
   useEffect(() => {
     fetchPlayers();
-  }, []);
+  }, [fetchPlayers]);
 
   if (isLoading)
     return (

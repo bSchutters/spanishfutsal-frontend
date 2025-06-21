@@ -1,8 +1,7 @@
-import React from "react";
-import BoxModule from "../layout/boxModule";
-import Link from "next/link";
-import { Button } from "../ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import BoxModule from "../layout/boxModule";
+import { Button } from "../ui/button";
 
 export default function JoinUs() {
   const spanClasses = "font-bold text-spanish-accent font-marjorie italic";
@@ -18,8 +17,8 @@ export default function JoinUs() {
             Rejoins la <span className={spanClasses}>famille</span> Spanish
             Futsal pour partager ta <span className={spanClasses}>passion</span>{" "}
             du futsal dans une équipe{" "}
-            <span className={spanClasses}>soudée</span>, où l'amitié et le
-            plaisir se mêlent à l'ambition de progresser ensemble.
+            <span className={spanClasses}>soudée</span>, où l&apos;amitié et le
+            plaisir se mêlent à l&apos;ambition de progresser ensemble.
           </p>
           <Link href="/contact" className="self-start">
             <Button>nous rejoindre</Button>

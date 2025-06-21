@@ -22,6 +22,22 @@ type State = {
   fetchRankings: () => Promise<void>;
 };
 
+type RankingAPIResponse = {
+  id: number;
+  team_name: string;
+  points: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  result_sequence: string;
+  played: number;
+  position: number;
+  position_change?: "no_change" | "up" | "down";
+};
+
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
 export const useRankingStore = create<State>((set) => ({
@@ -37,7 +53,7 @@ export const useRankingStore = create<State>((set) => ({
       const json = await res.json();
 
       set({
-        rankings: json.data.map((r: any) => ({
+        rankings: (json.data as RankingAPIResponse[]).map((r) => ({
           id: r.id,
           teamName:
             r.team_name === "SPANISH BRUXELLES"

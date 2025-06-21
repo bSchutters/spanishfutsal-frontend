@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 import { Button } from "../ui/button";
 
 export default function About() {
@@ -30,8 +29,8 @@ export default function About() {
               d’
               <span className={spanClasses}>amis</span> et de{" "}
               <span className={spanClasses}>cousins</span> dont les liens
-              dépassent le terrain. Pour beaucoup d'entre nous, nos parents ont
-              eux-mêmes partagé les terrains de futsal, perpétuant ainsi une
+              dépassent le terrain. Pour beaucoup d&apos;entre nous, nos parents
+              ont eux-mêmes partagé les terrains de futsal, perpétuant ainsi une
               tradition familiale. Ici, le football est une affaire de
               <span className={spanClasses}> passion</span>, d’
               <span className={spanClasses}>héritage</span> et de

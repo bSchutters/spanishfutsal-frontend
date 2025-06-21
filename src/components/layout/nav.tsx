@@ -5,9 +5,8 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Arrow } from "@radix-ui/react-dropdown-menu";
 
 const Nav = () => {
   const [isVisible, setIsVisible] = useState(true);

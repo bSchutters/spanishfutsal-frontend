@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Smile, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import {
   CartesianGrid,
   Label,
@@ -14,14 +14,10 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import BoxModule from "../layout/boxModule";
-import Image from "next/image";
-import { getTeamLogo } from "@/lib/getTeamLogo";
 
 export const description = "A linear area chart";
 

@@ -1,18 +1,17 @@
 "use client";
 
 import Team from "@/components/team";
-import Image from "next/image";
-import matchesOld from "@/mocks/matchesold.json";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Icon, Loader, MapPin, MapPinned } from "lucide-react";
-import { getTeamLogo } from "@/lib/getTeamLogo";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import { getVenueById } from "@/lib/getVenueById";
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { toast } from "sonner";
+import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getVenueById } from "@/lib/getVenueById";
+import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
+import { ExternalLink, Loader, MapPin, MapPinned } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export default function Matchs() {
   const { isMobile } = useBreakpoint();
@@ -20,7 +19,7 @@ export default function Matchs() {
 
   useEffect(() => {
     fetchMatchs();
-  }, []);
+  }, [fetchMatchs]);
 
   const now = new Date();
 
