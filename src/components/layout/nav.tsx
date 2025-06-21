@@ -54,14 +54,14 @@ const Nav = () => {
         <Link href="/" className="flex items-center gap-3 relative">
           <div className="md:h-20 md:w-20 w-16 h-16 absolute md:-bottom-10 -bottom-6 z-20  outline-spanish-bg-dark md:outline-4 outline-2 rounded-full">
             <Image
-              src="/assets/images/svg/logo_rounded.svg"
+              src="/assets/images/svg/logo-roja.svg"
               alt="Logo Spanish Futsal"
               fill
               className="h-full w-full object-contain"
             />
           </div>
           <div className="ml-24 flex flex-col text-spanish-accent">
-            <p className="font-black">SPANISH</p>
+            <p className="font-black">FURIA ROJA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>
@@ -112,8 +112,8 @@ const Nav = () => {
               key={link.href}
               href={link.href}
               className={cn(
-                "hover:text-spanish-accent transition-all",
-                pathname === link.href ? "text-spanish-accent" : ""
+                "hover:text-spanish-accent-2 transition-all",
+                pathname === link.href ? "text-spanish-accent-2" : ""
               )}
             >
               {link.label}

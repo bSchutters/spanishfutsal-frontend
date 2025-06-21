@@ -9,7 +9,7 @@ export function getTeamLogo(name: string) {
     case "Cadix CF":
       return "/assets/images/svg/teams/cadix.svg";
     case "Spanish Futsal":
-      return "/assets/images/svg/logo_rounded.svg";
+      return "/assets/images/svg/logo-roja.svg";
     case "Oviedo FC":
       return "/assets/images/svg/teams/oviedo.svg";
     case "Real Betis":

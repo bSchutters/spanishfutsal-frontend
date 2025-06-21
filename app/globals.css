@@ -152,6 +152,7 @@
   --color-spanish-bg-lighter: var(--spanish-bg-lighter);
   --color-spanish-bg-dark: var(--spanish-bg-dark);
   --color-spanish-accent: var(--spanish-accent);
+  --color-spanish-accent-2: var(--spanish-accent-2);
   --color-spanish-accent-light: var(--spanish-accent-light);
   --color-spanish-accent-dark: var(--spanish-accent-dark);
   --color-background: var(--background);
@@ -199,6 +200,7 @@
   --spanish-bg-lighter: oklch(26.695903612021223% 0.044 258.2775345526061);
   --spanish-bg-dark: oklch(14.176062636333075% 0.021 250.63672768125042);
   --spanish-accent: oklch(89.14887028499912% 0.053 258.0432738140865);
+  --spanish-accent-2: oklch(0.576 0.22 21.6);
   --spanish-accent-light: oklch(94.3230851920293% 0.027 260.3176949621653);
   --spanish-accent-dark: oklch(80.74710604672335% 0.069 258.10077172743945);
   --radius: 0.625rem;

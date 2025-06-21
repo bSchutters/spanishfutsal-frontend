@@ -1,9 +1,9 @@
 // components/Footer.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { Separator } from "../ui/separator";
 import Foodbag from "../ui/foodbag";
 import Peppermill from "../ui/peppermill";
+import { Separator } from "../ui/separator";
 
 export default function Footer() {
   return (
@@ -12,7 +12,7 @@ export default function Footer() {
         <Link href="/" className="flex items-center gap-4">
           <div>
             <Image
-              src="/assets/images/svg/logo_rounded.svg"
+              src="/assets/images/svg/logo-roja.svg"
               alt="Logo"
               width={0}
               height={0}
@@ -20,7 +20,7 @@ export default function Footer() {
             />
           </div>
           <div className="text-spanish-accent text-2xl">
-            <p className=" font-black">SPANISH</p>
+            <p className=" font-black">FURIA ROJA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>
