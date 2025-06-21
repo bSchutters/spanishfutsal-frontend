@@ -15,11 +15,13 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H sbryan.studio >> ~/.ssh/known_hosts
+          echo "StrictHostKeyChecking=no" >> ~/.ssh/config
 
       - name: Deploy via SSH
         run: |
           ssh -i ~/.ssh/id_ed25519 bryan@sbryan.studio << 'EOF'
-            cd /projets/spanishfutsal-frontend
+            export PATH=$HOME/.local/share/pnpm:$PATH
+            cd /home/bryan/projets/spanishfutsal-frontend
             git pull origin main
             pnpm install
             pnpm build
