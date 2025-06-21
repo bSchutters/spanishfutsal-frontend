@@ -1,23 +1,40 @@
+"use client";
+
+import Graphiques from "@/components/classement/graphiques";
 import BoxModule from "@/components/layout/boxModule";
 import { Button } from "@/components/ui/button";
+import { getTeamLogo } from "@/lib/getTeamLogo";
 import { cn } from "@/lib/utils";
+import { useRankingStore } from "@/store/useRankingStore";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import standing from "@/mocks/classement.json";
-import { getTeamLogo } from "@/lib/getTeamLogo";
+import { Key, useEffect } from "react";
 
 export default function Equipe() {
+  const { rankings, isLoading, fetchRankings } = useRankingStore();
+
+  useEffect(() => {
+    fetchRankings();
+  }, [fetchRankings]);
+
   const statsForTeams = [
     "played",
-    "won",
-    "drawn",
-    "lost",
+    "wins",
+    "draws",
+    "losses",
     "goalsFor",
     "goalsAgainst",
-    "diff",
+    "goalDifference",
     "points",
   ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-bold">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
@@ -49,27 +66,29 @@ export default function Equipe() {
           </div>
         </div>
         <div className="w-full flex flex-col">
-          {standing.map((team) => (
+          {rankings.map((team) => (
             <div
-              key={team.pos}
+              key={team.position}
               className={cn(
                 "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                team.name === "Spanish Futsal" ? "bg-spanish-bg-light" : ""
+                team.teamName === "Spanish Futsal" ? "bg-spanish-bg-light" : ""
               )}
             >
               <div className="flex gap-4 items-center">
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
-                    team.name === "Spanish Futsal" ? "text-spanish-accent" : ""
+                    team.teamName === "Spanish Futsal"
+                      ? "text-spanish-accent"
+                      : ""
                   )}
                 >
-                  {team.pos}
+                  {team.position}
                 </p>
                 <div>
                   <Image
-                    src={getTeamLogo(team.name)}
-                    alt={team.name}
+                    src={getTeamLogo(team.teamName)}
+                    alt={team.teamName}
                     width={0}
                     height={0}
                     sizes="100vw"
@@ -79,12 +98,12 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "xl:text-base text-sm",
-                    team.name === "Spanish Futsal"
+                    team.teamName === "Spanish Futsal"
                       ? "font-bold text-spanish-accent"
                       : ""
                   )}
                 >
-                  {team.name}
+                  {team.teamName}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -93,8 +112,8 @@ export default function Equipe() {
                     <p
                       key={stat}
                       className={cn(
-                        "italic font-marjorie xl:text-base text-sm",
-                        team.name === "Spanish Futsal"
+                        " xl:text-base text-sm",
+                        team.teamName === "Spanish Futsal"
                           ? "text-spanish-accent font-bold"
                           : ""
                       )}
@@ -104,38 +123,40 @@ export default function Equipe() {
                   ))}
                 </div>
                 <div className="gap-2 text-sm  font-bold hidden lg:flex">
-                  {team.forme?.map((form, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "w-6 h-6 flex items-center justify-center rounded-sm",
-                        form === "W" && "bg-green-700",
-                        form === "D" && "bg-yellow-700",
-                        form === "L" && "bg-red-700"
-                      )}
-                    >
-                      {form === "W" && "G"}
-                      {form === "D" && "N"}
-                      {form === "L" && "P"}
-                    </div>
-                  ))}
+                  {JSON.parse(team.result_sequence)?.map(
+                    (form: string, index: Key) => (
+                      <div
+                        key={index}
+                        className={cn(
+                          "w-6 h-6 flex items-center justify-center rounded-sm",
+                          form === "W" && "bg-green-700",
+                          form === "D" && "bg-yellow-700",
+                          form === "L" && "bg-red-700"
+                        )}
+                      >
+                        {form === "W" && "G"}
+                        {form === "D" && "N"}
+                        {form === "L" && "P"}
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
               <div className="md:hidden grid grid-cols-[repeat(2,40px)] gap-4 text-center">
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.name === "Spanish Futsal"
+                    team.teamName === "Spanish Futsal"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
                 >
-                  {team.diff}
+                  {team.goalDifference}
                 </p>
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.name === "Spanish Futsal"
+                    team.teamName === "Spanish Futsal"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
@@ -147,6 +168,11 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
+      <p className="text-4xl font-marjorie italic font-bold">
+        évolution notre position au classement par journée
+      </p>
+
+      <Graphiques />
     </div>
   );
 }

@@ -1,51 +1,82 @@
 "use client";
 
 import Team from "@/components/team";
-import Image from "next/image";
-import matches from "@/mocks/matches.json";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Icon, MapPin, MapPinned } from "lucide-react";
+import useBreakpoint from "@/hooks/useBreakpoints";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getVenueById } from "@/lib/getVenueById";
+import { cn } from "@/lib/utils";
+import { useMatchsStore } from "@/store/useMatchsStore";
+import { ExternalLink, Loader, MapPin, MapPinned } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
-import { getVenueById } from "@/lib/getVenueById";
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { toast } from "sonner";
 
 export default function Matchs() {
   const { isMobile } = useBreakpoint();
-  // Trouver l'index du match le plus proche (dans le futur ou en cours)
-  const sortedMatches = [...matches].sort(
-    (a, b) =>
-      new Date(a.date + "T" + a.time).getTime() -
-      new Date(b.date + "T" + b.time).getTime()
-  );
+  const { matchs, isLoading, fetchMatchs } = useMatchsStore();
+
+  useEffect(() => {
+    fetchMatchs();
+  }, [fetchMatchs]);
+
   const now = new Date();
-  const closestIndex = sortedMatches.findIndex((match) => {
-    const matchDate = new Date(match.date + "T" + match.time);
-    return matchDate >= now;
-  });
+
+  // Filtrer les matchs valides (ceux qui ont une date ET time valide)
+  const validMatchs = matchs
+    .filter((match) => match.date && match.time)
+    .map((match) => ({
+      ...match,
+      matchDate: new Date(`${match.date}T${match.time.padEnd(5, ":00")}`),
+    }))
+    .filter((match) => !isNaN(match.matchDate.getTime()));
+
+  // Trier les matchs par date
+  validMatchs.sort((a, b) => a.matchDate.getTime() - b.matchDate.getTime());
+
+  // Trouver l'index du prochain match futur
+  const closestIndex = validMatchs.findIndex((match) => match.matchDate >= now);
+
+  // Fallback : dernier match joué (matchDate < now)
+  let fallbackIndex = closestIndex;
+  if (closestIndex === -1) {
+    const lastPlayedIndex = validMatchs
+      .map((match, index) => ({ index, matchDate: match.matchDate }))
+      .filter((item) => item.matchDate < now)
+      .map((item) => item.index)
+      .pop(); // le dernier index < now
+
+    fallbackIndex = lastPlayedIndex !== undefined ? lastPlayedIndex : -1;
+  }
 
   // Créer un tableau de refs
   const matchRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (closestIndex !== -1 && matchRefs.current[closestIndex]) {
-      matchRefs.current[closestIndex]?.scrollIntoView({
+    if (fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
+      matchRefs.current[fallbackIndex]?.scrollIntoView({
         behavior: "smooth",
         block: isMobile ? "end" : "center",
       });
     }
-  }, [closestIndex, isMobile]);
+  }, [fallbackIndex, isMobile]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
       <p className="text-4xl font-marjorie italic font-bold">nos matchs</p>
-      {sortedMatches.map((match, index) => {
+      {matchs.map((match, index) => {
         const today = new Date();
         const matchDateTime = new Date(`${match.date}T${match.time}`);
-        const oneHourAfter = new Date(matchDateTime.getTime() + 60 * 60 * 1000);
+        const oneHourAfter = new Date(matchDateTime.getTime() + 70 * 60 * 1000);
 
         let status = "";
         if (today < matchDateTime) {
@@ -55,6 +86,10 @@ export default function Matchs() {
         } else {
           status = "finished";
         }
+
+        const isWaitingScore =
+          match.homeScore === null && match.awayScore === null;
+
         return (
           <div
             className={cn(
@@ -78,19 +113,21 @@ export default function Matchs() {
               <div className="flex flex-col text-sm  leading-4">
                 <p className="font-bold">
                   LFFS{" "}
-                  {match.serie_reference === "BTCPRES" ||
-                  match.serie_reference === "BTCPPRM"
+                  {match.serieReference === "BTCPRES" ||
+                  match.serieReference === "BTCPPRM"
                     ? "COUPE"
-                    : match.serie_reference}
+                    : match.serieReference}
                 </p>
-                <p className="capitalize">
-                  {new Date(match.date).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}{" "}
-                  • {match.time.slice(0, 2) + "h" + match.time.slice(3, 5)}
-                </p>
+                {match.date && (
+                  <p className="capitalize">
+                    {new Date(match.date).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}{" "}
+                    • {match.time}
+                  </p>
+                )}
               </div>
             </div>
             <div className="grid xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
@@ -102,8 +139,8 @@ export default function Matchs() {
                 isMobile={isMobile}
               />
               <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex">
-                {status === "finished"
-                  ? match.home_score + " - " + match.away_score
+                {status === "finished" && !isWaitingScore
+                  ? match.homeScore + " - " + match.awayScore
                   : "vs"}
               </p>
               <Team
@@ -148,58 +185,60 @@ export default function Matchs() {
                     </Button>
                   </Link>
                 )}
-                <Button
-                  className="font-nugros uppercase"
-                  onClick={() => {
-                    toast(
-                      <div className="flex flex-col">
-                        <p className="font-bold">
-                          {getVenueById(Number(match.venue_id))?.street}{" "}
-                          {getVenueById(Number(match.venue_id))?.street2}
-                        </p>
-                        <p>
-                          {getVenueById(Number(match.venue_id))?.city}{" "}
-                          {getVenueById(Number(match.venue_id))?.zip}
-                        </p>
-                      </div>,
-                      {
-                        classNames: {
-                          toast:
-                            "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
-                          title: "title",
-                          description: "description",
-                          actionButton:
-                            "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-all",
-                          cancelButton: "cancel-button",
-                          closeButton: "close-button",
-                          icon: "!mr-2",
-                        },
-                        icon: <MapPinned />,
-                        duration: 50000,
-                        action: {
-                          label: "Copier l'adresse",
-                          onClick: () => {
-                            const venue = getVenueById(Number(match.venue_id));
-                            if (venue) {
-                              navigator.clipboard.writeText(
-                                (venue.street || "") +
-                                  " " +
-                                  (venue.street2 || "") +
-                                  ", " +
-                                  (venue.zip || "") +
-                                  " " +
-                                  (venue.city || "")
-                              );
-                            }
+                {match.venueId && status !== "finished" && (
+                  <Button
+                    className="font-nugros uppercase"
+                    onClick={() => {
+                      toast(
+                        <div className="flex flex-col">
+                          <p className="font-bold">
+                            {getVenueById(Number(match.venueId))?.street}{" "}
+                            {getVenueById(Number(match.venueId))?.street2}
+                          </p>
+                          <p>
+                            {getVenueById(Number(match.venueId))?.city}{" "}
+                            {getVenueById(Number(match.venueId))?.zip}
+                          </p>
+                        </div>,
+                        {
+                          classNames: {
+                            toast:
+                              "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
+                            title: "title",
+                            description: "description",
+                            actionButton:
+                              "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-all",
+                            cancelButton: "cancel-button",
+                            closeButton: "close-button",
+                            icon: "!mr-2",
                           },
-                        },
-                      }
-                    );
-                  }}
-                >
-                  Adresse
-                  <MapPin />
-                </Button>
+                          icon: <MapPinned />,
+                          duration: 50000,
+                          action: {
+                            label: "Copier l'adresse",
+                            onClick: () => {
+                              const venue = getVenueById(Number(match.venueId));
+                              if (venue) {
+                                navigator.clipboard.writeText(
+                                  (venue.street || "") +
+                                    " " +
+                                    (venue.street2 || "") +
+                                    ", " +
+                                    (venue.zip || "") +
+                                    " " +
+                                    (venue.city || "")
+                                );
+                              }
+                            },
+                          },
+                        }
+                      );
+                    }}
+                  >
+                    Adresse
+                    <MapPin />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
