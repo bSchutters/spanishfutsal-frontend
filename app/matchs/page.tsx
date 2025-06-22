@@ -94,7 +94,9 @@ export default function Matchs() {
           <div
             className={cn(
               "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
-              status === "live" ? "border-2 border-spanish-accent" : ""
+              status === "live"
+                ? "border-2 border-spanish-accent-2"
+                : "last:border-2 last:border-spanish-accent"
             )}
             key={index}
             ref={(el) => {
