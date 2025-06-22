@@ -22,7 +22,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 bryan@sbryan.studio << 'EOF'
             export PATH=$HOME/.local/share/pnpm:$PATH
             cd /home/bryan/projets/dev-spanish-frontend
-            git pull origin main
+            git pull origin dev
             pnpm install
             pnpm build
             pm2 restart dev-spanish-front
