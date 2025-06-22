@@ -30,7 +30,6 @@ export default function NextMatch() {
   }, [fetchMatchs]);
 
   const nextMatch = useMemo(() => {
-    const now = new Date();
     return matchs
       .filter((match) => match.date && match.time)
       .map((match) => ({
