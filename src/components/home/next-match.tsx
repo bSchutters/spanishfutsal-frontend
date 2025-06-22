@@ -6,17 +6,18 @@ import { useEffect, useMemo, useState } from "react";
 import useBreakpoint from "@/hooks/useBreakpoints";
 import { getTeamLogo } from "@/lib/getTeamLogo";
 import { cn } from "@/lib/utils";
-import { useMatchsStore } from "@/store/useMatchsStore";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
 import { Button } from "../ui/button";
+
+import { useMatchsStore } from "@/store/useMatchsStore";
 
 function formatCountdown(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = String(Math.floor((totalSeconds / 3600) % 24)).padStart(2, "0");
   const minutes = String(Math.floor((totalSeconds / 60) % 60)).padStart(2, "0");
   const seconds = String(totalSeconds % 60).padStart(2, "0");
-  return `${hours}H ${minutes}M ${seconds}S`;
+  return `${hours}h ${minutes}M ${seconds}S`;
 }
 
 export default function NextMatch() {
@@ -28,44 +29,68 @@ export default function NextMatch() {
     fetchMatchs();
   }, [fetchMatchs]);
 
-  // Toujours calculé, même si matchs est vide
   const nextMatch = useMemo(() => {
     const now = new Date();
     return matchs
-      .filter((m) => new Date(m.date) > now)
-      .sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      )[0];
+      .filter((match) => match.date && match.time)
+      .map((match) => ({
+        ...match,
+        fullDate: new Date(`${match.date}T${match.time.padEnd(5, ":00")}`),
+      }))
+      .filter((match) => !isNaN(match.fullDate.getTime()))
+      .sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime())
+      .find((match) => {
+        const matchTime = match.fullDate;
+        const oneHourAfter = new Date(matchTime.getTime() + 70 * 60 * 1000);
+        return new Date() < oneHourAfter;
+      });
   }, [matchs]);
 
   const matchDate = useMemo(() => {
-    return nextMatch ? new Date(nextMatch.date) : null;
+    return nextMatch ? nextMatch.fullDate : null;
   }, [nextMatch]);
+
+  const [status, setStatus] = useState<"before" | "live" | "after">("before");
 
   useEffect(() => {
     if (!matchDate) return;
 
-    const updateCountdown = () => {
+    const updateStatus = () => {
       const now = new Date();
-      const diff = matchDate.getTime() - now.getTime();
-      if (diff <= 0) {
-        setTimeLeft("00h 00M 00S");
+      const oneHourAfter = new Date(matchDate.getTime() + 70 * 60 * 1000);
+
+      if (now < matchDate) {
+        setStatus("before");
+        setTimeLeft(formatCountdown(matchDate.getTime() - now.getTime()));
+      } else if (now >= matchDate && now < oneHourAfter) {
+        setStatus("live");
+        setTimeLeft(""); // pas de countdown pendant le live
       } else {
-        setTimeLeft(formatCountdown(diff));
+        setStatus("after");
+        setTimeLeft("");
       }
     };
 
-    updateCountdown(); // appelle immédiatement
-    const interval = setInterval(updateCountdown, 1000);
+    updateStatus();
+    const interval = setInterval(updateStatus, 1000);
     return () => clearInterval(interval);
   }, [matchDate]);
 
-  if (isLoading || !nextMatch) return null;
+  if (isLoading || !nextMatch || status === "after") return null;
 
-  const { homeTeam, awayTeam } = nextMatch;
+  const { homeTeam, awayTeam, liveLink } = nextMatch;
 
   return (
-    <BoxModule className="lg:-mt-24 -mt-16 z-20 lg:px-8 lg:py-6 xl:w-3/5 lg:w-4/5 w-11/12 flex flex-col md:flex-row gap-4 items-center justify-between">
+    <BoxModule
+      className={cn(
+        "lg:-mt-24 -mt-16 z-20 lg:px-8 lg:py-6 xl:w-3/5 lg:w-4/5 w-11/12 flex flex-col md:flex-row gap-4 items-center justify-between",
+        status === "live" && liveLink
+          ? "border-spanish-accent-2"
+          : status === "live"
+            ? "border-spanish-accent"
+            : ""
+      )}
+    >
       <div
         className={cn(
           "flex justify-between items-center",
@@ -73,17 +98,29 @@ export default function NextMatch() {
         )}
       >
         <div className="flex flex-col gap-0 justify-between w-full">
-          <p className="font-marjorie italic font-semibold xl:text-base text-sm">
-            prochain match
-          </p>
-          <p className="lg:text-sm text-xs">{timeLeft}</p>
+          <div
+            className={cn(
+              "font-marjorie italic font-semibold xl:text-base text-sm",
+              status === "live" && liveLink ? "text-red-500" : ""
+            )}
+          >
+            {status === "live"
+              ? liveLink
+                ? "en direct"
+                : "match en cours"
+              : "prochain match"}
+          </div>
+          <p className="lg:text-sm text-xs">{status !== "live" && timeLeft}</p>
         </div>
+
+        {/* bouton calendrier toujours présent sur mobile */}
         <Link href="/matchs" className="flex md:hidden">
           <Button size="sm" className="text-xs">
             calendrier
           </Button>
         </Link>
       </div>
+
       <div
         className={cn(
           "flex items-center gap-4",
@@ -104,9 +141,24 @@ export default function NextMatch() {
           {...(!isMobile && { logoFirst: true })}
         />
       </div>
-      <Link href="/matchs" className="md:flex hidden">
-        <Button>calendrier</Button>
-      </Link>
+
+      <div className="md:flex hidden">
+        {status === "live" && liveLink ? (
+          <Link href={liveLink} target="_blank">
+            <Button className="font-nugros uppercase relative flex gap-4">
+              regarder le live
+              <div className="relative flex items-center justify-center">
+                <div className="w-2 h-2  bg-red-500 rounded-full absolute" />
+                <div className="w-2 h-2 animate-ping bg-red-500 rounded-full absolute" />
+              </div>
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/matchs">
+            <Button>calendrier</Button>
+          </Link>
+        )}
+      </div>
     </BoxModule>
   );
 }
