@@ -14,10 +14,15 @@ import { useMatchsStore } from "@/store/useMatchsStore";
 
 function formatCountdown(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
-  const hours = String(Math.floor((totalSeconds / 3600) % 24)).padStart(2, "0");
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = String(Math.floor((totalSeconds % 86400) / 3600)).padStart(
+    2,
+    "0"
+  );
   const minutes = String(Math.floor((totalSeconds / 60) % 60)).padStart(2, "0");
   const seconds = String(totalSeconds % 60).padStart(2, "0");
-  return `${hours}h ${minutes}M ${seconds}S`;
+
+  return `${days > 0 ? String(days).padStart(2, "0") + "J " : ""}${hours}h ${minutes}M ${seconds}S`;
 }
 
 export default function NextMatch() {
