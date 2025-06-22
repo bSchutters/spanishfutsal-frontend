@@ -23,7 +23,7 @@ export default function NextMatch() {
           <p className="font-marjorie italic font-semibold xl:text-base text-sm">
             prochain match
           </p>
-          <p className="lg:text-sm text-xs">05D 08H 43M</p>
+          <p className="lg:text-sm text-xs">05D 08H 45M</p>
         </div>
         <Link href="/matchs" className="flex md:hidden">
           <Button size="sm" className="text-xs">
