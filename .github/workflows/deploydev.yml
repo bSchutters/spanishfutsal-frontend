@@ -25,5 +25,5 @@ jobs:
             git pull origin dev
             pnpm install
             pnpm build
-            pm2 restart dev-spanish-front
+            pm2 restart dev-spanish-frontend
           EOF
