@@ -59,7 +59,7 @@ export default function ResultAndStanding() {
   const nextTeam = rankings[index + 1];
   const standingCompact = [previousTeam, currentTeam, nextTeam].filter(Boolean);
 
-  if (isMatchsLoading || !lastFinishedMatch) return null;
+  if (isMatchsLoading || isRankingLoading || !lastFinishedMatch) return null;
   return (
     <section className="mt-16 flex flex-col lg:flex-row w-11/12 lg:gap-6 gap-12 container">
       {/* Last result */}
