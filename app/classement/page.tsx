@@ -168,8 +168,9 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
+
       <p className="text-4xl font-marjorie italic font-bold">
-        évolution notre position au classement par journée
+        évolution de notre position au classement par journée
       </p>
 
       <Graphiques />

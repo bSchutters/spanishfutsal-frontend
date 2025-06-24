@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const breakpoints = {
+  xs: 0,
   sm: 640,
   md: 768,
   lg: 1024,
@@ -23,6 +24,7 @@ export default function useBreakpoint() {
       else if (width >= breakpoints.lg) setBreakpoint("lg");
       else if (width >= breakpoints.md) setBreakpoint("md");
       else if (width >= breakpoints.sm) setBreakpoint("sm");
+      else if (width < breakpoints.sm) setBreakpoint("xs");
       else setBreakpoint(null);
 
       setIsMobile(width < breakpoints.md); // mobile = moins de 768px

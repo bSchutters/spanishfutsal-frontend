@@ -1,36 +1,65 @@
-import React from "react";
-import { Button } from "../ui/button";
-import Link from "next/link";
-import BoxModule from "../layout/boxModule";
-import { Badge } from "../ui/badge";
-import Team from "../team";
-import { cn } from "@/lib/utils";
-import { MapPin } from "lucide-react";
+import useBreakpoint from "@/hooks/useBreakpoints";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { cn } from "@/lib/utils";
+import { useMatchsStore } from "@/store/useMatchsStore";
+import { useRankingStore } from "@/store/useRankingStore";
+import { MapPin } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo } from "react";
+import BoxModule from "../layout/boxModule";
+import Team from "../team";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 export default function ResultAndStanding() {
-  const standing = [
-    { pos: 1, name: "Atletico Madrid", points: 45 },
-    { pos: 2, name: "FC Barcelona", points: 40 },
-    { pos: 3, name: "Makasi Bruxelles", points: 34 },
-    { pos: 4, name: "Spanish Futsal", points: 30 },
-    { pos: 5, name: "Duckster BRUXELLES", points: 30 },
-    { pos: 6, name: "Oviedo FC", points: 18 },
-    { pos: 7, name: "Real Betis", points: 15 },
-    { pos: 8, name: "Athletic Bilbao", points: 12 },
-    { pos: 9, name: "Celta Vigo", points: 10 },
-    { pos: 10, name: "Real Sociedad", points: 8 },
-    { pos: 11, name: "Granada CF", points: 5 },
-    { pos: 12, name: "Getafe CF", points: 3 },
-    { pos: 13, name: "Mallorca", points: 1 },
-  ];
+  const {
+    rankings,
+    isLoading: isRankingLoading,
+    fetchRankings,
+  } = useRankingStore();
+  const { matchs, isLoading: isMatchsLoading, fetchMatchs } = useMatchsStore();
 
-  const teamName = "Spanish Futsal";
-  const index = standing.findIndex((team) => team.name === teamName);
-  const previousTeam = standing[index - 1];
-  const currentTeam = standing[index];
-  const nextTeam = standing[index + 1];
+  const { breakpoint } = useBreakpoint();
+
+  useEffect(() => {
+    fetchRankings();
+  }, [fetchRankings]);
+
+  useEffect(() => {
+    fetchMatchs();
+  }, [fetchMatchs]);
+
+  const lastFinishedMatch = useMemo(() => {
+    const now = new Date();
+
+    return matchs
+      .filter((match) => {
+        if (!match.date || !match.time) return false;
+        const matchDate = new Date(
+          `${match.date}T${match.time.padEnd(5, ":00")}`
+        );
+        const oneHourAfter = new Date(matchDate.getTime() + 70 * 60 * 1000);
+        const scoreAvailable =
+          match.homeScore !== null && match.awayScore !== null;
+        return oneHourAfter < now && scoreAvailable;
+      })
+      .map((match) => ({
+        ...match,
+        matchDate: new Date(`${match.date}T${match.time.padEnd(5, ":00")}`),
+      }))
+      .sort((a, b) => b.matchDate.getTime() - a.matchDate.getTime())[0];
+  }, [matchs]);
+
+  console.log("lastFinishedMatch", lastFinishedMatch);
+
+  const ourTeamName = "Spanish Futsal";
+  const index = rankings.findIndex((team) => team.teamName === ourTeamName);
+  const previousTeam = rankings[index - 1];
+  const currentTeam = rankings[index];
+  const nextTeam = rankings[index + 1];
   const standingCompact = [previousTeam, currentTeam, nextTeam].filter(Boolean);
+
+  if (isMatchsLoading || !lastFinishedMatch) return null;
   return (
     <section className="mt-16 flex flex-col lg:flex-row w-11/12 lg:gap-6 gap-12 container">
       {/* Last result */}
@@ -43,30 +72,44 @@ export default function ResultAndStanding() {
         </div>
         <BoxModule className="flex flex-col gap-6">
           <div className="flex justify-between w-full">
-            <p>30 avril 2025 • 22h00</p>
-            <Badge>LFFS P5E</Badge>
+            <p>
+              {lastFinishedMatch.matchDate.toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}{" "}
+              • {lastFinishedMatch.time}
+            </p>
+            <Badge className="uppercase">
+              {lastFinishedMatch.serieReference !== "AMICAL"
+                ? `LFFS ${lastFinishedMatch.serieReference}`
+                : lastFinishedMatch.serieReference}
+            </Badge>
           </div>
           <div className="flex justify-between items-center w-full">
             <Team
-              logo={getTeamLogo("Spanish Futsal")}
-              teamName="SPANISH FUTSAL"
+              logo={getTeamLogo(lastFinishedMatch.homeTeam)}
+              teamName={lastFinishedMatch.homeTeam}
               logoFirst
               className="w-1/3"
             />
-            <div className="flex gap-2 items-center justify-center font-bold text-4xl font-marjorie italic w-1/3">
-              <p>1</p>
+            <div className="flex gap-2 items-center justify-center font-bold md:text-4xl text-2xl font-marjorie italic w-1/3">
+              <p>{lastFinishedMatch.homeScore}</p>
               <p>-</p>
-              <p>0</p>
+              <p>{lastFinishedMatch.awayScore}</p>
             </div>
             <Team
-              logo={getTeamLogo("Réal Madrid")}
-              teamName="réal madrid"
+              logo={getTeamLogo(lastFinishedMatch.awayTeam)}
+              teamName={lastFinishedMatch.awayTeam}
+              {...(breakpoint === "xs" && { logoFirst: true })}
               className="w-1/3"
             />
           </div>
           <div className="flex gap-2 items-center justify-center font-bold text-sm  w-full">
             <MapPin />
-            <p className="text-sm font-semibold">Collège Saint-Pierre</p>
+            <p className="text-sm font-semibold">
+              {lastFinishedMatch.venueName}
+            </p>
           </div>
         </BoxModule>
       </div>
@@ -90,38 +133,40 @@ export default function ResultAndStanding() {
           <div className="w-full flex flex-col">
             {standingCompact.map((team) => (
               <div
-                key={team.pos}
+                key={team.position}
                 className={cn(
                   "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                  team.name === "Spanish Futsal" ? "bg-spanish-bg-light" : ""
+                  team.teamName === "Spanish Futsal"
+                    ? "bg-spanish-bg-light"
+                    : ""
                 )}
               >
                 <div className="flex gap-4 ">
                   <p
                     className={cn(
                       "italic font-marjorie font-bold xl:text-base text-sm",
-                      team.name === "Spanish Futsal"
+                      team.teamName === "Spanish Futsal"
                         ? "text-spanish-accent"
                         : ""
                     )}
                   >
-                    {team.pos}
+                    {team.position}
                   </p>
                   <p
                     className={cn(
                       "xl:text-base text-sm",
-                      team.name === "Spanish Futsal"
+                      team.teamName === "Spanish Futsal"
                         ? "font-bold text-spanish-accent"
                         : ""
                     )}
                   >
-                    {team.name}
+                    {team.teamName}
                   </p>
                 </div>
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm",
-                    team.name === "Spanish Futsal"
+                    team.teamName === "Spanish Futsal"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}

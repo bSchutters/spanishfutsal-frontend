@@ -26,7 +26,7 @@ function formatCountdown(ms: number) {
 }
 
 export default function NextMatch() {
-  const { isMobile } = useBreakpoint();
+  const { breakpoint, isMobile } = useBreakpoint();
   const { matchs, isLoading, fetchMatchs } = useMatchsStore();
   const [timeLeft, setTimeLeft] = useState<string>("");
 
@@ -137,12 +137,12 @@ export default function NextMatch() {
           isNextMatch
           {...(isMobile && { logoFirst: true })}
         />
-        <p className="font-marjorie text-2xl italic font-bold">vs</p>
+        <p className="font-marjorie text-xl sm:text-2xl italic font-bold">vs</p>
         <Team
           logo={getTeamLogo(awayTeam)}
           teamName={awayTeam}
           isNextMatch
-          {...(!isMobile && { logoFirst: true })}
+          {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
         />
       </div>
 

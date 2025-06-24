@@ -7,7 +7,14 @@ import { getTeamLogo } from "@/lib/getTeamLogo";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
-import { ExternalLink, Loader, MapPin, MapPinned } from "lucide-react";
+import {
+  ExternalLink,
+  Handshake,
+  Loader,
+  MapPin,
+  MapPinned,
+  Trophy,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -16,6 +23,8 @@ import { toast } from "sonner";
 export default function Matchs() {
   const { isMobile } = useBreakpoint();
   const { matchs, isLoading, fetchMatchs } = useMatchsStore();
+  const { breakpoint } = useBreakpoint();
+  console.log("matchs", matchs);
 
   useEffect(() => {
     fetchMatchs();
@@ -104,21 +113,34 @@ export default function Matchs() {
             }}
           >
             <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
-              <Image
-                src="/assets/images/lffs.png"
-                alt="Team Logo"
-                width={0}
-                height={0}
-                sizes="100vw"
-                className="w-6 h-auto"
-              />
+              {(match.serieReference === "COUPE" ||
+                match.serieReference === "P5E") && (
+                <Image
+                  src="/assets/images/lffs.png"
+                  alt="Team Logo"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="w-6 h-auto"
+                />
+              )}
+              {match.serieReference === "AMICAL" && (
+                <div>
+                  <Handshake className="w-6 h-auto text-spanish-accent" />
+                </div>
+              )}
+              {match.serieReference === "TOURNOIS" && (
+                <div>
+                  <Trophy className="w-6 h-auto text-spanish-accent" />
+                </div>
+              )}
               <div className="flex flex-col text-sm  leading-4">
                 <p className="font-bold">
-                  LFFS{" "}
-                  {match.serieReference === "BTCPRES" ||
-                  match.serieReference === "BTCPPRM"
-                    ? "COUPE"
-                    : match.serieReference}
+                  {match.serieReference === "COUPE" ||
+                  match.serieReference === "P5E"
+                    ? "LFFS "
+                    : ""}
+                  {match.serieReference}
                 </p>
                 {match.date && (
                   <p className="capitalize">
@@ -132,7 +154,7 @@ export default function Matchs() {
                 )}
               </div>
             </div>
-            <div className="grid xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
+            <div className="grid gap-2 sm:gap-0 xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
               <Team
                 logo={getTeamLogo(match.homeTeam)}
                 teamName={match.homeTeam}
@@ -140,7 +162,7 @@ export default function Matchs() {
                 {...(isMobile && { logoFirst: true })}
                 isMobile={isMobile}
               />
-              <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex">
+              <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex ">
                 {status === "finished" && !isWaitingScore
                   ? match.homeScore + " - " + match.awayScore
                   : "vs"}
@@ -153,12 +175,20 @@ export default function Matchs() {
                 isMobile={isMobile}
               />
             </div>
-            <div className="w-full lg:w-1/6 flex items-center lg:justify-end justify-center ">
+
+            <div
+              className={cn(
+                "w-full lg:w-1/6 flex items-center lg:justify-end justify-center",
+                breakpoint === "xs" &&
+                  !match.replayLink &&
+                  status === "finished" &&
+                  "hidden"
+              )}
+            >
               <div
                 className={cn(
                   "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
-                  (status === "finished" && match.replayLink) ||
-                    (status === "live" && match.liveLink)
+                  status === "live" && match.liveLink
                     ? "justify-between"
                     : "justify-center"
                 )}
