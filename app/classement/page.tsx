@@ -1,15 +1,15 @@
 "use client";
 
-import Graphiques from "@/components/classement/graphiques";
 import BoxModule from "@/components/layout/boxModule";
 import { Button } from "@/components/ui/button";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Key, useEffect } from "react";
+import { useEffect } from "react";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
@@ -60,9 +60,9 @@ export default function Equipe() {
               <p>DIFF</p>
               <p>PTS</p>
             </div>
-            <div className="w-[152px] items-center justify-center hidden lg:flex">
+            {/* <div className="w-[152px] items-center justify-center hidden lg:flex">
               FORME
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="w-full flex flex-col">
@@ -103,7 +103,7 @@ export default function Equipe() {
                       : ""
                   )}
                 >
-                  {team.teamName}
+                  {getTeamName(team.teamName)}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -122,7 +122,7 @@ export default function Equipe() {
                     </p>
                   ))}
                 </div>
-                <div className="gap-2 text-sm  font-bold hidden lg:flex">
+                {/* <div className="gap-2 text-sm  font-bold hidden lg:flex">
                   {JSON.parse(team.result_sequence)?.map(
                     (form: string, index: Key) => (
                       <div
@@ -140,7 +140,7 @@ export default function Equipe() {
                       </div>
                     )
                   )}
-                </div>
+                </div> */}
               </div>
               <div className="md:hidden grid grid-cols-[repeat(2,40px)] gap-4 text-center">
                 <p
@@ -168,12 +168,12 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
-
+      {/* 
       <p className="text-4xl font-marjorie italic font-bold">
         évolution de notre position au classement par journée
       </p>
 
-      <Graphiques />
+      <Graphiques /> */}
     </div>
   );
 }

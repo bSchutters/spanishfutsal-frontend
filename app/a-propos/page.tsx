@@ -1,6 +1,4 @@
 import { Separator } from "@/components/ui/separator";
-import { soccerBall } from "@lucide/lab";
-import { ChevronsUp, Icon, Trophy } from "lucide-react";
 import Image from "next/image";
 
 export default function Apropos() {
@@ -111,7 +109,8 @@ export default function Apropos() {
               sizes="100vw"
             />
           </div>
-          <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
+
+          {/* <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
           <div className="flex flex-col gap-4">
             <p className="font-bold lg:text-2xl text-lg">Palmarès</p>
 
@@ -141,7 +140,7 @@ export default function Apropos() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

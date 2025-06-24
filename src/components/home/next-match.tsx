@@ -10,6 +10,7 @@ import BoxModule from "../layout/boxModule";
 import Team from "../team";
 import { Button } from "../ui/button";
 
+import { getTeamName } from "@/lib/getTeamName";
 import { useMatchsStore } from "@/store/useMatchsStore";
 
 function formatCountdown(ms: number) {
@@ -133,14 +134,14 @@ export default function NextMatch() {
       >
         <Team
           logo={getTeamLogo(homeTeam)}
-          teamName={homeTeam}
+          teamName={getTeamName(homeTeam)}
           isNextMatch
           {...(isMobile && { logoFirst: true })}
         />
         <p className="font-marjorie text-xl sm:text-2xl italic font-bold">vs</p>
         <Team
           logo={getTeamLogo(awayTeam)}
-          teamName={awayTeam}
+          teamName={getTeamName(awayTeam)}
           isNextMatch
           {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
         />

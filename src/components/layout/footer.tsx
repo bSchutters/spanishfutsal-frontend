@@ -46,12 +46,12 @@ export default function Footer() {
         </p>
 
         <div className="flex gap-4">
-          <Link
+          {/* <Link
             href="/mentions-legales"
             className="hover:text-spanish-accent-dark transition-all"
           >
             Mentions légales
-          </Link>
+          </Link> */}
           <Link
             href="https://instagram.com/spanish_futsal"
             target="_blank"

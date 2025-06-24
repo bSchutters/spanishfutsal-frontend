@@ -1,5 +1,6 @@
 import useBreakpoint from "@/hooks/useBreakpoints";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
 import { useRankingStore } from "@/store/useRankingStore";
@@ -89,7 +90,7 @@ export default function ResultAndStanding() {
           <div className="flex justify-between items-center w-full">
             <Team
               logo={getTeamLogo(lastFinishedMatch.homeTeam)}
-              teamName={lastFinishedMatch.homeTeam}
+              teamName={getTeamName(lastFinishedMatch.homeTeam)}
               logoFirst
               className="w-1/3"
             />
@@ -100,7 +101,7 @@ export default function ResultAndStanding() {
             </div>
             <Team
               logo={getTeamLogo(lastFinishedMatch.awayTeam)}
-              teamName={lastFinishedMatch.awayTeam}
+              teamName={getTeamName(lastFinishedMatch.awayTeam)}
               {...(breakpoint === "xs" && { logoFirst: true })}
               className="w-1/3"
             />
