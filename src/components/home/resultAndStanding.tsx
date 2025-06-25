@@ -161,7 +161,7 @@ export default function ResultAndStanding() {
                         : ""
                     )}
                   >
-                    {team.teamName}
+                    {getTeamName(team.teamName)}
                   </p>
                 </div>
                 <p
