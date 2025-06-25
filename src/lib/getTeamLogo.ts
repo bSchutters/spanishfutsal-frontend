@@ -10,7 +10,7 @@ export function getTeamLogo(name: string) {
       return "/assets/images/svg/teams/cadix.svg";
     case "Furia Roja":
       return "/assets/images/svg/logo-roja.svg";
-    case "Oviedo FC":
+    case "Real Oviedo":
       return "/assets/images/svg/teams/oviedo.svg";
     case "Real Betis":
       return "/assets/images/svg/teams/betis.svg";
