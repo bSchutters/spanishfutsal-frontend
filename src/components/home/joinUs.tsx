@@ -4,21 +4,22 @@ import BoxModule from "../layout/boxModule";
 import { Button } from "../ui/button";
 
 export default function JoinUs() {
-  const spanClasses = "font-bold text-spanish-accent font-marjorie italic";
+  const spanClasses = "font-bold text-spanish-accent-2 font-marjorie italic";
 
   return (
     <section className="lg:container w-11/12 lg:mt-40 lg:mb-20 mb-10 mt-10">
       <BoxModule className="w-full flex p-10 relative">
         <div className="flex flex-col justify-between lg:gap-6 gap-4">
           <p className="font-bold font-marjorie italic lg:text-2xl">
-            Rejoindre le club
+            Soutenir le club
           </p>
-          <p className="lg:max-w-4/5  lg:text-lg text-sm">
-            Rejoins la <span className={spanClasses}>famille</span> Spanish
-            Futsal pour partager ta <span className={spanClasses}>passion</span>{" "}
-            du futsal dans une équipe{" "}
-            <span className={spanClasses}>soudée</span>, où l&apos;amitié et le
-            plaisir se mêlent à l&apos;ambition de progresser ensemble.
+          <p className="xl:max-w-4/5 lg:max-w-4/6  lg:text-lg text-sm">
+            Rejoignez la <span className={spanClasses}>famille</span> Furia Roja
+            Futsal en devenant <span className={spanClasses}>sponsor</span> et
+            apportez votre <span className={spanClasses}>soutien</span> à notre
+            projet. Grâce à vous, nous pourrons allier{" "}
+            <span className={spanClasses}>ambition</span> et esprit d’équipe,
+            pour grandir ensemble sur et en dehors du terrain.
           </p>
           <Link href="/contact" className="self-start">
             <Button>nous rejoindre</Button>

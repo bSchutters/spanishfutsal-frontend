@@ -24,6 +24,8 @@ export function getTeamName(name: string) {
       return "Canonniers";
     case "MAMBO SCHAERBEEK NP":
       return "Mambo NP";
+    case "BIGS BROS WINGMEN LA HULPE 1":
+      return "Bigs Bros Wingmen 1";
     default:
       return name;
   }

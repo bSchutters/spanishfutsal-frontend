@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 
 export default function About() {
-  const spanClasses = "font-bold text-spanish-accent font-marjorie italic";
+  const spanClasses = "font-bold text-spanish-accent-2 font-marjorie italic";
 
   return (
     <section className="mt-20 bg-spanish-bg-lighter w-full flex items-center justify-center lg:py-30 py-12 ">
