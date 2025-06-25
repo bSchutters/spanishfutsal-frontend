@@ -55,7 +55,7 @@ const Nav = () => {
           <div className="md:h-20 md:w-20 w-16 h-16 absolute md:-bottom-10 -bottom-6 z-20  outline-spanish-bg-dark md:outline-4 outline-2 rounded-full">
             <Image
               src="/assets/images/svg/logo-roja.svg"
-              alt="Logo Furia Roja Futsal"
+              alt="Logo Furia Roja"
               fill
               className="h-full w-full object-contain"
             />

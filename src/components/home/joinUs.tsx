@@ -27,7 +27,7 @@ export default function JoinUs() {
         <div className="lg:absolute hidden lg:block lg:right-0 -right-8 bottom-0 ">
           <Image
             src="/assets/images/joueurs/olmo.webp"
-            alt="Maillot Furia Roja Futsal"
+            alt="Maillot Furia Roja"
             width={0}
             height={0}
             sizes="100vw"

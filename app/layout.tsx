@@ -8,8 +8,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Furia Roja Futsal",
-  description: "Furia Roja Futsal",
+  title: "Furia Roja",
+  description: "Furia Roja",
 };
 
 export default function RootLayout({

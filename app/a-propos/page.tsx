@@ -26,8 +26,8 @@ export default function Apropos() {
               Une histoire de famille, une passion commune
             </p>
             <p className="lg:text-lg text-base">
-              Furia Roja Futsal est un club fondé en 2024 par trois cousins,
-              Bryan, Enrique et Valadi, dans le but de retrouver l’ambiance, la
+              Furia Roja est un club fondé en 2024 par trois cousins, Bryan,
+              Enrique et Valadi, dans le but de retrouver l’ambiance, la
               cohésion et la passion que leurs parents vivaient autrefois
               ensemble sur les terrains. Le nom du club est d’ailleurs un
               hommage direct à cette époque, puisqu’il reprend celui de l’une
@@ -46,9 +46,9 @@ export default function Apropos() {
           <div className="flex flex-col gap-2 ">
             <p className="font-bold lg:text-2xl text-lg">Nos valeurs </p>
             <p className="lg:text-lg text-base">
-              Chez Furia Roja Futsal, l’état d’esprit compte autant que la
-              performance. Notre équipe repose sur des valeurs fortes qui
-              façonnent notre identité:
+              Chez Furia Roja, l’état d’esprit compte autant que la performance.
+              Notre équipe repose sur des valeurs fortes qui façonnent notre
+              identité:
             </p>
             <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-2 gap-4 mt-2 font-marjorie italic font-bold">
               <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">

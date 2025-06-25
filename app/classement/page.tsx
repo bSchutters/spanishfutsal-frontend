@@ -71,18 +71,14 @@ export default function Equipe() {
               key={team.position}
               className={cn(
                 "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                team.teamName === "Furia Roja Futsal"
-                  ? "bg-spanish-bg-light"
-                  : ""
+                team.teamName === "Furia Roja" ? "bg-spanish-bg-light" : ""
               )}
             >
               <div className="flex gap-4 items-center">
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
-                    team.teamName === "Furia Roja Futsal"
-                      ? "text-spanish-accent"
-                      : ""
+                    team.teamName === "Furia Roja" ? "text-spanish-accent" : ""
                   )}
                 >
                   {team.position}
@@ -100,7 +96,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "xl:text-base text-sm",
-                    team.teamName === "Furia Roja Futsal"
+                    team.teamName === "Furia Roja"
                       ? "font-bold text-spanish-accent"
                       : ""
                   )}
@@ -115,7 +111,7 @@ export default function Equipe() {
                       key={stat}
                       className={cn(
                         " xl:text-base text-sm",
-                        team.teamName === "Furia Roja Futsal"
+                        team.teamName === "Furia Roja"
                           ? "text-spanish-accent font-bold"
                           : ""
                       )}
@@ -148,7 +144,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Furia Roja Futsal"
+                    team.teamName === "Furia Roja"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
@@ -158,7 +154,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Furia Roja Futsal"
+                    team.teamName === "Furia Roja"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}

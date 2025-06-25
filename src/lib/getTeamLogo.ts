@@ -8,7 +8,7 @@ export function getTeamLogo(name: string) {
       return "/assets/images/svg/teams/sevilla.svg";
     case "Cadix CF":
       return "/assets/images/svg/teams/cadix.svg";
-    case "Furia Roja Futsal":
+    case "Furia Roja":
       return "/assets/images/svg/logo-roja.svg";
     case "Oviedo FC":
       return "/assets/images/svg/teams/oviedo.svg";

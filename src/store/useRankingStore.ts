@@ -56,9 +56,7 @@ export const useRankingStore = create<State>((set) => ({
         rankings: (json.data as RankingAPIResponse[]).map((r) => ({
           id: r.id,
           teamName:
-            r.team_name === "SPANISH BRUXELLES"
-              ? "Furia Roja Futsal"
-              : r.team_name,
+            r.team_name === "SPANISH BRUXELLES" ? "Furia Roja" : r.team_name,
           points: r.points,
           wins: r.wins,
           losses: r.losses,
