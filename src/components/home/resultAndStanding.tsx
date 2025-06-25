@@ -51,8 +51,6 @@ export default function ResultAndStanding() {
       .sort((a, b) => b.matchDate.getTime() - a.matchDate.getTime())[0];
   }, [matchs]);
 
-  console.log("lastFinishedMatch", lastFinishedMatch);
-
   const ourTeamName = "Furia Roja Futsal";
   const index = rankings.findIndex((team) => team.teamName === ourTeamName);
   const previousTeam = rankings[index - 1];

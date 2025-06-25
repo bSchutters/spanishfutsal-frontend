@@ -25,7 +25,6 @@ export default function Matchs() {
   const { isMobile } = useBreakpoint();
   const { matchs, isLoading, fetchMatchs } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
-  console.log("matchs", matchs);
 
   useEffect(() => {
     fetchMatchs();
