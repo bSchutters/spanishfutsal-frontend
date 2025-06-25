@@ -8,6 +8,7 @@ import { useEffect } from "react";
 
 export default function Equipe() {
   const { players, isLoading, fetchPlayers } = usePlayersStore();
+  console.log(players);
 
   useEffect(() => {
     fetchPlayers();

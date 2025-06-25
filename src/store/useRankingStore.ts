@@ -57,7 +57,7 @@ export const useRankingStore = create<State>((set) => ({
           id: r.id,
           teamName:
             r.team_name === "SPANISH BRUXELLES"
-              ? "Spanish Futsal"
+              ? "Furia Roja Futsal"
               : r.team_name,
           points: r.points,
           wins: r.wins,
