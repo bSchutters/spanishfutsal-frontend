@@ -53,7 +53,7 @@ export default function ResultAndStanding() {
 
   console.log("lastFinishedMatch", lastFinishedMatch);
 
-  const ourTeamName = "Spanish Futsal";
+  const ourTeamName = "Furia Roja Futsal";
   const index = rankings.findIndex((team) => team.teamName === ourTeamName);
   const previousTeam = rankings[index - 1];
   const currentTeam = rankings[index];
@@ -137,7 +137,7 @@ export default function ResultAndStanding() {
                 key={team.position}
                 className={cn(
                   "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                  team.teamName === "Spanish Futsal"
+                  team.teamName === "Furia Roja Futsal"
                     ? "bg-spanish-bg-light"
                     : ""
                 )}
@@ -146,7 +146,7 @@ export default function ResultAndStanding() {
                   <p
                     className={cn(
                       "italic font-marjorie font-bold xl:text-base text-sm",
-                      team.teamName === "Spanish Futsal"
+                      team.teamName === "Furia Roja Futsal"
                         ? "text-spanish-accent"
                         : ""
                     )}
@@ -156,7 +156,7 @@ export default function ResultAndStanding() {
                   <p
                     className={cn(
                       "xl:text-base text-sm",
-                      team.teamName === "Spanish Futsal"
+                      team.teamName === "Furia Roja Futsal"
                         ? "font-bold text-spanish-accent"
                         : ""
                     )}
@@ -167,7 +167,7 @@ export default function ResultAndStanding() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm",
-                    team.teamName === "Spanish Futsal"
+                    team.teamName === "Furia Roja Futsal"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}

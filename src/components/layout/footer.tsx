@@ -41,7 +41,7 @@ export default function Footer() {
       <Separator className="container mx-auto bg-spanish-bg-light" />
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter">
         <p className="text-center md:text-left">
-          &copy; {new Date().getFullYear()} Spanish Futsal. Tous droits
+          &copy; {new Date().getFullYear()} Furia Roja Futsal. Tous droits
           réservés.
         </p>
 

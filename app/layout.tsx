@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
+import Footer from "@/components/layout/footer";
 import Nav from "@/components/layout/nav";
 import ScreenSizeIndicator from "@/components/layout/screenSizeIndicator";
-import Footer from "@/components/layout/footer";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Spanish Futsal",
-  description: "Spanish Futsal",
+  title: "Furia Roja Futsal",
+  description: "Furia Roja Futsal",
 };
 
 export default function RootLayout({

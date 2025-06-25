@@ -57,11 +57,11 @@ export const useMatchsStore = create<State>((set) => ({
           time: m.time ? m.time.slice(0, 5) : "",
           homeTeam:
             m.home_team === "SPANISH BRUXELLES"
-              ? "Spanish Futsal"
+              ? "Furia Roja Futsal"
               : m.home_team,
           awayTeam:
             m.away_team === "SPANISH BRUXELLES"
-              ? "Spanish Futsal"
+              ? "Furia Roja Futsal"
               : m.away_team,
           homeScore: m.score_home,
           awayScore: m.score_away,
