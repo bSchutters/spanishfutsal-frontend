@@ -78,7 +78,7 @@ export default function Matchs() {
 
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
-      <p className="text-4xl font-marjorie italic font-bold">nos matchs</p>
+      <p className="text-4xl font-marjorie italic font-bold">Nos matchs</p>
       {matchs.map((match, index) => {
         const today = new Date();
         const matchDateTime = new Date(`${match.date}T${match.time}`);

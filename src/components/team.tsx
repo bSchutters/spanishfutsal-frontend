@@ -25,7 +25,7 @@ export default function Team({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-center gap-4",
+        "flex flex-col sm:flex-row items-center sm:gap-4 gap-2",
         logoFirst ? "" : "justify-end",
         isMatchPage && isMobile ? "flex-col items-center" : "",
         className

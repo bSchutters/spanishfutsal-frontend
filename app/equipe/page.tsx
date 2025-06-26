@@ -16,7 +16,7 @@ export default function Equipe() {
   if (isLoading)
     return (
       <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6 animate-pulse">
-        <p className="text-4xl font-marjorie italic font-bold">nos joueurs</p>
+        <p className="text-4xl font-marjorie italic font-bold">Nos joueurs</p>
         <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
           {Array.from({ length: 10 }).map((_, index) => (
             <PlayerLoader key={index} />
@@ -26,7 +26,7 @@ export default function Equipe() {
     );
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
-      <p className="text-4xl font-marjorie italic font-bold">nos joueurs</p>
+      <p className="text-4xl font-marjorie italic font-bold">Nos joueurs</p>
       <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
         {players
           .filter(
