@@ -32,7 +32,7 @@ const Nav = () => {
   }, []);
 
   const links = [
-    { href: "/", label: "ACCEUIL" },
+    { href: "/", label: "ACCUEIL" },
     { href: "/a-propos", label: "À PROPOS" },
     { href: "/equipe", label: "ÉQUIPE" },
     { href: "/classement", label: "CLASSEMENT" },
@@ -60,7 +60,7 @@ const Nav = () => {
               className="h-full w-full object-contain"
             />
           </div>
-          <div className="ml-24 flex flex-col text-spanish-accent">
+          <div className="ml-24 flex flex-col text-spanish-accent-2">
             <p className="font-black">FURIA ROJA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
@@ -112,8 +112,8 @@ const Nav = () => {
               key={link.href}
               href={link.href}
               className={cn(
-                "hover:text-spanish-accent-2 transition-all",
-                pathname === link.href ? "text-spanish-accent-2" : ""
+                "hover:text-spanish-accent transition-all",
+                pathname === link.href ? "text-spanish-accent" : ""
               )}
             >
               {link.label}

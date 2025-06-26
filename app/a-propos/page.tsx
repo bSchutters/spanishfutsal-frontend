@@ -2,6 +2,15 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
 export default function Apropos() {
+  const valeurs = [
+    "dévouement",
+    "convivialité",
+    "amitié",
+    "motivation",
+    "respect",
+    "compétition",
+  ];
+
   return (
     <div className="flex flex-col items-center ">
       <div className="lg:h-[650px] h-96 w-full relative ">
@@ -50,25 +59,15 @@ export default function Apropos() {
               Notre équipe repose sur des valeurs fortes qui façonnent notre
               identité:
             </p>
-            <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-2 gap-4 mt-2 font-marjorie italic font-bold">
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                dévouement
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                convivialité
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                amitié
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                motivation
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                respect
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                compétition
-              </p>
+            <div className="flex gap-4 mt-2 uppercase italic font-bold">
+              {valeurs.map((valeur, index) => (
+                <p
+                  key={index}
+                  className="bg-spanish-accent-2-light/20 text-spanish-accent-2 px-3 py-1.5 rounded-lg"
+                >
+                  {valeur}
+                </p>
+              ))}
             </div>
             <p className="mt-4 text-base lg:text-lg">
               Ici, chacun trouve sa place dans un cadre bienveillant, structuré

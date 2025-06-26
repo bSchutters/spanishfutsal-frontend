@@ -4,6 +4,7 @@ import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
 import { useRankingStore } from "@/store/useRankingStore";
+import { Separator } from "@radix-ui/react-separator";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
@@ -62,24 +63,24 @@ export default function ResultAndStanding() {
   return (
     <section className="mt-16 flex flex-col lg:flex-row w-11/12 lg:gap-6 gap-12 container">
       {/* Last result */}
-      <div className=" lg:w-1/2 w-full flex flex-col lg:gap-6 gap-4">
+      <div className=" lg:w-4/5 w-full flex flex-col lg:gap-6 gap-4">
         <div className="flex justify-between items-center w-full">
-          <p className="font-marjorie italic font-bold">derniers résultats</p>
+          <p className="font-marjorie italic font-bold">Dernier résultat</p>
           <Button>
-            <Link href="/matchs">calendrier</Link>
+            <Link href="/matchs">voir tous les résultats</Link>
           </Button>
         </div>
         <BoxModule className="flex flex-col gap-6">
           <div className="flex justify-between w-full">
-            <p>
+            <Badge className="uppercase bg-spanish-accent-2-light/10 text-spanish-accent-2 font-bold">
               {lastFinishedMatch.matchDate.toLocaleDateString("fr-FR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
               })}{" "}
               • {lastFinishedMatch.time}
-            </p>
-            <Badge className="uppercase">
+            </Badge>
+            <Badge className="uppercase bg-spanish-accent-2-light/10 text-spanish-accent-2 font-bold">
               {lastFinishedMatch.serieReference !== "AMICAL"
                 ? `LFFS ${lastFinishedMatch.serieReference}`
                 : lastFinishedMatch.serieReference}
@@ -104,25 +105,27 @@ export default function ResultAndStanding() {
               className="w-1/3"
             />
           </div>
-          <div className="flex gap-2 items-center justify-center font-bold text-sm  w-full">
-            <MapPin />
-            <p className="text-sm font-semibold">
-              {lastFinishedMatch.venueName}
-            </p>
+          <div className="flex gap-2 items-center justify-center w-full">
+            <Badge className="uppercase bg-spanish-accent-2-light/10 text-spanish-accent-2 font-bold">
+              <MapPin />
+              <p className="text-sm font-semibold">
+                {lastFinishedMatch.venueName}
+              </p>
+            </Badge>
           </div>
         </BoxModule>
       </div>
-
+      <Separator className="w-0.5 rounded-full bg-spanish-bg-lighter" />
       {/* Standing  */}
       <div className=" lg:w-1/2 w-full flex flex-col lg:gap-6 gap-4">
         <div className="flex justify-between items-center w-full">
-          <p className="font-marjorie italic font-bold">classement</p>
+          <p className="font-marjorie italic font-bold">Classement</p>
           <Button>
-            <Link href="/classement">classement complet</Link>
+            <Link href="/classement">voir le classement complet</Link>
           </Button>
         </div>
         <BoxModule className="flex flex-col h-full">
-          <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter">
+          <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter-plus">
             <div className="flex gap-4 p-2">
               <p>#</p>
               <p>équipes</p>
@@ -134,8 +137,10 @@ export default function ResultAndStanding() {
               <div
                 key={team.position}
                 className={cn(
-                  "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                  team.teamName === "Furia Roja" ? "bg-spanish-bg-light" : ""
+                  "flex justify-between items-center  text-lg uppercase border-b-1 p-2 border-white last:border-none",
+                  team.teamName === "Furia Roja"
+                    ? "bg-spanish-accent-2-light/10"
+                    : ""
                 )}
               >
                 <div className="flex gap-4 ">
@@ -143,7 +148,7 @@ export default function ResultAndStanding() {
                     className={cn(
                       "italic font-marjorie font-bold xl:text-base text-sm",
                       team.teamName === "Furia Roja"
-                        ? "text-spanish-accent"
+                        ? "text-spanish-accent-2"
                         : ""
                     )}
                   >
@@ -153,7 +158,7 @@ export default function ResultAndStanding() {
                     className={cn(
                       "xl:text-base text-sm",
                       team.teamName === "Furia Roja"
-                        ? "font-bold text-spanish-accent"
+                        ? "font-bold text-spanish-accent-2"
                         : ""
                     )}
                   >
@@ -164,7 +169,7 @@ export default function ResultAndStanding() {
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm",
                     team.teamName === "Furia Roja"
-                      ? "text-spanish-accent font-bold"
+                      ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}
                 >

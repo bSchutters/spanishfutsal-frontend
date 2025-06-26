@@ -67,7 +67,7 @@ export default function Player({
           <div className="flex items-center justify-between w-full">
             <p className="">STATS</p>
             <X
-              className="hover:cursor-pointer hover:text-spanish-accent transition-all"
+              className="hover:cursor-pointer hover:text-spanish-accent-2 transition-all"
               onClick={() => setIsStatsOpen(!isStatsOpen)}
             />
           </div>
@@ -144,7 +144,7 @@ export default function Player({
 
         {stats && (poste === "Gardien" || poste === "Joueur") && (
           <Badge
-            className="hover:bg-spanish-bg-lighter hover:cursor-pointer transition-all"
+            className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-all"
             onClick={() => setIsStatsOpen(!isStatsOpen)}
           >
             STATS

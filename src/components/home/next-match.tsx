@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import useBreakpoint from "@/hooks/useBreakpoints";
@@ -8,10 +7,10 @@ import { getTeamLogo } from "@/lib/getTeamLogo";
 import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
-import { Button } from "../ui/button";
 
 import { getTeamName } from "@/lib/getTeamName";
 import { useMatchsStore } from "@/store/useMatchsStore";
+import Link from "next/link";
 
 function formatCountdown(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -23,7 +22,7 @@ function formatCountdown(ms: number) {
   const minutes = String(Math.floor((totalSeconds / 60) % 60)).padStart(2, "0");
   const seconds = String(totalSeconds % 60).padStart(2, "0");
 
-  return `${days > 0 ? String(days).padStart(2, "0") + "J " : ""}${hours}h ${minutes}M ${seconds}S`;
+  return `${days > 0 ? String(days).padStart(2, "0") + "J " : ""}${hours}H ${minutes}M ${seconds}S`;
 }
 
 export default function NextMatch() {
@@ -88,7 +87,7 @@ export default function NextMatch() {
   return (
     <BoxModule
       className={cn(
-        "lg:-mt-24 -mt-16 z-20 lg:px-8 lg:py-6 xl:w-3/5 lg:w-4/5 w-11/12 flex flex-col md:flex-row gap-4 items-center justify-between",
+        "relative lg:-mt-24 -mt-16 z-20 p-6  2xl:w-1/3 xl:w-2/5 lg:w-3/5 sm:w-2/3 w-5/6 flex flex-col md:flex-row gap-4 items-center justify-center hover:bg-spanish-bg-dark-minus cursor-pointer transition-all duration-300",
         status === "live" && liveLink
           ? "border-spanish-accent-2"
           : status === "live"
@@ -96,9 +95,30 @@ export default function NextMatch() {
             : ""
       )}
     >
-      <div
+      <Link
+        href={liveLink ? liveLink : "/matchs"}
+        {...(liveLink && { target: "_blank" })}
+        className="w-full flex items-center justify-center"
+      >
+        {status !== "live" && (
+          <div className="absolute sm:-top-6 -top-4 sm:p-2 p-1 w-36 flex  items-center justify-center bg-spanish-accent text-spanish-bg italic rounded-md text-sm font-bold">
+            {timeLeft || "Prochain match"}
+          </div>
+        )}
+        {status === "live" && liveLink && (
+          <div className="absolute sm:-top-6 -top-4 sm:p-2 p-1 w-36 flex items-center justify-center bg-spanish-accent-2 italic  rounded-md text-sm font-bold">
+            VOIR LE LIVE
+          </div>
+        )}
+        {status === "live" && !liveLink && (
+          <div className="absolute sm:-top-6 -top-4 sm:p-2 p-1 w-40 flex items-center justify-center bg-spanish-accent text-spanish-bg italic rounded-md text-sm font-bold">
+            MATCH EN COURS
+          </div>
+        )}
+
+        {/* <div
         className={cn(
-          "flex justify-between items-center",
+          " flex justify-between items-center",
           isMobile ? "w-full" : ""
         )}
       >
@@ -118,37 +138,39 @@ export default function NextMatch() {
           <p className="lg:text-sm text-xs">{status !== "live" && timeLeft}</p>
         </div>
 
-        {/* bouton calendrier toujours présent sur mobile */}
+      
         <Link href="/matchs" className="flex md:hidden">
           <Button size="sm" className="text-xs">
             calendrier
           </Button>
         </Link>
-      </div>
+      </div> */}
 
-      <div
-        className={cn(
-          "flex items-center gap-4",
-          isMobile ? "w-full justify-between" : ""
-        )}
-      >
-        <Team
-          logo={getTeamLogo(homeTeam)}
-          teamName={getTeamName(homeTeam)}
-          isNextMatch
-          {...(isMobile && { logoFirst: true })}
-        />
-        <p className="font-marjorie text-xl sm:text-2xl italic font-bold">vs</p>
-        <Team
-          logo={getTeamLogo(awayTeam)}
-          teamName={getTeamName(awayTeam)}
-          isNextMatch
-          {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
-        />
-      </div>
+        <div
+          className={cn(
+            "flex items-center gap-6",
+            isMobile ? "w-full justify-between" : ""
+          )}
+        >
+          <Team
+            logo={getTeamLogo(homeTeam)}
+            teamName={getTeamName(homeTeam)}
+            isNextMatch
+            {...(isMobile && { logoFirst: true })}
+          />
+          <p className="font-marjorie text-xl sm:text-2xl italic font-bold">
+            vs
+          </p>
+          <Team
+            logo={getTeamLogo(awayTeam)}
+            teamName={getTeamName(awayTeam)}
+            isNextMatch
+            {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
+          />
+        </div>
 
-      <div className="md:flex hidden">
-        {status === "live" && liveLink ? (
+        {/* <div className="md:flex hidden">
+        {status === "live" && liveLink && (
           <Link href={liveLink} target="_blank">
             <Button className="font-nugros uppercase relative flex gap-4">
               regarder le live
@@ -158,12 +180,9 @@ export default function NextMatch() {
               </div>
             </Button>
           </Link>
-        ) : (
-          <Link href="/matchs">
-            <Button>calendrier</Button>
-          </Link>
         )}
-      </div>
+      </div> */}
+      </Link>
     </BoxModule>
   );
 }

@@ -25,7 +25,7 @@ export default function Team({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-center gap-4",
+        "flex flex-col sm:flex-row items-center sm:gap-4 gap-2",
         logoFirst ? "" : "justify-end",
         isMatchPage && isMobile ? "flex-col items-center" : "",
         className
@@ -33,13 +33,14 @@ export default function Team({
     >
       <p
         className={cn(
-          "font-bold sm:max-w-1/2 text-end xl:text-xl lg:text-base text-sm lg:leading-4 leading-3 uppercase ",
+          "text-end xl:text-xl lg:text-base text-sm lg:leading-4 leading-3 uppercase ",
           logoFirst
             ? breakpoint === "xs"
               ? "order-2 text-center text-xs"
               : "order-2 text-start"
             : "text-end",
-          isMatchPage && isMobile ? "max-w-full text-center" : ""
+          isMatchPage && isMobile ? "max-w-full text-center" : "",
+          teamName === "Furia Roja" && "font-bold"
         )}
       >
         {teamName}
