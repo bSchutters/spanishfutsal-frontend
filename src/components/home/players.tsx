@@ -27,7 +27,7 @@ export default function Players() {
   return (
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
-        <p className="text-2xl font-marjorie italic font-bold">nos joueurs</p>
+        <p className="text-2xl font-marjorie italic font-bold">Nos joueurs</p>
         <Link href="/equipe">
           <Button>voir tous nos joueurs</Button>
         </Link>

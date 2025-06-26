@@ -4,7 +4,7 @@ import BoxModule from "../layout/boxModule";
 import { Button } from "../ui/button";
 
 export default function JoinUs() {
-  const spanClasses = "font-bold text-spanish-accent-2 font-marjorie italic";
+  const spanClasses = "font-bold text-spanish-accent font-marjorie italic";
 
   return (
     <section className="lg:container w-11/12 lg:mt-40 lg:mb-20 mb-10 mt-10">
@@ -22,7 +22,7 @@ export default function JoinUs() {
             pour grandir ensemble sur et en dehors du terrain.
           </p>
           <Link href="/contact" className="self-start">
-            <Button>nous rejoindre</Button>
+            <Button>nous soutenir</Button>
           </Link>
         </div>
         <div className="lg:absolute hidden lg:block lg:right-0 -right-8 bottom-0 ">

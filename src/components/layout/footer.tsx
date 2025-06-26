@@ -19,7 +19,7 @@ export default function Footer() {
               className="w-20 h-20"
             />
           </div>
-          <div className="text-spanish-accent text-2xl">
+          <div className="text-spanish-accent-2 text-2xl">
             <p className=" font-black">FURIA ROJA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
@@ -38,8 +38,8 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <Separator className="container mx-auto bg-spanish-bg-light" />
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter">
+      <Separator className="container mx-auto bg-spanish-bg-lighter" />
+      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter-plus">
         <p className="text-center md:text-left">
           &copy; {new Date().getFullYear()} Furia Roja. Tous droits réservés.
         </p>

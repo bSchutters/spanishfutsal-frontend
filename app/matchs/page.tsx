@@ -41,9 +41,6 @@ export default function Matchs() {
     }))
     .filter((match) => !isNaN(match.matchDate.getTime()));
 
-  // Trier les matchs par date
-  validMatchs.sort((a, b) => a.matchDate.getTime() - b.matchDate.getTime());
-
   // Trouver l'index du prochain match futur
   const closestIndex = validMatchs.findIndex((match) => match.matchDate >= now);
 
@@ -65,7 +62,7 @@ export default function Matchs() {
   useEffect(() => {
     if (fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
       matchRefs.current[fallbackIndex]?.scrollIntoView({
-        behavior: "smooth",
+        behavior: "instant",
         block: isMobile ? "end" : "center",
       });
     }
@@ -99,13 +96,24 @@ export default function Matchs() {
         const isWaitingScore =
           match.homeScore === null && match.awayScore === null;
 
+        const hasLiveMatch = validMatchs.some((m) => {
+          const matchStart = m.matchDate;
+          const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+          return now >= matchStart && now < matchEnd;
+        });
+
         return (
           <div
             className={cn(
               "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
               status === "live"
-                ? "border-2 border-spanish-accent-2"
-                : "last:border-2 last:border-spanish-accent"
+                ? match.liveLink
+                  ? "border-2 border-spanish-accent-2"
+                  : "border-2 border-spanish-accent"
+                : "",
+              closestIndex === index - 1 &&
+                !hasLiveMatch &&
+                "border-2 border-spanish-accent"
             )}
             key={index}
             ref={(el) => {
@@ -211,8 +219,8 @@ export default function Matchs() {
                     <Button className="font-nugros uppercase relative flex gap-4">
                       regarder le live
                       <div className="relative flex items-center justify-center">
-                        <div className="w-2 h-2  bg-red-500 rounded-full absolute" />
-                        <div className="w-2 h-2 animate-ping bg-red-500 rounded-full absolute" />
+                        <div className="w-2 h-2  bg-spanish-accent-2 rounded-full absolute" />
+                        <div className="w-2 h-2 animate-ping bg-spanish-accent-2 rounded-full absolute" />
                       </div>
                     </Button>
                   </Link>
