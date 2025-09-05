@@ -40,7 +40,7 @@ export default function Team({
               : "order-2 text-start"
             : "text-end",
           isMatchPage && isMobile ? "max-w-full text-center" : "",
-          teamName === "Furia Roja" && "font-bold"
+          teamName === "UD Asturiana" && "font-bold"
         )}
       >
         {teamName}

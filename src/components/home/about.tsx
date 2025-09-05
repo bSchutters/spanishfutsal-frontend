@@ -11,7 +11,7 @@ export default function About() {
         <div className="lg:w-1/2 w-full relative">
           <Image
             src="/assets/images/webp/comiteSpanish.webp"
-            alt="Comité Furia Roja"
+            alt="Comité UD Asturiana"
             width={0}
             height={0}
             sizes="100vw"
@@ -24,7 +24,7 @@ export default function About() {
               À propos
             </p>
             <p className="lg:text-xl">
-              Furia Roja est bien plus qu’un simple club de mini foot. Fondé à
+              UD Asturiana est bien plus qu’un simple club de mini foot. Fondé à
               Bruxelles en 2024, il rassemble une équipe de proches, composée d’
               <span className={spanClasses}>amis</span> et de{" "}
               <span className={spanClasses}>cousins</span> dont les liens

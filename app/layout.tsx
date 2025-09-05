@@ -1,6 +1,5 @@
 import Footer from "@/components/layout/footer";
 import Nav from "@/components/layout/nav";
-import ScreenSizeIndicator from "@/components/layout/screenSizeIndicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -8,8 +7,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Furia Roja",
-  description: "Furia Roja",
+  title: "UD Asturiana",
+  description: "UD Asturiana - Club de futsal à Bruxelles",
 };
 
 export default function RootLayout({
@@ -35,7 +34,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <Footer />
-          <ScreenSizeIndicator />
+          {/* <ScreenSizeIndicator /> */}
         </ThemeProvider>
       </body>
     </html>

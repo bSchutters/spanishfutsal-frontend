@@ -14,10 +14,11 @@ export default function JoinUs() {
             Soutenir le club
           </p>
           <p className="xl:max-w-4/5 lg:max-w-4/6  lg:text-lg text-sm">
-            Rejoignez la <span className={spanClasses}>famille</span> Furia Roja
-            Futsal en devenant <span className={spanClasses}>sponsor</span> et
-            apportez votre <span className={spanClasses}>soutien</span> à notre
-            projet. Grâce à vous, nous pourrons allier{" "}
+            Rejoignez la <span className={spanClasses}>famille</span> UD
+            Asturiana Futsal en devenant{" "}
+            <span className={spanClasses}>sponsor</span> et apportez votre{" "}
+            <span className={spanClasses}>soutien</span> à notre projet. Grâce à
+            vous, nous pourrons allier{" "}
             <span className={spanClasses}>ambition</span> et esprit d’équipe,
             pour grandir ensemble sur et en dehors du terrain.
           </p>
@@ -28,7 +29,7 @@ export default function JoinUs() {
         <div className="lg:absolute hidden lg:block lg:right-0 -right-8 bottom-0 ">
           <Image
             src="/assets/images/joueurs/olmo.webp"
-            alt="Maillot Furia Roja"
+            alt="Maillot UD Asturiana"
             width={0}
             height={0}
             sizes="100vw"

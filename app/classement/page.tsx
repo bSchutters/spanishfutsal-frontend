@@ -42,7 +42,7 @@ export default function Equipe() {
         <p className="text-4xl font-marjorie italic font-bold">Classement</p>
         <Link href="https://www.lffs.eu" target="_blank">
           <Button className="font-nugros">
-            LFFS P5E <ExternalLink />
+            LFFS P4G <ExternalLink />
           </Button>
         </Link>
       </div>
@@ -68,19 +68,24 @@ export default function Equipe() {
         <div className="w-full flex flex-col">
           {rankings.map((team) => (
             <div
-              key={team.position}
+              key={team.teamName}
               className={cn(
                 "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                team.teamName === "Furia Roja"
+                team.teamName === "UD Asturiana"
                   ? "bg-spanish-accent-2-light/10"
-                  : ""
+                  : "",
+                team.position === 1
+                  ? "rounded-t-lg"
+                  : team.position === 12
+                    ? "rounded-b-lg"
+                    : ""
               )}
             >
               <div className="flex gap-4 items-center">
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
-                    team.teamName === "Furia Roja"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent-2"
                       : ""
                   )}
@@ -100,7 +105,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "xl:text-base text-sm",
-                    team.teamName === "Furia Roja"
+                    team.teamName === "UD Asturiana"
                       ? "font-bold text-spanish-accent-2"
                       : ""
                   )}
@@ -115,7 +120,7 @@ export default function Equipe() {
                       key={stat}
                       className={cn(
                         " xl:text-base text-sm",
-                        team.teamName === "Furia Roja"
+                        team.teamName === "UD Asturiana"
                           ? "text-spanish-accent-2 font-bold"
                           : ""
                       )}
@@ -148,7 +153,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Furia Roja"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
@@ -158,7 +163,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Furia Roja"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}

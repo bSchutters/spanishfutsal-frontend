@@ -122,7 +122,7 @@ export default function Matchs() {
           >
             <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
               {(match.serieReference === "COUPE" ||
-                match.serieReference === "P5E") && (
+                match.serieReference === "P4G") && (
                 <Image
                   src="/assets/images/lffs.png"
                   alt="Team Logo"
@@ -145,7 +145,7 @@ export default function Matchs() {
               <div className="flex flex-col text-sm  leading-4">
                 <p className="font-bold">
                   {match.serieReference === "COUPE" ||
-                  match.serieReference === "P5E"
+                  match.serieReference === "P4G"
                     ? "LFFS "
                     : ""}
                   {match.serieReference}

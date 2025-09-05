@@ -52,12 +52,19 @@ export default function ResultAndStanding() {
       .sort((a, b) => b.matchDate.getTime() - a.matchDate.getTime())[0];
   }, [matchs]);
 
-  const ourTeamName = "Furia Roja";
+  const ourTeamName = "UD Asturiana";
   const index = rankings.findIndex((team) => team.teamName === ourTeamName);
   const previousTeam = rankings[index - 1];
+  const previousPreviousTeam = rankings[index - 2];
   const currentTeam = rankings[index];
   const nextTeam = rankings[index + 1];
-  const standingCompact = [previousTeam, currentTeam, nextTeam].filter(Boolean);
+  const nextNextTeam = rankings[index + 2];
+  const standingCompact =
+    index === 0
+      ? [currentTeam, nextTeam, nextNextTeam].filter(Boolean)
+      : index === 11
+        ? [previousTeam, previousPreviousTeam, currentTeam].filter(Boolean)
+        : [previousTeam, currentTeam, nextTeam].filter(Boolean);
 
   if (isMatchsLoading || isRankingLoading || !lastFinishedMatch) return null;
   return (
@@ -135,19 +142,24 @@ export default function ResultAndStanding() {
           <div className="w-full flex flex-col">
             {standingCompact.map((team) => (
               <div
-                key={team.position}
+                key={team.teamName}
                 className={cn(
                   "flex justify-between items-center  text-lg uppercase border-b-1 p-2 border-white last:border-none",
-                  team.teamName === "Furia Roja"
+                  team.teamName === "UD Asturiana"
                     ? "bg-spanish-accent-2-light/10"
-                    : ""
+                    : "",
+                  team.position === 1
+                    ? "rounded-t-lg"
+                    : team.position === 12
+                      ? "rounded-b-lg"
+                      : ""
                 )}
               >
                 <div className="flex gap-4 ">
                   <p
                     className={cn(
                       "italic font-marjorie font-bold xl:text-base text-sm",
-                      team.teamName === "Furia Roja"
+                      team.teamName === "UD Asturiana"
                         ? "text-spanish-accent-2"
                         : ""
                     )}
@@ -157,7 +169,7 @@ export default function ResultAndStanding() {
                   <p
                     className={cn(
                       "xl:text-base text-sm",
-                      team.teamName === "Furia Roja"
+                      team.teamName === "UD Asturiana"
                         ? "font-bold text-spanish-accent-2"
                         : ""
                     )}
@@ -168,7 +180,7 @@ export default function ResultAndStanding() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm",
-                    team.teamName === "Furia Roja"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}
