@@ -137,9 +137,7 @@ export default function Player({
         )}
 
         {active && poste !== "Joueur" && poste !== "Gardien" && (
-          <p className="font-bold font-marjorie italic text-xl lowercase">
-            {poste}
-          </p>
+          <p className="font-bold font-marjorie italic text-xl">{poste}</p>
         )}
 
         {stats && (poste === "Gardien" || poste === "Joueur") && (
