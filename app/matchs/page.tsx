@@ -154,7 +154,7 @@ export default function Matchs() {
                   <p className="capitalize">
                     {new Date(match.date).toLocaleDateString("fr-FR", {
                       day: "2-digit",
-                      month: "long",
+                      month: "short",
                       year: "numeric",
                     })}{" "}
                     • {match.time}

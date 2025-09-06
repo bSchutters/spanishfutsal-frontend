@@ -13,7 +13,7 @@ export default function JoinUs() {
           <p className="font-bold font-marjorie italic lg:text-2xl">
             Soutenir le club
           </p>
-          <p className="xl:max-w-4/5 lg:max-w-4/6  lg:text-lg text-sm">
+          <p className="2xl:max-w-4/5 xl:max-w-3/5 lg:max-w-4/6  lg:text-lg text-sm">
             Rejoignez la <span className={spanClasses}>famille</span> UD
             Asturiana Futsal en devenant{" "}
             <span className={spanClasses}>sponsor</span> et apportez votre{" "}
