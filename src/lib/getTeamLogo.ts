@@ -10,6 +10,8 @@ export function getTeamLogo(name: string) {
       return "/assets/images/svg/teams/ait.svg";
     case "JUVE PORT BRUXELLES 2":
       return "/assets/images/svg/teams/juveport.svg";
+    case "FC LA RELÈVE BRUXELLES":
+      return "/assets/images/svg/teams/releve.svg";
     case "UD Asturiana":
       return "/assets/images/svg/logo-asturiana.svg";
     default:
