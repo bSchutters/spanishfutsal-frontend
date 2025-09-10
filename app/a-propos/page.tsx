@@ -1,9 +1,16 @@
 import { Separator } from "@/components/ui/separator";
-import { soccerBall } from "@lucide/lab";
-import { ChevronsUp, Icon, Trophy } from "lucide-react";
 import Image from "next/image";
 
 export default function Apropos() {
+  const valeurs = [
+    "dévouement",
+    "convivialité",
+    "amitié",
+    "motivation",
+    "respect",
+    "compétition",
+  ];
+
   return (
     <div className="flex flex-col items-center ">
       <div className="lg:h-[650px] h-96 w-full relative ">
@@ -28,79 +35,55 @@ export default function Apropos() {
               Une histoire de famille, une passion commune
             </p>
             <p className="lg:text-lg text-base">
-              Spanish Futsal est un club fondé en 2024 par trois cousins, Bryan,
-              Enrique et Valadi, dans le but de retrouver l’ambiance, la
-              cohésion et la passion que leurs parents vivaient autrefois
-              ensemble sur les terrains. Le nom du club est d’ailleurs un
-              hommage direct à cette époque, puisqu’il reprend celui de l’une
-              des équipes dans laquelle leurs aînés ont évolué.
+              En 2024, deux clubs partageant la même passion, la même histoire
+              et les mêmes ambitions ont décidé d’unir leurs forces : Spanish
+              Futsal et Sporting Roja deviennent aujourd’hui une seule et même
+              famille,{" "}
+              <span className="font-bold text-spanish-accent-2">
+                Union Deportiva Asturiana{" "}
+              </span>{" "}
+              (UD Asturiana).
             </p>
             <Image
               src="/assets/images/webp/oldPic.webp"
               alt="Papas de bryan et Enrique"
               width={0}
               height={0}
-              className="w-full h-auto rounded-2xl mt-6"
+              className="w-full h-auto rounded-2xl my-6"
               sizes="100vw"
             />
-          </div>
-          <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
-          <div className="flex flex-col gap-2 ">
-            <p className="font-bold lg:text-2xl text-lg">Nos valeurs </p>
+
             <p className="lg:text-lg text-base">
-              Chez Spanish Futsal, l’état d’esprit compte autant que la
-              performance. Notre équipe repose sur des valeurs fortes qui
-              façonnent notre identité:
+              De part et d’autre, l’histoire était similaire : trois cousins
+              réunis autour d’un rêve commun, celui de recréer l’esprit
+              d’équipe, la convivialité et l’intensité que leurs parents
+              vivaient dans les salles de sport. Cette passion transmise de
+              génération en génération a donné naissance à deux clubs
+              indépendants, mais animés par les mêmes valeurs humaines et
+              sportives.
             </p>
-            <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-2 gap-4 mt-2 font-marjorie italic font-bold">
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                dévouement
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                convivialité
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                amitié
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                motivation
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                respect
-              </p>
-              <p className="py-2 w-full flex items-center justify-center bg-spanish-accent rounded-lg text-spanish-bg">
-                compétition
-              </p>
-            </div>
-            <p className="mt-4 text-base lg:text-lg">
-              Ici, chacun trouve sa place dans un cadre bienveillant, structuré
-              et exigeant, où le plaisir de jouer va de pair avec la volonté de
-              progresser ensemble.
-            </p>
-            <Image
-              src="/assets/images/webp/playing/11.webp"
-              alt="Papas de bryan et Enrique"
-              width={0}
-              height={0}
-              className="w-full h-auto rounded-2xl mt-6"
-              sizes="100vw"
-            />
           </div>
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
+
           <div className="flex flex-col gap-2">
             <p className="font-bold lg:text-2xl text-lg">
-              Une ambition claire: monter mais ensembles
+              Une identité aussi forte que nos ambitions
             </p>
             <p className="lg:text-lg text-base">
-              Pour notre toute première saison officielle, nous avons commencé
-              en P5. Malgré un départ difficile, nous avons su rebondir pour
-              terminer à la 4e place, synonyme de montée en P4. Ce n’est que le
-              début. Nous visons la P1 à court/moyen terme, avec comme ligne de
-              mire une montée en division nationale, tout en structurant
-              progressivement le club sur les plans sportif, logistique et
-              humain. Notre ambition est grande, mais elle reste fidèle à ce que
-              nous sommes : un club accessible, authentique et profondément
-              humain.
+              La fusion entre Spanish Futsal et Sporting Roja est née d’une
+              volonté simple : aller plus loin, plus fort, et plus vite. En
+              combinant nos effectifs, nos idées et notre énergie, nous posons
+              les bases d’un projet ambitieux, structuré, et ancré dans une
+              identité forte : celle des Asturies.
+              <br />
+              <br />
+              Grâce à cette fusion, nos ambitions sont plus grandes que jamais.
+              Après une première saison prometteuse conclue par une montée en P4
+              pour nos deux clubs, nous visons désormais ensembles la P1 à
+              court/moyen terme, avec pour objectif à long terme une accession
+              aux divisions nationales. Au-delà des résultats, nous mettons tout
+              en œuvre pour structurer le club de manière cohérente et durable,
+              tant sur le plan sportif, que logistique et humain.
             </p>
             <Image
               src="/assets/images/webp/team.webp"
@@ -112,6 +95,40 @@ export default function Apropos() {
             />
           </div>
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
+          <div className="flex flex-col gap-2 ">
+            <p className="lg:text-lg text-base">
+              Aujourd’hui, UD Asturiana incarne cette nouvelle ère. Plus qu’un
+              club, c’est une famille élargie, un collectif déterminé à faire
+              rayonner notre vision du futsal à travers le respect, la
+              fraternité, l’engagement et la performance.
+              <br />
+              <br />
+              Ici, chacun trouve sa place dans un cadre bienveillant, structuré
+              et exigeant, où le plaisir de jouer va de pair avec la volonté de
+              progresser ensemble.
+            </p>
+
+            <div className="flex gap-4 mt-2 uppercase italic font-bold">
+              {valeurs.map((valeur, index) => (
+                <p
+                  key={index}
+                  className="bg-spanish-accent-2-light/20 text-spanish-accent-2 px-3 py-1.5 rounded-lg"
+                >
+                  {valeur}
+                </p>
+              ))}
+            </div>
+            <Image
+              src="/assets/images/webp/playing/11.webp"
+              alt="Papas de bryan et Enrique"
+              width={0}
+              height={0}
+              className="w-full h-auto rounded-2xl mt-6"
+              sizes="100vw"
+            />
+          </div>
+
+          {/* <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
           <div className="flex flex-col gap-4">
             <p className="font-bold lg:text-2xl text-lg">Palmarès</p>
 
@@ -141,7 +158,7 @@ export default function Apropos() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

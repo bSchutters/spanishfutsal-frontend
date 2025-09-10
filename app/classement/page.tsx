@@ -1,15 +1,15 @@
 "use client";
 
-import Graphiques from "@/components/classement/graphiques";
 import BoxModule from "@/components/layout/boxModule";
 import { Button } from "@/components/ui/button";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Key, useEffect } from "react";
+import { useEffect } from "react";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
@@ -39,10 +39,10 @@ export default function Equipe() {
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className="w-full flex justify-between items-center">
-        <p className="text-4xl font-marjorie italic font-bold">classement</p>
+        <p className="text-4xl font-marjorie italic font-bold">Classement</p>
         <Link href="https://www.lffs.eu" target="_blank">
           <Button className="font-nugros">
-            LFFS P5E <ExternalLink />
+            LFFS P4G <ExternalLink />
           </Button>
         </Link>
       </div>
@@ -60,26 +60,33 @@ export default function Equipe() {
               <p>DIFF</p>
               <p>PTS</p>
             </div>
-            <div className="w-[152px] items-center justify-center hidden lg:flex">
+            {/* <div className="w-[152px] items-center justify-center hidden lg:flex">
               FORME
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="w-full flex flex-col">
           {rankings.map((team) => (
             <div
-              key={team.position}
+              key={team.teamName}
               className={cn(
                 "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                team.teamName === "Spanish Futsal" ? "bg-spanish-bg-light" : ""
+                team.teamName === "UD Asturiana"
+                  ? "bg-spanish-accent-2-light/10"
+                  : "",
+                team.position === 1
+                  ? "rounded-t-lg"
+                  : team.position === 12
+                    ? "rounded-b-lg"
+                    : ""
               )}
             >
               <div className="flex gap-4 items-center">
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
-                    team.teamName === "Spanish Futsal"
-                      ? "text-spanish-accent"
+                    team.teamName === "UD Asturiana"
+                      ? "text-spanish-accent-2"
                       : ""
                   )}
                 >
@@ -98,12 +105,12 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "xl:text-base text-sm",
-                    team.teamName === "Spanish Futsal"
-                      ? "font-bold text-spanish-accent"
+                    team.teamName === "UD Asturiana"
+                      ? "font-bold text-spanish-accent-2"
                       : ""
                   )}
                 >
-                  {team.teamName}
+                  {getTeamName(team.teamName)}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -113,8 +120,8 @@ export default function Equipe() {
                       key={stat}
                       className={cn(
                         " xl:text-base text-sm",
-                        team.teamName === "Spanish Futsal"
-                          ? "text-spanish-accent font-bold"
+                        team.teamName === "UD Asturiana"
+                          ? "text-spanish-accent-2 font-bold"
                           : ""
                       )}
                     >
@@ -122,7 +129,7 @@ export default function Equipe() {
                     </p>
                   ))}
                 </div>
-                <div className="gap-2 text-sm  font-bold hidden lg:flex">
+                {/* <div className="gap-2 text-sm  font-bold hidden lg:flex">
                   {JSON.parse(team.result_sequence)?.map(
                     (form: string, index: Key) => (
                       <div
@@ -140,13 +147,13 @@ export default function Equipe() {
                       </div>
                     )
                   )}
-                </div>
+                </div> */}
               </div>
               <div className="md:hidden grid grid-cols-[repeat(2,40px)] gap-4 text-center">
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Spanish Futsal"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
@@ -156,7 +163,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "Spanish Futsal"
+                    team.teamName === "UD Asturiana"
                       ? "text-spanish-accent font-bold"
                       : ""
                   )}
@@ -168,11 +175,12 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
+      {/* 
       <p className="text-4xl font-marjorie italic font-bold">
-        évolution notre position au classement par journée
+        évolution de notre position au classement par journée
       </p>
 
-      <Graphiques />
+      <Graphiques /> */}
     </div>
   );
 }

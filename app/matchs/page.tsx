@@ -4,10 +4,18 @@ import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
 import { getTeamLogo } from "@/lib/getTeamLogo";
+import { getTeamName } from "@/lib/getTeamName";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
-import { ExternalLink, Loader, MapPin, MapPinned } from "lucide-react";
+import {
+  ExternalLink,
+  Handshake,
+  Loader,
+  MapPin,
+  MapPinned,
+  Trophy,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -16,6 +24,7 @@ import { toast } from "sonner";
 export default function Matchs() {
   const { isMobile } = useBreakpoint();
   const { matchs, isLoading, fetchMatchs } = useMatchsStore();
+  const { breakpoint } = useBreakpoint();
 
   useEffect(() => {
     fetchMatchs();
@@ -31,9 +40,6 @@ export default function Matchs() {
       matchDate: new Date(`${match.date}T${match.time.padEnd(5, ":00")}`),
     }))
     .filter((match) => !isNaN(match.matchDate.getTime()));
-
-  // Trier les matchs par date
-  validMatchs.sort((a, b) => a.matchDate.getTime() - b.matchDate.getTime());
 
   // Trouver l'index du prochain match futur
   const closestIndex = validMatchs.findIndex((match) => match.matchDate >= now);
@@ -56,7 +62,7 @@ export default function Matchs() {
   useEffect(() => {
     if (fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
       matchRefs.current[fallbackIndex]?.scrollIntoView({
-        behavior: "smooth",
+        behavior: "instant",
         block: isMobile ? "end" : "center",
       });
     }
@@ -72,7 +78,7 @@ export default function Matchs() {
 
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
-      <p className="text-4xl font-marjorie italic font-bold">nos matchs</p>
+      <p className="text-4xl font-marjorie italic font-bold">Nos matchs</p>
       {matchs.map((match, index) => {
         const today = new Date();
         const matchDateTime = new Date(`${match.date}T${match.time}`);
@@ -90,13 +96,24 @@ export default function Matchs() {
         const isWaitingScore =
           match.homeScore === null && match.awayScore === null;
 
+        const hasLiveMatch = validMatchs.some((m) => {
+          const matchStart = m.matchDate;
+          const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+          return now >= matchStart && now < matchEnd;
+        });
+
         return (
           <div
             className={cn(
               "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
               status === "live"
-                ? "border-2 border-spanish-accent-2"
-                : "last:border-2 last:border-spanish-accent"
+                ? match.liveLink
+                  ? "border-2 border-spanish-accent-2"
+                  : "border-2 border-spanish-accent"
+                : "",
+              closestIndex === index - 1 &&
+                !hasLiveMatch &&
+                "border-2 border-spanish-accent"
             )}
             key={index}
             ref={(el) => {
@@ -104,27 +121,40 @@ export default function Matchs() {
             }}
           >
             <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
-              <Image
-                src="/assets/images/lffs.png"
-                alt="Team Logo"
-                width={0}
-                height={0}
-                sizes="100vw"
-                className="w-6 h-auto"
-              />
+              {(match.serieReference === "COUPE" ||
+                match.serieReference === "P4G") && (
+                <Image
+                  src="/assets/images/lffs.png"
+                  alt="Team Logo"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="w-6 h-auto"
+                />
+              )}
+              {match.serieReference === "AMICAL" && (
+                <div>
+                  <Handshake className="w-6 h-auto text-spanish-accent" />
+                </div>
+              )}
+              {match.serieReference === "TOURNOIS" && (
+                <div>
+                  <Trophy className="w-6 h-auto text-spanish-accent" />
+                </div>
+              )}
               <div className="flex flex-col text-sm  leading-4">
                 <p className="font-bold">
-                  LFFS{" "}
-                  {match.serieReference === "BTCPRES" ||
-                  match.serieReference === "BTCPPRM"
-                    ? "COUPE"
-                    : match.serieReference}
+                  {match.serieReference === "COUPE" ||
+                  match.serieReference === "P4G"
+                    ? "LFFS "
+                    : ""}
+                  {match.serieReference}
                 </p>
                 {match.date && (
                   <p className="capitalize">
                     {new Date(match.date).toLocaleDateString("fr-FR", {
                       day: "2-digit",
-                      month: "long",
+                      month: "short",
                       year: "numeric",
                     })}{" "}
                     • {match.time}
@@ -132,33 +162,41 @@ export default function Matchs() {
                 )}
               </div>
             </div>
-            <div className="grid xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
+            <div className="grid gap-2 sm:gap-0 xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
               <Team
                 logo={getTeamLogo(match.homeTeam)}
-                teamName={match.homeTeam}
+                teamName={getTeamName(match.homeTeam)}
                 isMatchPage
                 {...(isMobile && { logoFirst: true })}
                 isMobile={isMobile}
               />
-              <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex">
+              <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex ">
                 {status === "finished" && !isWaitingScore
                   ? match.homeScore + " - " + match.awayScore
                   : "vs"}
               </p>
               <Team
                 logo={getTeamLogo(match.awayTeam)}
-                teamName={match.awayTeam}
+                teamName={getTeamName(match.awayTeam)}
                 isMatchPage
                 logoFirst
                 isMobile={isMobile}
               />
             </div>
-            <div className="w-full lg:w-1/6 flex items-center lg:justify-end justify-center ">
+
+            <div
+              className={cn(
+                "w-full lg:w-1/6 flex items-center lg:justify-end justify-center",
+                breakpoint === "xs" &&
+                  !match.replayLink &&
+                  status === "finished" &&
+                  "hidden"
+              )}
+            >
               <div
                 className={cn(
                   "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
-                  (status === "finished" && match.replayLink) ||
-                    (status === "live" && match.liveLink)
+                  status === "live" && match.liveLink
                     ? "justify-between"
                     : "justify-center"
                 )}
@@ -181,8 +219,8 @@ export default function Matchs() {
                     <Button className="font-nugros uppercase relative flex gap-4">
                       regarder le live
                       <div className="relative flex items-center justify-center">
-                        <div className="w-2 h-2  bg-red-500 rounded-full absolute" />
-                        <div className="w-2 h-2 animate-ping bg-red-500 rounded-full absolute" />
+                        <div className="w-2 h-2  bg-spanish-accent-2 rounded-full absolute" />
+                        <div className="w-2 h-2 animate-ping bg-spanish-accent-2 rounded-full absolute" />
                       </div>
                     </Button>
                   </Link>

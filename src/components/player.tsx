@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import useBreakpoint from "@/hooks/useBreakpoints";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import BoxModule from "./layout/boxModule";
 import { Badge } from "./ui/badge";
-import Image from "next/image";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface PlayerStats {
   matchesPlayed: number;
@@ -40,6 +41,12 @@ export default function Player({
   poste,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const { breakpoint } = useBreakpoint();
+
+  function shortenName(name: string): string {
+    if (!name) return "";
+    return name.charAt(0).toUpperCase() + ".";
+  }
 
   return (
     <BoxModule
@@ -60,7 +67,7 @@ export default function Player({
           <div className="flex items-center justify-between w-full">
             <p className="">STATS</p>
             <X
-              className="hover:cursor-pointer hover:text-spanish-accent transition-all"
+              className="hover:cursor-pointer hover:text-spanish-accent-2 transition-all"
               onClick={() => setIsStatsOpen(!isStatsOpen)}
             />
           </div>
@@ -130,23 +137,22 @@ export default function Player({
         )}
 
         {active && poste !== "Joueur" && poste !== "Gardien" && (
-          <p className="font-bold font-marjorie italic text-xl lowercase">
-            {poste}
-          </p>
+          <p className="font-bold font-marjorie italic text-xl">{poste}</p>
         )}
 
         {stats && (poste === "Gardien" || poste === "Joueur") && (
           <Badge
-            className="hover:bg-spanish-bg-lighter hover:cursor-pointer transition-all"
+            className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-all"
             onClick={() => setIsStatsOpen(!isStatsOpen)}
           >
             STATS
           </Badge>
         )}
       </div>
-      <BoxModule className="absolute bottom-3 w-11/12 p-2 flex items-center justify-center rounded-lg z-10">
+      <BoxModule className="absolute bottom-3 w-11/12 md:p-2 p-1 -mb-1 md:mb-0 flex items-center justify-center rounded-lg z-10">
         <p className="uppercase">
-          {lastname} <span className="font-bold">{firstname}</span>
+          {breakpoint === "xs" ? shortenName(lastname) : lastname}{" "}
+          <span className="font-bold">{firstname}</span>
         </p>
       </BoxModule>
       <div className="-mb-4">

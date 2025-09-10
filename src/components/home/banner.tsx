@@ -1,16 +1,15 @@
 import Image from "next/image";
-import React from "react";
 
 export default function Banner() {
   return (
     <section className="lg:h-[650px] h-96 w-full font-marjorie italic flex items-center justify-center relative ">
-      <div className="absolute w-full h-full bg-spanish-bg/90 z-10" />
+      <div className="absolute w-full h-full bg-spanish-bg/75 z-10" />
       <div className="absolute w-full h-full mask-b-from-100%">
         <Image
-          src="/assets/images/webp/spainPic.webp"
+          src="/assets/images/webp/spainPic3.webp"
           alt="Spain Picture"
           fill
-          className="object-cover blur-xs"
+          className="object-cover object-top"
         />
       </div>
       <div className="flex flex-col items-center justify-center text-center lg:text-4xl text-2xl lg:gap-4 z-20">

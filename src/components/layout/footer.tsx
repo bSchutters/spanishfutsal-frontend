@@ -1,7 +1,6 @@
 // components/Footer.tsx
 import Image from "next/image";
 import Link from "next/link";
-import Foodbag from "../ui/foodbag";
 import Peppermill from "../ui/peppermill";
 import { Separator } from "../ui/separator";
 
@@ -12,15 +11,15 @@ export default function Footer() {
         <Link href="/" className="flex items-center gap-4">
           <div>
             <Image
-              src="/assets/images/svg/logo-roja.svg"
+              src="/assets/images/svg/logo-asturiana.svg"
               alt="Logo"
               width={0}
               height={0}
               className="w-20 h-20"
             />
           </div>
-          <div className="text-spanish-accent text-2xl">
-            <p className=" font-black">FURIA ROJA</p>
+          <div className="text-spanish-accent-2 text-2xl">
+            <p className=" font-black">UD ASTURIANA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>
@@ -29,55 +28,51 @@ export default function Footer() {
             sponsors
           </p>
           <div className="flex gap-8">
-            <Link href="https://www.foodbag.be/fr" target="_blank">
-              <Foodbag className="w-auto h-12 opacity-40 hover:opacity-100 transition-all" />
-            </Link>
             <Link href="https://www.peppermillcasino.be/fr" target="_blank">
               <Peppermill className="w-auto h-12 opacity-40 hover:opacity-100 transition-all" />
             </Link>
           </div>
         </div>
       </div>
-      <Separator className="container mx-auto bg-spanish-bg-light" />
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter">
+      <Separator className="container mx-auto bg-spanish-bg-lighter" />
+      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter-plus">
         <p className="text-center md:text-left">
-          &copy; {new Date().getFullYear()} Spanish Futsal. Tous droits
-          réservés.
+          &copy; {new Date().getFullYear()} UD Asturiana. Tous droits réservés.
         </p>
 
         <div className="flex gap-4">
-          <Link
+          {/* <Link
             href="/mentions-legales"
             className="hover:text-spanish-accent-dark transition-all"
           >
             Mentions légales
-          </Link>
+          </Link> */}
           <Link
-            href="https://instagram.com/spanish_futsal"
+            href="https://instagram.com/asturiana_ud"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-spanish-accent-dark transition-all"
           >
             Instagram
           </Link>
-          <Link
+          {/* <Link
             href="https://instagram.com/spanish_futsal"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-spanish-accent-dark transition-all"
           >
             Facebook
-          </Link>
-          <Link
+          </Link> */}
+          {/* <Link
             href="https://instagram.com/spanish_futsal"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-spanish-accent-dark transition-all"
           >
             Tiktok
-          </Link>
+          </Link> */}
           <Link
-            href="https://instagram.com/spanish_futsal"
+            href="https://www.youtube.com/@UDAsturiana"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-spanish-accent-dark transition-all"

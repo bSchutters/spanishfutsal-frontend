@@ -1,15 +1,14 @@
+import Footer from "@/components/layout/footer";
+import Nav from "@/components/layout/nav";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
-import Nav from "@/components/layout/nav";
-import ScreenSizeIndicator from "@/components/layout/screenSizeIndicator";
-import Footer from "@/components/layout/footer";
-import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Spanish Futsal",
-  description: "Spanish Futsal",
+  title: "UD Asturiana",
+  description: "UD Asturiana - Club de futsal à Bruxelles",
 };
 
 export default function RootLayout({
@@ -35,7 +34,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <Footer />
-          <ScreenSizeIndicator />
+          {/* <ScreenSizeIndicator /> */}
         </ThemeProvider>
       </body>
     </html>

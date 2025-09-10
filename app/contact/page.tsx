@@ -1,6 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,20 +19,13 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { formSchema } from "@/lib/schemas";
 import { send } from "@/lib/email";
+import { formSchema } from "@/lib/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
 const topics = [
   "Sponsoring",
@@ -46,6 +47,7 @@ export default function Contact() {
       message: "",
     },
   });
+  const router = useRouter();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     send(values);
@@ -73,13 +75,14 @@ export default function Contact() {
         duration: 3000,
       }
     );
+    router.push("/");
   }
   return (
     <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className=" z-10 lg:py-20 py-14 lg:px-0 px-10 rounded-2xl lg:container md:max-w-2xl sm:max-w-xl max-w-md mx-auto mb-20">
         <div className="flex flex-col gap-10 items-center justify-center max-w-4xl mx-auto">
           <p className="text-4xl font-marjorie italic font-bold">
-            nous contacter
+            Nous contacter
           </p>
           <Separator className="mx-auto bg-spanish-bg-lighter" />
           <Form {...form}>
@@ -92,7 +95,7 @@ export default function Contact() {
                 name="topic"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sujet *</FormLabel>
+                    <FormLabel>Sujet</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -124,7 +127,7 @@ export default function Contact() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prénom *</FormLabel>
+                      <FormLabel>Prénom</FormLabel>
                       <FormControl>
                         <Input placeholder="Votre prénom" {...field} />
                       </FormControl>
@@ -137,7 +140,7 @@ export default function Contact() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom *</FormLabel>
+                      <FormLabel>Nom</FormLabel>
                       <FormControl>
                         <Input placeholder="Votre nom" {...field} />
                       </FormControl>
@@ -152,7 +155,7 @@ export default function Contact() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Adresse email *</FormLabel>
+                    <FormLabel>Adresse email</FormLabel>
                     <FormControl>
                       <Input placeholder="Votre adresse email" {...field} />
                     </FormControl>
@@ -166,7 +169,7 @@ export default function Contact() {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message *</FormLabel>
+                    <FormLabel>Message</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Dites nous ce que vous avez en tête..."

@@ -32,7 +32,7 @@ const Nav = () => {
   }, []);
 
   const links = [
-    { href: "/", label: "ACCEUIL" },
+    { href: "/", label: "ACCUEIL" },
     { href: "/a-propos", label: "À PROPOS" },
     { href: "/equipe", label: "ÉQUIPE" },
     { href: "/classement", label: "CLASSEMENT" },
@@ -45,23 +45,23 @@ const Nav = () => {
   return (
     <header
       className={cn(
-        "bg-spanish-bg-dark  z-50 font-bold fixed top-0 left-0 w-full transition-all duration-700 ease-in-out",
+        "bg-spanish-nav  z-50 font-bold fixed top-0 left-0 w-full transition-all duration-700 ease-in-out",
         isVisible ? "translate-y-0" : "-translate-y-[150%]"
       )}
     >
       <div className="flex items-center justify-between py-4 px-8">
         {/* Logo + Nom */}
         <Link href="/" className="flex items-center gap-3 relative">
-          <div className="md:h-20 md:w-20 w-16 h-16 absolute md:-bottom-10 -bottom-6 z-20  outline-spanish-bg-dark md:outline-4 outline-2 rounded-full">
+          <div className="md:h-20 md:w-20 w-16 h-16 absolute md:-bottom-10 -bottom-6 z-20  outline-spanish-nav md:outline-4 outline-2 rounded-full">
             <Image
-              src="/assets/images/svg/logo-roja.svg"
-              alt="Logo Spanish Futsal"
+              src="/assets/images/svg/logo-asturiana.svg"
+              alt="Logo UD Asturiana"
               fill
               className="h-full w-full object-contain"
             />
           </div>
-          <div className="ml-24 flex flex-col text-spanish-accent">
-            <p className="font-black">FURIA ROJA</p>
+          <div className="ml-24 flex flex-col text-spanish-accent-2">
+            <p className="font-black">UD ASTURIANA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>

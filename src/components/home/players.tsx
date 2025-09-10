@@ -27,7 +27,7 @@ export default function Players() {
   return (
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
-        <p className="text-2xl font-marjorie italic font-bold">nos joueurs</p>
+        <p className="text-2xl font-marjorie italic font-bold">Nos joueurs</p>
         <Link href="/equipe">
           <Button>voir tous nos joueurs</Button>
         </Link>
@@ -35,7 +35,7 @@ export default function Players() {
 
       <Carousel
         opts={{
-          slidesToScroll: 2,
+          slidesToScroll: 1,
           loop: false,
           dragFree: true,
         }}
@@ -50,7 +50,7 @@ export default function Players() {
             .map((player) => (
               <CarouselItem
                 key={player.id}
-                className="2xl:basis-1/5 xl:basis-1/4 lg:basis-1/3  basis-1/2"
+                className="2xl:basis-1/5 xl:basis-1/4 lg:basis-1/3  basis-2/3"
               >
                 <Player
                   firstname={player.prenom}
