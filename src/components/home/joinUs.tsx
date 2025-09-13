@@ -28,12 +28,12 @@ export default function JoinUs() {
         </div>
         <div className="lg:absolute hidden lg:block lg:right-0 -right-8 bottom-0 ">
           <Image
-            src="/assets/images/joueurs/olmo.webp"
+            src="/assets/images/joueurs/alex.webp"
             alt="Maillot UD Asturiana"
             width={0}
             height={0}
             sizes="100vw"
-            className="w-96 h-auto rounded-lg object-cover"
+            className="w-96 h-96 rounded-lg object-contain"
           />
         </div>
       </BoxModule>

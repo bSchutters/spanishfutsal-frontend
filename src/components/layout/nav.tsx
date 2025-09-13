@@ -60,7 +60,7 @@ const Nav = () => {
               className="h-full w-full object-contain"
             />
           </div>
-          <div className="ml-24 flex flex-col text-spanish-accent-2">
+          <div className="md:ml-24 ml-20 flex flex-col text-spanish-accent-2">
             <p className="font-black">UD ASTURIANA</p>
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>

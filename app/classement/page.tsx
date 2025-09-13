@@ -6,13 +6,17 @@ import { getTeamLogo } from "@/lib/getTeamLogo";
 import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
-import { ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import MetadataHead from "@/components/metadata-head";
+import { classementMetadata } from "./metadata";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
+
+  console.log(rankings);
 
   useEffect(() => {
     fetchRankings();
@@ -37,9 +41,11 @@ export default function Equipe() {
   }
 
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+    <>
+      <MetadataHead metadata={classementMetadata} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className="w-full flex justify-between items-center">
-        <p className="text-4xl font-marjorie italic font-bold">Classement</p>
+        <h1 className="text-4xl font-marjorie italic font-bold">Classement</h1>
         <Link href="https://www.lffs.eu" target="_blank">
           <Button className="font-nugros">
             LFFS P4G <ExternalLink />
@@ -57,7 +63,7 @@ export default function Equipe() {
               <p className="hidden md:block">P</p>
               <p className="hidden md:block">BP</p>
               <p className="hidden md:block">BC</p>
-              <p>DIFF</p>
+              <p>+/-</p>
               <p>PTS</p>
             </div>
             {/* <div className="w-[152px] items-center justify-center hidden lg:flex">
@@ -82,6 +88,17 @@ export default function Equipe() {
               )}
             >
               <div className="flex gap-4 items-center">
+                <p className="w-4 h-4 flex items-center justify-center">
+                  {team.positionChange === "no_change" ||
+                  team.positionChange === null ? (
+                    // <Equal className="text-white" />
+                    "-"
+                  ) : team.positionChange === "up" ? (
+                    <ChevronUp className="text-green-500" />
+                  ) : (
+                    <ChevronDown className="text-red-500" />
+                  )}
+                </p>
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
@@ -125,7 +142,9 @@ export default function Equipe() {
                           : ""
                       )}
                     >
-                      {team[stat as keyof typeof team]}
+                      {stat === "goalDifference" && team.goalDifference > 0
+                        ? `+${team[stat as keyof typeof team]}`
+                        : team[stat as keyof typeof team]}
                     </p>
                   ))}
                 </div>
@@ -158,7 +177,9 @@ export default function Equipe() {
                       : ""
                   )}
                 >
-                  {team.goalDifference}
+                  {team.goalDifference > 0
+                    ? `+${team.goalDifference}`
+                    : team.goalDifference}
                 </p>
                 <p
                   className={cn(
@@ -175,12 +196,13 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
-      {/* 
+      {/*
       <p className="text-4xl font-marjorie italic font-bold">
         évolution de notre position au classement par journée
       </p>
 
       <Graphiques /> */}
-    </div>
+      </div>
+    </>
   );
 }

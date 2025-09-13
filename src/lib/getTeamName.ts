@@ -14,6 +14,8 @@ export function getTeamName(name: string) {
       return "FSE Jette Crew 2";
     case "FC SOKOL BRUXELLES 3":
       return "FC Sokol 3";
+    case "FC SOKOL BRUXELLES 2":
+      return "FC Sokol 2";
     case "ATLAS BRUSSEL":
       return "ATLAS";
     case "DB TEAM WOLUWE-SAINT-LAMBERT":
@@ -26,6 +28,24 @@ export function getTeamName(name: string) {
       return "Mambo NP";
     case "BIGS BROS WINGMEN LA HULPE 1":
       return "Bigs Bros Wingmen 1";
+    case "TP MAKASI AUDERGHEM 2":
+      return "TP Makasi 2";
+    case "FC LA RELÈVE BRUXELLES":
+      return "FC La Relève";
+    case "FC SCABAL BRUXELLES":
+      return "FC Scabal";
+    case "FRATERNITE BRUXELLES 1":
+      return "Fraternité 1";
+    case "JUVE PORT BRUXELLES 2":
+      return "Juve Port 2";
+    case "BRUXELLES RED LABEL 2":
+      return "Red Label 2";
+    case "TP MAKASI AUDERGHEM 2":
+      return "TP Makasi 2";
+    case "LUPOPO BRUXELLES 2":
+      return "Lupopo 2";
+    case "THE MOTTS BERCHEM-SAINTE-AGATHE":
+      return "The Motts";
     default:
       return name;
   }
