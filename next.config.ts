@@ -4,7 +4,16 @@ const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
   images: {
-    domains: ["localhost", "strapi.sbryan.studio"], // ou ton domaine prod plus tard
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "strapi.sbryan.studio",
+      },
+    ],
   },
 };
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import MetadataHead from "@/components/metadata-head";
+import { contactMetadata } from "./metadata";
 import {
   Form,
   FormControl,
@@ -78,12 +80,14 @@ export default function Contact() {
     router.push("/");
   }
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+    <>
+      <MetadataHead metadata={contactMetadata} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className=" z-10 lg:py-20 py-14 lg:px-0 px-10 rounded-2xl lg:container md:max-w-2xl sm:max-w-xl max-w-md mx-auto mb-20">
         <div className="flex flex-col gap-10 items-center justify-center max-w-4xl mx-auto">
-          <p className="text-4xl font-marjorie italic font-bold">
+          <h1 className="text-4xl font-marjorie italic font-bold">
             Nous contacter
-          </p>
+          </h1>
           <Separator className="mx-auto bg-spanish-bg-lighter" />
           <Form {...form}>
             <form
@@ -189,6 +193,7 @@ export default function Contact() {
           </Form>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

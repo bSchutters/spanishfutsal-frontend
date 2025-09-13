@@ -1,5 +1,16 @@
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "À Propos | UD Asturiana - Notre Histoire",
+  description: "Découvrez l'histoire d'UD Asturiana, née de la fusion entre Spanish Futsal et Sporting Roja. Une famille unie par la passion du futsal à Bruxelles.",
+  openGraph: {
+    title: "À Propos | UD Asturiana - Notre Histoire",
+    description: "Découvrez l'histoire d'UD Asturiana, née de la fusion entre Spanish Futsal et Sporting Roja. Une famille unie par la passion du futsal à Bruxelles.",
+    url: "https://udasturiana.be/a-propos",
+  },
+};
 
 export default function Apropos() {
   const valeurs = [
@@ -18,22 +29,24 @@ export default function Apropos() {
         <div className="w-full h-full mask-b-from-100%">
           <Image
             src="/assets/images/webp/comiteSpanish.webp"
-            alt="Spain Picture"
+            alt="Comité directeur d'UD Asturiana - Dirigeants du club de futsal"
             fill
             className="object-cover "
+            priority
+            sizes="100vw"
           />
         </div>
       </div>
       <div className="bg-spanish-bg-light z-10 lg:py-20 py-14 lg:px-0 px-10 rounded-2xl lg:container md:max-w-2xl sm:max-w-xl max-w-md mx-auto lg:-mt-20 -mt-30 mb-20">
         <div className="flex flex-col item-center max-w-4xl mx-auto gap-10">
-          <p className="font-bold italic text-4xl text-center font-marjorie">
-            A propos
-          </p>
+          <h1 className="font-bold italic text-4xl text-center font-marjorie">
+            À propos
+          </h1>
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
           <div className="flex flex-col gap-2">
-            <p className="font-bold lg:text-2xl text-lg">
+            <h2 className="font-bold lg:text-2xl text-lg">
               Une histoire de famille, une passion commune
-            </p>
+            </h2>
             <p className="lg:text-lg text-base">
               En 2024, deux clubs partageant la même passion, la même histoire
               et les mêmes ambitions ont décidé d’unir leurs forces : Spanish
@@ -46,11 +59,12 @@ export default function Apropos() {
             </p>
             <Image
               src="/assets/images/webp/oldPic.webp"
-              alt="Papas de bryan et Enrique"
+              alt="Ancienne photo des fondateurs du club - Génération précédente d'UD Asturiana"
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl my-6"
               sizes="100vw"
+              loading="lazy"
             />
 
             <p className="lg:text-lg text-base">
@@ -66,9 +80,9 @@ export default function Apropos() {
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
 
           <div className="flex flex-col gap-2">
-            <p className="font-bold lg:text-2xl text-lg">
+            <h2 className="font-bold lg:text-2xl text-lg">
               Une identité aussi forte que nos ambitions
-            </p>
+            </h2>
             <p className="lg:text-lg text-base">
               La fusion entre Spanish Futsal et Sporting Roja est née d’une
               volonté simple : aller plus loin, plus fort, et plus vite. En
@@ -87,11 +101,12 @@ export default function Apropos() {
             </p>
             <Image
               src="/assets/images/webp/team.webp"
-              alt="Papas de bryan et Enrique"
+              alt="Équipe actuelle d'UD Asturiana - Joueurs et staff réunis"
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
               sizes="100vw"
+              loading="lazy"
             />
           </div>
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
@@ -120,11 +135,12 @@ export default function Apropos() {
             </div>
             <Image
               src="/assets/images/webp/playing/11.webp"
-              alt="Papas de bryan et Enrique"
+              alt="Joueurs d'UD Asturiana en action sur le terrain - Match de futsal"
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
               sizes="100vw"
+              loading="lazy"
             />
           </div>
 

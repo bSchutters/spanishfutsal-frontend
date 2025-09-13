@@ -5,6 +5,9 @@ import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
 import { usePlayersStore } from "@/store/usePlayersStore";
 import { useEffect } from "react";
+import MetadataHead from "@/components/metadata-head";
+import JsonLd from "@/components/json-ld";
+import { equipeMetadata } from "./metadata";
 
 export default function Equipe() {
   const { players, isLoading, fetchPlayers } = usePlayersStore();
@@ -16,7 +19,7 @@ export default function Equipe() {
   if (isLoading)
     return (
       <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6 animate-pulse">
-        <p className="text-4xl font-marjorie italic font-bold">Nos joueurs</p>
+        <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
         <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
           {Array.from({ length: 10 }).map((_, index) => (
             <PlayerLoader key={index} />
@@ -24,9 +27,28 @@ export default function Equipe() {
         </div>
       </div>
     );
+  const teamSchema = {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    "name": "Union Deportiva Asturiana",
+    "sport": "Futsal",
+    "memberOf": {
+      "@type": "SportsOrganization",
+      "name": "LFFS",
+    },
+    "athlete": players.filter(p => p.actif && (p.poste === "Joueur" || p.poste === "Gardien")).map(player => ({
+      "@type": "Person",
+      "name": `${player.prenom} ${player.nom}`,
+      "jobTitle": player.poste,
+    })),
+  };
+
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
-      <p className="text-4xl font-marjorie italic font-bold">Nos joueurs</p>
+    <>
+      <MetadataHead metadata={equipeMetadata} />
+      <JsonLd data={teamSchema} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+      <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
       <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
         {players
           .filter(
@@ -51,9 +73,9 @@ export default function Equipe() {
       {players.some((player) => player.actif === false) && (
         <>
           <Separator className="bg-spanish-bg-dark w-full" />
-          <p className="text-4xl font-marjorie italic font-bold">
+          <h2 className="text-4xl font-marjorie italic font-bold">
             Nos anciens joueurs
-          </p>
+          </h2>
           <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
             {players
               .filter((player) => player.actif === false)
@@ -77,7 +99,7 @@ export default function Equipe() {
       ) && (
         <>
           <Separator className="bg-spanish-bg-dark w-full" />
-          <p className="text-4xl font-marjorie italic font-bold">Notre staff</p>
+          <h2 className="text-4xl font-marjorie italic font-bold">Notre staff</h2>
           <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
             {players
               .filter(
@@ -99,6 +121,7 @@ export default function Equipe() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -10,6 +10,8 @@ import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import MetadataHead from "@/components/metadata-head";
+import { classementMetadata } from "./metadata";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
@@ -39,9 +41,11 @@ export default function Equipe() {
   }
 
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+    <>
+      <MetadataHead metadata={classementMetadata} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className="w-full flex justify-between items-center">
-        <p className="text-4xl font-marjorie italic font-bold">Classement</p>
+        <h1 className="text-4xl font-marjorie italic font-bold">Classement</h1>
         <Link href="https://www.lffs.eu" target="_blank">
           <Button className="font-nugros">
             LFFS P4G <ExternalLink />
@@ -192,12 +196,13 @@ export default function Equipe() {
           ))}
         </div>
       </BoxModule>
-      {/* 
+      {/*
       <p className="text-4xl font-marjorie italic font-bold">
         évolution de notre position au classement par journée
       </p>
 
       <Graphiques /> */}
-    </div>
+      </div>
+    </>
   );
 }
