@@ -5,17 +5,9 @@ import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
 import { usePlayersStore } from "@/store/usePlayersStore";
 import { useEffect } from "react";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Équipe | UD Asturiana - Nos Joueurs",
-  description: "Découvrez l'équipe d'UD Asturiana : nos joueurs actuels, anciens joueurs et staff technique. Une famille unie par la passion du futsal.",
-  openGraph: {
-    title: "Équipe | UD Asturiana - Nos Joueurs",
-    description: "Découvrez l'équipe d'UD Asturiana : nos joueurs actuels, anciens joueurs et staff technique. Une famille unie par la passion du futsal.",
-    url: "https://udasturiana.be/equipe",
-  },
-};
+import MetadataHead from "@/components/metadata-head";
+import JsonLd from "@/components/json-ld";
+import { equipeMetadata } from "./metadata";
 
 export default function Equipe() {
   const { players, isLoading, fetchPlayers } = usePlayersStore();
@@ -35,8 +27,27 @@ export default function Equipe() {
         </div>
       </div>
     );
+  const teamSchema = {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    "name": "Union Deportiva Asturiana",
+    "sport": "Futsal",
+    "memberOf": {
+      "@type": "SportsOrganization",
+      "name": "LFFS",
+    },
+    "athlete": players.filter(p => p.actif && (p.poste === "Joueur" || p.poste === "Gardien")).map(player => ({
+      "@type": "Person",
+      "name": `${player.prenom} ${player.nom}`,
+      "jobTitle": player.poste,
+    })),
+  };
+
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+    <>
+      <MetadataHead metadata={equipeMetadata} />
+      <JsonLd data={teamSchema} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
       <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
         {players
@@ -110,6 +121,7 @@ export default function Equipe() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,17 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Contact | UD Asturiana - Nous Joindre",
-  description: "Contactez UD Asturiana pour sponsoring, partenariat, rejoindre l'équipe ou toute autre demande. Nous sommes à votre écoute.",
-  openGraph: {
-    title: "Contact | UD Asturiana - Nous Joindre",
-    description: "Contactez UD Asturiana pour sponsoring, partenariat, rejoindre l'équipe ou toute autre demande. Nous sommes à votre écoute.",
-    url: "https://udasturiana.be/contact",
-  },
-};
+import MetadataHead from "@/components/metadata-head";
+import { contactMetadata } from "./metadata";
 import {
   Form,
   FormControl,
@@ -89,7 +80,9 @@ export default function Contact() {
     router.push("/");
   }
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+    <>
+      <MetadataHead metadata={contactMetadata} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className=" z-10 lg:py-20 py-14 lg:px-0 px-10 rounded-2xl lg:container md:max-w-2xl sm:max-w-xl max-w-md mx-auto mb-20">
         <div className="flex flex-col gap-10 items-center justify-center max-w-4xl mx-auto">
           <h1 className="text-4xl font-marjorie italic font-bold">
@@ -200,6 +193,7 @@ export default function Contact() {
           </Form>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

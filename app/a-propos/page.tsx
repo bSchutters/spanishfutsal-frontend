@@ -32,6 +32,8 @@ export default function Apropos() {
             alt="Comité directeur d'UD Asturiana - Dirigeants du club de futsal"
             fill
             className="object-cover "
+            priority
+            sizes="100vw"
           />
         </div>
       </div>
@@ -62,6 +64,7 @@ export default function Apropos() {
               height={0}
               className="w-full h-auto rounded-2xl my-6"
               sizes="100vw"
+              loading="lazy"
             />
 
             <p className="lg:text-lg text-base">
@@ -103,6 +106,7 @@ export default function Apropos() {
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
               sizes="100vw"
+              loading="lazy"
             />
           </div>
           <Separator className="mx-auto bg-spanish-bg rounded-2xl" />
@@ -136,6 +140,7 @@ export default function Apropos() {
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
               sizes="100vw"
+              loading="lazy"
             />
           </div>
 

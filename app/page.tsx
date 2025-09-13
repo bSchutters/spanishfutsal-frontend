@@ -6,17 +6,6 @@ import About from "@/components/home/about";
 import Players from "@/components/home/players";
 import JoinUs from "@/components/home/joinUs";
 import NextMatch from "@/components/home/next-match";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Accueil | UD Asturiana - Club de Futsal Bruxelles",
-  description: "Découvrez UD Asturiana, le club de futsal passionné de Bruxelles. Suivez nos matchs, notre classement et rejoignez notre équipe familiale.",
-  openGraph: {
-    title: "UD Asturiana - Club de Futsal Bruxelles",
-    description: "Découvrez UD Asturiana, le club de futsal passionné de Bruxelles. Suivez nos matchs, notre classement et rejoignez notre équipe familiale.",
-    url: "https://udasturiana.be",
-  },
-};
 
 export default function Home() {
   return (

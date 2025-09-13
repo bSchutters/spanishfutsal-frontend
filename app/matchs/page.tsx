@@ -20,17 +20,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Matchs | UD Asturiana - Calendrier et Résultats",
-  description: "Consultez le calendrier des matchs d'UD Asturiana : prochaines rencontres, résultats, replays et matchs en direct. Suivez notre parcours en futsal.",
-  openGraph: {
-    title: "Matchs | UD Asturiana - Calendrier et Résultats",
-    description: "Consultez le calendrier des matchs d'UD Asturiana : prochaines rencontres, résultats, replays et matchs en direct. Suivez notre parcours en futsal.",
-    url: "https://udasturiana.be/matchs",
-  },
-};
+import MetadataHead from "@/components/metadata-head";
+import { matchsMetadata } from "./metadata";
 
 export default function Matchs() {
   const { isMobile } = useBreakpoint();
@@ -88,7 +79,9 @@ export default function Matchs() {
   }
 
   return (
-    <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
+    <>
+      <MetadataHead metadata={matchsMetadata} />
+      <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
       <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
       {matchs.map((match, index) => {
         const today = new Date();
@@ -295,6 +288,7 @@ export default function Matchs() {
           </div>
         );
       })}
-    </div>
+      </div>
+    </>
   );
 }

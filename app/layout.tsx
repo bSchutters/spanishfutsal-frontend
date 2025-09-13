@@ -4,8 +4,13 @@ import SchemaMarkup from "@/components/schema-markup";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "UD Asturiana - Club de Futsal à Bruxelles",
@@ -26,7 +31,6 @@ export const metadata: Metadata = {
     title: "UD Asturiana - Club de Futsal à Bruxelles",
     description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles.",
   },
-  viewport: "width=device-width, initial-scale=1",
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
