@@ -104,7 +104,7 @@ export default function Equipe() {
                 </div>
                 <p
                   className={cn(
-                    "xl:text-base text-sm",
+                    "xl:text-base text-sm md:max-w-none max-w-20 truncate",
                     team.teamName === "UD Asturiana"
                       ? "font-bold text-spanish-accent-2"
                       : ""
@@ -154,7 +154,7 @@ export default function Equipe() {
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
                     team.teamName === "UD Asturiana"
-                      ? "text-spanish-accent font-bold"
+                      ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}
                 >
@@ -164,7 +164,7 @@ export default function Equipe() {
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
                     team.teamName === "UD Asturiana"
-                      ? "text-spanish-accent font-bold"
+                      ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}
                 >
