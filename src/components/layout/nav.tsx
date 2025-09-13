@@ -93,8 +93,8 @@ const Nav = () => {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "hover:text-spanish-accent transition-all flex items-center justify-between w-full border-b border-spanish-bg py-4 last:border-b-0",
-                  pathname === link.href ? "text-spanish-accent" : ""
+                  "hover:text-spanish-accent-2 transition-all flex items-center justify-between w-full border-b border-spanish-bg py-4 last:border-b-0",
+                  pathname === link.href ? "text-spanish-accent-2" : ""
                 )}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
