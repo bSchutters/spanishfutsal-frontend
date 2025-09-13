@@ -35,7 +35,7 @@ type RankingAPIResponse = {
   result_sequence: string;
   played: number;
   position: number;
-  position_change?: "no_change" | "up" | "down";
+  positionChange?: "no_change" | "up" | "down";
 };
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
@@ -69,7 +69,7 @@ export const useRankingStore = create<State>((set) => ({
           result_sequence: r.result_sequence,
           played: r.played,
           position: r.position,
-          positionChange: r.position_change || "no_change",
+          positionChange: r.positionChange || "no_change",
         })),
       });
     } catch (error) {
