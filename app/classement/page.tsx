@@ -59,7 +59,7 @@ export default function Equipe() {
               <p className="hidden md:block">P</p>
               <p className="hidden md:block">BP</p>
               <p className="hidden md:block">BC</p>
-              <p>DIFF</p>
+              <p>+/-</p>
               <p>PTS</p>
             </div>
             {/* <div className="w-[152px] items-center justify-center hidden lg:flex">
@@ -138,7 +138,9 @@ export default function Equipe() {
                           : ""
                       )}
                     >
-                      {team[stat as keyof typeof team]}
+                      {stat === "goalDifference" && team.goalDifference > 0
+                        ? `+${team[stat as keyof typeof team]}`
+                        : team[stat as keyof typeof team]}
                     </p>
                   ))}
                 </div>
@@ -171,7 +173,9 @@ export default function Equipe() {
                       : ""
                   )}
                 >
-                  {team.goalDifference}
+                  {team.goalDifference > 0
+                    ? `+${team.goalDifference}`
+                    : team.goalDifference}
                 </p>
                 <p
                   className={cn(
