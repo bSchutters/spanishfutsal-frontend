@@ -78,7 +78,7 @@ export default function Equipe() {
         <>
           <Separator className="bg-spanish-bg-dark w-full" />
           <p className="text-4xl font-marjorie italic font-bold">Notre staff</p>
-          <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
+          <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
             {players
               .filter(
                 (player) =>

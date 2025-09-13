@@ -72,7 +72,7 @@ export default function Player({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 items-center justify-center">
+          <div className="grid grid-cols-2 gap-4 items-center justify-center text-center">
             <div className="flex flex-col items-center justify-center ">
               <p className="text-2xl font-marjorie font-bold italic">
                 {stats?.matchesPlayed}

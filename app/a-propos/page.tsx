@@ -108,11 +108,11 @@ export default function Apropos() {
               progresser ensemble.
             </p>
 
-            <div className="flex gap-4 mt-2 uppercase italic font-bold">
+            <div className="flex flex-wrap md:gap-4 gap-2 mt-2 uppercase italic font-bold">
               {valeurs.map((valeur, index) => (
                 <p
                   key={index}
-                  className="bg-spanish-accent-2-light/20 text-spanish-accent-2 px-3 py-1.5 rounded-lg"
+                  className="bg-spanish-accent-2-light/20 text-spanish-accent-2 px-3 py-1.5 rounded-lg md:text-lg text-xs"
                 >
                   {valeur}
                 </p>
