@@ -200,19 +200,19 @@
 }
 
 :root {
-  --spanish-nav: #1c3456;
-  --spanish-bg: #0c1625;
-  --spanish-bg-light: #111e31;
-  --spanish-bg-lighter: #18263b;
-  --spanish-bg-lighter-plus: #27374f;
-  --spanish-bg-dark-minus: #07101b;
-  --spanish-bg-dark: #091321;
+  --spanish-nav: rgb(27, 49, 80);
+  --spanish-bg: #1c3456;
+  --spanish-bg-light: #264268;
+  --spanish-bg-lighter: #38537a;
+  --spanish-bg-lighter-plus: rgb(54, 74, 104);
+  --spanish-bg-dark-minus: rgb(13, 28, 46);
+  --spanish-bg-dark: #122642;
   --spanish-accent-2: #fed164;
   --spanish-accent-2-light: #ffe095;
   --spanish-accent-2-dark: #c2962b;
-  --spanish-accent: #a2d6f9;
-  --spanish-accent-light: #caeaff;
-  --spanish-accent-dark: #5e9ec9;
+  --spanish-accent: #a2d6f8;
+  --spanish-accent-light: #cbeaff;
+  --spanish-accent-dark: #77b4dc;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
