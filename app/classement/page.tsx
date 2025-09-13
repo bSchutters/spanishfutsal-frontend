@@ -6,13 +6,15 @@ import { getTeamLogo } from "@/lib/getTeamLogo";
 import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
-import { ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
+
+  console.log(rankings);
 
   useEffect(() => {
     fetchRankings();
@@ -82,6 +84,17 @@ export default function Equipe() {
               )}
             >
               <div className="flex gap-4 items-center">
+                <p className="w-4 h-4 flex items-center justify-center">
+                  {team.positionChange === "no_change" ||
+                  team.positionChange === null ? (
+                    // <Equal className="text-white" />
+                    "-"
+                  ) : team.positionChange === "up" ? (
+                    <ChevronUp className="text-green-500" />
+                  ) : (
+                    <ChevronDown className="text-red-500" />
+                  )}
+                </p>
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
