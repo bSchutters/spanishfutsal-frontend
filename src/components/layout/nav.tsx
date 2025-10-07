@@ -16,18 +16,23 @@ const Nav = () => {
   const { isMobile } = useBreakpoint();
 
   useEffect(() => {
+    // Sur mobile, le menu reste toujours visible
+    if (isMobile) {
+      setIsVisible(true);
+      return;
+    }
+
+    // Sur desktop, le menu disparaît au scroll vers le bas
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (!isMobile) {
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          setIsVisible(false);
-        } else {
-          setIsVisible(true);
-        }
-        lastScrollY = currentScrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
       }
+      lastScrollY = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
