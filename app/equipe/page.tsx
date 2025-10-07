@@ -56,6 +56,7 @@ export default function Equipe() {
               (player.actif === true && player.poste === "Joueur") ||
               player.poste === "Gardien"
           )
+          .sort((a, b) => (a.numero || 0) - (b.numero || 0))
           .map((player) => (
             <Player
               key={player.id}
@@ -79,6 +80,7 @@ export default function Equipe() {
           <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
             {players
               .filter((player) => player.actif === false)
+              .sort((a, b) => (a.numero || 0) - (b.numero || 0))
               .map((player) => (
                 <Player
                   key={player.id}
