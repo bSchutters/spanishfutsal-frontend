@@ -28,12 +28,13 @@ const Nav = () => {
         }
         lastScrollY = currentScrollY;
       }
-      window.addEventListener("scroll", handleScroll);
-      return () => {
-        window.removeEventListener("scroll", handleScroll);
-      };
     };
-  }, []);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMobile]);
 
   const links = [
     { href: "/", label: "ACCUEIL" },
