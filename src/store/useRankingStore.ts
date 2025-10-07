@@ -53,24 +53,26 @@ export const useRankingStore = create<State>((set) => ({
       const json = await res.json();
 
       set({
-        rankings: (json.data as RankingAPIResponse[]).map((r) => ({
-          id: r.id,
-          teamName:
-            r.team_name === "SPORTING ROJA BRUXELLES"
-              ? "UD Asturiana"
-              : r.team_name,
-          points: r.points,
-          wins: r.wins,
-          losses: r.losses,
-          draws: r.draws,
-          goalsFor: r.goals_for,
-          goalsAgainst: r.goals_against,
-          goalDifference: r.goal_difference,
-          result_sequence: r.result_sequence,
-          played: r.played,
-          position: r.position,
-          positionChange: r.positionChange || "no_change",
-        })),
+        rankings: (json.data as RankingAPIResponse[])
+          .map((r) => ({
+            id: r.id,
+            teamName:
+              r.team_name === "SPORTING ROJA BRUXELLES"
+                ? "UD Asturiana"
+                : r.team_name,
+            points: r.points,
+            wins: r.wins,
+            losses: r.losses,
+            draws: r.draws,
+            goalsFor: r.goals_for,
+            goalsAgainst: r.goals_against,
+            goalDifference: r.goal_difference,
+            result_sequence: r.result_sequence,
+            played: r.played,
+            position: r.position,
+            positionChange: r.positionChange || "no_change",
+          }))
+          .sort((a, b) => a.position - b.position),
       });
     } catch (error) {
       console.error("Error fetching rankings:", error);
