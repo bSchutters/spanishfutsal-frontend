@@ -14,9 +14,7 @@ interface PlayerStats {
   assists: number;
   yellowCards: number;
   redCards: number;
-  mvp: number;
   cleanSheets: number;
-  saves: number;
 }
 
 interface PlayerProps {
@@ -72,48 +70,81 @@ export default function Player({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 items-center justify-center text-center">
-            <div className="flex flex-col items-center justify-center ">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.matchesPlayed}
-              </p>
-              <p className="text-xs uppercase">matchs joués</p>
+          {poste === "Gardien" ? (
+            // Gardiens : Matchs/Clean Sheets, Cartons, Goals/Assists
+            <div className="grid grid-cols-2 gap-4 items-center justify-center text-center">
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.matchesPlayed}
+                </p>
+                <p className="text-xs uppercase">matchs joués</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.cleanSheets}
+                </p>
+                <p className="text-xs uppercase">clean sheets</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.yellowCards}
+                </p>
+                <p className="text-xs uppercase">carton jaune</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.redCards}
+                </p>
+                <p className="text-xs uppercase">carton rouge</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.goals}
+                </p>
+                <p className="text-xs uppercase">goals</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.assists}
+                </p>
+                <p className="text-xs uppercase">assists</p>
+              </div>
             </div>
-            <div className="flex flex-col items-center justify-center ">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.mvp}
-              </p>
-              <p className="text-xs uppercase">homme du match</p>
+          ) : (
+            // Joueurs : Matchs (centré), Goals/Assists, Cartons
+            <div className="grid grid-cols-2 gap-4 items-center justify-center text-center">
+              <div className="col-span-2 flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.matchesPlayed}
+                </p>
+                <p className="text-xs uppercase">matchs joués</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.goals}
+                </p>
+                <p className="text-xs uppercase">goals</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.assists}
+                </p>
+                <p className="text-xs uppercase">assists</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.yellowCards}
+                </p>
+                <p className="text-xs uppercase">carton jaune</p>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-2xl font-marjorie font-bold italic">
+                  {stats?.redCards}
+                </p>
+                <p className="text-xs uppercase">carton rouge</p>
+              </div>
             </div>
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {poste === "Gardien" ? stats?.saves : stats?.goals}
-              </p>
-              <p className="text-xs uppercase">
-                {poste === "Gardien" ? "saves" : "goals"}
-              </p>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {poste === "Gardien" ? stats?.cleanSheets : stats?.assists}
-              </p>
-              <p className="text-xs uppercase">
-                {poste === "Gardien" ? "clean sheets" : "assists"}
-              </p>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.yellowCards}
-              </p>
-              <p className="text-xs uppercase">carton jaune</p>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-2xl font-marjorie font-bold italic">
-                {stats?.redCards}
-              </p>
-              <p className="text-xs uppercase">carton rouge</p>
-            </div>
-          </div>
+          )}
           <div className="w-full flex items-center justify-center gap-2 uppercase">
             {active && (
               <p className="font-bold italic font-marjorie text-xl">{number}</p>
@@ -140,14 +171,16 @@ export default function Player({
           <p className="font-bold font-marjorie italic text-xl">{poste}</p>
         )}
 
-        {stats && (poste === "Gardien" || poste === "Joueur") && (
-          <Badge
-            className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-all"
-            onClick={() => setIsStatsOpen(!isStatsOpen)}
-          >
-            STATS
-          </Badge>
-        )}
+        {stats &&
+          stats.matchesPlayed > 0 &&
+          (poste === "Gardien" || poste === "Joueur") && (
+            <Badge
+              className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-all"
+              onClick={() => setIsStatsOpen(!isStatsOpen)}
+            >
+              STATS
+            </Badge>
+          )}
       </div>
       <BoxModule className="absolute bottom-3 w-11/12 md:p-2 p-1 -mb-1 md:mb-0 flex items-center justify-center rounded-lg z-10">
         <p className="uppercase">

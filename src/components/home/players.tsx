@@ -57,7 +57,7 @@ export default function Players() {
                   lastname={player.nom}
                   photo={player.photo}
                   number={player.numero}
-                  stats={player.stats[0]}
+                  stats={player.stats}
                   active={player.actif}
                   poste={player.poste}
                 />
