@@ -1,15 +1,12 @@
 import { create } from "zustand";
 
 type Stat = {
-  id: number;
   goals: number;
   assists: number;
   yellowCards: number;
   redCards: number;
   matchesPlayed: number;
-  mvp: number;
   cleanSheets: number;
-  saves: number;
 };
 type Player = {
   id: number;
@@ -17,10 +14,11 @@ type Player = {
   nom: string;
   photo: string;
   numero: number;
-  stats: Stat[];
+  stats: Stat;
   actif: boolean;
   capitaine: boolean;
   poste: "Joueur" | "Gardien" | "Staff";
+  isGoalkeeper: boolean;
 };
 
 type State = {
@@ -37,16 +35,14 @@ type PlayerAPIResponse = {
   poste: "Joueur" | "Gardien" | "Staff";
   photo: { url: string } | null;
   stats: {
-    id: number;
+    matchesPlayed: number;
     goals: number;
     assists: number;
-    yellow_cards: number;
-    red_cards: number;
-    matches_played: number;
-    mvp: number;
-    clean_sheets: number;
-    saves: number;
-  }[];
+    yellowCards: number;
+    redCards: number;
+    cleanSheets: number;
+    isGoalkeeper: boolean;
+  } | null;
   actif: boolean;
   capitaine: boolean;
 };
@@ -60,11 +56,14 @@ export const usePlayersStore = create<State>((set) => ({
     set({ isLoading: true });
 
     try {
-      const res = await fetch(`${API_URL}/api/joueurs?populate=*`);
+      const res = await fetch(`${API_URL}/api/joueurs-with-stats`);
       const json = await res.json();
 
+      // Handle both {data: [...]} and direct array responses
+      const playersData = Array.isArray(json) ? json : (json.data || []);
+
       set({
-        players: (json.data as PlayerAPIResponse[]).map((p) => ({
+        players: (playersData as PlayerAPIResponse[]).map((p) => ({
           id: p.id,
           nom: p.nom,
           prenom: p.prenom,
@@ -73,19 +72,26 @@ export const usePlayersStore = create<State>((set) => ({
             : "/assets/images/webp/placeholder.webp",
           numero: p.numero,
           poste: p.poste,
-          stats: p.stats.map((s) => ({
-            id: s.id,
-            goals: s.goals || 0,
-            assists: s.assists || 0,
-            yellowCards: s.yellow_cards || 0,
-            redCards: s.red_cards || 0,
-            matchesPlayed: s.matches_played || 0,
-            mvp: s.mvp || 0,
-            saves: s.saves || 0,
-            cleanSheets: s.clean_sheets || 0,
-          })),
+          stats: p.stats
+            ? {
+                goals: p.stats.goals || 0,
+                assists: p.stats.assists || 0,
+                yellowCards: p.stats.yellowCards || 0,
+                redCards: p.stats.redCards || 0,
+                matchesPlayed: p.stats.matchesPlayed || 0,
+                cleanSheets: p.stats.cleanSheets || 0,
+              }
+            : {
+                goals: 0,
+                assists: 0,
+                yellowCards: 0,
+                redCards: 0,
+                matchesPlayed: 0,
+                cleanSheets: 0,
+              },
           actif: p.actif,
           capitaine: p.capitaine,
+          isGoalkeeper: p.stats?.isGoalkeeper || p.poste === "Gardien",
         })),
       });
     } catch (error) {
