@@ -39,34 +39,49 @@ const ImportButton: React.FC = () => {
   }
 
   return (
-    <div style={{ marginBottom: '20px', padding: '20px', background: 'var(--theme-elevation-50)', borderRadius: '8px' }}>
-      <h3 style={{ margin: '0 0 10px 0' }}>Import LFFS</h3>
-      <p style={{ margin: '0 0 15px 0', opacity: 0.7, fontSize: '14px' }}>
+    <div style={{
+      marginBottom: '24px',
+      padding: '24px',
+      background: 'var(--theme-elevation-100)',
+      borderRadius: '8px',
+      border: '1px solid var(--theme-elevation-200)',
+    }}>
+      <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>Import LFFS</h3>
+      <p style={{ margin: '0 0 16px 0', opacity: 0.7, fontSize: '14px' }}>
         Importer les classements et matchs depuis la LFFS
       </p>
       <button
         onClick={handleImport}
         disabled={loading}
+        type="button"
         style={{
-          padding: '10px 20px',
-          background: loading ? 'var(--theme-elevation-150)' : 'var(--theme-success-500)',
-          color: 'white',
+          padding: '10px 24px',
+          background: loading ? 'var(--theme-elevation-200)' : '#fed164',
+          color: '#122642',
           border: 'none',
-          borderRadius: '4px',
+          borderRadius: '6px',
           cursor: loading ? 'not-allowed' : 'pointer',
           fontSize: '14px',
-          fontWeight: 'bold',
+          fontWeight: 700,
+          transition: 'opacity 0.2s',
+          opacity: loading ? 0.6 : 1,
         }}
       >
         {loading ? 'Import en cours...' : 'Importer maintenant'}
       </button>
       {result && (
         <p style={{
-          marginTop: '10px',
-          padding: '10px',
-          background: result.startsWith('Erreur') ? 'var(--theme-error-100)' : 'var(--theme-success-100)',
-          borderRadius: '4px',
+          marginTop: '12px',
+          padding: '10px 14px',
+          background: result.startsWith('Erreur')
+            ? 'rgba(255, 107, 107, 0.15)'
+            : 'rgba(254, 209, 100, 0.15)',
+          color: result.startsWith('Erreur') ? '#ff6b6b' : '#fed164',
+          borderRadius: '6px',
           fontSize: '13px',
+          border: result.startsWith('Erreur')
+            ? '1px solid rgba(255, 107, 107, 0.3)'
+            : '1px solid rgba(254, 209, 100, 0.3)',
         }}>
           {result}
         </p>

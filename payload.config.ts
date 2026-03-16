@@ -26,9 +26,18 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      titleSuffix: ' | UD Asturiana',
+      icons: [{ url: '/assets/images/svg/logo-asturiana.svg' }],
+    },
     components: {
       beforeDashboard: ['@/payload/components/ImportButton'],
+      graphics: {
+        Logo: '@/payload/components/Logo',
+        Icon: '@/payload/components/Icon',
+      },
     },
+    theme: 'dark',
   },
   collections: [Users, Players, Media, Matches, Rankings, Seasons, LffsUpdates, Venues, Teams],
   globals: [Settings],

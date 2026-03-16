@@ -6,6 +6,7 @@ import React from 'react'
 
 import { importMap } from './admin/importMap'
 import '@payloadcms/next/css'
+import '@/payload/custom.css'
 
 type Args = {
   children: React.ReactNode

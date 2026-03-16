@@ -1,0 +1,22 @@
+/* UD Asturiana branding for Payload admin */
+
+[data-theme="dark"] {
+  --theme-bg: #122642;
+  --theme-elevation-0: #1c3456;
+  --theme-elevation-50: #264268;
+  --theme-elevation-100: #2e4f7a;
+  --theme-elevation-150: #38537a;
+  --theme-elevation-200: #3d5f8a;
+  --theme-elevation-250: #456a96;
+  --theme-elevation-300: #4d74a0;
+  --theme-elevation-350: #557eaa;
+  --theme-elevation-400: #5d88b4;
+  --theme-elevation-450: #6592be;
+  --theme-elevation-500: #6d9cc8;
+  --theme-text: #e8f0f8;
+  --theme-input-bg: #1c3456;
+  --theme-success-500: #fed164;
+  --theme-success-400: #ffe095;
+  --theme-error-500: #ff6b6b;
+  --theme-error-400: #ff8787;
+}
