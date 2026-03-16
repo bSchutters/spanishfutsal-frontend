@@ -34,6 +34,7 @@ export default buildConfig({
     },
     components: {
       beforeDashboard: ['@/payload/components/ImportButton'],
+      beforeNavLinks: ['@/payload/components/DashboardLink'],
       afterNavLinks: ['@/payload/components/BackToSite'],
       graphics: {
         Logo: '@/payload/components/Logo',
