@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { isAdmin, isAdminOrManager } from '../access'
 
 export const Matches: CollectionConfig = {
   slug: 'matches',
@@ -9,8 +9,8 @@ export const Matches: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: isAdmin,
-    update: isAdmin,
+    create: isAdminOrManager,
+    update: isAdminOrManager,
     delete: isAdmin,
   },
   fields: [
