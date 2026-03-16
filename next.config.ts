@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   devIndicators: false,
   images: {
     remotePatterns: [
@@ -13,8 +13,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "strapi.sbryan.studio",
       },
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

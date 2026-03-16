@@ -18,7 +18,6 @@ const Nav = () => {
   useEffect(() => {
     // Sur mobile, le menu reste toujours visible
     if (isMobile) {
-      setIsVisible(true);
       return;
     }
 
@@ -37,6 +36,7 @@ const Nav = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => {
+      setIsVisible(true);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isMobile]);
