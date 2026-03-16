@@ -47,7 +47,7 @@ type PlayerAPIResponse = {
   capitaine: boolean;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
 export const usePlayersStore = create<State>((set) => ({
   players: [],
@@ -56,7 +56,7 @@ export const usePlayersStore = create<State>((set) => ({
     set({ isLoading: true });
 
     try {
-      const res = await fetch(`${API_URL}/api/joueurs-with-stats`);
+      const res = await fetch(`${API_URL}/api/public/joueurs-with-stats`);
       const json = await res.json();
 
       // Handle both {data: [...]} and direct array responses

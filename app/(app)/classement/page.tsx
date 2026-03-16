@@ -34,8 +34,30 @@ export default function Equipe() {
   ];
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-2xl font-bold">Chargement...</p>
+      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-4xl font-marjorie italic font-bold">Classement</h1>
+        </div>
+        <BoxModule className="flex flex-col h-full">
+          <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter p-2">
+            <p>équipes</p>
+          </div>
+          <div className="w-full flex flex-col gap-1 p-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="flex justify-between items-center p-2 animate-pulse">
+                <div className="flex gap-4 items-center">
+                  <div className="w-4 h-4 bg-spanish-bg-lighter rounded" />
+                  <div className="w-8 h-8 bg-spanish-bg-lighter rounded-full" />
+                  <div className="w-32 h-4 bg-spanish-bg-lighter rounded" />
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-4 bg-spanish-bg-lighter rounded" />
+                  <div className="w-8 h-4 bg-spanish-bg-lighter rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </BoxModule>
       </div>
     );
   }

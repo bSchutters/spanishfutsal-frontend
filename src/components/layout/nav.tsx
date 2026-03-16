@@ -18,6 +18,7 @@ const Nav = () => {
   useEffect(() => {
     // Sur mobile, le menu reste toujours visible
     if (isMobile) {
+      setIsVisible(true);
       return;
     }
 

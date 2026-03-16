@@ -1,35 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 
-export const dynamic = 'force-dynamic'
-
-// POST: Create ranking (used by migration + Payload admin)
-export async function POST(request: NextRequest) {
-  try {
-    const payload = await getPayloadClient()
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const body = await request.json()
-    const doc = await payload.create({ collection: 'rankings', data: body })
-    return NextResponse.json({ doc })
-  } catch (error) {
-    console.error('Error creating ranking:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+export const revalidate = 300
 
 export async function GET() {
   try {
     const payload = await getPayloadClient()
 
+    // Get active season
+    const seasonsResult = await payload.find({
+      collection: 'seasons',
+      where: { active: { equals: true } },
+      limit: 1,
+    })
+    const activeSeason = seasonsResult.docs[0]
+
     const result = await payload.find({
       collection: 'rankings',
       limit: 1000,
       sort: 'position',
+      ...(activeSeason && { where: { season: { equals: activeSeason.id } } }),
     })
 
-    // Return in Strapi-compatible format: { data: [...] }
     const data = result.docs.map((r) => ({
       id: r.id,
       team_name: r.team_name,
@@ -46,7 +38,9 @@ export async function GET() {
       positionChange: r.positionChange,
     }))
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+    })
   } catch (error) {
     console.error('Error fetching rankings:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

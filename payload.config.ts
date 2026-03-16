@@ -1,4 +1,5 @@
 import { buildConfig } from 'payload'
+import { fr } from '@payloadcms/translations/languages/fr'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
@@ -15,6 +16,7 @@ import { Seasons } from '@/payload/collections/Seasons'
 import { LffsUpdates } from '@/payload/collections/LffsUpdates'
 import { Venues } from '@/payload/collections/Venues'
 import { Teams } from '@/payload/collections/Teams'
+import { Sponsors } from '@/payload/collections/Sponsors'
 import { Settings } from '@/payload/globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -32,6 +34,7 @@ export default buildConfig({
     },
     components: {
       beforeDashboard: ['@/payload/components/ImportButton'],
+      afterNavLinks: ['@/payload/components/BackToSite'],
       graphics: {
         Logo: '@/payload/components/Logo',
         Icon: '@/payload/components/Icon',
@@ -39,10 +42,14 @@ export default buildConfig({
     },
     theme: 'dark',
   },
-  collections: [Users, Players, Media, Matches, Rankings, Seasons, LffsUpdates, Venues, Teams],
+  collections: [Users, Players, Media, Matches, Rankings, Seasons, LffsUpdates, Venues, Teams, Sponsors],
   globals: [Settings],
+  i18n: {
+    supportedLanguages: { fr },
+    fallbackLanguage: 'fr',
+  },
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || 'your-secret-key-change-this',
+  secret: process.env.PAYLOAD_SECRET ?? (() => { throw new Error('PAYLOAD_SECRET env var is required') })(),
   typescript: {
     outputFile: path.resolve(dirname, 'src/payload/payload-types.ts'),
   },

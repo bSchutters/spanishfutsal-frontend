@@ -36,7 +36,7 @@ type MatchAPIResponse = {
   replay_link: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
 export const useMatchsStore = create<State>((set) => ({
   matchs: [],
@@ -46,7 +46,7 @@ export const useMatchsStore = create<State>((set) => ({
 
     try {
       const res = await fetch(
-        `${API_URL}/api/matches?populate=*?pagination[page]=1&pagination[pageSize]=1000&sort=date:asc`
+        `${API_URL}/api/public/matches`
       );
       const json = await res.json();
 

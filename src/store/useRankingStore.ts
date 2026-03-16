@@ -38,7 +38,7 @@ type RankingAPIResponse = {
   positionChange?: "no_change" | "up" | "down";
 };
 
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
 export const useRankingStore = create<State>((set) => ({
   rankings: [],
@@ -48,7 +48,7 @@ export const useRankingStore = create<State>((set) => ({
 
     try {
       const res = await fetch(
-        `${API_URL}/api/rankings?populate=*&pagination[page]=1&pagination[pageSize]=1000`
+        `${API_URL}/api/public/rankings`
       );
       const json = await res.json();
 

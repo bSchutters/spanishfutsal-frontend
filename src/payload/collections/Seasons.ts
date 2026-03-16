@@ -13,6 +13,21 @@ export const Seasons: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
+  hooks: {
+    beforeChange: [
+      async ({ data, req }) => {
+        // Deactivate all other seasons when one is set to active
+        if (data?.active) {
+          await req.payload.update({
+            collection: 'seasons',
+            where: { active: { equals: true } },
+            data: { active: false },
+          })
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     {
       name: 'name',

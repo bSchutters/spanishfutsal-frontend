@@ -12,15 +12,25 @@ export const Settings: GlobalConfig = {
       name: 'imports',
       type: 'checkbox',
       defaultValue: true,
-      label: 'Auto-import active',
+      label: 'Auto-import actif',
     },
     {
       name: 'lffs_token',
       type: 'text',
-      label: 'Token LFFS (manuel, si le scraping auto echoue)',
+      label: 'Token LFFS (manuel)',
       admin: {
         description: 'Laisser vide pour utiliser le scraping automatique du token.',
       },
+    },
+    {
+      name: 'cached_lffs_token',
+      type: 'text',
+      admin: { hidden: true },
+    },
+    {
+      name: 'cached_lffs_token_at',
+      type: 'text',
+      admin: { hidden: true },
     },
   ],
 }

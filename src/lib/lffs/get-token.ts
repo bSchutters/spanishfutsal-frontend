@@ -4,45 +4,63 @@
  * The token is embedded in the LFFS website HTML as `bpleagues_api_key`.
  * We fetch the page and extract it — no headless browser needed.
  *
- * Fallback: manual token from Payload Settings.
+ * Token is stored in the Payload Settings global to persist across cold starts.
+ * Fallback: manual token from Settings.
  */
 
-let cachedToken: string | null = null
-let cachedAt = 0
+import type { Payload } from 'payload'
+
 const TOKEN_TTL_MS = 2 * 60 * 60 * 1000 // 2 hours
 
 export async function getLffsToken(options?: {
   forceRefresh?: boolean
   manualToken?: string | null
+  payload?: Payload
 }): Promise<string> {
-  const { forceRefresh, manualToken } = options || {}
+  const { forceRefresh, manualToken, payload } = options || {}
 
   // If a manual token is provided in settings, use it directly
   if (manualToken) {
     return manualToken
   }
 
-  // Check cache
-  const now = Date.now()
-  if (!forceRefresh && cachedToken && now - cachedAt < TOKEN_TTL_MS) {
-    return cachedToken
+  // Check DB-stored token (persists across cold starts)
+  if (!forceRefresh && payload) {
+    try {
+      const settings = await payload.findGlobal({ slug: 'settings' })
+      const cachedToken = (settings as Record<string, unknown>).cached_lffs_token as string | undefined
+      const cachedAt = (settings as Record<string, unknown>).cached_lffs_token_at as string | undefined
+      if (cachedToken && cachedAt) {
+        const age = Date.now() - new Date(cachedAt).getTime()
+        if (age < TOKEN_TTL_MS) {
+          return cachedToken
+        }
+      }
+    } catch {
+      // Settings not available, continue to fetch
+    }
   }
 
   // Extract token from LFFS page
   const token = await extractTokenFromLffs()
 
-  if (token) {
-    cachedToken = token
-    cachedAt = Date.now()
-    console.log('LFFS token obtained successfully')
+  if (token && payload) {
+    // Store in DB for persistence across cold starts
+    try {
+      await payload.updateGlobal({
+        slug: 'settings',
+        data: {
+          cached_lffs_token: token,
+          cached_lffs_token_at: new Date().toISOString(),
+        } as Record<string, unknown>,
+      })
+    } catch {
+      // Non-critical, continue
+    }
     return token
   }
 
-  // If we have a stale cached token, use it as fallback
-  if (cachedToken) {
-    console.warn('Using stale cached token as fallback')
-    return cachedToken
-  }
+  if (token) return token
 
   throw new Error(
     'Unable to obtain LFFS token. Set it manually in admin Settings > Token LFFS.'

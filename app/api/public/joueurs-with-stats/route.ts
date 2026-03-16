@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300 // Cache for 5 minutes
 
 export async function GET() {
   try {
@@ -126,7 +126,9 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json([...playersWithStats, ...inactivePlayers])
+    return NextResponse.json([...playersWithStats, ...inactivePlayers], {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+    })
   } catch (error) {
     console.error('Error fetching players with stats:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 import { getLffsToken } from './get-token'
+import { upsertLffsUpdate } from './upsert-update'
 
 const BASE_URL = 'https://gestion.lffs.eu/lms_league_ws/public/api/v1'
 
@@ -20,7 +21,6 @@ export async function importRankings(payload: Payload) {
   try {
     await upsertLffsUpdate(payload, 'ranking', { status: 'in_progress' })
 
-    // Find active season
     const seasonsResult = await payload.find({
       collection: 'seasons',
       where: { active: { equals: true } },
@@ -29,7 +29,6 @@ export async function importRankings(payload: Payload) {
     const season = seasonsResult.docs[0]
 
     if (!season) {
-      console.log('No active season found')
       await upsertLffsUpdate(payload, 'ranking', {
         status: 'error',
         error_message: 'Aucune saison active trouvee',
@@ -37,9 +36,8 @@ export async function importRankings(payload: Payload) {
       return { success: false, error: 'No active season' }
     }
 
-    // Get token
     const settings = await payload.findGlobal({ slug: 'settings' })
-    const token = await getLffsToken({ manualToken: settings.lffs_token })
+    const token = await getLffsToken({ manualToken: settings.lffs_token, payload })
 
     const url = `${BASE_URL}/ranking/byMyLeague?serie_id=${season.serie_id}`
     const res = await fetch(url, {
@@ -60,34 +58,24 @@ export async function importRankings(payload: Payload) {
       throw new Error('Unexpected ranking format')
     }
 
-    // Get previous rankings for change detection
-    const lastRankings = await payload.find({
+    // Batch-fetch existing rankings for this season (#7 fix)
+    const existingResult = await payload.find({
       collection: 'rankings',
       where: { season: { equals: season.id } },
       limit: 1000,
-      sort: '-imported_at',
     })
-
-    const lastRankingMap = new Map<string, (typeof lastRankings.docs)[number]>()
-    for (const entry of lastRankings.docs) {
-      if (!lastRankingMap.has(entry.team_name)) {
-        lastRankingMap.set(entry.team_name, entry)
-      }
+    const existingMap = new Map<string, { id: number; position?: number | null }>()
+    for (const doc of existingResult.docs) {
+      existingMap.set(doc.team_name, { id: doc.id as number, position: doc.position })
     }
 
     // Check if ranking changed
     let hasChanged = false
     for (const team of rankings) {
-      const previous = lastRankingMap.get(team.team_name)
+      const previous = existingMap.get(team.team_name)
       if (
         !previous ||
-        previous.position !== team.position ||
-        previous.points !== team.points ||
-        previous.wins !== team.wins ||
-        previous.losses !== team.losses ||
-        previous.draws !== team.draws ||
-        previous.goals_for !== team.score_for ||
-        previous.goals_against !== team.score_against
+        previous.position !== team.position
       ) {
         hasChanged = true
         break
@@ -96,31 +84,19 @@ export async function importRankings(payload: Payload) {
 
     if (!hasChanged) {
       console.log('Rankings unchanged, skipping import')
-      await upsertLffsUpdate(payload, 'ranking', {
-        status: 'success',
-        items_processed: 0,
-      })
+      await upsertLffsUpdate(payload, 'ranking', { status: 'success', items_processed: 0 })
       return { success: true, updated: 0, message: 'unchanged' }
     }
 
-    // Build previous position map
-    const previousPositions = new Map<string, number>()
-    for (const entry of lastRankings.docs) {
-      if (!previousPositions.has(entry.team_name) && entry.position) {
-        previousPositions.set(entry.team_name, entry.position)
-      }
-    }
-
-    // Update rankings
     let processed = 0
     for (const team of rankings) {
       const goalDiff = team.score_for - team.score_against
-      const prevPos = previousPositions.get(team.team_name)
+      const existing = existingMap.get(team.team_name)
 
       let positionChange: 'no_change' | 'up' | 'down' = 'no_change'
-      if (typeof prevPos === 'number') {
-        if (prevPos > team.position) positionChange = 'up'
-        else if (prevPos < team.position) positionChange = 'down'
+      if (existing?.position != null) {
+        if (existing.position > team.position) positionChange = 'up'
+        else if (existing.position < team.position) positionChange = 'down'
       }
 
       const rankingData: Record<string, unknown> = {
@@ -140,82 +116,21 @@ export async function importRankings(payload: Payload) {
         positionChange,
       }
 
-      // Upsert: find existing by team_name + season
-      const existing = await payload.find({
-        collection: 'rankings',
-        where: {
-          and: [
-            { team_name: { equals: team.team_name } },
-            { season: { equals: season.id } },
-          ],
-        },
-        limit: 1,
-      })
-
-      if (existing.docs.length > 0) {
-        await payload.update({
-          collection: 'rankings',
-          id: existing.docs[0].id,
-          data: rankingData,
-        })
+      if (existing) {
+        await payload.update({ collection: 'rankings', id: existing.id, data: rankingData })
       } else {
-        await payload.create({
-          collection: 'rankings',
-          data: rankingData,
-        })
+        await payload.create({ collection: 'rankings', data: rankingData })
       }
       processed++
     }
 
-    await upsertLffsUpdate(payload, 'ranking', {
-      status: 'success',
-      items_processed: processed,
-    })
-
+    await upsertLffsUpdate(payload, 'ranking', { status: 'success', items_processed: processed })
     console.log(`Rankings imported: ${processed} teams`)
     return { success: true, updated: processed }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
     console.error('Error importing rankings:', msg)
-    await upsertLffsUpdate(payload, 'ranking', {
-      status: 'error',
-      error_message: msg,
-    })
+    await upsertLffsUpdate(payload, 'ranking', { status: 'error', error_message: msg })
     return { success: false, error: msg }
-  }
-}
-
-async function upsertLffsUpdate(
-  payload: Payload,
-  type: 'ranking' | 'matches',
-  options: { status?: string; error_message?: string; items_processed?: number }
-) {
-  const { status = 'success', error_message, items_processed } = options
-
-  const existing = await payload.find({
-    collection: 'lffs-updates',
-    where: { type: { equals: type } },
-    limit: 1,
-  })
-
-  const updateData: Record<string, unknown> = {
-    type,
-    last_update: new Date().toISOString(),
-    status,
-    error_message: error_message || null,
-    items_processed: items_processed ?? null,
-  }
-
-  if (existing.docs.length > 0) {
-    await payload.update({
-      collection: 'lffs-updates',
-      id: existing.docs[0].id,
-      data: updateData,
-    })
-  } else {
-    await payload.create({
-      collection: 'lffs-updates',
-      data: updateData,
-    })
   }
 }

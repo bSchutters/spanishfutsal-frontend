@@ -66,7 +66,50 @@ export default function ResultAndStanding() {
         ? [previousTeam, previousPreviousTeam, currentTeam].filter(Boolean)
         : [previousTeam, currentTeam, nextTeam].filter(Boolean);
 
-  if (isMatchsLoading || isRankingLoading || !lastFinishedMatch) return null;
+  if (isMatchsLoading || isRankingLoading) {
+    return (
+      <section className="mt-16 flex flex-col lg:flex-row w-11/12 lg:gap-6 gap-12 container animate-pulse">
+        <div className="lg:w-4/5 w-full flex flex-col lg:gap-6 gap-4">
+          <div className="flex justify-between items-center w-full">
+            <p className="font-marjorie italic font-bold">Dernier résultat</p>
+          </div>
+          <BoxModule className="flex flex-col gap-6 p-6">
+            <div className="w-32 h-5 bg-spanish-bg-lighter rounded" />
+            <div className="flex justify-between items-center">
+              <div className="flex gap-3 items-center">
+                <div className="w-12 h-12 bg-spanish-bg-lighter rounded-full" />
+                <div className="w-24 h-4 bg-spanish-bg-lighter rounded" />
+              </div>
+              <div className="w-20 h-8 bg-spanish-bg-lighter rounded" />
+              <div className="flex gap-3 items-center">
+                <div className="w-24 h-4 bg-spanish-bg-lighter rounded" />
+                <div className="w-12 h-12 bg-spanish-bg-lighter rounded-full" />
+              </div>
+            </div>
+          </BoxModule>
+        </div>
+        <Separator className="w-0.5 rounded-full bg-spanish-bg-lighter" />
+        <div className="lg:w-1/2 w-full flex flex-col lg:gap-6 gap-4">
+          <div className="flex justify-between items-center w-full">
+            <p className="font-marjorie italic font-bold">Classement</p>
+          </div>
+          <BoxModule className="flex flex-col h-full p-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex justify-between items-center p-2">
+                <div className="flex gap-4">
+                  <div className="w-4 h-4 bg-spanish-bg-lighter rounded" />
+                  <div className="w-24 h-4 bg-spanish-bg-lighter rounded" />
+                </div>
+                <div className="w-8 h-4 bg-spanish-bg-lighter rounded" />
+              </div>
+            ))}
+          </BoxModule>
+        </div>
+      </section>
+    );
+  }
+
+  if (!lastFinishedMatch) return null;
   return (
     <section className="mt-16 flex flex-col lg:flex-row w-11/12 lg:gap-6 gap-12 container">
       {/* Last result */}

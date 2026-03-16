@@ -1,5 +1,6 @@
 "use client";
 
+import BoxModule from "@/components/layout/boxModule";
 import MetadataHead from "@/components/metadata-head";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
@@ -72,8 +73,33 @@ export default function Matchs() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="animate-spin" />
+      <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
+        <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <BoxModule key={i} className="flex flex-col gap-4 p-4 animate-pulse">
+              <div className="flex justify-between">
+                <div className="w-24 h-5 bg-spanish-bg-lighter rounded" />
+                <div className="w-16 h-5 bg-spanish-bg-lighter rounded" />
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-3 items-center">
+                  <div className="w-8 h-8 bg-spanish-bg-lighter rounded-full" />
+                  <div className="w-28 h-4 bg-spanish-bg-lighter rounded" />
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div className="w-6 h-6 bg-spanish-bg-lighter rounded" />
+                  <div className="w-3 h-4 bg-spanish-bg-lighter rounded" />
+                  <div className="w-6 h-6 bg-spanish-bg-lighter rounded" />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <div className="w-28 h-4 bg-spanish-bg-lighter rounded" />
+                  <div className="w-8 h-8 bg-spanish-bg-lighter rounded-full" />
+                </div>
+              </div>
+            </BoxModule>
+          ))}
+        </div>
       </div>
     );
   }
