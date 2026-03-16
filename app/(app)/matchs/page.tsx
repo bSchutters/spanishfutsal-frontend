@@ -13,7 +13,6 @@ import { useMatchsStore } from "@/store/useMatchsStore";
 import {
   ExternalLink,
   Handshake,
-  Loader,
   MapPin,
   MapPinned,
   Trophy,

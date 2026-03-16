@@ -17,10 +17,7 @@ const Nav = () => {
 
   useEffect(() => {
     // Sur mobile, le menu reste toujours visible
-    if (isMobile) {
-      setIsVisible(true);
-      return;
-    }
+    if (isMobile) return;
 
     // Sur desktop, le menu disparaît au scroll vers le bas
     let lastScrollY = window.scrollY;

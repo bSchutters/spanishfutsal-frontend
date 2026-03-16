@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 
 const BackToSite: React.FC = () => {
   return (
-    <a
+    <Link
       href="/"
       style={{
         display: 'flex',
@@ -26,7 +27,7 @@ const BackToSite: React.FC = () => {
         <polyline points="12 19 5 12 12 5" />
       </svg>
       Retour au site
-    </a>
+    </Link>
   )
 }
 

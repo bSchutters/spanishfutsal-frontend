@@ -56,7 +56,7 @@ export default function Graphiques() {
             right: 40,
           }}
         >
-          <CartesianGrid vertical={true} strokeDasharray={3} />
+          <CartesianGrid vertical={true} strokeDasharray="3 3" />
           <XAxis
             dataKey="Journées"
             tickLine={false}
