@@ -36,7 +36,7 @@ type MatchAPIResponse = {
   replay_link: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
 export const useMatchsStore = create<State>((set) => ({
   matchs: [],

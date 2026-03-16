@@ -47,7 +47,7 @@ type PlayerAPIResponse = {
   capitaine: boolean;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
 export const usePlayersStore = create<State>((set) => ({
   players: [],
