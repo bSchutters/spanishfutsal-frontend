@@ -6,6 +6,7 @@ export const LffsUpdates: CollectionConfig = {
   admin: {
     useAsTitle: 'type',
     defaultColumns: ['type', 'status', 'last_update', 'items_processed'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
     read: isAdmin,

@@ -6,6 +6,7 @@ export const Teams: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'short_name'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
     read: () => true,

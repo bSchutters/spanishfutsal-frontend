@@ -6,6 +6,7 @@ export const Venues: CollectionConfig = {
   admin: {
     useAsTitle: 'short_name',
     defaultColumns: ['short_name', 'city', 'street', 'zip'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
     read: () => true,

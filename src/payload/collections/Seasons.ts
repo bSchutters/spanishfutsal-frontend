@@ -5,6 +5,7 @@ export const Seasons: CollectionConfig = {
   slug: 'seasons',
   admin: {
     useAsTitle: 'name',
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
     read: () => true,

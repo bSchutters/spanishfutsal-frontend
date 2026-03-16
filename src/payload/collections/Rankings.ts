@@ -6,6 +6,7 @@ export const Rankings: CollectionConfig = {
   admin: {
     useAsTitle: 'team_name',
     defaultColumns: ['team_name', 'position', 'points', 'played'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
     read: () => true,
