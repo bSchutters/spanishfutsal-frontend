@@ -15,11 +15,12 @@ export async function GET() {
     })
     const activeSeason = seasonsResult.docs[0]
 
-    // Get all active players
+    // Get all active players (depth 1 to populate photo)
     const playersResult = await payload.find({
       collection: 'players',
       limit: 1000,
       where: { actif: { equals: true } },
+      depth: 1,
     })
 
     // Get all matches for the active season with stats
@@ -106,6 +107,7 @@ export async function GET() {
       collection: 'players',
       limit: 1000,
       where: { actif: { equals: false } },
+      depth: 1,
     })
 
     const inactivePlayers = inactiveResult.docs.map((player) => {
