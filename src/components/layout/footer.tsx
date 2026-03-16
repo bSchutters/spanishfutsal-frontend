@@ -62,7 +62,7 @@ export default function Footer() {
                     alt={sponsor.name}
                     width={120}
                     height={40}
-                    className="h-12 w-auto object-contain opacity-40 hover:opacity-100 transition-all"
+                    className="h-10 max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
                   />
                 ) : (
                   <span className="text-sm opacity-40 hover:opacity-100 transition-all">

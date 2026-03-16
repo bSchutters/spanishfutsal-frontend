@@ -64,6 +64,11 @@ export default function Players() {
                 player.actif === true &&
                 (player.poste === "Joueur" || player.poste === "Gardien")
             )
+            .sort((a, b) => {
+              if (a.poste === "Gardien" && b.poste !== "Gardien") return -1;
+              if (b.poste === "Gardien" && a.poste !== "Gardien") return 1;
+              return (a.numero || 0) - (b.numero || 0);
+            })
             .map((player) => (
               <CarouselItem
                 key={player.id}
