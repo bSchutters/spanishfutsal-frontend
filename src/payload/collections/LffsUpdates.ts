@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const LffsUpdates: CollectionConfig = {
   slug: 'lffs-updates',
+  labels: { singular: 'Import LFFS', plural: 'Imports LFFS' },
   admin: {
     useAsTitle: 'type',
     defaultColumns: ['type', 'status', 'last_update', 'items_processed'],

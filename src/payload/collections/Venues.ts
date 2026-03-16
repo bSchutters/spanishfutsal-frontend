@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const Venues: CollectionConfig = {
   slug: 'venues',
+  labels: { singular: 'Salle', plural: 'Salles' },
   admin: {
     useAsTitle: 'short_name',
     defaultColumns: ['short_name', 'city', 'street', 'zip'],

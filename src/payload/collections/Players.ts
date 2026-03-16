@@ -3,6 +3,7 @@ import { isAdminOrManager } from '../access'
 
 export const Players: CollectionConfig = {
   slug: 'players',
+  labels: { singular: 'Joueur', plural: 'Joueurs' },
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['prenom', 'nom', 'numero', 'poste', 'actif'],

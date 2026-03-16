@@ -3,6 +3,7 @@ import { isAdmin, isAdminOrManager } from '../access'
 
 export const Matches: CollectionConfig = {
   slug: 'matches',
+  labels: { singular: 'Match', plural: 'Matchs' },
   admin: {
     useAsTitle: 'home_team',
     defaultColumns: ['home_team', 'away_team', 'score_home', 'score_away', 'date', 'serie_reference'],

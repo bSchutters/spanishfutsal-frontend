@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
+  label: 'Parametres',
   access: {
     read: isAdmin,
     update: isAdmin,

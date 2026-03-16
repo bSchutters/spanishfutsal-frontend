@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const Rankings: CollectionConfig = {
   slug: 'rankings',
+  labels: { singular: 'Classement', plural: 'Classements' },
   admin: {
     useAsTitle: 'team_name',
     defaultColumns: ['team_name', 'position', 'points', 'played'],

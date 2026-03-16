@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const Seasons: CollectionConfig = {
   slug: 'seasons',
+  labels: { singular: 'Saison', plural: 'Saisons' },
   admin: {
     useAsTitle: 'name',
     hidden: ({ user }) => user?.role !== 'admin',

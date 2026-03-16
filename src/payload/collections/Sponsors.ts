@@ -3,6 +3,7 @@ import { isAdmin } from '../access'
 
 export const Sponsors: CollectionConfig = {
   slug: 'sponsors',
+  labels: { singular: 'Sponsor', plural: 'Sponsors' },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'url', 'active'],
