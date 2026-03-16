@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 
-export const revalidate = 300
+export const revalidate = 60
 
 export async function GET() {
   try {
@@ -22,7 +22,7 @@ export async function GET() {
     }))
 
     return NextResponse.json({ data }, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
     })
   } catch (error) {
     console.error('Error fetching sponsors:', error)
