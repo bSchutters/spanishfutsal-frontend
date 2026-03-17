@@ -69,13 +69,25 @@ export async function importRankings(payload: Payload) {
       existingMap.set(doc.team_name, { id: doc.id as number, position: doc.position })
     }
 
-    // Check if ranking changed
+    // Check if ranking changed (compare position, points, and played)
     let hasChanged = false
     for (const team of rankings) {
       const previous = existingMap.get(team.team_name)
+      if (!previous) {
+        hasChanged = true
+        break
+      }
+      // Fetch full data to compare points and played
+      const fullDoc = existingResult.docs.find(d => d.team_name === team.team_name)
       if (
-        !previous ||
-        previous.position !== team.position
+        previous.position !== team.position ||
+        fullDoc?.points !== team.points ||
+        fullDoc?.played !== team.played ||
+        fullDoc?.wins !== team.wins ||
+        fullDoc?.losses !== team.losses ||
+        fullDoc?.draws !== team.draws ||
+        fullDoc?.goals_for !== team.score_for ||
+        fullDoc?.goals_against !== team.score_against
       ) {
         hasChanged = true
         break
