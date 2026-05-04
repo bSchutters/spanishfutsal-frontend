@@ -19,7 +19,7 @@ type Ranking = {
 type State = {
   rankings: Ranking[];
   isLoading: boolean;
-  fetchRankings: () => Promise<void>;
+  fetchRankings: (seasonId?: number | null) => Promise<void>;
 };
 
 type RankingAPIResponse = {
@@ -43,13 +43,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAP
 export const useRankingStore = create<State>((set) => ({
   rankings: [],
   isLoading: false,
-  fetchRankings: async () => {
+  fetchRankings: async (seasonId) => {
     set({ isLoading: true, rankings: [] });
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/public/rankings`
-      );
+      const url = seasonId
+        ? `${API_URL}/api/public/rankings/${seasonId}`
+        : `${API_URL}/api/public/rankings`;
+      const res = await fetch(url);
       const json = await res.json();
 
       set({

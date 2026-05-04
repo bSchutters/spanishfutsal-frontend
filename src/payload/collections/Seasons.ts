@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../access'
+import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Seasons: CollectionConfig = {
   slug: 'seasons',
@@ -18,16 +19,19 @@ export const Seasons: CollectionConfig = {
     beforeChange: [
       async ({ data, req }) => {
         // Deactivate all other seasons when one is set to active
+        // and auto-archive the previously active season
         if (data?.active) {
           await req.payload.update({
             collection: 'seasons',
             where: { active: { equals: true } },
-            data: { active: false },
+            data: { active: false, archived: true },
           })
         }
         return data
       },
     ],
+    afterChange: [revalidateAfterChange(['seasons', 'rankings', 'matches'])],
+    afterDelete: [revalidateAfterDelete(['seasons'])],
   },
   fields: [
     {
@@ -47,6 +51,11 @@ export const Seasons: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'LFFS Serie ID',
+    },
+    {
+      name: 'serie_name',
+      type: 'text',
+      label: 'Nom de la serie (ex: P4G)',
     },
     {
       name: 'active',

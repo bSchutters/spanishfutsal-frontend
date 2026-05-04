@@ -10,6 +10,8 @@ import { getTeamName } from "@/lib/getTeamName";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
+import { useSeasonStore } from "@/store/useSeasonStore";
+import SeasonSelector from "@/components/season-selector";
 import {
   ExternalLink,
   Handshake,
@@ -19,7 +21,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { matchsMetadata } from "./metadata";
 
@@ -27,10 +29,20 @@ export default function Matchs() {
   const { isMobile } = useBreakpoint();
   const { matchs, isLoading, fetchMatchs } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
+  const { setSelectedSeason } = useSeasonStore();
+  const isArchived = useSeasonStore((s) => s.isArchivedSeason());
 
   useEffect(() => {
+    setSelectedSeason(null);
     fetchMatchs();
-  }, [fetchMatchs]);
+  }, [fetchMatchs, setSelectedSeason]);
+
+  const handleSeasonChange = useCallback(
+    (seasonId: number | null) => {
+      fetchMatchs(seasonId);
+    },
+    [fetchMatchs],
+  );
 
   const now = new Date();
 
@@ -62,18 +74,21 @@ export default function Matchs() {
   const matchRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
+    if (!isArchived && fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
       matchRefs.current[fallbackIndex]?.scrollIntoView({
         behavior: "instant",
         block: isMobile ? "end" : "center",
       });
     }
-  }, [fallbackIndex, isMobile]);
+  }, [fallbackIndex, isMobile, isArchived]);
 
   if (isLoading) {
     return (
       <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
-        <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+          <SeasonSelector onSeasonChange={handleSeasonChange} />
+        </div>
         <div className="flex flex-col gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <BoxModule key={i} className="flex flex-col gap-4 p-4 animate-pulse">
@@ -107,7 +122,10 @@ export default function Matchs() {
     <>
       <MetadataHead metadata={matchsMetadata} />
       <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
-        <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+        <div className="w-full flex justify-between items-center">
+          <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+          <SeasonSelector onSeasonChange={handleSeasonChange} />
+        </div>
         {validMatchs.map((match, index) => {
           const today = new Date();
           const matchDateTime = new Date(`${match.date}T${match.time}`);
