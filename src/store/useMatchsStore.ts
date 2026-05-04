@@ -18,7 +18,7 @@ type Match = {
 type State = {
   matchs: Match[];
   isLoading: boolean;
-  fetchMatchs: () => Promise<void>;
+  fetchMatchs: (seasonId?: number | null) => Promise<void>;
 };
 
 type MatchAPIResponse = {
@@ -41,13 +41,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAP
 export const useMatchsStore = create<State>((set) => ({
   matchs: [],
   isLoading: false,
-  fetchMatchs: async () => {
+  fetchMatchs: async (seasonId) => {
     set({ isLoading: true, matchs: [] });
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/public/matches`
-      );
+      const url = seasonId
+        ? `${API_URL}/api/public/matches/${seasonId}`
+        : `${API_URL}/api/public/matches`;
+      const res = await fetch(url);
       const json = await res.json();
 
       set({

@@ -1,26 +1,34 @@
 "use client";
 
 import BoxModule from "@/components/layout/boxModule";
-import { Button } from "@/components/ui/button";
 import { getTeamLogo } from "@/lib/getTeamLogo";
 import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
-import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { useSeasonStore } from "@/store/useSeasonStore";
+import SeasonSelector from "@/components/season-selector";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import MetadataHead from "@/components/metadata-head";
 import { classementMetadata } from "./metadata";
 
 export default function Equipe() {
   const { rankings, isLoading, fetchRankings } = useRankingStore();
-
-  console.log(rankings);
+  const { setSelectedSeason } = useSeasonStore();
+  const isArchived = useSeasonStore((s) => s.isArchivedSeason());
 
   useEffect(() => {
+    setSelectedSeason(null);
     fetchRankings();
-  }, [fetchRankings]);
+  }, [fetchRankings, setSelectedSeason]);
+
+  const handleSeasonChange = useCallback(
+    (seasonId: number | null) => {
+      fetchRankings(seasonId);
+    },
+    [fetchRankings],
+  );
 
   const statsForTeams = [
     "played",
@@ -37,6 +45,7 @@ export default function Equipe() {
       <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
         <div className="w-full flex justify-between items-center">
           <h1 className="text-4xl font-marjorie italic font-bold">Classement</h1>
+          <SeasonSelector onSeasonChange={handleSeasonChange} />
         </div>
         <BoxModule className="flex flex-col h-full">
           <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter p-2">
@@ -68,11 +77,7 @@ export default function Equipe() {
       <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
       <div className="w-full flex justify-between items-center">
         <h1 className="text-4xl font-marjorie italic font-bold">Classement</h1>
-        <Link href="https://www.lffs.eu" target="_blank">
-          <Button className="font-nugros">
-            LFFS P4G <ExternalLink />
-          </Button>
-        </Link>
+        <SeasonSelector onSeasonChange={handleSeasonChange} />
       </div>
       <BoxModule className="flex flex-col h-full">
         <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter">
@@ -111,9 +116,10 @@ export default function Equipe() {
             >
               <div className="flex gap-4 items-center">
                 <p className="w-4 h-4 flex items-center justify-center">
-                  {team.positionChange === "no_change" ||
+                  {isArchived ? (
+                    "-"
+                  ) : team.positionChange === "no_change" ||
                   team.positionChange === null ? (
-                    // <Equal className="text-white" />
                     "-"
                   ) : team.positionChange === "up" ? (
                     <ChevronUp className="text-green-500" />
