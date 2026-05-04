@@ -1,9 +1,14 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminOrManager } from '../access'
+import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Matches: CollectionConfig = {
   slug: 'matches',
   labels: { singular: 'Match', plural: 'Matchs' },
+  hooks: {
+    afterChange: [revalidateAfterChange(['matches', 'players'])],
+    afterDelete: [revalidateAfterDelete(['matches', 'players'])],
+  },
   admin: {
     useAsTitle: 'home_team',
     defaultColumns: ['home_team', 'away_team', 'score_home', 'score_away', 'date', 'serie_reference'],

@@ -1,9 +1,14 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../access'
+import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Rankings: CollectionConfig = {
   slug: 'rankings',
   labels: { singular: 'Classement', plural: 'Classements' },
+  hooks: {
+    afterChange: [revalidateAfterChange(['rankings'])],
+    afterDelete: [revalidateAfterDelete(['rankings'])],
+  },
   admin: {
     useAsTitle: 'team_name',
     defaultColumns: ['team_name', 'position', 'points', 'played'],
