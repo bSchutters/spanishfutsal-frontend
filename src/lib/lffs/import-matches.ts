@@ -1,8 +1,6 @@
 import type { Payload } from 'payload'
-import { getLffsToken } from './get-token'
+import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
-
-const BASE_URL = 'https://gestion.lffs.eu/lms_league_ws/public/api/v1'
 
 interface LffsGame {
   home_team_name: string
@@ -35,23 +33,10 @@ export async function importMatches(payload: Payload) {
       return { success: false, error: 'No active season' }
     }
 
-    const settings = await payload.findGlobal({ slug: 'settings' })
-    const token = await getLffsToken({ manualToken: settings.lffs_token, payload })
-
-    const url = `${BASE_URL}/game/byMyLeague?season_id=${season.season_id}&club_id=5075`
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `WP_Access ${token}`,
-        Origin: 'https://www.lffs.eu',
-        Referer: 'https://www.lffs.eu/',
-      },
+    const data = await lffsGet<{ elements?: LffsGame[] }>('game/byMyLeague', {
+      season_id: String(season.season_id),
+      club_id: '5075',
     })
-
-    if (!res.ok) {
-      throw new Error(`LFFS API returned ${res.status}`)
-    }
-
-    const data = await res.json()
     const matchs: LffsGame[] = Array.isArray(data.elements) ? data.elements : []
 
     if (matchs.length === 0) {

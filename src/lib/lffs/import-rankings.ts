@@ -1,8 +1,6 @@
 import type { Payload } from 'payload'
-import { getLffsToken } from './get-token'
+import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
-
-const BASE_URL = 'https://gestion.lffs.eu/lms_league_ws/public/api/v1'
 
 interface LffsTeamRanking {
   team_name: string
@@ -36,25 +34,15 @@ export async function importRankings(payload: Payload) {
       return { success: false, error: 'No active season' }
     }
 
-    const settings = await payload.findGlobal({ slug: 'settings' })
-    const token = await getLffsToken({ manualToken: settings.lffs_token, payload })
+    const data = await lffsGet<{ elements?: LffsTeamRanking[] } | LffsTeamRanking[]>(
+      'ranking/byMyLeague',
+      { serie_id: String(season.serie_id) },
+    )
+    const rankings: LffsTeamRanking[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data.elements) ? data.elements : []
 
-    const url = `${BASE_URL}/ranking/byMyLeague?serie_id=${season.serie_id}`
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `WP_Access ${token}`,
-        Origin: 'https://www.lffs.eu',
-        Referer: 'https://www.lffs.eu/',
-      },
-    })
-
-    if (!res.ok) {
-      throw new Error(`LFFS API returned ${res.status}`)
-    }
-
-    const data = await res.json()
-    const rankings: LffsTeamRanking[] = Array.isArray(data.elements) ? data.elements : data
-    if (!Array.isArray(rankings)) {
+    if (!Array.isArray(rankings) || rankings.length === 0) {
       throw new Error('Unexpected ranking format')
     }
 
