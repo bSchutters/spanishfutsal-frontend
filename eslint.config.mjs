@@ -1,16 +1,14 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import coreWebVitals from 'eslint-config-next/core-web-vitals'
+import typescript from 'eslint-config-next/typescript'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
+// Next 16 removed `next lint`; we run `eslint .` directly, so the build output and
+// deps must be ignored explicitly (next lint used to do this automatically).
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
+  {
+    ignores: ['.next/**', 'node_modules/**', 'out/**', 'build/**', 'next-env.d.ts'],
+  },
+  ...coreWebVitals,
+  ...typescript,
+]
 
-export default eslintConfig;
+export default eslintConfig

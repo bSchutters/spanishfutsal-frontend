@@ -3,7 +3,8 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'paylo
 
 function revalidateTags(tags: string[]) {
   for (const tag of tags) {
-    revalidateTag(tag)
+    // Next 16 requires a cache-life profile as 2nd arg; 'max' revalidates fully.
+    revalidateTag(tag, 'max')
   }
 }
 

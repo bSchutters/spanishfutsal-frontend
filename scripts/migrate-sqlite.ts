@@ -15,6 +15,7 @@
  *   2. Connects to Payload (PostgreSQL)
  *   3. Creates all records in Payload
  */
+/* eslint-disable @typescript-eslint/no-explicit-any -- one-off migration: raw SQLite rows are untyped */
 
 import 'dotenv/config'
 import path from 'path'

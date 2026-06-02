@@ -95,6 +95,9 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return;
+    // Embla's initial sync: reading the current snap into state once on mount is
+    // intentional (not a cascading render). eslint-plugin-react-hooks 7 flags it.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api);
     api.on("reInit", onSelect);
     api.on("select", onSelect);
