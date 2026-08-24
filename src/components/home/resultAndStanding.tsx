@@ -131,9 +131,9 @@ export default function ResultAndStanding() {
               • {lastFinishedMatch.time}
             </Badge>
             <Badge className="uppercase bg-spanish-accent-2-light/10 text-spanish-accent-2 font-bold">
-              {lastFinishedMatch.serieReference !== "AMICAL"
-                ? `LFFS ${lastFinishedMatch.serieReference}`
-                : lastFinishedMatch.serieReference}
+              {["AMICAL", "TOURNOIS"].includes(lastFinishedMatch.serieReference)
+                ? lastFinishedMatch.competitionName
+                : `LFFS ${lastFinishedMatch.competitionName}`}
             </Badge>
           </div>
           <div className="flex justify-between items-center w-full">

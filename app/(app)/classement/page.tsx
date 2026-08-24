@@ -99,7 +99,16 @@ export default function Equipe() {
           </div>
         </div>
         <div className="w-full flex flex-col">
-          {rankings.map((team) => (
+          {rankings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
+              <p className="font-marjorie text-xl font-bold italic">
+                Classement pas encore disponible
+              </p>
+              <p className="text-sm text-spanish-bg-lighter">
+                Il sera affiché dès sa publication par la LFFS.
+              </p>
+            </div>
+          ) : rankings.map((team) => (
             <div
               key={team.teamName}
               className={cn(

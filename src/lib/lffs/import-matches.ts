@@ -59,7 +59,7 @@ export async function importMatches(payload: Payload) {
     let updated = 0
 
     for (const game of matchs) {
-      const normalizedRef = normalizeSerie(game.serie_reference)
+      const normalizedRef = normalizeSerie(game.serie_reference, season.serie_name)
       const key = `${game.home_team_name}|${game.away_team_name}`
       const existingId = existingMap.get(key)
 
@@ -96,7 +96,7 @@ export async function importMatches(payload: Payload) {
   }
 }
 
-function normalizeSerie(raw: string): 'COUPE' | 'P4G' {
+function normalizeSerie(raw: string, leagueName?: string | null): string {
   const coupeCodes = ['BTCPRES', 'BTCPPRM']
-  return coupeCodes.includes(raw) ? 'COUPE' : 'P4G'
+  return coupeCodes.includes(raw) ? 'COUPE' : leagueName || raw
 }

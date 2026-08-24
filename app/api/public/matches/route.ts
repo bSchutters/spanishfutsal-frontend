@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
+import { getCompetitionName } from '@/lib/getCompetitionName'
 
 export const dynamic = 'force-static'
 export const revalidate = false
@@ -19,6 +20,7 @@ async function getMatches() {
     collection: 'matches',
     limit: 1000,
     sort: 'date',
+    depth: 1,
     ...(activeSeason && { where: { season: { equals: activeSeason.id } } }),
   })
 
@@ -33,6 +35,7 @@ async function getMatches() {
     venue_id: m.venue_id,
     venue_name: m.venue_name,
     serie_reference: m.serie_reference,
+    competition_name: getCompetitionName(m.serie_reference, activeSeason),
     live_link: m.live_link,
     replay_link: m.replay_link,
   }))

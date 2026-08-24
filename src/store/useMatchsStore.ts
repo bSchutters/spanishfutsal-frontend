@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getDisplayTeamName } from "@/lib/getDisplayTeamName";
 
 type Match = {
   id: number;
@@ -11,6 +12,7 @@ type Match = {
   venueId: number;
   venueName: string;
   serieReference: string;
+  competitionName: string;
   liveLink: string;
   replayLink: string;
 };
@@ -32,6 +34,7 @@ type MatchAPIResponse = {
   venue_id: number;
   venue_name: string;
   serie_reference: string;
+  competition_name: string;
   live_link: string;
   replay_link: string;
 };
@@ -56,19 +59,14 @@ export const useMatchsStore = create<State>((set) => ({
           id: m.id,
           date: m.date,
           time: m.time ? m.time.slice(0, 5) : "",
-          homeTeam:
-            m.home_team === "SPORTING ROJA BRUXELLES"
-              ? "UD Asturiana"
-              : m.home_team,
-          awayTeam:
-            m.away_team === "SPORTING ROJA BRUXELLES"
-              ? "UD Asturiana"
-              : m.away_team,
+          homeTeam: getDisplayTeamName(m.home_team),
+          awayTeam: getDisplayTeamName(m.away_team),
           homeScore: m.score_home,
           awayScore: m.score_away,
           venueId: m.venue_id,
           venueName: m.venue_name,
           serieReference: m.serie_reference,
+          competitionName: m.competition_name || m.serie_reference,
           liveLink: m.live_link,
           replayLink: m.replay_link,
         })),
