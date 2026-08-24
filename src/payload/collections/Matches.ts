@@ -74,13 +74,7 @@ export const Matches: CollectionConfig = {
     },
     {
       name: 'serie_reference',
-      type: 'select',
-      options: [
-        { label: 'P4G', value: 'P4G' },
-        { label: 'Coupe', value: 'COUPE' },
-        { label: 'Amical', value: 'AMICAL' },
-        { label: 'Tournois', value: 'TOURNOIS' },
-      ],
+      type: 'text',
       label: 'Competition',
     },
     {

@@ -127,6 +127,9 @@ export default function Matchs() {
           <SeasonSelector onSeasonChange={handleSeasonChange} />
         </div>
         {validMatchs.map((match, index) => {
+          const isLffsCompetition = !["AMICAL", "TOURNOIS"].includes(
+            match.serieReference
+          );
           const today = new Date();
           const matchDateTime = new Date(`${match.date}T${match.time}`);
           const oneHourAfter = new Date(
@@ -161,6 +164,7 @@ export default function Matchs() {
                     : "border-2 border-spanish-accent-2"
                   : "",
                 fallbackIndex === index &&
+                  !isArchived &&
                   !hasLiveMatch &&
                   "border-2 border-spanish-accent"
               )}
@@ -170,8 +174,7 @@ export default function Matchs() {
               }}
             >
               <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
-                {(match.serieReference === "COUPE" ||
-                  match.serieReference === "P4G") && (
+                {isLffsCompetition && (
                   <Image
                     src="/assets/images/lffs.png"
                     alt="Team Logo"
@@ -193,11 +196,8 @@ export default function Matchs() {
                 )}
                 <div className="flex flex-col text-sm  leading-4">
                   <p className="font-bold">
-                    {match.serieReference === "COUPE" ||
-                    match.serieReference === "P4G"
-                      ? "LFFS "
-                      : ""}
-                    {match.serieReference}
+                    {isLffsCompetition ? "LFFS " : ""}
+                    {match.competitionName}
                   </p>
                   {match.date && (
                     <p className="capitalize">

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getDisplayTeamName } from "@/lib/getDisplayTeamName";
 
 type Ranking = {
   id: number;
@@ -57,10 +58,7 @@ export const useRankingStore = create<State>((set) => ({
         rankings: (json.data as RankingAPIResponse[])
           .map((r) => ({
             id: r.id,
-            teamName:
-              r.team_name === "SPORTING ROJA BRUXELLES"
-                ? "UD Asturiana"
-                : r.team_name,
+            teamName: getDisplayTeamName(r.team_name),
             points: r.points,
             wins: r.wins,
             losses: r.losses,

@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
+import { getCompetitionName } from '@/lib/getCompetitionName'
 
 async function getMatchesBySeason(seasonId: number) {
   const payload = await getPayloadClient()
+
+  const season = await payload.findByID({
+    collection: 'seasons',
+    id: seasonId,
+  })
 
   const result = await payload.find({
     collection: 'matches',
     limit: 1000,
     sort: 'date',
+    depth: 1,
     where: { season: { equals: seasonId } },
   })
 
@@ -23,6 +30,7 @@ async function getMatchesBySeason(seasonId: number) {
     venue_id: m.venue_id,
     venue_name: m.venue_name,
     serie_reference: m.serie_reference,
+    competition_name: getCompetitionName(m.serie_reference, season),
     live_link: m.live_link,
     replay_link: m.replay_link,
   }))
