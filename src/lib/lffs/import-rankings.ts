@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
+import { ensureTeams } from './ensure-teams'
 
 interface LffsTeamRanking {
   team_name: string
@@ -45,6 +46,8 @@ export async function importRankings(payload: Payload) {
     if (!Array.isArray(rankings) || rankings.length === 0) {
       throw new Error('Unexpected ranking format')
     }
+
+    await ensureTeams(payload, rankings.map((team) => team.team_name))
 
     // Batch-fetch existing rankings for this season (#7 fix)
     const existingResult = await payload.find({

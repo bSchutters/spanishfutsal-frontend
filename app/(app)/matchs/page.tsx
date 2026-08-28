@@ -5,8 +5,6 @@ import MetadataHead from "@/components/metadata-head";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { getTeamLogo } from "@/lib/getTeamLogo";
-import { getTeamName } from "@/lib/getTeamName";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
@@ -213,8 +211,9 @@ export default function Matchs() {
               </div>
               <div className="grid gap-2 sm:gap-0 xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
                 <Team
-                  logo={getTeamLogo(match.homeTeam)}
-                  teamName={getTeamName(match.homeTeam)}
+                  logo={match.homeTeamLogo}
+                  teamName={match.homeTeam}
+                  isClub={match.homeIsClub}
                   isMatchPage
                   {...(isMobile && { logoFirst: true })}
                   isMobile={isMobile}
@@ -225,8 +224,9 @@ export default function Matchs() {
                     : "vs"}
                 </p>
                 <Team
-                  logo={getTeamLogo(match.awayTeam)}
-                  teamName={getTeamName(match.awayTeam)}
+                  logo={match.awayTeamLogo}
+                  teamName={match.awayTeam}
+                  isClub={match.awayIsClub}
                   isMatchPage
                   logoFirst
                   isMobile={isMobile}

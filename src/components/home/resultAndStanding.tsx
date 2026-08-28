@@ -1,6 +1,4 @@
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { getTeamLogo } from "@/lib/getTeamLogo";
-import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useMatchsStore } from "@/store/useMatchsStore";
 import { useRankingStore } from "@/store/useRankingStore";
@@ -52,8 +50,7 @@ export default function ResultAndStanding() {
       .sort((a, b) => b.matchDate.getTime() - a.matchDate.getTime())[0];
   }, [matchs]);
 
-  const ourTeamName = "UD Asturiana";
-  const index = rankings.findIndex((team) => team.teamName === ourTeamName);
+  const index = rankings.findIndex((team) => team.isClub);
   const previousTeam = rankings[index - 1];
   const previousPreviousTeam = rankings[index - 2];
   const currentTeam = rankings[index];
@@ -138,8 +135,9 @@ export default function ResultAndStanding() {
           </div>
           <div className="flex justify-between items-center w-full">
             <Team
-              logo={getTeamLogo(lastFinishedMatch.homeTeam)}
-              teamName={getTeamName(lastFinishedMatch.homeTeam)}
+              logo={lastFinishedMatch.homeTeamLogo}
+              teamName={lastFinishedMatch.homeTeam}
+              isClub={lastFinishedMatch.homeIsClub}
               logoFirst
               className="w-1/3"
             />
@@ -149,8 +147,9 @@ export default function ResultAndStanding() {
               <p>{lastFinishedMatch.awayScore}</p>
             </div>
             <Team
-              logo={getTeamLogo(lastFinishedMatch.awayTeam)}
-              teamName={getTeamName(lastFinishedMatch.awayTeam)}
+              logo={lastFinishedMatch.awayTeamLogo}
+              teamName={lastFinishedMatch.awayTeam}
+              isClub={lastFinishedMatch.awayIsClub}
               {...(breakpoint === "xs" && { logoFirst: true })}
               className="w-1/3"
             />
@@ -188,7 +187,7 @@ export default function ResultAndStanding() {
                 key={team.teamName}
                 className={cn(
                   "flex justify-between items-center  text-lg uppercase border-b-1 p-2 border-white last:border-none",
-                  team.teamName === "UD Asturiana"
+                  team.isClub
                     ? "bg-spanish-accent-2-light/10"
                     : "",
                   team.position === 1
@@ -202,7 +201,7 @@ export default function ResultAndStanding() {
                   <p
                     className={cn(
                       "italic font-marjorie font-bold xl:text-base text-sm",
-                      team.teamName === "UD Asturiana"
+                      team.isClub
                         ? "text-spanish-accent-2"
                         : ""
                     )}
@@ -212,18 +211,18 @@ export default function ResultAndStanding() {
                   <p
                     className={cn(
                       "xl:text-base text-sm",
-                      team.teamName === "UD Asturiana"
+                      team.isClub
                         ? "font-bold text-spanish-accent-2"
                         : ""
                     )}
                   >
-                    {getTeamName(team.teamName)}
+                    {team.teamName}
                   </p>
                 </div>
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm",
-                    team.teamName === "UD Asturiana"
+                    team.isClub
                       ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}

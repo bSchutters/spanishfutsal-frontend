@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
+import { ensureTeams } from './ensure-teams'
 
 interface LffsGame {
   home_team_name: string
@@ -43,6 +44,11 @@ export async function importMatches(payload: Payload) {
       await upsertLffsUpdate(payload, 'matches', { status: 'success', items_processed: 0 })
       return { success: true, created: 0, updated: 0 }
     }
+
+    await ensureTeams(
+      payload,
+      matchs.flatMap((game) => [game.home_team_name, game.away_team_name]),
+    )
 
     // Batch-fetch existing matches for this season (#7 fix)
     const existingResult = await payload.find({

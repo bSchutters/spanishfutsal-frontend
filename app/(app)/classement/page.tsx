@@ -1,8 +1,6 @@
 "use client";
 
 import BoxModule from "@/components/layout/boxModule";
-import { getTeamLogo } from "@/lib/getTeamLogo";
-import { getTeamName } from "@/lib/getTeamName";
 import { cn } from "@/lib/utils";
 import { useRankingStore } from "@/store/useRankingStore";
 import { useSeasonStore } from "@/store/useSeasonStore";
@@ -113,7 +111,7 @@ export default function Equipe() {
               key={team.teamName}
               className={cn(
                 "flex justify-between items-center  text-lg uppercase border-b-2 p-2 border-white last:border-none",
-                team.teamName === "UD Asturiana"
+                team.isClub
                   ? "bg-spanish-accent-2-light/10"
                   : "",
                 team.position === 1
@@ -139,7 +137,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie font-bold xl:text-base text-sm w-3",
-                    team.teamName === "UD Asturiana"
+                    team.isClub
                       ? "text-spanish-accent-2"
                       : ""
                   )}
@@ -148,7 +146,7 @@ export default function Equipe() {
                 </p>
                 <div>
                   <Image
-                    src={getTeamLogo(team.teamName)}
+                    src={team.teamLogo}
                     alt={team.teamName}
                     width={0}
                     height={0}
@@ -159,12 +157,12 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "xl:text-base text-sm md:max-w-none max-w-20 truncate",
-                    team.teamName === "UD Asturiana"
+                    team.isClub
                       ? "font-bold text-spanish-accent-2"
                       : ""
                   )}
                 >
-                  {getTeamName(team.teamName)}
+                  {team.teamName}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -174,7 +172,7 @@ export default function Equipe() {
                       key={stat}
                       className={cn(
                         " xl:text-base text-sm",
-                        team.teamName === "UD Asturiana"
+                        team.isClub
                           ? "text-spanish-accent-2 font-bold"
                           : ""
                       )}
@@ -209,7 +207,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "UD Asturiana"
+                    team.isClub
                       ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}
@@ -221,7 +219,7 @@ export default function Equipe() {
                 <p
                   className={cn(
                     "italic font-marjorie xl:text-base text-sm text-center",
-                    team.teamName === "UD Asturiana"
+                    team.isClub
                       ? "text-spanish-accent-2 font-bold"
                       : ""
                   )}

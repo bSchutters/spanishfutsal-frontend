@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
+import { getTeamsIndex } from '@/lib/getTeamsIndex'
+import { resolveTeam } from '@/lib/teams'
 
 async function getRankingsBySeason(seasonId: number) {
   const payload = await getPayloadClient()
+  const teams = await getTeamsIndex(payload)
 
   const result = await payload.find({
     collection: 'rankings',
@@ -12,21 +15,27 @@ async function getRankingsBySeason(seasonId: number) {
     where: { season: { equals: seasonId } },
   })
 
-  return result.docs.map((r) => ({
-    id: r.id,
-    team_name: r.team_name,
-    position: r.position,
-    played: r.played,
-    points: r.points,
-    wins: r.wins,
-    draws: r.draws,
-    losses: r.losses,
-    goals_for: r.goals_for,
-    goals_against: r.goals_against,
-    goal_difference: r.goal_difference,
-    result_sequence: r.result_sequence,
-    positionChange: r.positionChange,
-  }))
+  return result.docs.map((r) => {
+    const team = resolveTeam(teams, r.team_name)
+
+    return {
+      id: r.id,
+      team_name: team.name,
+      team_logo: team.logo,
+      is_club: team.isClub,
+      position: r.position,
+      played: r.played,
+      points: r.points,
+      wins: r.wins,
+      draws: r.draws,
+      losses: r.losses,
+      goals_for: r.goals_for,
+      goals_against: r.goals_against,
+      goal_difference: r.goal_difference,
+      result_sequence: r.result_sequence,
+      positionChange: r.positionChange,
+    }
+  })
 }
 
 export async function GET(
@@ -43,7 +52,7 @@ export async function GET(
     const getCached = unstable_cache(
       () => getRankingsBySeason(id),
       ['rankings', seasonId],
-      { tags: ['rankings'] },
+      { tags: ['rankings', 'teams'] },
     )
     const data = await getCached()
 
