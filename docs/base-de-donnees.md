@@ -67,9 +67,15 @@ est lancee : il n y a aucune synchronisation permanente entre les deux bases.
 
 Renseigner au prealable dans `.env.local` :
 
-- `SOURCE_DATABASE_URI` : connexion **directe** a la prod (port 5432). Le pooler
-  transactionnel de Supabase (port 6543) ne supporte pas `pg_dump`.
+- `SOURCE_DATABASE_URI` : le **session pooler** de Supabase, c est-a-dire le meme hote
+  que le pooler transactionnel mais en port **5432**. Le pooler transactionnel (port
+  6543) ne supporte pas `pg_dump`, et l ancienne connexion directe
+  (`db.<ref>.supabase.co`) ne resout plus.
 - `TARGET_DATABASE_URI` : la base locale.
+
+Le script charge `.env.local` tout seul, il n y a rien a exporter dans le shell. En
+revanche `pg_dump` doit etre joignable, donc le PATH doit inclure le dossier `bin` de
+PostgreSQL (voir section 1).
 
 Le script refuse de tourner si les deux URL designent la meme base, et exige `--yes`
 pour confirmer l ecrasement de la cible. Le dump ne couvre que le schema `public`, donc

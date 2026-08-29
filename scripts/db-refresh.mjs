@@ -19,6 +19,13 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+// Les URL vivent dans .env.local, que Node ne charge pas tout seul.
+try {
+  process.loadEnvFile('.env.local')
+} catch {
+  // absent : on se rabat sur l environnement du shell
+}
+
 const SOURCE = process.env.SOURCE_DATABASE_URI
 const TARGET = process.env.TARGET_DATABASE_URI
 
