@@ -9,9 +9,10 @@ const BASE = '/admin/collections/sponsors'
 const TABS = [
   { label: 'Actifs', href: `${BASE}?where[active][equals]=true`, match: 'true' },
   { label: 'Inactifs', href: `${BASE}?where[active][equals]=false`, match: 'false' },
-  // Un vrai `where`, que Payload conserve en paginant, et qui neutralise le
+  // Un vrai `where`, que Payload conserve en paginant et que son panneau de
+  // filtres sait representer, puisqu'il porte sur un champ reel. Il neutralise le
   // filtre par defaut de la collection tout en gardant tous les sponsors.
-  { label: 'Tous', href: `${BASE}?where[id][exists]=true`, match: 'all' },
+  { label: 'Tous', href: `${BASE}?where[active][exists]=true`, match: 'all' },
 ] as const
 
 const SponsorStatusTabs: React.FC = () => {
@@ -20,7 +21,7 @@ const SponsorStatusTabs: React.FC = () => {
 
   // Sans parametre, `baseFilter` n'a laisse passer que les actifs : l'onglet
   // correspondant doit donc apparaitre selectionne.
-  const current = filter ?? (searchParams.has('where[id][exists]') ? 'all' : 'true')
+  const current = filter ?? (searchParams.has('where[active][exists]') ? 'all' : 'true')
 
   return (
     <nav
