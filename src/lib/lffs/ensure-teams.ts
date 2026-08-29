@@ -1,5 +1,5 @@
 import type { Payload } from 'payload'
-import { normalizeTeamKey } from '@/lib/teams'
+import { isPlaceholderTeamName, normalizeTeamKey } from '@/lib/teams'
 
 /**
  * Registers any LFFS team name that has no `teams` entry yet. Cup opponents
@@ -10,7 +10,8 @@ export async function ensureTeams(payload: Payload, rawNames: string[]): Promise
   const incoming = new Map<string, string>()
   for (const raw of rawNames) {
     const name = raw?.trim()
-    if (name) incoming.set(normalizeTeamKey(name), name)
+    if (!name || isPlaceholderTeamName(name)) continue
+    incoming.set(normalizeTeamKey(name), name)
   }
   if (incoming.size === 0) return 0
 
