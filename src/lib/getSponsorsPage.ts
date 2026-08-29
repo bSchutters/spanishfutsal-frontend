@@ -52,14 +52,11 @@ function text(value: unknown): string | null {
 }
 
 /** Ne retient que les liens effectivement remplis, dans un ordre stable. */
-function toLinks(group: unknown, legacyWebsite?: unknown): SponsorLink[] {
+export function sponsorLinks(group: unknown): SponsorLink[] {
   const links = (group ?? {}) as Record<string, unknown>;
 
   return SPONSOR_PLATFORMS.flatMap((platform) => {
-    const url =
-      platform === "website"
-        ? (text(links.website) ?? text(legacyWebsite))
-        : text(links[platform]);
+    const url = text(links[platform]);
     return url ? [{ platform, url }] : [];
   });
 }
@@ -88,9 +85,7 @@ async function fetchSponsorsPage(): Promise<{
     logo: typeof doc.logo === "object" && doc.logo?.url ? doc.logo.url : null,
     sector: text(doc.sector),
     description: text(doc.description),
-    // L'ancien champ `url` precede le groupe Liens. Payload renvoie le groupe avec
-    // toutes ses cles a null, donc la reprise doit passer apres l'etalement.
-    links: toLinks(doc.links ?? {}, doc.url),
+    links: sponsorLinks(doc.links),
   }));
 
   const page = global as Record<string, unknown>;
