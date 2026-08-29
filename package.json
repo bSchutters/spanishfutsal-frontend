@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "seed:teams": "node scripts/seed-teams.mjs",
-    "db:refresh": "node scripts/db-refresh.mjs"
+    "db:refresh": "node scripts/db-refresh.mjs",
+    "schema:push": "node scripts/db-schema-push.mjs",
+    "schema:push:prod": "node scripts/db-schema-push.mjs --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

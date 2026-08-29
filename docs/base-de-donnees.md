@@ -84,17 +84,45 @@ sans adaptation dans un Postgres standard.
 
 Les medias ne sont pas concernes : ils vivent sur Vercel Blob, en dehors de Postgres.
 
-## 3. Reprise du schema : passer du mode push aux migrations
+## 3. Publier en production
+
+Vercel construit en mode production, ou Payload ne synchronise plus le schema. Toute
+branche qui ajoute ou modifie un champ demande donc que les colonnes existent en base
+**avant** que le nouveau code arrive.
+
+```
+pnpm schema:push:prod --yes
+```
+
+Un serveur de developpement ephemere est demarre sur le port 3999 en pointant sur
+`PROD_DATABASE_URI`, une requete declenche l initialisation de Payload qui synchronise
+le schema, puis le serveur est coupe. Le script refuse de tourner si `PROD_DATABASE_URI`
+et `DATABASE_URI` designent la meme base.
+
+Ces changements sont additifs : les colonnes ajoutees sont ignorees par le code
+actuellement en ligne, donc la commande peut etre passee avant le deploiement sans
+risque de coupure. L ordre recommande reste : appliquer le schema, verifier le site en
+production, puis deployer.
+
+Pour la base locale, `pnpm schema:push --yes` fait la meme chose ; en pratique un simple
+`pnpm dev` suffit.
+
+## 4. Reprise du schema : passer du mode push aux migrations
 
 Aujourd hui le schema est pousse implicitement au demarrage du dev. Rien n est
 versionne : impossible de savoir quand une colonne est apparue, ni de rejouer un
 changement ailleurs. La cible est de passer aux migrations Payload.
 
-**Prealable non resolu.** Le CLI Payload ne demarre pas en l etat sur ce projet : son
-loader tsx ne resout pas les imports TypeScript sans extension, et echoue des le
-chargement de `payload.config.ts`. Aucune commande `payload migrate:*` ni
-`payload generate:types` n est utilisable pour l instant. C est le premier point a
-debloquer.
+**Prealable non resolu.** Le CLI Payload ne demarre pas sur ce projet. Son binaire
+appelle `tsImport('./dist/bin/index.js', url)` avec une `url` situee dans
+`node_modules/payload/` : tsx cherche donc le tsconfig depuis ce dossier et n applique
+jamais celui du projet, si bien que les alias `@/` du config ne sont pas resolus.
+Ni `TSX_TSCONFIG_PATH`, ni `--use-swc`, ni le passage aux imports relatifs n y changent
+quelque chose — la correction est a faire en amont, chez Payload. Aucune commande
+`payload migrate:*` ni `payload generate:types` n est donc utilisable, et c est le
+premier point a debloquer avant d envisager les migrations.
+
+En attendant, `pnpm schema:push:prod` (section 3) couvre le besoin.
 
 Une fois le CLI fonctionnel, la procedure est la suivante — a jouer d abord sur la base
 locale, jamais directement sur la prod :
