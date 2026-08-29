@@ -17,6 +17,9 @@ export const Sponsors: CollectionConfig = {
     defaultColumns: ['name', 'sector', 'active'],
     description:
       "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier.",
+    components: {
+      beforeListTable: ['@/payload/components/SponsorStatusTabs'],
+    },
     hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
@@ -84,6 +87,8 @@ export const Sponsors: CollectionConfig = {
       label: 'Lien vers le site (ancien champ)',
       admin: {
         hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
         description: 'Remplace par Liens > Site web. Conserve pour ne pas perdre les valeurs existantes.',
       },
     },
@@ -94,6 +99,8 @@ export const Sponsors: CollectionConfig = {
       label: "Ordre d'affichage",
       admin: {
         hidden: true,
+        disableListColumn: true,
+        disableListFilter: true,
         description: 'Remplace par le glisser-deposer. Conserve pour ne pas perdre les valeurs existantes.',
       },
     },
