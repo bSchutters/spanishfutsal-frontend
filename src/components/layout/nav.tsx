@@ -47,6 +47,7 @@ const Nav = () => {
     { href: "/matchs", label: "MATCHS" },
     // {href: "/galerie", label: "GALERIE"},
     // {href: "/actualites", label: "ACTUALITÉS"},
+    { href: "/sponsors", label: "SPONSORS" },
     { href: "/contact", label: "CONTACT" },
   ];
 

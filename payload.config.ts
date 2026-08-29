@@ -18,6 +18,7 @@ import { Venues } from '@/payload/collections/Venues'
 import { Teams } from '@/payload/collections/Teams'
 import { Sponsors } from '@/payload/collections/Sponsors'
 import { Settings } from '@/payload/globals/Settings'
+import { SponsorsPage } from '@/payload/globals/SponsorsPage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -44,7 +45,7 @@ export default buildConfig({
     theme: 'dark',
   },
   collections: [Users, Players, Media, Matches, Rankings, Seasons, LffsUpdates, Venues, Teams, Sponsors],
-  globals: [Settings],
+  globals: [Settings, SponsorsPage],
   i18n: {
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',

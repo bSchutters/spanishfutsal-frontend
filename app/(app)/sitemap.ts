@@ -33,6 +33,12 @@ export default function sitemap() {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/sponsors`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',

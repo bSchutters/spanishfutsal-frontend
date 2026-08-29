@@ -5,13 +5,18 @@ import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidat
 export const Sponsors: CollectionConfig = {
   slug: 'sponsors',
   labels: { singular: 'Sponsor', plural: 'Sponsors' },
+  // Ajoute une poignee de glisser-deposer dans la liste : l'ordre defini a la souris
+  // est celui de la page /sponsors. Marque experimental par Payload en 3.79.
+  orderable: true,
   hooks: {
     afterChange: [revalidateAfterChange(['sponsors'])],
     afterDelete: [revalidateAfterDelete(['sponsors'])],
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'url', 'active'],
+    defaultColumns: ['name', 'sector', 'active'],
+    description:
+      "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier.",
     hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
@@ -28,16 +33,44 @@ export const Sponsors: CollectionConfig = {
       label: 'Nom du sponsor',
     },
     {
-      name: 'url',
-      type: 'text',
-      label: 'Lien vers le site',
-    },
-    {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',
       required: true,
       label: 'Logo',
+    },
+    {
+      name: 'sector',
+      type: 'text',
+      label: "Secteur d'activite",
+      admin: {
+        description: 'Affiche comme etiquette sur la fiche. Par exemple : restauration, batiment, assurance.',
+      },
+    },
+    {
+      name: 'description',
+      type: 'textarea',
+      label: 'Description',
+      admin: {
+        description: 'Quelques lignes de presentation, affichees sous le logo.',
+      },
+    },
+    {
+      name: 'links',
+      type: 'group',
+      label: 'Liens',
+      admin: {
+        description: "Seuls les liens remplis apparaissent sur la page. Laissez vide ce que le sponsor n'a pas.",
+      },
+      fields: [
+        { name: 'website', type: 'text', label: 'Site web' },
+        { name: 'facebook', type: 'text', label: 'Facebook' },
+        { name: 'instagram', type: 'text', label: 'Instagram' },
+        { name: 'linkedin', type: 'text', label: 'LinkedIn' },
+        { name: 'tiktok', type: 'text', label: 'TikTok' },
+        { name: 'youtube', type: 'text', label: 'YouTube' },
+        { name: 'x', type: 'text', label: 'X (Twitter)' },
+      ],
     },
     {
       name: 'active',
@@ -46,10 +79,23 @@ export const Sponsors: CollectionConfig = {
       label: 'Actif',
     },
     {
+      name: 'url',
+      type: 'text',
+      label: 'Lien vers le site (ancien champ)',
+      admin: {
+        hidden: true,
+        description: 'Remplace par Liens > Site web. Conserve pour ne pas perdre les valeurs existantes.',
+      },
+    },
+    {
       name: 'order',
       type: 'number',
       defaultValue: 0,
-      label: 'Ordre d\'affichage',
+      label: "Ordre d'affichage",
+      admin: {
+        hidden: true,
+        description: 'Remplace par le glisser-deposer. Conserve pour ne pas perdre les valeurs existantes.',
+      },
     },
   ],
 }
