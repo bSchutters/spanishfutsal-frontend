@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import { getDisplayTeamName } from "@/lib/getDisplayTeamName";
+import { DEFAULT_TEAM_LOGO } from "@/lib/teams";
 
 type Ranking = {
   id: number;
   teamName: string;
+  teamLogo: string;
+  isClub: boolean;
   points: number;
   wins: number;
   losses: number;
@@ -26,6 +28,8 @@ type State = {
 type RankingAPIResponse = {
   id: number;
   team_name: string;
+  team_logo: string | null;
+  is_club: boolean;
   points: number;
   wins: number;
   losses: number;
@@ -58,7 +62,9 @@ export const useRankingStore = create<State>((set) => ({
         rankings: (json.data as RankingAPIResponse[])
           .map((r) => ({
             id: r.id,
-            teamName: getDisplayTeamName(r.team_name),
+            teamName: r.team_name,
+            teamLogo: r.team_logo || DEFAULT_TEAM_LOGO,
+            isClub: r.is_club,
             points: r.points,
             wins: r.wins,
             losses: r.losses,

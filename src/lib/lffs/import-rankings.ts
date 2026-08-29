@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
+import { ensureTeams } from './ensure-teams'
 
 interface LffsTeamRanking {
   team_name: string
@@ -38,13 +39,21 @@ export async function importRankings(payload: Payload) {
       'ranking/byMyLeague',
       { serie_id: String(season.serie_id) },
     )
-    const rankings: LffsTeamRanking[] = Array.isArray(data)
-      ? data
-      : Array.isArray(data.elements) ? data.elements : []
-
-    if (!Array.isArray(rankings) || rankings.length === 0) {
+    const elements = Array.isArray(data) ? data : data.elements
+    if (!Array.isArray(elements)) {
       throw new Error('Unexpected ranking format')
     }
+    const rankings: LffsTeamRanking[] = elements
+
+    // En debut de saison la LFFS renvoie un classement vide tant qu aucun match n a
+    // ete joue. Ce n est pas une erreur : on n ecrase rien et on repart au prochain import.
+    if (rankings.length === 0) {
+      await upsertLffsUpdate(payload, 'ranking', { status: 'success', items_processed: 0 })
+      console.log('Rankings: aucun classement publie pour cette serie')
+      return { success: true, updated: 0 }
+    }
+
+    await ensureTeams(payload, rankings.map((team) => team.team_name))
 
     // Batch-fetch existing rankings for this season (#7 fix)
     const existingResult = await payload.find({

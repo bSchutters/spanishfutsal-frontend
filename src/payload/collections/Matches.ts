@@ -21,6 +21,18 @@ export const Matches: CollectionConfig = {
   },
   fields: [
     {
+      name: 'lffs_id',
+      type: 'number',
+      unique: true,
+      index: true,
+      label: 'Identifiant LFFS',
+      admin: {
+        readOnly: true,
+        description:
+          "Identifiant du match chez la LFFS. C'est lui qui permet de retrouver le match d'un import a l'autre, meme si les equipes ou la date changent.",
+      },
+    },
+    {
       name: 'home_team',
       type: 'text',
       required: true,

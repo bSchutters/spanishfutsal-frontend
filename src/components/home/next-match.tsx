@@ -3,12 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { getTeamLogo } from "@/lib/getTeamLogo";
 import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
 
-import { getTeamName } from "@/lib/getTeamName";
 import { useMatchsStore } from "@/store/useMatchsStore";
 import Link from "next/link";
 
@@ -102,7 +100,15 @@ export default function NextMatch() {
 
   if (!nextMatch || status === "after") return null;
 
-  const { homeTeam, awayTeam, liveLink } = nextMatch;
+  const {
+    homeTeam,
+    homeTeamLogo,
+    homeIsClub,
+    awayTeam,
+    awayTeamLogo,
+    awayIsClub,
+    liveLink,
+  } = nextMatch;
 
   return (
     <BoxModule
@@ -173,8 +179,9 @@ export default function NextMatch() {
           )}
         >
           <Team
-            logo={getTeamLogo(homeTeam)}
-            teamName={getTeamName(homeTeam)}
+            logo={homeTeamLogo}
+            teamName={homeTeam}
+            isClub={homeIsClub}
             isNextMatch
             {...(isMobile && { logoFirst: true })}
           />
@@ -182,8 +189,9 @@ export default function NextMatch() {
             vs
           </p>
           <Team
-            logo={getTeamLogo(awayTeam)}
-            teamName={getTeamName(awayTeam)}
+            logo={awayTeamLogo}
+            teamName={awayTeam}
+            isClub={awayIsClub}
             isNextMatch
             {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
           />

@@ -1,8 +1,10 @@
 import type { Payload } from 'payload'
 import { lffsGet } from './proxy'
 import { upsertLffsUpdate } from './upsert-update'
+import { ensureTeams } from './ensure-teams'
 
 interface LffsGame {
+  id: number
   home_team_name: string
   away_team_name: string
   home_score: number | null
@@ -44,15 +46,26 @@ export async function importMatches(payload: Payload) {
       return { success: true, created: 0, updated: 0 }
     }
 
+    await ensureTeams(
+      payload,
+      matchs.flatMap((game) => [game.home_team_name, game.away_team_name])
+    )
+
     // Batch-fetch existing matches for this season (#7 fix)
     const existingResult = await payload.find({
       collection: 'matches',
       where: { season: { equals: season.id } },
       limit: 1000,
     })
-    const existingMap = new Map<string, number>()
+    // L identifiant LFFS est la seule cle stable : le nom des equipes change quand un
+    // adversaire de coupe est designe, et la date n est fixee qu ensuite. La cle par
+    // equipes ne sert qu a rattraper les matchs importes avant l ajout de ce champ.
+    const byLffsId = new Map<number, number>()
+    const byTeams = new Map<string, number>()
     for (const doc of existingResult.docs) {
-      existingMap.set(`${doc.home_team}|${doc.away_team}`, doc.id as number)
+      const id = doc.id as number
+      if (typeof doc.lffs_id === 'number') byLffsId.set(doc.lffs_id, id)
+      else byTeams.set(`${doc.home_team}|${doc.away_team}`, id)
     }
 
     let created = 0
@@ -60,10 +73,15 @@ export async function importMatches(payload: Payload) {
 
     for (const game of matchs) {
       const normalizedRef = normalizeSerie(game.serie_reference, season.serie_name)
-      const key = `${game.home_team_name}|${game.away_team_name}`
-      const existingId = existingMap.get(key)
+      const teamsKey = `${game.home_team_name}|${game.away_team_name}`
+      let existingId = byLffsId.get(game.id)
+      if (existingId === undefined) {
+        existingId = byTeams.get(teamsKey)
+        if (existingId !== undefined) byTeams.delete(teamsKey)
+      }
 
       const matchData: Record<string, unknown> = {
+        lffs_id: game.id,
         home_team: game.home_team_name,
         away_team: game.away_team_name,
         score_home: game.home_score,

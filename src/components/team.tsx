@@ -8,6 +8,7 @@ interface TeamProps {
   isMatchPage?: boolean;
   logo: string;
   teamName: string;
+  isClub?: boolean;
   className?: string;
   isMobile?: boolean;
 }
@@ -16,6 +17,7 @@ export default function Team({
   logoFirst,
   logo,
   teamName,
+  isClub,
   className,
   isNextMatch,
   isMatchPage,
@@ -40,7 +42,7 @@ export default function Team({
               : "order-2 text-start"
             : "text-end",
           isMatchPage && isMobile ? "max-w-full text-center" : "",
-          teamName === "UD Asturiana" && "font-bold"
+          isClub && "font-bold"
         )}
       >
         {teamName}
