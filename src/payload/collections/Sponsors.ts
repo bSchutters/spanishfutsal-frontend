@@ -16,10 +16,19 @@ export const Sponsors: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'sector', 'active'],
     description:
-      "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier. Utilisez Grouper par > Actif pour separer les sponsors actifs des inactifs.",
-    // Active le controle "Grouper par" de la liste : choisi une fois sur Actif, il
-    // separe les sponsors en deux sections et le choix est memorise par utilisateur.
-    groupBy: true,
+      "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier.",
+    components: {
+      beforeListTable: ['@/payload/components/SponsorStatusTabs'],
+    },
+    // Sans vue explicite dans l'URL, la liste s'ouvre sur les sponsors actifs.
+    // Des qu'un onglet passe son propre `where`, ce filtre par defaut s'efface
+    // pour ne pas se cumuler avec lui.
+    baseFilter: ({ req }) => {
+      const keys = Array.from(req.searchParams.keys())
+      const hasExplicitView = keys.some((key) => key.startsWith('where'))
+
+      return hasExplicitView ? null : { active: { equals: true } }
+    },
     hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
