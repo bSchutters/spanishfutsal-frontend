@@ -18,7 +18,12 @@ const PUBLIC_DIR = path.resolve(__dirname, '../public')
 const API_URL = process.env.PAYLOAD_API_URL || 'http://localhost:3000'
 
 const TEAMS = [
-  { lffs: ['SPORTING ROJA BRUXELLES', 'UNION DEPORTIVA ASTURIANA BRUXELLES'], name: 'UD Asturiana', logo: 'assets/images/svg/logo-asturiana.svg', isClub: true },
+  {
+    lffs: ['SPORTING ROJA BRUXELLES', 'UNION DEPORTIVA ASTURIANA BRUXELLES'],
+    name: 'UD Asturiana',
+    logo: 'assets/images/svg/logo-asturiana.svg',
+    isClub: true,
+  },
   { lffs: ['FUTSAL 11 ÉTOILES BRUXELLES'], name: 'FT 11 Étoiles' },
   { lffs: ['RACING WHITE WOLUWE FUTSAL 2'], name: 'Racing White Woluwe 2' },
   { lffs: ['MAKASI BRUXELLES 2'], name: 'MAKASI 2' },

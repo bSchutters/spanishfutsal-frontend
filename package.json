@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:teams": "node scripts/seed-teams.mjs",
+    "db:refresh": "node scripts/db-refresh.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

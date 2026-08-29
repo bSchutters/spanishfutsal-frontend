@@ -1,0 +1,24 @@
+{
+  "endOfLine": "auto",
+  "semi": true,
+  "singleQuote": false,
+  "overrides": [
+    {
+      "files": [
+        "payload.config.ts",
+        "src/payload/**/*.{ts,tsx}",
+        "src/lib/lffs/**/*.ts",
+        "src/lib/payload.ts",
+        "src/lib/getTeamsIndex.ts",
+        "app/api/**/*.ts",
+        "scripts/**/*.{ts,mjs}"
+      ],
+      "options": {
+        "semi": false,
+        "singleQuote": true,
+        "printWidth": 120,
+        "trailingComma": "es5"
+      }
+    }
+  ]
+}

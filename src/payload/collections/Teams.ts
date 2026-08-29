@@ -9,7 +9,7 @@ export const Teams: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'lffs_names', 'logo', 'is_club'],
     description:
-      "Chaque equipe rencontree en championnat ou en coupe. Le nom LFFS est celui recu de la federation, le nom affiche et le logo sont ceux utilises sur le site.",
+      'Chaque equipe rencontree en championnat ou en coupe. Le nom LFFS est celui recu de la federation, le nom affiche et le logo sont ceux utilises sur le site.',
     hidden: ({ user }) => user?.role !== 'admin' && user?.role !== 'manager',
   },
   access: {
