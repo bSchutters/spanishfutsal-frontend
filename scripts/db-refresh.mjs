@@ -7,8 +7,9 @@
  * Prerequis : pg_dump et pg_restore (>= version du serveur Supabase) dans le PATH.
  *   winget install -e --id PostgreSQL.PostgreSQL.17
  *
- * Les deux URL doivent etre des connexions DIRECTES (port 5432). Le pooler
- * transactionnel de Supabase (port 6543) ne supporte pas pg_dump.
+ * SOURCE_DATABASE_URI doit etre une connexion DIRECTE a la prod (port 5432) : le
+ * pooler transactionnel de Supabase (port 6543) ne supporte pas pg_dump.
+ * TARGET_DATABASE_URI pointe sur le Postgres local.
  *
  * Run: node scripts/db-refresh.mjs --yes
  */

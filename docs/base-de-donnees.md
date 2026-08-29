@@ -1,7 +1,8 @@
 # Base de donnees
 
-Payload stocke tout dans Postgres (Supabase). Ce document decrit la configuration
-des environnements, le rafraichissement de la base de dev et la reprise du schema.
+Payload stocke tout dans Postgres. La production tourne sur Supabase, le
+developpement doit tourner sur un Postgres local. Ce document decrit la mise en
+place, le rafraichissement de la base de dev et la reprise du schema.
 
 ## 1. Ne jamais developper sur la production
 
@@ -10,12 +11,35 @@ production. Payload synchronise automatiquement le schema au demarrage de `pnpm 
 (mode "push") : si la variable pointe sur la prod, un simple `pnpm dev` modifie le
 schema de la base live.
 
-Mise en place, une fois :
+### Installer Postgres en local
 
-1. Creer un second projet Supabase (offre gratuite) dedie au dev.
-2. Copier `.env.example` vers `.env.local` et y mettre l URL du projet de dev.
-3. Ne laisser les vraies valeurs de production que dans les variables d environnement
-   Vercel.
+```
+winget install -e --id PostgreSQL.PostgreSQL.17
+```
+
+Garder l installation complete : le serveur sert de base de dev, et les Command Line
+Tools fournissent `pg_dump` / `pg_restore` utilises par `pnpm db:refresh`. Noter le mot
+de passe choisi pour l utilisateur `postgres`.
+
+Creer ensuite la base du projet :
+
+```
+createdb -U postgres spanishfutsal
+```
+
+Puis copier `.env.example` vers `.env.local` et renseigner :
+
+```
+DATABASE_URI=postgresql://postgres:motdepasse@localhost:5432/spanishfutsal
+```
+
+Les vraies valeurs de production restent uniquement dans les variables d environnement
+Vercel.
+
+Un Postgres local a trois avantages sur une seconde base hebergee : impossible de le
+confondre avec la production, aucune latence reseau, et le meme dialecte que la prod —
+donc des migrations valides. SQLite ne conviendrait pas : les migrations Payload sont
+specifiques au dialecte, une migration generee sur SQLite ne s applique pas sur Postgres.
 
 ## 2. Remplir la base de dev
 
@@ -26,19 +50,19 @@ l import LFFS depuis l admin. Matchs, classements et equipes se reconstruisent s
 C est suffisant dans la majorite des cas et ne touche jamais la prod.
 
 **Copier la production.** `pnpm db:refresh -- --yes` prend un instantane de la prod et
-ecrase le schema `public` de la base de dev. L instantane date du moment ou la commande
+ecrase le schema `public` de la base locale. L instantane date du moment ou la commande
 est lancee : il n y a aucune synchronisation permanente entre les deux bases.
 
-Prerequis :
+Renseigner au prealable dans `.env.local` :
 
-- `pg_dump` et `pg_restore` dans le PATH, dans une version au moins egale a celle du
-  serveur Supabase : `winget install -e --id PostgreSQL.PostgreSQL.17`
-- `SOURCE_DATABASE_URI` et `TARGET_DATABASE_URI` renseignes dans `.env.local`, en
-  connexion **directe** (port 5432). Le pooler transactionnel (port 6543) ne supporte
-  pas `pg_dump`.
+- `SOURCE_DATABASE_URI` : connexion **directe** a la prod (port 5432). Le pooler
+  transactionnel de Supabase (port 6543) ne supporte pas `pg_dump`.
+- `TARGET_DATABASE_URI` : la base locale.
 
 Le script refuse de tourner si les deux URL designent la meme base, et exige `--yes`
-pour confirmer l ecrasement de la cible.
+pour confirmer l ecrasement de la cible. Le dump ne couvre que le schema `public`, donc
+les schemas propres a Supabase (`auth`, `storage`) sont ignores et la restauration passe
+sans adaptation dans un Postgres standard.
 
 Les medias ne sont pas concernes : ils vivent sur Vercel Blob, en dehors de Postgres.
 
@@ -50,11 +74,12 @@ changement ailleurs. La cible est de passer aux migrations Payload.
 
 **Prealable non resolu.** Le CLI Payload ne demarre pas en l etat sur ce projet : son
 loader tsx ne resout pas les imports TypeScript sans extension, et echoue des le
-chargement de `payload.config.ts`. Aucune commande `payload migrate:*` n est donc
-utilisable pour l instant. C est le premier point a debloquer.
+chargement de `payload.config.ts`. Aucune commande `payload migrate:*` ni
+`payload generate:types` n est utilisable pour l instant. C est le premier point a
+debloquer.
 
-Une fois le CLI fonctionnel, la procedure est la suivante — a repeter d abord sur la
-base de dev, jamais directement sur la prod :
+Une fois le CLI fonctionnel, la procedure est la suivante — a jouer d abord sur la base
+locale, jamais directement sur la prod :
 
 1. Sauvegarder la base.
 2. Passer `push: false` dans `postgresAdapter` (`payload.config.ts`).
