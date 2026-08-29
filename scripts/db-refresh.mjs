@@ -39,10 +39,35 @@ function identity(uri) {
   return `${hostname}:${port || 5432}${pathname}`
 }
 
-function requireBinary(name) {
-  const probe = spawnSync(name, ['--version'], { encoding: 'utf8' })
-  if (probe.error) fail(`${name} introuvable dans le PATH. Voir l en-tete de ce script.`)
-  return probe.stdout.trim()
+/**
+ * Cherche l executable dans le PATH, puis dans l installation Windows standard :
+ * le programme d installation de PostgreSQL n ajoute pas son dossier bin au PATH.
+ */
+function resolveBinary(name) {
+  const exe = process.platform === 'win32' ? `${name}.exe` : name
+
+  const inPath = spawnSync(exe, ['--version'], { encoding: 'utf8' })
+  if (!inPath.error) return { command: exe, version: inPath.stdout.trim() }
+
+  if (process.platform === 'win32') {
+    const root = 'C:/Program Files/PostgreSQL'
+    const versions = fs.existsSync(root)
+      ? fs
+          .readdirSync(root)
+          .map(Number)
+          .filter(Number.isFinite)
+          .sort((a, b) => b - a)
+      : []
+
+    for (const version of versions) {
+      const candidate = path.join(root, String(version), 'bin', exe)
+      if (!fs.existsSync(candidate)) continue
+      const probe = spawnSync(candidate, ['--version'], { encoding: 'utf8' })
+      if (!probe.error) return { command: candidate, version: probe.stdout.trim() }
+    }
+  }
+
+  fail(`${name} introuvable. Installez PostgreSQL : winget install -e --id PostgreSQL.PostgreSQL.17`)
 }
 
 if (!SOURCE || !TARGET) {
@@ -68,15 +93,16 @@ if (!process.argv.includes('--yes')) {
   fail('Relancez avec --yes pour confirmer l ecrasement de la cible.')
 }
 
-console.log(`  ${requireBinary('pg_dump')}`)
-requireBinary('pg_restore')
+const pgDump = resolveBinary('pg_dump')
+const pgRestore = resolveBinary('pg_restore')
+console.log(`  ${pgDump.version}`)
 
 const dumpFile = path.join(os.tmpdir(), `spanishfutsal-${Date.now()}.dump`)
 
 try {
   console.log(`\n  Dump de ${source} ...`)
   const dump = spawnSync(
-    'pg_dump',
+    pgDump.command,
     ['--format=custom', '--schema=public', '--no-owner', '--no-privileges', '--file', dumpFile, SOURCE],
     { stdio: ['ignore', 'inherit', 'inherit'] }
   )
@@ -84,7 +110,7 @@ try {
 
   console.log(`  Restauration vers ${target} ...`)
   const restore = spawnSync(
-    'pg_restore',
+    pgRestore.command,
     ['--clean', '--if-exists', '--no-owner', '--no-privileges', '--dbname', TARGET, dumpFile],
     { stdio: ['ignore', 'inherit', 'inherit'] }
   )
