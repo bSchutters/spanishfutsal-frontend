@@ -16,10 +16,10 @@ export const Sponsors: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'sector', 'active'],
     description:
-      "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier.",
-    components: {
-      beforeListTable: ['@/payload/components/SponsorStatusTabs'],
-    },
+      "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier. Utilisez Grouper par > Actif pour separer les sponsors actifs des inactifs.",
+    // Active le controle "Grouper par" de la liste : choisi une fois sur Actif, il
+    // separe les sponsors en deux sections et le choix est memorise par utilisateur.
+    groupBy: true,
     hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
