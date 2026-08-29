@@ -52,6 +52,16 @@ export const Sponsors: CollectionConfig = {
       label: 'Logo',
     },
     {
+      name: 'logo_on_light',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Logo sur fond clair',
+      admin: {
+        description:
+          'A cocher si le logo est fonce et devient illisible sur le fond sombre du site. Une plaque blanche est alors placee derriere.',
+      },
+    },
+    {
       name: 'sector',
       type: 'text',
       label: "Secteur d'activite",

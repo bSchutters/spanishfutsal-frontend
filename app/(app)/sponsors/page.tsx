@@ -12,8 +12,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import BoxModule from "@/components/layout/boxModule";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   getSponsorsPage,
   type Sponsor,
@@ -45,66 +45,85 @@ const PLATFORM_META: Record<
   x: { label: "X", Icon: Twitter },
 };
 
-function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
+function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   return (
-    <BoxModule className="flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-center h-24 bg-spanish-bg rounded-lg p-4">
+    <article
+      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+    >
+      {/* La plupart des logos fournis sont blancs, donc dessines pour un fond
+          sombre. Ceux qui sont fonces basculent sur une plaque claire via le
+          reglage de la fiche, plutot que d'imposer un fond a tout le monde. */}
+      <div
+        className={cn(
+          "flex h-32 items-center justify-center px-8 transition-colors duration-200 ease-[var(--ease-out-strong)]",
+          sponsor.logoOnLight
+            ? "bg-white/95 group-hover:bg-white"
+            : "border-b border-white/5 bg-white/[0.03] group-hover:bg-white/[0.06]"
+        )}
+      >
         {sponsor.logo ? (
           <Image
             src={sponsor.logo}
             alt={`Logo ${sponsor.name}`}
             width={0}
             height={0}
-            sizes="100vw"
-            className="max-h-16 w-auto object-contain"
+            sizes="240px"
+            className="max-h-16 w-auto max-w-[70%] object-contain"
           />
         ) : (
-          <p className="font-marjorie italic font-bold text-xl">
+          <p
+            className={cn(
+              "font-marjorie text-xl font-bold italic",
+              sponsor.logoOnLight ? "text-spanish-bg" : "text-white/80"
+            )}
+          >
             {sponsor.name}
           </p>
         )}
       </div>
 
-      <div className="flex flex-col gap-2 grow">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="font-marjorie italic font-bold text-lg uppercase">
-            {sponsor.name}
-          </p>
+      <div className="flex grow flex-col gap-3 p-6">
+        <div className="flex flex-col gap-1">
           {sponsor.sector && (
-            <span className="text-xs uppercase font-bold px-2 py-1 rounded bg-spanish-accent-2-light/10 text-spanish-accent-2">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-spanish-accent-2">
               {sponsor.sector}
-            </span>
+            </p>
           )}
+          <h2 className="font-marjorie text-xl font-bold uppercase italic leading-tight">
+            {sponsor.name}
+          </h2>
         </div>
 
         {sponsor.description && (
-          <p className="text-sm text-spanish-bg-lighter-plus leading-relaxed">
+          <p className="text-sm leading-relaxed text-white/65">
             {sponsor.description}
           </p>
         )}
-      </div>
 
-      {sponsor.links.length > 0 && (
-        <div className="flex flex-wrap gap-3 pt-2 border-t-2 border-spanish-bg-lighter">
-          {sponsor.links.map(({ platform, url }) => {
-            const { label, Icon } = PLATFORM_META[platform];
-            return (
-              <Link
-                key={platform}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                aria-label={`${sponsor.name} — ${label}`}
-                title={label}
-                className="text-spanish-bg-lighter-plus hover:text-spanish-accent-2 transition-colors"
-              >
-                <Icon className="w-5 h-5" />
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </BoxModule>
+        {sponsor.links.length > 0 && (
+          <div className="mt-auto flex flex-wrap gap-2 pt-4">
+            {sponsor.links.map(({ platform, url }) => {
+              const { label, Icon } = PLATFORM_META[platform];
+
+              return (
+                <Link
+                  key={platform}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  aria-label={`${sponsor.name} — ${label}`}
+                  title={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-[transform,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 active:scale-95"
+                >
+                  <Icon className="h-4 w-4" />
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
 
@@ -113,67 +132,104 @@ export default async function Sponsors() {
   const cta = page.cta;
 
   return (
-    <div className="container mx-auto flex flex-col lg:gap-16 gap-10 lg:py-20 py-12 px-4">
-      <header className="flex flex-col gap-4 max-w-3xl">
-        <h1 className="font-marjorie italic font-bold lg:text-5xl text-3xl uppercase">
-          {page.title}
-        </h1>
-        {page.intro && (
-          <div className="text-spanish-bg-lighter-plus leading-relaxed flex flex-col gap-3">
-            <RichText data={page.intro} />
-          </div>
-        )}
-      </header>
+    <div className="relative overflow-hidden">
+      {/* Halo discret : de la profondeur plutot qu un aplat de couleur. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-40 h-[520px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(254,209,100,0.14),transparent_70%)]"
+      />
 
-      {sponsors.length > 0 ? (
-        <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-          {sponsors.map((sponsor) => (
-            <SponsorCard key={sponsor.id} sponsor={sponsor} />
-          ))}
-        </div>
-      ) : (
-        <p className="text-spanish-bg-lighter-plus">
-          Les sponsors seront annoncés très prochainement.
-        </p>
-      )}
+      <div className="container relative mx-auto px-4 pb-20 pt-14 lg:pb-28 lg:pt-20">
+        <header className="reveal-up flex max-w-3xl flex-col gap-5">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-spanish-accent-2">
+            Ils nous soutiennent
+          </p>
 
-      {page.sections?.map((section, index) => (
-        <section
-          key={section.id ?? index}
-          className="flex flex-col gap-4 max-w-3xl"
-        >
-          {section.title && (
-            <h2 className="font-marjorie italic font-bold lg:text-3xl text-2xl uppercase">
-              {section.title}
-            </h2>
-          )}
-          {section.content && (
-            <div className="text-spanish-bg-lighter-plus leading-relaxed flex flex-col gap-3">
-              <RichText data={section.content} />
+          <h1 className="font-marjorie text-4xl font-bold uppercase italic leading-[0.95] lg:text-6xl">
+            {page.title}
+          </h1>
+
+          {page.intro && (
+            <div className="flex flex-col gap-3 text-base leading-relaxed text-white/70 lg:text-lg">
+              <RichText data={page.intro} />
             </div>
           )}
-        </section>
-      ))}
+        </header>
 
-      {cta?.enabled && (
-        <BoxModule className="flex flex-col items-center text-center gap-4 lg:p-10 p-6">
-          {cta.title && (
-            <h2 className="font-marjorie italic font-bold lg:text-3xl text-2xl uppercase">
-              {cta.title}
-            </h2>
-          )}
-          {cta.text && (
-            <p className="text-spanish-bg-lighter-plus max-w-2xl leading-relaxed">
-              {cta.text}
-            </p>
-          )}
-          {cta.button_label && cta.button_url && (
-            <Button asChild>
-              <Link href={cta.button_url}>{cta.button_label}</Link>
-            </Button>
-          )}
-        </BoxModule>
-      )}
+        {sponsors.length > 0 ? (
+          <>
+            <div className="reveal-up mt-12 flex items-center gap-4 lg:mt-16">
+              <span className="font-marjorie text-sm font-bold italic text-spanish-accent-2">
+                {sponsors.length}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                {sponsors.length > 1 ? "partenaires" : "partenaire"}
+              </span>
+              <span className="h-px grow bg-white/10" />
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {sponsors.map((sponsor, index) => (
+                <SponsorCard key={sponsor.id} sponsor={sponsor} index={index} />
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="reveal-up mt-12 text-white/60">
+            Les sponsors seront annoncés très prochainement.
+          </p>
+        )}
+
+        {page.sections.length > 0 && (
+          <div className="mt-20 flex flex-col gap-12 lg:mt-28">
+            {page.sections.map((section, index) => (
+              <section
+                key={section.id ?? index}
+                className="flex max-w-3xl flex-col gap-4"
+              >
+                {section.title && (
+                  <h2 className="font-marjorie text-2xl font-bold uppercase italic lg:text-3xl">
+                    {section.title}
+                  </h2>
+                )}
+                {section.content && (
+                  <div className="flex flex-col gap-3 leading-relaxed text-white/70">
+                    <RichText data={section.content} />
+                  </div>
+                )}
+              </section>
+            ))}
+          </div>
+        )}
+
+        {cta.enabled && (cta.title || cta.text) && (
+          <section className="relative mt-20 overflow-hidden rounded-3xl border border-spanish-accent-2/20 bg-spanish-bg-dark px-6 py-12 lg:mt-28 lg:px-16 lg:py-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_100%_0%,rgba(254,209,100,0.16),transparent_60%)]"
+            />
+
+            <div className="relative flex flex-col items-start gap-5 lg:max-w-2xl">
+              {cta.title && (
+                <h2 className="font-marjorie text-3xl font-bold uppercase italic leading-tight lg:text-4xl">
+                  {cta.title}
+                </h2>
+              )}
+              {cta.text && (
+                <p className="leading-relaxed text-white/70">{cta.text}</p>
+              )}
+              {cta.button_label && cta.button_url && (
+                <Button
+                  asChild
+                  className="transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97]"
+                >
+                  <Link href={cta.button_url}>{cta.button_label}</Link>
+                </Button>
+              )}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

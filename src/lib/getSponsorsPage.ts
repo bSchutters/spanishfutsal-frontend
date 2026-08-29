@@ -23,6 +23,7 @@ export type Sponsor = {
   id: number;
   name: string;
   logo: string | null;
+  logoOnLight: boolean;
   sector: string | null;
   description: string | null;
   links: SponsorLink[];
@@ -83,6 +84,7 @@ async function fetchSponsorsPage(): Promise<{
     id: doc.id as number,
     name: doc.name,
     logo: typeof doc.logo === "object" && doc.logo?.url ? doc.logo.url : null,
+    logoOnLight: Boolean(doc.logo_on_light),
     sector: text(doc.sector),
     description: text(doc.description),
     links: sponsorLinks(doc.links),
