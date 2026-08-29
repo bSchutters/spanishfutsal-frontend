@@ -18,8 +18,20 @@ winget install -e --id PostgreSQL.PostgreSQL.17
 ```
 
 Garder l installation complete : le serveur sert de base de dev, et les Command Line
-Tools fournissent `pg_dump` / `pg_restore` utilises par `pnpm db:refresh`. Noter le mot
-de passe choisi pour l utilisateur `postgres`.
+Tools fournissent `pg_dump` / `pg_restore` utilises par `pnpm db:refresh`.
+
+Deux pieges avec l installation via winget, qui se fait en mode silencieux :
+
+- **Aucun mot de passe n est demande.** Le superutilisateur `postgres` recoit le mot de
+  passe par defaut `postgres`. L instance n ecoute qu en local, mais rien n empeche de
+  le changer : `ALTER USER postgres WITH PASSWORD '...';`
+- **Le dossier `bin` n est pas ajoute au PATH**, donc `psql` et `createdb` restent
+  introuvables. A ajouter une fois, dans un terminal PowerShell, puis rouvrir le
+  terminal :
+
+  ```
+  [Environment]::SetEnvironmentVariable('Path', $env:Path + ';C:\Program Files\PostgreSQL\17\bin', 'User')
+  ```
 
 Creer ensuite la base du projet :
 
