@@ -37,9 +37,9 @@ export default function About() {
               renforce nos liens.
             </p>
           </div>
-          <Link href="/a-propos" className="self-end text-lg">
-            <Button>en savoir plus</Button>
-          </Link>
+          <Button asChild className="self-end text-lg">
+            <Link href="/a-propos">en savoir plus</Link>
+          </Button>
         </div>
       </div>
     </section>

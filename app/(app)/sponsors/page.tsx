@@ -63,7 +63,7 @@ const GROUPS = [
 function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   return (
     <article
-      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
+      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       {/* La plupart des logos fournis sont blancs, donc dessines pour un fond
@@ -121,7 +121,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
         </div>
 
         {sponsor.description && (
-          <p className="text-sm leading-relaxed text-white/65">
+          <p className="text-sm leading-relaxed text-pretty text-white/65">
             {sponsor.description}
           </p>
         )}
@@ -141,9 +141,9 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
                   rel="noopener noreferrer nofollow"
                   aria-label={`${sponsor.name} — ${label}`}
                   title={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-[transform,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 active:scale-95"
+                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 outline-none transition-[transform,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 focus-visible:ring-2 focus-visible:ring-spanish-accent-2 focus-visible:ring-offset-2 focus-visible:ring-offset-spanish-bg-dark active:scale-95"
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="size-4" />
                 </Link>
               );
             })}
@@ -175,35 +175,36 @@ export default async function Sponsors() {
       {/* `my-30` est l'espacement retenu par les autres pages pour degager la
           barre de navigation, qui est en position fixe. */}
       <div className="my-30 container relative mx-auto px-6 md:px-0">
-        <header className="reveal-up flex max-w-3xl flex-col gap-5">
+        {/* `div` et non `header` : un `header` de premier niveau creerait un
+            second landmark `banner` a cote de celui de la navigation. */}
+        <div className="reveal-up flex max-w-3xl flex-col gap-5">
           {/* Pas de surtitre : les autres pages du site n'ont qu'un titre. */}
-          <h1 className="font-marjorie text-4xl font-bold italic leading-tight lg:text-5xl">
+          <h1 className="font-marjorie text-4xl font-bold italic leading-tight text-balance lg:text-5xl">
             Ils nous soutiennent
           </h1>
 
-          <div className="flex flex-col gap-4 text-base leading-relaxed text-white/70 lg:text-lg">
+          <div className="flex flex-col gap-4 text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
             <p>
-              Derrière chaque saison, il y a des entreprises qui ont choisi de
-              mettre leur nom à côté du nôtre. Leur soutien fait partie de
-              l&apos;aventure, au même titre que les matchs et les
-              entraînements.
+              {sponsors.length} entreprises accompagnent UD Asturiana cette
+              saison. Un cabinet de conseil, deux sociétés IT, un kiné, un
+              centre culturel, un traiteur : elles n&apos;ont pas grand-chose en
+              commun, sinon d&apos;avoir dit oui à un club de futsal bruxellois.
             </p>
             <p>
-              Cette page est là pour leur rendre la pareille : dire qui elles
-              sont, ce qu&apos;elles font, et vous donner envie d&apos;aller les
-              découvrir.
+              Vous les trouverez ci-dessous avec ce qu&apos;elles font et où les
+              joindre. Allez les voir.
             </p>
           </div>
-        </header>
+        </div>
 
         {groups.length > 0 ? (
           groups.map((group) => (
-            <section key={group.type} className="mt-14 lg:mt-20">
+            <section key={group.type} className="mt-16 lg:mt-24">
               <div className="reveal-up flex items-baseline gap-3">
                 {/* Avec un seul groupe, le titre de page dit deja la meme chose :
                     on ne garde alors que le decompte, libelle en toutes lettres. */}
                 {groups.length > 1 ? (
-                  <h2 className="font-marjorie text-2xl font-bold italic lg:text-3xl">
+                  <h2 className="font-marjorie text-2xl font-bold italic text-balance lg:text-3xl">
                     {group.heading}
                   </h2>
                 ) : (
@@ -225,9 +226,14 @@ export default async function Sponsors() {
             </section>
           ))
         ) : (
-          <p className="reveal-up mt-12 text-white/60">
-            Les sponsors seront annoncés très prochainement.
-          </p>
+          <div className="reveal-up mt-12 flex flex-col items-start gap-4">
+            <p className="text-white/70">
+              Aucun sponsor pour le moment. La place est libre.
+            </p>
+            <Button asChild size="lg">
+              <Link href="/contact">Devenir le premier</Link>
+            </Button>
+          </div>
         )}
 
         <section className="relative mt-20 overflow-hidden rounded-3xl border border-spanish-accent-2/20 bg-spanish-bg-dark px-6 py-12 lg:mt-28 lg:px-16 lg:py-16">
@@ -240,13 +246,12 @@ export default async function Sponsors() {
               laisse la moitie du bloc vide sur les grands ecrans. */}
           <div className="relative flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center lg:gap-16">
             <div className="flex flex-col gap-4 lg:max-w-xl">
-              <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
+              <h2 className="font-marjorie text-3xl font-bold italic leading-tight text-balance lg:text-4xl">
                 Votre entreprise ici
               </h2>
-              <p className="leading-relaxed text-white/70">
-                Soutenir UD Asturiana, c&apos;est rejoindre les entreprises de
-                cette page et accompagner un club bruxellois tout au long de sa
-                saison. Écrivez-nous, nous vous expliquons comment ça marche.
+              <p className="leading-relaxed text-pretty text-white/70">
+  Le club reste ouvert à de nouveaux soutiens. Écrivez-nous et
+                nous verrons ensemble ce qui a du sens pour votre entreprise.
               </p>
             </div>
 

@@ -281,4 +281,17 @@
   .reveal-up {
     animation: none;
   }
+
+  /*
+   * L'entree de page n'etait pas seule concernee : les transitions au survol
+   * continuaient de tourner pour qui a demande moins d'animation.
+   */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -75,12 +75,16 @@ const Nav = () => {
           </div>
         </Link>
 
-        {/* Navigation Mobile*/}
-        <nav className="flex md:hidden">
+        {/* Navigation Mobile : un simple conteneur, le landmark `nav` est porte
+            par le panneau deroulant. Deux landmarks de navigation portant le
+            meme nom sont signales comme une violation. */}
+        <div className="flex md:hidden">
           <Button
             variant="ghostSpanish"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             size="icon"
+            aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? (
               <X strokeWidth={3} />
@@ -89,11 +93,18 @@ const Nav = () => {
             )}
           </Button>
 
-          <div
+          <nav
+            // Libelle distinct de celui du menu bureau : deux landmarks de
+            // navigation portant le meme nom sont signales comme une violation,
+            // meme lorsqu'un seul est expose a la fois.
+            aria-label="Menu mobile"
+            // `inert` plutot que `aria-hidden` : il retire aussi les liens de
+            // l'ordre de tabulation, la ou `aria-hidden` les y laisserait.
+            inert={!isMobileMenuOpen}
             className={cn(
               "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-all duration-700",
               isMobileMenuOpen
-                ? "opacity-100 translate-y-0 h-screen pointer-events-auto"
+                ? "opacity-100 translate-y-0 h-dvh pointer-events-auto"
                 : "opacity-0 -translate-y-4 h-full pointer-events-none"
             )}
           >
@@ -111,11 +122,14 @@ const Nav = () => {
                 <ArrowRight className="w-5" />
               </Link>
             ))}
-          </div>
-        </nav>
+          </nav>
+        </div>
 
         {/* Navigation Desktop*/}
-        <nav className="items-center gap-8 text-white lg:text-sm text-xs md:flex hidden">
+        <nav
+          aria-label="Menu principal"
+          className="items-center gap-8 text-white lg:text-sm text-xs md:flex hidden"
+        >
           {links.map((link) => (
             <Link
               key={link.href}

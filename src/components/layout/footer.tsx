@@ -85,7 +85,7 @@ export default function Footer() {
         </div>
       </div>
       <Separator className="container mx-auto bg-spanish-bg-lighter" />
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-spanish-bg-lighter-plus">
+      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/70">
         <p className="text-center md:text-left">
           &copy; {new Date().getFullYear()}{" "}
           <Link href="/admin" className="text-inherit no-underline cursor-default">
