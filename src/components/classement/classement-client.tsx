@@ -57,7 +57,10 @@ export default function ClassementClient({
           <h1 className="text-4xl font-marjorie italic font-bold">
             Classement
           </h1>
-          <SeasonSelector onSeasonChange={handleSeasonChange} />
+          <SeasonSelector
+            onSeasonChange={handleSeasonChange}
+            prefetch="rankings"
+          />
         </div>
         <BoxModule className="flex flex-col h-full">
           <div className="flex justify-between items-center w-full font-bold uppercase text-white/70 p-2">
@@ -93,7 +96,10 @@ export default function ClassementClient({
           <h1 className="text-4xl font-marjorie italic font-bold">
             Classement
           </h1>
-          <SeasonSelector onSeasonChange={handleSeasonChange} />
+          <SeasonSelector
+            onSeasonChange={handleSeasonChange}
+            prefetch="rankings"
+          />
         </div>
         <BoxModule className="flex flex-col h-full">
           <div className="flex justify-between items-center w-full font-bold uppercase text-white/70">

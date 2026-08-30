@@ -12,9 +12,14 @@ import {
 
 type SeasonSelectorProps = {
   onSeasonChange: (seasonId: number | null) => void;
+  /** Ressource a precharger a l'ouverture de la liste : "rankings" ou "matches". */
+  prefetch?: "rankings" | "matches";
 };
 
-export default function SeasonSelector({ onSeasonChange }: SeasonSelectorProps) {
+export default function SeasonSelector({
+  onSeasonChange,
+  prefetch,
+}: SeasonSelectorProps) {
   const { seasons, fetchSeasons, selectedSeasonId, setSelectedSeason } =
     useSeasonStore();
 
@@ -33,6 +38,18 @@ export default function SeasonSelector({ onSeasonChange }: SeasonSelectorProps) 
       ? String(activeSeason.id)
       : undefined;
 
+  // A l'ouverture de la liste, on va chercher les saisons archivees en fond.
+  // Le temps que l'utilisateur lise les options et clique, la reponse est deja
+  // dans le cache du navigateur : le changement devient immediat.
+  const handleOpenChange = (open: boolean) => {
+    if (!open || !prefetch) return;
+
+    for (const season of seasons) {
+      if (season.active) continue;
+      fetch(`/api/public/${prefetch}/${season.id}`).catch(() => {});
+    }
+  };
+
   const handleChange = (value: string) => {
     const id = Number(value);
     const isActive = seasons.find((s) => s.id === id)?.active;
@@ -42,7 +59,11 @@ export default function SeasonSelector({ onSeasonChange }: SeasonSelectorProps) 
   };
 
   return (
-    <Select value={currentValue} onValueChange={handleChange}>
+    <Select
+      value={currentValue}
+      onValueChange={handleChange}
+      onOpenChange={handleOpenChange}
+    >
       <SelectTrigger size="sm">
         <SelectValue placeholder="Saison" />
       </SelectTrigger>

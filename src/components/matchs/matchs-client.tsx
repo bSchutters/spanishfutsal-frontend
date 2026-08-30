@@ -103,7 +103,10 @@ export default function MatchsClient({
           <h1 className="text-4xl font-marjorie italic font-bold">
             Nos matchs
           </h1>
-          <SeasonSelector onSeasonChange={handleSeasonChange} />
+          <SeasonSelector
+            onSeasonChange={handleSeasonChange}
+            prefetch="matches"
+          />
         </div>
         <div className="flex flex-col gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -144,7 +147,10 @@ export default function MatchsClient({
           <h1 className="text-4xl font-marjorie italic font-bold">
             Nos matchs
           </h1>
-          <SeasonSelector onSeasonChange={handleSeasonChange} />
+          <SeasonSelector
+            onSeasonChange={handleSeasonChange}
+            prefetch="matches"
+          />
         </div>
         {validMatchs.map((match, index) => {
           const isLffsCompetition = !["AMICAL", "TOURNOIS"].includes(
