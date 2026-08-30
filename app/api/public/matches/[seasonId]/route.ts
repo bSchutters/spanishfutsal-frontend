@@ -5,6 +5,13 @@ import { getTeamsIndex } from '@/lib/getTeamsIndex'
 import { resolveTeam } from '@/lib/teams'
 import { getCompetitionName } from '@/lib/getCompetitionName'
 
+// Le navigateur et le CDN gardent la reponse : revenir sur une saison deja
+// consultee devient instantane. Cinq minutes cote navigateur, dix cote CDN,
+// pour des donnees que le cron LFFS ne met a jour qu'une fois par jour.
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, max-age=300, s-maxage=600, stale-while-revalidate=3600',
+}
+
 async function getMatchesBySeason(seasonId: number) {
   const payload = await getPayloadClient()
 
@@ -66,7 +73,7 @@ export async function GET(
     )
     const data = await getCached()
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data }, { headers: CACHE_HEADERS })
   } catch (error) {
     console.error('Error fetching matches by season:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

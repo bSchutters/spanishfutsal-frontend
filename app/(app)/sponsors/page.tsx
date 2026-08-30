@@ -3,6 +3,7 @@ import {
   Globe,
   Instagram,
   Linkedin,
+  Mail,
   Music2,
   Twitter,
   Youtube,
@@ -42,6 +43,7 @@ const PLATFORM_META: Record<
   tiktok: { label: "TikTok", Icon: Music2 },
   youtube: { label: "YouTube", Icon: Youtube },
   x: { label: "X", Icon: Twitter },
+  email: { label: "E-mail", Icon: Mail },
 };
 
 const GROUPS = [

@@ -9,6 +9,9 @@ export const SPONSOR_PLATFORMS = [
   "tiktok",
   "youtube",
   "x",
+  // En dernier : le pied de page retient le premier lien renseigne, et une
+  // adresse e-mail y serait un repli, jamais un premier choix.
+  "email",
 ] as const;
 
 export type SponsorPlatform = (typeof SPONSOR_PLATFORMS)[number];
@@ -40,8 +43,11 @@ export function sponsorLinks(group: unknown): SponsorLink[] {
   const links = (group ?? {}) as Record<string, unknown>;
 
   return SPONSOR_PLATFORMS.flatMap((platform) => {
-    const url = text(links[platform]);
-    return url ? [{ platform, url }] : [];
+    const value = text(links[platform]);
+    if (!value) return [];
+
+    const url = platform === "email" ? `mailto:${value}` : value;
+    return [{ platform, url }];
   });
 }
 

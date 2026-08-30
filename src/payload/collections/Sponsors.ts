@@ -107,6 +107,14 @@ export const Sponsors: CollectionConfig = {
         { name: 'tiktok', type: 'text', label: 'TikTok' },
         { name: 'youtube', type: 'text', label: 'YouTube' },
         { name: 'x', type: 'text', label: 'X (Twitter)' },
+        {
+          name: 'email',
+          type: 'email',
+          label: 'Adresse e-mail',
+          admin: {
+            description: "Affichee comme un lien d'ecriture directe, en dernier dans la liste.",
+          },
+        },
       ],
     },
     {

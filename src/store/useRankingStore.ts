@@ -22,6 +22,12 @@ type Ranking = {
 type State = {
   rankings: Ranking[];
   isLoading: boolean;
+  // Distingue « pas encore charge » de « charge et vide » : tant que c'est faux,
+  // la page affiche le classement rendu par le serveur.
+  hasFetched: boolean;
+  // Remet l'etat au point de depart, pour que les donnees rendues par le
+  // serveur reprennent la main a chaque arrivee sur la page.
+  reset: () => void;
   fetchRankings: (seasonId?: number | null) => Promise<void>;
 };
 
@@ -48,6 +54,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAP
 export const useRankingStore = create<State>((set) => ({
   rankings: [],
   isLoading: false,
+  hasFetched: false,
+  reset: () => set({ rankings: [], hasFetched: false }),
   fetchRankings: async (seasonId) => {
     set({ isLoading: true, rankings: [] });
 
@@ -82,7 +90,7 @@ export const useRankingStore = create<State>((set) => ({
     } catch (error) {
       console.error("Error fetching rankings:", error);
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, hasFetched: true });
     }
   },
 }));

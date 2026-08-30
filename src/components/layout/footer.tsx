@@ -1,30 +1,15 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Separator } from "../ui/separator";
-import { useEffect, useState } from "react";
+import { getSponsors, sponsorLinks } from "@/lib/getSponsors";
 
-type Sponsor = {
-  id: number;
-  name: string;
-  url: string | null;
-  logo: string | null;
-};
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
-
-export default function Footer() {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [sponsorsLoading, setSponsorsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/public/sponsors`)
-      .then((res) => res.json())
-      .then((json) => setSponsors(json.data || []))
-      .catch(() => {})
-      .finally(() => setSponsorsLoading(false));
-  }, []);
+/**
+ * Composant serveur : les logos sont dans le HTML des la premiere frame. En
+ * composant client, la requete ne pouvait partir qu'apres l'hydratation, et le
+ * bandeau restait a l'etat de squelette pendant tout ce temps, sur chaque page.
+ */
+export default async function Footer() {
+  const sponsors = await getSponsors();
 
   return (
     <footer className="bg-spanish-bg-dark text-white lg:py-16 py-10 w-full flex flex-col lg:gap-8 gap-6">
@@ -45,42 +30,47 @@ export default function Footer() {
           </div>
         </Link>
         <div className="flex flex-col lg:items-end items-center gap-4 lg:gap-2 max-w-full w-full lg:w-auto">
-          <p className="font-bold font-marjorie italic">Sponsors</p>
+          {/* Le bandeau montre sponsors et partenaires confondus : l'intitule
+              doit couvrir les deux. Il reprend celui de la page /sponsors. */}
+          <p className="font-bold font-marjorie italic">Ils nous soutiennent</p>
           {/* Grille sur mobile plutot que `flex-wrap` : les logos ont des largeurs
               tres inegales, et le retour a la ligne libre laissait un orphelin
               seul sur la derniere rangee. Rangees de trois, puis ligne unique
               alignee a droite des le grand ecran. */}
           <div className="grid w-full grid-cols-3 place-items-center gap-x-4 gap-y-5 lg:flex lg:w-auto lg:flex-wrap lg:justify-end lg:gap-x-8 lg:gap-y-4 lg:items-center lg:min-h-12">
-            {sponsorsLoading ? (
-              <>
-                <div className="w-24 h-8 bg-spanish-bg-lighter rounded animate-pulse" />
-                <div className="w-24 h-8 bg-spanish-bg-lighter rounded animate-pulse" />
-              </>
-            ) : sponsors.length > 0 ? (
-              sponsors.map((sponsor) => {
-                const logoEl = sponsor.logo ? (
-                  <Image
-                    src={sponsor.logo}
-                    alt={sponsor.name}
-                    width={120}
-                    height={40}
-                    className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
-                  />
-                ) : (
-                  <span className="text-sm opacity-40 hover:opacity-100 transition-all">
-                    {sponsor.name}
-                  </span>
-                );
+            {sponsors.length > 0
+              ? sponsors.map((sponsor) => {
+                  // Le bandeau n'affiche qu'un lien : le site s'il existe,
+                  // sinon le premier reseau renseigne.
+                  const href = sponsorLinks(sponsor.links)[0]?.url ?? null;
+                  const logoEl = sponsor.logo ? (
+                    <Image
+                      src={sponsor.logo}
+                      alt={sponsor.name}
+                      width={120}
+                      height={40}
+                      className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
+                    />
+                  ) : (
+                    <span className="text-sm opacity-40 hover:opacity-100 transition-all">
+                      {sponsor.name}
+                    </span>
+                  );
 
-                return sponsor.url ? (
-                  <Link key={sponsor.id} href={sponsor.url} target="_blank">
-                    {logoEl}
-                  </Link>
-                ) : (
-                  <div key={sponsor.id}>{logoEl}</div>
-                );
-              })
-            ) : null}
+                  return href ? (
+                    <Link
+                      key={sponsor.id}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {logoEl}
+                    </Link>
+                  ) : (
+                    <div key={sponsor.id}>{logoEl}</div>
+                  );
+                })
+              : null}
           </div>
         </div>
       </div>
@@ -88,7 +78,10 @@ export default function Footer() {
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/70">
         <p className="text-center md:text-left">
           &copy; {new Date().getFullYear()}{" "}
-          <Link href="/admin" className="text-inherit no-underline cursor-default">
+          <Link
+            href="/admin"
+            className="text-inherit no-underline cursor-default"
+          >
             UD Asturiana
           </Link>
           . Tous droits réservés.
