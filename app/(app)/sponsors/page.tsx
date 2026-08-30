@@ -184,15 +184,17 @@ export default async function Sponsors() {
           </h1>
 
           <div className="flex flex-col gap-4 text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
+            {/* Le decompte est calcule, jamais ecrit en dur : la phrase reste
+                juste quand un sponsor arrive ou s'en va. Les metiers ne sont pas
+                enumeres ici, les cartes les portent deja. */}
             <p>
-              {sponsors.length} entreprises accompagnent UD Asturiana cette
-              saison. Un cabinet de conseil, deux sociétés IT, un kiné, un
-              centre culturel, un traiteur : elles n&apos;ont pas grand-chose en
-              commun, sinon d&apos;avoir dit oui à un club de futsal bruxellois.
+              {sponsors.length > 1
+                ? `${sponsors.length} entreprises accompagnent UD Asturiana cette saison. Elles n'ont pas grand-chose en commun, sinon d'avoir dit oui à un club de futsal bruxellois.`
+                : "Une entreprise accompagne UD Asturiana cette saison, et elle a dit oui à un club de futsal bruxellois."}
             </p>
             <p>
-              Vous les trouverez ci-dessous avec ce qu&apos;elles font et où les
-              joindre. Allez les voir.
+              Vous les trouverez ci-dessous, avec ce qu&apos;elles font et où les
+              joindre.
             </p>
           </div>
         </div>
