@@ -44,11 +44,14 @@ export default function Footer() {
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col lg:items-end items-center gap-2 max-w-full">
           <p className="font-bold font-marjorie italic lg:block hidden">
             Sponsors
           </p>
-          <div className="flex gap-8 items-center h-12">
+          {/* `flex-wrap` et une hauteur minimale plutot que fixe : sans cela la
+              rangee de logos deborde de l'ecran sur mobile et fait defiler toute
+              la page horizontalement. */}
+          <div className="flex flex-wrap justify-center lg:justify-end gap-x-6 gap-y-4 lg:gap-x-8 items-center min-h-12">
             {sponsorsLoading ? (
               <>
                 <div className="w-24 h-8 bg-spanish-bg-lighter rounded animate-pulse" />
@@ -62,7 +65,7 @@ export default function Footer() {
                     alt={sponsor.name}
                     width={120}
                     height={40}
-                    className="h-10 max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
+                    className="h-8 sm:h-10 max-w-[90px] sm:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
                   />
                 ) : (
                   <span className="text-sm opacity-40 hover:opacity-100 transition-all">
