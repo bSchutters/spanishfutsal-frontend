@@ -197,7 +197,6 @@ export default function Player({
           // Largeur reelle de l'emplacement (photo de joueur dans une grille de 2 a 5 colonnes), et non celle de la fenetre.
           sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
-          priority
         />
       </div>
     </BoxModule>

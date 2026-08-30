@@ -25,7 +25,6 @@ const PlayerLoader = () => {
           // Largeur reelle de l'emplacement (squelette de photo), et non celle de la fenetre.
           sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
           className="h-80 w-auto object-cover animate-pulse"
-          priority
         />
       </div>
     </BoxModule>

@@ -9,6 +9,9 @@ export default function Banner() {
           src="/assets/images/webp/imageHome.webp"
           alt="Spain Picture"
           fill
+          // Image la plus grande du premier ecran : elle porte le LCP, donc elle
+          // est prechargee au lieu d'etre differee.
+          priority
           className="object-cover object-top"
         />
       </div>
