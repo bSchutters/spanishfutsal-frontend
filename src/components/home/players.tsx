@@ -1,7 +1,5 @@
-import BoxModule from "../layout/boxModule";
-import { usePlayersStore } from "@/store/usePlayersStore";
 import Link from "next/link";
-import { useEffect } from "react";
+import type { Player as PlayerType } from "@/lib/getPlayers";
 import Player from "../player";
 import { Button } from "../ui/button";
 import {
@@ -12,35 +10,7 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 
-export default function Players() {
-  const { players, isLoading, fetchPlayers } = usePlayersStore();
-
-  useEffect(() => {
-    fetchPlayers();
-  }, [fetchPlayers]);
-
-  if (isLoading)
-    return (
-      <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
-        <div className="w-full flex items-center justify-between">
-          <p className="text-2xl font-marjorie italic font-bold">Nos joueurs</p>
-        </div>
-        <div className="flex gap-4 overflow-hidden">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="2xl:w-1/5 xl:w-1/4 lg:w-1/3 w-2/3 shrink-0 animate-pulse">
-              <BoxModule className="flex flex-col items-center justify-center h-96">
-                <div className="w-full flex justify-between px-4">
-                  <div className="w-8 h-10 bg-spanish-bg-lighter rounded" />
-                  <div className="w-12 h-5 bg-spanish-bg-lighter rounded" />
-                </div>
-                <div className="flex-1 w-32 h-48 bg-spanish-bg-lighter rounded-lg mt-4" />
-                <div className="w-3/4 h-6 bg-spanish-bg-lighter rounded mt-4" />
-              </BoxModule>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
+export default function Players({ players }: { players: PlayerType[] }) {
   return (
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
@@ -62,7 +32,7 @@ export default function Players() {
             .filter(
               (player) =>
                 player.actif === true &&
-                (player.poste === "Joueur" || player.poste === "Gardien")
+                (player.poste === "Joueur" || player.poste === "Gardien"),
             )
             .sort((a, b) => {
               if (a.poste === "Gardien" && b.poste !== "Gardien") return -1;

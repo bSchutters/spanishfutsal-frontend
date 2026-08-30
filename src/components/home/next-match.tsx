@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
 
-import { useMatchsStore } from "@/store/useMatchsStore";
+import type { Match } from "@/lib/getMatchs";
 import Link from "next/link";
 
 function formatCountdown(ms: number) {
@@ -23,14 +23,10 @@ function formatCountdown(ms: number) {
   return `${days > 0 ? String(days).padStart(2, "0") + "J " : ""}${hours}H ${minutes}M ${seconds}S`;
 }
 
-export default function NextMatch() {
+export default function NextMatch({ matchs }: { matchs: Match[] }) {
   const { breakpoint, isMobile } = useBreakpoint();
-  const { matchs, isLoading, fetchMatchs } = useMatchsStore();
   const [timeLeft, setTimeLeft] = useState<string>("");
 
-  useEffect(() => {
-    fetchMatchs();
-  }, [fetchMatchs]);
 
   const nextMatch = useMemo(() => {
     return matchs
@@ -77,26 +73,6 @@ export default function NextMatch() {
     const interval = setInterval(updateStatus, 1000);
     return () => clearInterval(interval);
   }, [matchDate]);
-
-  if (isLoading) {
-    return (
-      <BoxModule className="relative lg:-mt-24 -mt-16 z-20 p-6 2xl:w-1/3 xl:w-2/5 lg:w-3/5 sm:w-2/3 w-5/6 flex flex-col gap-4 items-center justify-center animate-pulse">
-        <div className="w-24 h-4 bg-spanish-bg-lighter rounded" />
-        <div className="flex gap-6 items-center w-full justify-center">
-          <div className="flex gap-3 items-center">
-            <div className="w-10 h-10 bg-spanish-bg-lighter rounded-full" />
-            <div className="w-20 h-4 bg-spanish-bg-lighter rounded" />
-          </div>
-          <div className="w-8 h-6 bg-spanish-bg-lighter rounded" />
-          <div className="flex gap-3 items-center">
-            <div className="w-20 h-4 bg-spanish-bg-lighter rounded" />
-            <div className="w-10 h-10 bg-spanish-bg-lighter rounded-full" />
-          </div>
-        </div>
-        <div className="w-32 h-5 bg-spanish-bg-lighter rounded" />
-      </BoxModule>
-    );
-  }
 
   if (!nextMatch || status === "after") return null;
 
