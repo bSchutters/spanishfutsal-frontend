@@ -184,11 +184,19 @@ export default async function Sponsors() {
             Sponsors &amp; partenaires
           </h1>
 
-          <p className="text-base leading-relaxed text-white/70 lg:text-lg">
-            Le club avance aussi grâce aux entreprises qui le soutiennent. Elles
-            nous permettent d&apos;équiper les joueurs, de payer les salles et de
-            faire vivre UD Asturiana saison après saison.
-          </p>
+          <div className="flex flex-col gap-4 text-base leading-relaxed text-white/70 lg:text-lg">
+            <p>
+              Un club de futsal, ce n&apos;est pas que cinq joueurs sur le
+              terrain. Ce sont des maillots à renouveler, des salles à réserver,
+              des déplacements à couvrir et une saison entière à tenir, semaine
+              après semaine.
+            </p>
+            <p>
+              Les entreprises réunies sur cette page rendent tout cela possible.
+              Nous tenons à les mettre en avant autant qu&apos;elles nous
+              soutiennent : découvrez qui elles sont et ce qu&apos;elles font.
+            </p>
+          </div>
         </header>
 
         {groups.length > 0 ? (
