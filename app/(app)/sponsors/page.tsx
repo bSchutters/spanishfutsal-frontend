@@ -139,7 +139,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  aria-label={`${sponsor.name} — ${label}`}
+                  aria-label={`${sponsor.name}, ${label}`}
                   title={label}
                   className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 outline-none transition-[transform,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 focus-visible:ring-2 focus-visible:ring-spanish-accent-2 focus-visible:ring-offset-2 focus-visible:ring-offset-spanish-bg-dark active:scale-95"
                 >
@@ -183,24 +183,29 @@ export default async function Sponsors() {
             Ils nous soutiennent
           </h1>
 
-          <div className="flex flex-col gap-4 text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
-            {/* Le decompte est calcule, jamais ecrit en dur : la phrase reste
-                juste quand un sponsor arrive ou s'en va. Les metiers ne sont pas
-                enumeres ici, les cartes les portent deja. */}
+          {/* Aucune mention des sponsors du moment : le texte reste valable
+              quel que soit le panel, sans avoir a etre reecrit. */}
+          {/* Sans ecart entre les paragraphes : les quatre phrases se lisent
+              d'un bloc, comme un seul texte. */}
+          <div className="flex flex-col text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
+            <p>Une équipe ne se construit jamais seule.</p>
             <p>
-              {sponsors.length > 1
-                ? `${sponsors.length} entreprises soutiennent UD Asturiana cette saison. Elles méritent mieux qu'un logo en bas de page.`
-                : "Une entreprise soutient UD Asturiana cette saison. Elle mérite mieux qu'un logo en bas de page."}
+              Derrière chaque match et chaque projet, il y a des partenaires qui
+              choisissent de nous faire confiance.
             </p>
             <p>
-              Voici qui elles sont, ce qu&apos;elles font, et où les joindre.
+              Leur soutien nous permet de continuer à grandir, sur le terrain
+              comme en dehors.
+            </p>
+            <p>
+              Merci à tous ceux qui font partie de l&apos;aventure UD Asturiana.
             </p>
           </div>
         </div>
 
         {groups.length > 0 ? (
           groups.map((group) => (
-            <section key={group.type} className="mt-16 lg:mt-24">
+            <section key={group.type} className="mt-12 lg:mt-16">
               <div className="reveal-up flex items-baseline gap-3">
                 {/* Avec un seul groupe, le titre de page dit deja la meme chose :
                     on ne garde alors que le decompte, libelle en toutes lettres. */}

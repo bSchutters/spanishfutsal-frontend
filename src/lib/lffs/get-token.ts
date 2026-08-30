@@ -2,7 +2,7 @@
  * Get LFFS access token.
  *
  * The token is embedded in the LFFS website HTML as `bpleagues_api_key`.
- * We fetch the page and extract it — no headless browser needed.
+ * We fetch the page and extract it , no headless browser needed.
  *
  * Token is stored in the Payload Settings global to persist across cold starts.
  * Fallback: manual token from Settings.
