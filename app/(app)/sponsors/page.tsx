@@ -30,6 +30,9 @@ export const metadata: Metadata = {
       "Découvrez les entreprises qui soutiennent UD Asturiana, club de futsal bruxellois.",
     url: "https://udasturiana.be/sponsors",
   },
+  alternates: {
+    canonical: "https://udasturiana.be/sponsors",
+  },
 };
 
 const PLATFORM_META: Record<
@@ -62,10 +65,19 @@ const GROUPS = [
   },
 ] as const;
 
-function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
+function SponsorCard({
+  sponsor,
+  index,
+  priority,
+}: {
+  sponsor: Sponsor;
+  index: number;
+  /** Premiere rangee du premier groupe : c est la que se joue le LCP. */
+  priority?: boolean;
+}) {
   return (
     <article
-      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
+      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[translate,border-color] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       {/* La plupart des logos fournis sont blancs, donc dessines pour un fond
@@ -86,6 +98,12 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
             width={0}
             height={0}
             sizes="240px"
+            // Les trois premieres cartes sont dans l ecran d entree et l une d elles
+            // porte le LCP. En chargement differe, elle arrivait apres 611 ms.
+            priority={priority}
+            // Sans cet indice explicite, Next pose bien le preload mais sans
+            // `fetchpriority`, et Lighthouse compte le point comme manquant.
+            fetchPriority={priority ? "high" : undefined}
             // Bride la largeur plus que la hauteur : sans cela un logo-mot
             // occupe toute la plaque quand un pictogramme carre reste minuscule.
             className="max-h-14 w-auto max-w-[55%] object-contain"
@@ -143,7 +161,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
                   rel="noopener noreferrer nofollow"
                   aria-label={`${sponsor.name}, ${label}`}
                   title={label}
-                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 outline-none transition-[transform,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 focus-visible:ring-2 focus-visible:ring-spanish-accent-2 focus-visible:ring-offset-2 focus-visible:ring-offset-spanish-bg-dark active:scale-95"
+                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 outline-none transition-[scale,color,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] hover:border-spanish-accent-2/50 hover:bg-spanish-accent-2/10 hover:text-spanish-accent-2 focus-visible:ring-2 focus-visible:ring-spanish-accent-2 focus-visible:ring-offset-2 focus-visible:ring-offset-spanish-bg-dark active:scale-95"
                 >
                   <Icon className="size-4" />
                 </Link>
@@ -197,7 +215,7 @@ export default async function Sponsors() {
         </div>
 
         {groups.length > 0 ? (
-          groups.map((group) => (
+          groups.map((group, groupIndex) => (
             <section key={group.type} className="mt-12 lg:mt-16">
               <div className="reveal-up flex items-baseline gap-3">
                 {/* Avec un seul groupe, le titre de page dit deja la meme chose :
@@ -219,7 +237,12 @@ export default async function Sponsors() {
 
               <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((sponsor, index) => (
-                  <SponsorCard key={sponsor.id} sponsor={sponsor} index={index} />
+                  <SponsorCard
+                    key={sponsor.id}
+                    sponsor={sponsor}
+                    index={index}
+                    priority={groupIndex === 0 && index < 3}
+                  />
                 ))}
               </div>
             </section>

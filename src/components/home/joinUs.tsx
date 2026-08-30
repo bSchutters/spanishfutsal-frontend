@@ -32,7 +32,9 @@ export default function JoinUs() {
             alt="Maillot UD Asturiana"
             width={0}
             height={0}
-            sizes="100vw"
+            // `w-96` fige l emplacement a 384 px, il ne depend pas de la fenetre.
+            // La source ne fait de toute facon que 635 px de large.
+            sizes="384px"
             className="w-96 h-96 rounded-lg object-contain"
           />
         </div>

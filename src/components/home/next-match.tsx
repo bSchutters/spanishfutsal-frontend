@@ -89,7 +89,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
   return (
     <BoxModule
       className={cn(
-        "relative lg:-mt-24 -mt-16 z-20 p-6  2xl:w-1/3 xl:w-2/5 lg:w-3/5 sm:w-2/3 w-5/6 flex flex-col md:flex-row gap-4 items-center justify-center hover:bg-spanish-bg-dark-minus cursor-pointer transition-all duration-300",
+        "relative lg:-mt-24 -mt-16 z-20 p-6  2xl:w-1/3 xl:w-2/5 lg:w-3/5 sm:w-2/3 w-5/6 flex flex-col md:flex-row gap-4 items-center justify-center hover:bg-spanish-bg-dark-minus cursor-pointer transition-colors duration-300",
         status === "live" && liveLink
           ? "border-spanish-accent-2"
           : status === "live"

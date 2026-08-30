@@ -54,7 +54,7 @@ const Nav = () => {
   return (
     <header
       className={cn(
-        "bg-spanish-bg-dark  z-50 font-bold fixed top-0 left-0 w-full transition-all duration-700 ease-in-out",
+        "bg-spanish-bg-dark  z-50 font-bold fixed top-0 left-0 w-full transition-transform duration-700 ease-in-out",
         isVisible ? "translate-y-0" : "-translate-y-[150%]"
       )}
     >
@@ -101,8 +101,12 @@ const Nav = () => {
             // `inert` plutot que `aria-hidden` : il retire aussi les liens de
             // l'ordre de tabulation, la ou `aria-hidden` les y laisserait.
             inert={!isMobileMenuOpen}
+            // `translate` et non `transform` : Tailwind v4 pose les
+            // deplacements sur la propriete CSS `translate`. Une transition sur
+            // `transform` ne les anime donc pas, le panneau apparaissait d un
+            // coup. `height` fait le deroule de la barre vers le plein ecran.
             className={cn(
-              "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-all duration-700",
+              "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-[opacity,translate,height] duration-700",
               isMobileMenuOpen
                 ? "opacity-100 translate-y-0 h-dvh pointer-events-auto"
                 : "opacity-0 -translate-y-4 h-full pointer-events-none"
@@ -113,7 +117,7 @@ const Nav = () => {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "hover:text-spanish-accent-2 transition-all flex items-center justify-between w-full border-b border-spanish-bg py-4 last:border-b-0",
+                  "hover:text-spanish-accent-2 transition-colors flex items-center justify-between w-full border-b border-spanish-bg py-4 last:border-b-0",
                   pathname === link.href ? "text-spanish-accent-2" : ""
                 )}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -135,7 +139,7 @@ const Nav = () => {
               key={link.href}
               href={link.href}
               className={cn(
-                "hover:text-spanish-accent-2 transition-all",
+                "hover:text-spanish-accent-2 transition-colors",
                 pathname === link.href ? "text-spanish-accent-2" : ""
               )}
             >

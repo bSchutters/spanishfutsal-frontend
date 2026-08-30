@@ -12,6 +12,9 @@ export default function Banner() {
           // Image la plus grande du premier ecran : elle porte le LCP, donc elle
           // est prechargee au lieu d'etre differee.
           priority
+          // Lighthouse signalait l'absence de fetchpriority sur le preload de
+          // cette image, qui porte le LCP. On le pose explicitement.
+          fetchPriority="high"
           className="object-cover object-top"
         />
       </div>
