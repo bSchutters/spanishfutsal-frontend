@@ -50,7 +50,7 @@ export default function Player({
     <BoxModule
       className={cn(
         "relative lg:w-72 flex flex-col items-center justify-center overflow-hidden",
-        className
+        className,
       )}
     >
       {stats && (
@@ -59,7 +59,7 @@ export default function Player({
             "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-all duration-700 flex flex-col  justify-between",
             isStatsOpen
               ? "opacity-100 pointer-events-auto -translate-y-0"
-              : "opacity-0 pointer-events-none -translate-y-10"
+              : "opacity-0 pointer-events-none -translate-y-10",
           )}
         >
           <div className="flex items-center justify-between w-full">
@@ -160,7 +160,7 @@ export default function Player({
       <div
         className={cn(
           "flex items-center  w-full",
-          active ? "justify-between" : "justify-end"
+          active ? "justify-between" : "justify-end",
         )}
       >
         {active && (poste === "Joueur" || poste === "Gardien") && (
@@ -194,7 +194,8 @@ export default function Player({
           alt={`${firstname} ${lastname}`}
           height={0}
           width={0}
-          sizes="100vw"
+          // Largeur reelle de l'emplacement (photo de joueur dans une grille de 2 a 5 colonnes), et non celle de la fenetre.
+          sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
           priority
         />

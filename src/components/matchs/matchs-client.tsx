@@ -80,7 +80,11 @@ export default function MatchsClient({
   const matchRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (!isArchived && fallbackIndex !== -1 && matchRefs.current[fallbackIndex]) {
+    if (
+      !isArchived &&
+      fallbackIndex !== -1 &&
+      matchRefs.current[fallbackIndex]
+    ) {
       matchRefs.current[fallbackIndex]?.scrollIntoView({
         behavior: "instant",
         block: isMobile ? "end" : "center",
@@ -92,12 +96,17 @@ export default function MatchsClient({
     return (
       <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
         <div className="w-full flex justify-between items-center">
-          <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+          <h1 className="text-4xl font-marjorie italic font-bold">
+            Nos matchs
+          </h1>
           <SeasonSelector onSeasonChange={handleSeasonChange} />
         </div>
         <div className="flex flex-col gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <BoxModule key={i} className="flex flex-col gap-4 p-4 animate-pulse">
+            <BoxModule
+              key={i}
+              className="flex flex-col gap-4 p-4 animate-pulse"
+            >
               <div className="flex justify-between">
                 <div className="w-24 h-5 bg-spanish-bg-lighter rounded" />
                 <div className="w-16 h-5 bg-spanish-bg-lighter rounded" />
@@ -128,17 +137,19 @@ export default function MatchsClient({
     <>
       <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
         <div className="w-full flex justify-between items-center">
-          <h1 className="text-4xl font-marjorie italic font-bold">Nos matchs</h1>
+          <h1 className="text-4xl font-marjorie italic font-bold">
+            Nos matchs
+          </h1>
           <SeasonSelector onSeasonChange={handleSeasonChange} />
         </div>
         {validMatchs.map((match, index) => {
           const isLffsCompetition = !["AMICAL", "TOURNOIS"].includes(
-            match.serieReference
+            match.serieReference,
           );
           const today = new Date();
           const matchDateTime = new Date(`${match.date}T${match.time}`);
           const oneHourAfter = new Date(
-            matchDateTime.getTime() + 70 * 60 * 1000
+            matchDateTime.getTime() + 70 * 60 * 1000,
           );
 
           let status = "";
@@ -171,7 +182,7 @@ export default function MatchsClient({
                 fallbackIndex === index &&
                   !isArchived &&
                   !hasLiveMatch &&
-                  "border-2 border-spanish-accent"
+                  "border-2 border-spanish-accent",
               )}
               key={index}
               ref={(el) => {
@@ -185,7 +196,8 @@ export default function MatchsClient({
                     alt="Team Logo"
                     width={0}
                     height={0}
-                    sizes="100vw"
+                    // Largeur reelle de l'emplacement (logo dans une rencontre), et non celle de la fenetre.
+                    sizes="96px"
                     className="w-6 h-auto"
                   />
                 )}
@@ -246,7 +258,7 @@ export default function MatchsClient({
                   breakpoint === "xs" &&
                     !match.replayLink &&
                     status === "finished" &&
-                    "hidden"
+                    "hidden",
                 )}
               >
                 <div
@@ -254,7 +266,7 @@ export default function MatchsClient({
                     "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
                     status === "live" && match.liveLink
                       ? "justify-between"
-                      : "justify-center"
+                      : "justify-center",
                   )}
                 >
                   {status === "finished" && match.replayLink && (
@@ -314,7 +326,7 @@ export default function MatchsClient({
                               label: "Copier l'adresse",
                               onClick: () => {
                                 const venue = getVenueById(
-                                  Number(match.venueId)
+                                  Number(match.venueId),
                                 );
                                 if (venue) {
                                   navigator.clipboard.writeText(
@@ -324,12 +336,12 @@ export default function MatchsClient({
                                       ", " +
                                       (venue.zip || "") +
                                       " " +
-                                      (venue.city || "")
+                                      (venue.city || ""),
                                   );
                                 }
                               },
                             },
-                          }
+                          },
                         );
                       }}
                     >
