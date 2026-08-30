@@ -15,7 +15,7 @@ export default function ClassementClient({
 }: {
   initialRankings: Ranking[];
 }) {
-  const { isLoading, fetchRankings } = useRankingStore();
+  const { isLoading, fetchRankings, reset } = useRankingStore();
   const { setSelectedSeason } = useSeasonStore();
   const isArchived = useSeasonStore((s) => s.isArchivedSeason());
 
@@ -26,8 +26,12 @@ export default function ClassementClient({
   const rankings = hasFetched ? fetchedRankings : initialRankings;
 
   useEffect(() => {
+    // A chaque arrivee sur la page, on repart des donnees du serveur : sans ce
+    // reset, un classement d'archive consulte auparavant resterait affiche sous
+    // un selecteur revenu a la saison active.
     setSelectedSeason(null);
-  }, [setSelectedSeason]);
+    reset();
+  }, [reset, setSelectedSeason]);
 
   const handleSeasonChange = useCallback(
     (seasonId: number | null) => {

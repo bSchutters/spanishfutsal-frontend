@@ -25,6 +25,9 @@ type State = {
   // Distingue « pas encore charge » de « charge et vide » : tant que c'est faux,
   // la page affiche le classement rendu par le serveur.
   hasFetched: boolean;
+  // Remet l'etat au point de depart, pour que les donnees rendues par le
+  // serveur reprennent la main a chaque arrivee sur la page.
+  reset: () => void;
   fetchRankings: (seasonId?: number | null) => Promise<void>;
 };
 
@@ -52,6 +55,7 @@ export const useRankingStore = create<State>((set) => ({
   rankings: [],
   isLoading: false,
   hasFetched: false,
+  reset: () => set({ rankings: [], hasFetched: false }),
   fetchRankings: async (seasonId) => {
     set({ isLoading: true, rankings: [] });
 
