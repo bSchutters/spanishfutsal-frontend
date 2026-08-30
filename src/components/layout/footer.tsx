@@ -49,10 +49,10 @@ export default async function Footer() {
                       alt={sponsor.name}
                       width={120}
                       height={40}
-                      className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
+                      className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-opacity"
                     />
                   ) : (
-                    <span className="text-sm opacity-40 hover:opacity-100 transition-all">
+                    <span className="text-sm opacity-40 hover:opacity-100 transition-opacity">
                       {sponsor.name}
                     </span>
                   );
@@ -92,7 +92,7 @@ export default async function Footer() {
             href="https://instagram.com/asturiana_ud"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-spanish-accent-dark transition-all"
+            className="hover:text-spanish-accent-dark transition-colors"
           >
             Instagram
           </Link>
@@ -100,7 +100,7 @@ export default async function Footer() {
             href="https://www.youtube.com/@UDAsturiana"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-spanish-accent-dark transition-all"
+            className="hover:text-spanish-accent-dark transition-colors"
           >
             Youtube
           </Link>

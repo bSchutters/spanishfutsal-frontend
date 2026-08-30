@@ -30,6 +30,9 @@ export const metadata: Metadata = {
       "Découvrez les entreprises qui soutiennent UD Asturiana, club de futsal bruxellois.",
     url: "https://udasturiana.be/sponsors",
   },
+  alternates: {
+    canonical: "https://udasturiana.be/sponsors",
+  },
 };
 
 const PLATFORM_META: Record<

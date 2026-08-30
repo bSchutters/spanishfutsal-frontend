@@ -325,7 +325,7 @@ export default function MatchsClient({
                               title: "title",
                               description: "description",
                               actionButton:
-                                "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-all",
+                                "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-colors",
                               cancelButton: "cancel-button",
                               closeButton: "close-button",
                               icon: "!mr-2",

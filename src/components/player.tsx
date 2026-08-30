@@ -56,7 +56,7 @@ export default function Player({
       {stats && (
         <div
           className={cn(
-            "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-all duration-700 flex flex-col  justify-between",
+            "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-[opacity,transform] duration-700 flex flex-col  justify-between",
             isStatsOpen
               ? "opacity-100 pointer-events-auto -translate-y-0"
               : "opacity-0 pointer-events-none -translate-y-10",
@@ -65,7 +65,7 @@ export default function Player({
           <div className="flex items-center justify-between w-full">
             <p className="">STATS</p>
             <X
-              className="hover:cursor-pointer hover:text-spanish-accent-2 transition-all"
+              className="hover:cursor-pointer hover:text-spanish-accent-2 transition-colors"
               onClick={() => setIsStatsOpen(!isStatsOpen)}
             />
           </div>
@@ -175,7 +175,7 @@ export default function Player({
           stats.matchesPlayed > 0 &&
           (poste === "Gardien" || poste === "Joueur") && (
             <Badge
-              className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-all"
+              className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-colors"
               onClick={() => setIsStatsOpen(!isStatsOpen)}
             >
               STATS
@@ -194,8 +194,11 @@ export default function Player({
           alt={`${firstname} ${lastname}`}
           height={0}
           width={0}
-          // Largeur reelle de l'emplacement (photo de joueur dans une grille de 2 a 5 colonnes), et non celle de la fenetre.
-          sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+          // L'emplacement ne depend pas de la fenetre : `h-80 w-auto` le fige a
+          // 320 px de haut, soit 188 px de large pour un ratio 635x1080. Les
+          // pourcentages de fenetre precedents faisaient telecharger la variante
+          // 640 px la ou 376 px suffisent sur un ecran haute densite.
+          sizes="188px"
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
         />
       </div>

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description: "Découvrez l'histoire d'UD Asturiana, née de la fusion entre Spanish Futsal et Sporting Roja. Une famille unie par la passion du futsal à Bruxelles.",
     url: "https://udasturiana.be/a-propos",
   },
+  alternates: {
+    canonical: "https://udasturiana.be/a-propos",
+  },
 };
 
 export default function Apropos() {
