@@ -176,12 +176,9 @@ export default async function Sponsors() {
           barre de navigation, qui est en position fixe. */}
       <div className="my-30 container relative mx-auto px-6 md:px-0">
         <header className="reveal-up flex max-w-3xl flex-col gap-5">
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-spanish-accent-2">
-            Ils nous soutiennent
-          </p>
-
+          {/* Pas de surtitre : les autres pages du site n'ont qu'un titre. */}
           <h1 className="font-marjorie text-4xl font-bold italic leading-tight lg:text-5xl">
-            Sponsors &amp; partenaires
+            Ils nous soutiennent
           </h1>
 
           <div className="flex flex-col gap-4 text-base leading-relaxed text-white/70 lg:text-lg">
@@ -239,20 +236,26 @@ export default async function Sponsors() {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_100%_0%,rgba(254,209,100,0.16),transparent_60%)]"
           />
 
-          <div className="relative flex flex-col items-start gap-5 lg:max-w-2xl">
-            <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
-              Devenir sponsor
-            </h2>
-            <p className="leading-relaxed text-white/70">
-              Envie d&apos;associer votre entreprise à un club de futsal
-              bruxellois ? Parlons-en : nous vous présenterons les différentes
-              formules de soutien et la visibilité qui va avec.
-            </p>
+          {/* Deux colonnes en desktop : sans cela le texte se tasse a gauche et
+              laisse la moitie du bloc vide sur les grands ecrans. */}
+          <div className="relative flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center lg:gap-16">
+            <div className="flex flex-col gap-4 lg:max-w-xl">
+              <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
+                Votre entreprise ici
+              </h2>
+              <p className="leading-relaxed text-white/70">
+                Soutenir UD Asturiana, c&apos;est rejoindre les entreprises de
+                cette page et accompagner un club bruxellois tout au long de sa
+                saison. Écrivez-nous, nous vous expliquons comment ça marche.
+              </p>
+            </div>
+
             <Button
               asChild
-              className="transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97]"
+              size="lg"
+              className="shrink-0 transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97]"
             >
-              <Link href="/contact">Nous contacter</Link>
+              <Link href="/contact">Devenir sponsor</Link>
             </Button>
           </div>
         </section>
