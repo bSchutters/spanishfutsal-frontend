@@ -44,14 +44,13 @@ export default function Footer() {
             <p className="tracking-[0.2em] -mt-2 font-semibold">FUTSAL</p>
           </div>
         </Link>
-        <div className="flex flex-col lg:items-end items-center gap-2 max-w-full">
-          <p className="font-bold font-marjorie italic lg:block hidden">
-            Sponsors
-          </p>
-          {/* `flex-wrap` et une hauteur minimale plutot que fixe : sans cela la
-              rangee de logos deborde de l'ecran sur mobile et fait defiler toute
-              la page horizontalement. */}
-          <div className="flex flex-wrap justify-center lg:justify-end gap-x-6 gap-y-4 lg:gap-x-8 items-center min-h-12">
+        <div className="flex flex-col lg:items-end items-center gap-4 lg:gap-2 max-w-full w-full lg:w-auto">
+          <p className="font-bold font-marjorie italic">Sponsors</p>
+          {/* Grille sur mobile plutot que `flex-wrap` : les logos ont des largeurs
+              tres inegales, et le retour a la ligne libre laissait un orphelin
+              seul sur la derniere rangee. Rangees de trois, puis ligne unique
+              alignee a droite des le grand ecran. */}
+          <div className="grid w-full grid-cols-3 place-items-center gap-x-4 gap-y-5 lg:flex lg:w-auto lg:flex-wrap lg:justify-end lg:gap-x-8 lg:gap-y-4 lg:items-center lg:min-h-12">
             {sponsorsLoading ? (
               <>
                 <div className="w-24 h-8 bg-spanish-bg-lighter rounded animate-pulse" />
@@ -65,7 +64,7 @@ export default function Footer() {
                     alt={sponsor.name}
                     width={120}
                     height={40}
-                    className="h-8 sm:h-10 max-w-[90px] sm:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
+                    className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-all"
                   />
                 ) : (
                   <span className="text-sm opacity-40 hover:opacity-100 transition-all">
