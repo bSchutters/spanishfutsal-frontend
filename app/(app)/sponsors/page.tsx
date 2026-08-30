@@ -186,15 +186,15 @@ export default async function Sponsors() {
 
           <div className="flex flex-col gap-4 text-base leading-relaxed text-white/70 lg:text-lg">
             <p>
-              Un club de futsal, ce n&apos;est pas que cinq joueurs sur le
-              terrain. Ce sont des maillots à renouveler, des salles à réserver,
-              des déplacements à couvrir et une saison entière à tenir, semaine
-              après semaine.
+              Derrière chaque saison, il y a des entreprises qui ont choisi de
+              mettre leur nom à côté du nôtre. Leur soutien fait partie de
+              l&apos;aventure, au même titre que les matchs et les
+              entraînements.
             </p>
             <p>
-              Les entreprises réunies sur cette page rendent tout cela possible.
-              Nous tenons à les mettre en avant autant qu&apos;elles nous
-              soutiennent : découvrez qui elles sont et ce qu&apos;elles font.
+              Cette page est là pour leur rendre la pareille : dire qui elles
+              sont, ce qu&apos;elles font, et vous donner envie d&apos;aller les
+              découvrir.
             </p>
           </div>
         </header>
