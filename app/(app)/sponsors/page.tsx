@@ -189,12 +189,11 @@ export default async function Sponsors() {
                 enumeres ici, les cartes les portent deja. */}
             <p>
               {sponsors.length > 1
-                ? `${sponsors.length} entreprises accompagnent UD Asturiana cette saison. Elles n'ont pas grand-chose en commun, sinon d'avoir dit oui à un club de futsal bruxellois.`
-                : "Une entreprise accompagne UD Asturiana cette saison, et elle a dit oui à un club de futsal bruxellois."}
+                ? `${sponsors.length} entreprises soutiennent UD Asturiana cette saison. Elles méritent mieux qu'un logo en bas de page.`
+                : "Une entreprise soutient UD Asturiana cette saison. Elle mérite mieux qu'un logo en bas de page."}
             </p>
             <p>
-              Vous les trouverez ci-dessous, avec ce qu&apos;elles font et où les
-              joindre.
+              Voici qui elles sont, ce qu&apos;elles font, et où les joindre.
             </p>
           </div>
         </div>
