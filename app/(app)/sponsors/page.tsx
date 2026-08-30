@@ -48,7 +48,7 @@ const PLATFORM_META: Record<
 function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   return (
     <article
-      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
+      className="reveal-up group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       {/* La plupart des logos fournis sont blancs, donc dessines pour un fond
@@ -69,7 +69,9 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
             width={0}
             height={0}
             sizes="240px"
-            className="max-h-16 w-auto max-w-[70%] object-contain"
+            // Bride la largeur plus que la hauteur : sans cela un logo-mot
+            // occupe toute la plaque quand un pictogramme carre reste minuscule.
+            className="max-h-14 w-auto max-w-[55%] object-contain"
           />
         ) : (
           <p
@@ -83,14 +85,24 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
         )}
       </div>
 
-      <div className="flex grow flex-col gap-3 p-6">
+      <div className="flex flex-col gap-3 p-6">
         <div className="flex flex-col gap-1">
           {sponsor.sector && (
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-spanish-accent-2">
               {sponsor.sector}
             </p>
           )}
-          <h3 className="font-marjorie text-xl font-bold italic leading-tight">
+          {/* Le logo porte deja le nom la plupart du temps. Sans description pour
+              l'accompagner, le nom repasse en second plan plutot que de rivaliser
+              avec lui, tout en restant lisible et indexable. */}
+          <h3
+            className={cn(
+              "font-marjorie font-bold italic leading-tight",
+              sponsor.description
+                ? "text-xl"
+                : "text-base text-white/60"
+            )}
+          >
             {sponsor.name}
           </h3>
         </div>
@@ -102,7 +114,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
         )}
 
         {sponsor.links.length > 0 && (
-          <div className="mt-auto flex flex-wrap gap-2 pt-4">
+          <div className="flex flex-wrap gap-2 pt-2">
             {sponsor.links.map(({ platform, url }) => {
               const { label, Icon } = PLATFORM_META[platform];
 
@@ -204,7 +216,9 @@ export default async function Sponsors() {
                 <span className="h-px grow bg-white/10" />
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* `items-start` : une fiche sans description reste courte au lieu
+                  d'etre etiree a la hauteur de la plus remplie de sa rangee. */}
+              <div className="mt-8 grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((sponsor, index) => (
                   <SponsorCard
                     key={sponsor.id}
