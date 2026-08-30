@@ -34,6 +34,18 @@ export type Sponsor = {
   links: SponsorLink[];
 };
 
+/**
+ * Une adresse saisie sans protocole dans l'admin (« sofexia.com ») est lue par
+ * Next comme un chemin interne : le lien pointait sur udasturiana.be/sofexia.com
+ * et son prechargement remplissait la console d'une erreur 404.
+ */
+function externalUrl(value: string): string {
+  // Deja un schema explicite : https:, http:, mailto:, tel:...
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+  if (value.startsWith("//")) return `https:${value}`;
+  return `https://${value}`;
+}
+
 function text(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
@@ -46,7 +58,8 @@ export function sponsorLinks(group: unknown): SponsorLink[] {
     const value = text(links[platform]);
     if (!value) return [];
 
-    const url = platform === "email" ? `mailto:${value}` : value;
+    const url =
+      platform === "email" ? `mailto:${value}` : externalUrl(value);
     return [{ platform, url }];
   });
 }
