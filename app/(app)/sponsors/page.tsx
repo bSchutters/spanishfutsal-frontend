@@ -137,13 +137,14 @@ export default async function Sponsors() {
     [
       {
         type: "sponsor",
-        heading: "Nos sponsors",
+        // Sans « Nos » : le titre de page le porte deja.
+        heading: "Sponsors",
         singular: "sponsor",
         plural: "sponsors",
       },
       {
         type: "partner",
-        heading: "Nos partenaires",
+        heading: "Partenaires",
         singular: "partenaire",
         plural: "partenaires",
       },
@@ -163,7 +164,9 @@ export default async function Sponsors() {
         className="pointer-events-none absolute inset-x-0 -top-40 h-[520px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(254,209,100,0.14),transparent_70%)]"
       />
 
-      <div className="container relative mx-auto px-4 pb-20 pt-14 lg:pb-28 lg:pt-20">
+      {/* `my-30` est l'espacement retenu par les autres pages pour degager la
+          barre de navigation, qui est en position fixe. */}
+      <div className="my-30 container relative mx-auto px-6 md:px-0">
         <header className="reveal-up flex max-w-3xl flex-col gap-5">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-spanish-accent-2">
             Ils nous soutiennent
@@ -183,18 +186,20 @@ export default async function Sponsors() {
         {groups.length > 0 ? (
           groups.map((group) => (
             <section key={group.type} className="mt-14 lg:mt-20">
-              <div className="reveal-up flex items-center gap-4">
-                {/* Avec un seul groupe, le titre de page dit deja la meme chose. */}
-                {groups.length > 1 && (
+              <div className="reveal-up flex items-baseline gap-3">
+                {/* Avec un seul groupe, le titre de page dit deja la meme chose :
+                    on ne garde alors que le decompte, libelle en toutes lettres. */}
+                {groups.length > 1 ? (
                   <h2 className="font-marjorie text-2xl font-bold italic lg:text-3xl">
                     {group.heading}
                   </h2>
+                ) : (
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                    {group.items.length > 1 ? group.plural : group.singular}
+                  </span>
                 )}
                 <span className="font-marjorie text-sm font-bold italic text-spanish-accent-2">
                   {group.items.length}
-                </span>
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
-                  {group.items.length > 1 ? group.plural : group.singular}
                 </span>
                 <span className="h-px grow bg-white/10" />
               </div>
