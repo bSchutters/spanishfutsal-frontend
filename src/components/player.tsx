@@ -55,8 +55,11 @@ export default function Player({
     >
       {stats && (
         <div
+          // `translate` et non `transform` : Tailwind v4 pose les deplacements
+          // sur la propriete CSS `translate`, qu une transition sur `transform`
+          // n atteint pas. C est ce qui avait supprime le glissement du haut.
           className={cn(
-            "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-[opacity,transform] duration-700 flex flex-col  justify-between",
+            "absolute top-0 left-0 w-full h-full bg-spanish-bg-dark rounded-lg z-20 p-4 transition-[opacity,translate] duration-700 flex flex-col  justify-between",
             isStatsOpen
               ? "opacity-100 pointer-events-auto -translate-y-0"
               : "opacity-0 pointer-events-none -translate-y-10",

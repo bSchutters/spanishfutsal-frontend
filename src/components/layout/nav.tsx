@@ -101,8 +101,12 @@ const Nav = () => {
             // `inert` plutot que `aria-hidden` : il retire aussi les liens de
             // l'ordre de tabulation, la ou `aria-hidden` les y laisserait.
             inert={!isMobileMenuOpen}
+            // `translate` et non `transform` : Tailwind v4 pose les
+            // deplacements sur la propriete CSS `translate`. Une transition sur
+            // `transform` ne les anime donc pas, le panneau apparaissait d un
+            // coup. `height` fait le deroule de la barre vers le plein ecran.
             className={cn(
-              "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-[opacity,transform] duration-700",
+              "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-[opacity,translate,height] duration-700",
               isMobileMenuOpen
                 ? "opacity-100 translate-y-0 h-dvh pointer-events-auto"
                 : "opacity-0 -translate-y-4 h-full pointer-events-none"
