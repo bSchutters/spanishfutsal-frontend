@@ -14,7 +14,7 @@ export const Sponsors: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'sector', 'active'],
+    defaultColumns: ['name', 'type', 'sector', 'active'],
     description:
       "Glissez les lignes pour changer l'ordre d'affichage sur la page sponsors, cliquez sur un sponsor pour le modifier.",
     components: {
@@ -43,6 +43,20 @@ export const Sponsors: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'Nom du sponsor',
+    },
+    {
+      name: 'type',
+      type: 'select',
+      required: true,
+      defaultValue: 'sponsor',
+      label: 'Type',
+      options: [
+        { label: 'Sponsor', value: 'sponsor' },
+        { label: 'Partenaire', value: 'partner' },
+      ],
+      admin: {
+        description: 'Determine la section dans laquelle il apparait sur la page.',
+      },
     },
     {
       name: 'logo',

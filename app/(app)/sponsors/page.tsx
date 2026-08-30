@@ -90,9 +90,9 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
               {sponsor.sector}
             </p>
           )}
-          <h2 className="font-marjorie text-xl font-bold uppercase italic leading-tight">
+          <h3 className="font-marjorie text-xl font-bold italic leading-tight">
             {sponsor.name}
-          </h2>
+          </h3>
         </div>
 
         {sponsor.description && (
@@ -131,6 +131,30 @@ export default async function Sponsors() {
   const { sponsors, page } = await getSponsorsPage();
   const cta = page.cta;
 
+  // Sponsors puis partenaires, chacun dans sa section. L'ordre defini par
+  // glisser-deposer dans l'admin est conserve a l'interieur de chaque groupe.
+  const groups = (
+    [
+      {
+        type: "sponsor",
+        heading: "Nos sponsors",
+        singular: "sponsor",
+        plural: "sponsors",
+      },
+      {
+        type: "partner",
+        heading: "Nos partenaires",
+        singular: "partenaire",
+        plural: "partenaires",
+      },
+    ] as const
+  )
+    .map((group) => ({
+      ...group,
+      items: sponsors.filter((sponsor) => sponsor.type === group.type),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <div className="relative overflow-hidden">
       {/* Halo discret : de la profondeur plutot qu un aplat de couleur. */}
@@ -145,7 +169,7 @@ export default async function Sponsors() {
             Ils nous soutiennent
           </p>
 
-          <h1 className="font-marjorie text-4xl font-bold uppercase italic leading-[0.95] lg:text-6xl">
+          <h1 className="font-marjorie text-4xl font-bold italic leading-tight lg:text-5xl">
             {page.title}
           </h1>
 
@@ -156,24 +180,36 @@ export default async function Sponsors() {
           )}
         </header>
 
-        {sponsors.length > 0 ? (
-          <>
-            <div className="reveal-up mt-12 flex items-center gap-4 lg:mt-16">
-              <span className="font-marjorie text-sm font-bold italic text-spanish-accent-2">
-                {sponsors.length}
-              </span>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
-                {sponsors.length > 1 ? "partenaires" : "partenaire"}
-              </span>
-              <span className="h-px grow bg-white/10" />
-            </div>
+        {groups.length > 0 ? (
+          groups.map((group) => (
+            <section key={group.type} className="mt-14 lg:mt-20">
+              <div className="reveal-up flex items-center gap-4">
+                {/* Avec un seul groupe, le titre de page dit deja la meme chose. */}
+                {groups.length > 1 && (
+                  <h2 className="font-marjorie text-2xl font-bold italic lg:text-3xl">
+                    {group.heading}
+                  </h2>
+                )}
+                <span className="font-marjorie text-sm font-bold italic text-spanish-accent-2">
+                  {group.items.length}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">
+                  {group.items.length > 1 ? group.plural : group.singular}
+                </span>
+                <span className="h-px grow bg-white/10" />
+              </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {sponsors.map((sponsor, index) => (
-                <SponsorCard key={sponsor.id} sponsor={sponsor} index={index} />
-              ))}
-            </div>
-          </>
+              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {group.items.map((sponsor, index) => (
+                  <SponsorCard
+                    key={sponsor.id}
+                    sponsor={sponsor}
+                    index={index}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
         ) : (
           <p className="reveal-up mt-12 text-white/60">
             Les sponsors seront annoncés très prochainement.
@@ -188,7 +224,7 @@ export default async function Sponsors() {
                 className="flex max-w-3xl flex-col gap-4"
               >
                 {section.title && (
-                  <h2 className="font-marjorie text-2xl font-bold uppercase italic lg:text-3xl">
+                  <h2 className="font-marjorie text-2xl font-bold italic lg:text-3xl">
                     {section.title}
                   </h2>
                 )}
@@ -211,7 +247,7 @@ export default async function Sponsors() {
 
             <div className="relative flex flex-col items-start gap-5 lg:max-w-2xl">
               {cta.title && (
-                <h2 className="font-marjorie text-3xl font-bold uppercase italic leading-tight lg:text-4xl">
+                <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
                   {cta.title}
                 </h2>
               )}

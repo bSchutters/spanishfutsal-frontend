@@ -19,8 +19,11 @@ export type SponsorLink = {
   url: string;
 };
 
+export type SponsorType = "sponsor" | "partner";
+
 export type Sponsor = {
   id: number;
+  type: SponsorType;
   name: string;
   logo: string | null;
   logoOnLight: boolean;
@@ -82,6 +85,7 @@ async function fetchSponsorsPage(): Promise<{
 
   const sponsors: Sponsor[] = sponsorsResult.docs.map((doc) => ({
     id: doc.id as number,
+    type: doc.type === "partner" ? "partner" : "sponsor",
     name: doc.name,
     logo: typeof doc.logo === "object" && doc.logo?.url ? doc.logo.url : null,
     logoOnLight: Boolean(doc.logo_on_light),
