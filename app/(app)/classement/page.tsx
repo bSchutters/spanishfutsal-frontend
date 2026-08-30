@@ -46,7 +46,7 @@ export default function Equipe() {
           <SeasonSelector onSeasonChange={handleSeasonChange} />
         </div>
         <BoxModule className="flex flex-col h-full">
-          <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter p-2">
+          <div className="flex justify-between items-center w-full font-bold uppercase text-white/70 p-2">
             <p>équipes</p>
           </div>
           <div className="w-full flex flex-col gap-1 p-2">
@@ -78,7 +78,7 @@ export default function Equipe() {
         <SeasonSelector onSeasonChange={handleSeasonChange} />
       </div>
       <BoxModule className="flex flex-col h-full">
-        <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter">
+        <div className="flex justify-between items-center w-full font-bold uppercase text-white/70">
           <p>équipes</p>
           <div className="flex gap-4 items-center p-2 ">
             <div className="grid md:grid-cols-[repeat(8,40px)] grid-cols-[repeat(2,40px)] gap-4 text-center">
@@ -102,7 +102,7 @@ export default function Equipe() {
               <p className="font-marjorie text-xl font-bold italic">
                 Classement pas encore disponible
               </p>
-              <p className="text-sm text-spanish-bg-lighter">
+              <p className="text-sm text-white/70">
                 Il sera affiché dès sa publication par la LFFS.
               </p>
             </div>

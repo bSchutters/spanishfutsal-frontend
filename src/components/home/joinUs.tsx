@@ -22,9 +22,9 @@ export default function JoinUs() {
             <span className={spanClasses}>ambition</span> et esprit d’équipe,
             pour grandir ensemble sur et en dehors du terrain.
           </p>
-          <Link href="/contact" className="self-start">
-            <Button>nous soutenir</Button>
-          </Link>
+          <Button asChild className="self-start">
+            <Link href="/contact">nous soutenir</Link>
+          </Button>
         </div>
         <div className="lg:absolute hidden lg:block lg:right-0 -right-8 bottom-0 ">
           <Image

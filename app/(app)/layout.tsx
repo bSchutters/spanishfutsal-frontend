@@ -58,7 +58,7 @@ export default function AppLayout({
           disableTransitionOnChange
         >
           <Nav />
-          {children}
+          <main>{children}</main>
           <Toaster />
           <Footer />
         </ThemeProvider>

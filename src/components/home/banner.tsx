@@ -13,10 +13,12 @@ export default function Banner() {
         />
       </div>
       <div className="flex flex-col items-center justify-center text-center lg:text-4xl text-2xl lg:gap-4 z-20">
-        <p>
+        {/* `h1` et non `p` : la page d'accueil n'avait aucun titre de niveau un,
+            ce qui prive lecteurs d'ecran et moteurs de son sujet principal. */}
+        <h1>
           <span className="font-bold text-spanish-accent-2">Amitié </span> et
           <span className="font-bold text-spanish-accent-2"> passion</span>
-        </p>
+        </h1>
         <p>générations après générations</p>
       </div>
     </section>

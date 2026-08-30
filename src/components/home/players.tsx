@@ -45,9 +45,9 @@ export default function Players() {
     <section className="mt-20 flex flex-col gap-8 lg:container w-11/12">
       <div className="w-full flex items-center justify-between">
         <p className="text-2xl font-marjorie italic font-bold">Nos joueurs</p>
-        <Link href="/equipe">
-          <Button>voir tous nos joueurs</Button>
-        </Link>
+        <Button asChild>
+          <Link href="/equipe">voir tous nos joueurs</Link>
+        </Button>
       </div>
 
       <Carousel

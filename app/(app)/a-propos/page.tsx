@@ -127,7 +127,7 @@ export default function Apropos() {
               {valeurs.map((valeur, index) => (
                 <p
                   key={index}
-                  className="bg-spanish-accent-2-light/20 text-spanish-accent-2 px-3 py-1.5 rounded-lg md:text-lg text-xs"
+                  className="bg-spanish-accent-2-light/10 text-spanish-accent-2-light px-3 py-1.5 rounded-lg md:text-lg text-xs"
                 >
                   {valeur}
                 </p>

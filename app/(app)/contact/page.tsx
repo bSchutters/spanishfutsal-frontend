@@ -105,7 +105,7 @@ export default function Contact() {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger aria-label="Sujet" className="w-full">
                           <SelectValue placeholder="Choisissez votre sujet" />
                         </SelectTrigger>
                       </FormControl>
