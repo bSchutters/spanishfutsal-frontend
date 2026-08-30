@@ -186,7 +186,7 @@ export default async function Sponsors() {
           {/* Aucune mention des sponsors du moment : le texte reste valable
               quel que soit le panel, sans avoir a etre reecrit. */}
           <p className="text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
-            Une équipe ne se construit jamais seule. Derrière chaque match et
+            Un club ne se construit jamais seul. Derrière chaque match et
             chaque projet, il y a des partenaires qui choisissent de nous faire
             confiance. Leur soutien nous permet de continuer à grandir, sur le
             terrain comme en dehors. Merci à tous ceux qui font partie de
