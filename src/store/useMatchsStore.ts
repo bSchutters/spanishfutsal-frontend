@@ -24,6 +24,9 @@ type Match = {
 type State = {
   matchs: Match[];
   isLoading: boolean;
+  // Distingue « pas encore charge » de « charge et vide » : tant que c'est faux,
+  // la page affiche le calendrier rendu par le serveur.
+  hasFetched: boolean;
   fetchMatchs: (seasonId?: number | null) => Promise<void>;
 };
 
@@ -52,6 +55,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_STRAP
 export const useMatchsStore = create<State>((set) => ({
   matchs: [],
   isLoading: false,
+  hasFetched: false,
   fetchMatchs: async (seasonId) => {
     set({ isLoading: true, matchs: [] });
 
@@ -86,7 +90,7 @@ export const useMatchsStore = create<State>((set) => ({
     } catch (error) {
       throw error;
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, hasFetched: true });
     }
   },
 }));
