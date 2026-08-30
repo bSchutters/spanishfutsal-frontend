@@ -48,7 +48,7 @@ const PLATFORM_META: Record<
 function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   return (
     <article
-      className="reveal-up group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
+      className="reveal-up group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-spanish-bg-dark/80 transition-[transform,border-color,box-shadow] duration-200 ease-[var(--ease-out-strong)] hover:-translate-y-1 hover:border-spanish-accent-2/40 hover:shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]"
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       {/* La plupart des logos fournis sont blancs, donc dessines pour un fond
@@ -85,7 +85,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 p-6">
+      <div className="flex grow flex-col gap-3 p-6">
         <div className="flex flex-col gap-1">
           {sponsor.sector && (
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-spanish-accent-2">
@@ -113,8 +113,10 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
           </p>
         )}
 
+        {/* `mt-auto` : les rangees de liens s'alignent en bas de carte, quelle
+            que soit la longueur des descriptions au-dessus. */}
         {sponsor.links.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-2">
+          <div className="mt-auto flex flex-wrap gap-2 pt-4">
             {sponsor.links.map(({ platform, url }) => {
               const { label, Icon } = PLATFORM_META[platform];
 
@@ -216,9 +218,7 @@ export default async function Sponsors() {
                 <span className="h-px grow bg-white/10" />
               </div>
 
-              {/* `items-start` : une fiche sans description reste courte au lieu
-                  d'etre etiree a la hauteur de la plus remplie de sa rangee. */}
-              <div className="mt-8 grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((sponsor, index) => (
                   <SponsorCard
                     key={sponsor.id}
