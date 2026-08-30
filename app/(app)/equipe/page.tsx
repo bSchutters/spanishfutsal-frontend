@@ -1,32 +1,18 @@
-"use client";
-
 import JsonLd from "@/components/json-ld";
-import PlayerLoader from "@/components/loaders/playerLoader";
-import MetadataHead from "@/components/metadata-head";
 import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
-import { usePlayersStore } from "@/store/usePlayersStore";
-import { useEffect } from "react";
+import { getPlayersForDisplay } from "@/lib/getPlayers";
 import { equipeMetadata } from "./metadata";
 
-export default function Equipe() {
-  const { players, isLoading, fetchPlayers } = usePlayersStore();
+export const metadata = equipeMetadata;
 
-  useEffect(() => {
-    fetchPlayers();
-  }, [fetchPlayers]);
+/**
+ * Composant serveur : la page n'a aucune interactivite, l'effectif part donc
+ * avec le HTML. Le squelette de chargement n'a plus lieu d'etre.
+ */
+export default async function Equipe() {
+  const players = await getPlayersForDisplay();
 
-  if (isLoading)
-    return (
-      <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6 animate-pulse">
-        <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
-        <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
-          {Array.from({ length: 10 }).map((_, index) => (
-            <PlayerLoader key={index} />
-          ))}
-        </div>
-      </div>
-    );
   const teamSchema = {
     "@context": "https://schema.org",
     "@type": "SportsTeam",
@@ -47,7 +33,6 @@ export default function Equipe() {
 
   return (
     <>
-      <MetadataHead metadata={equipeMetadata} />
       <JsonLd data={teamSchema} />
       <div className="my-30 container mx-auto flex flex-col gap-8 md:px-0 px-6">
         <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
