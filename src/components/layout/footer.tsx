@@ -45,7 +45,9 @@ export default function Footer() {
           </div>
         </Link>
         <div className="flex flex-col lg:items-end items-center gap-4 lg:gap-2 max-w-full w-full lg:w-auto">
-          <p className="font-bold font-marjorie italic">Sponsors</p>
+          {/* Le bandeau montre sponsors et partenaires confondus : l'intitule
+              doit couvrir les deux. Il reprend celui de la page /sponsors. */}
+          <p className="font-bold font-marjorie italic">Ils nous soutiennent</p>
           {/* Grille sur mobile plutot que `flex-wrap` : les logos ont des largeurs
               tres inegales, et le retour a la ligne libre laissait un orphelin
               seul sur la derniere rangee. Rangees de trois, puis ligne unique
