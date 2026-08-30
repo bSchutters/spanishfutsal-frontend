@@ -7,21 +7,36 @@ import { useSearchParams } from 'next/navigation'
 const BASE = '/admin/collections/sponsors'
 
 const TABS = [
-  { label: 'Actifs', href: `${BASE}?where[active][equals]=true`, match: 'true' },
-  { label: 'Inactifs', href: `${BASE}?where[active][equals]=false`, match: 'false' },
-  // Un vrai `where`, que Payload conserve en paginant et que son panneau de
-  // filtres sait representer, puisqu'il porte sur un champ reel. Il neutralise le
-  // filtre par defaut de la collection tout en gardant tous les sponsors.
-  { label: 'Tous', href: `${BASE}?where[active][exists]=true`, match: 'all' },
+  {
+    key: 'sponsor',
+    label: 'Sponsors',
+    query: 'where[active][equals]=true&where[type][equals]=sponsor',
+  },
+  {
+    key: 'partner',
+    label: 'Partenaires',
+    query: 'where[active][equals]=true&where[type][equals]=partner',
+  },
+  { key: 'inactive', label: 'Inactifs', query: 'where[active][equals]=false' },
+  // Un `where` reel plutot qu'un marqueur maison : Payload le conserve en
+  // paginant et son panneau de filtres sait le representer.
+  { key: 'all', label: 'Tous', query: 'where[active][exists]=true' },
 ] as const
+
+/**
+ * Sans `where` dans l'URL, `baseFilter` n'a laisse passer que les sponsors
+ * actifs : c'est l'onglet correspondant qui doit apparaitre selectionne.
+ */
+function currentTab(params: URLSearchParams): string {
+  if (params.has('where[active][exists]')) return 'all'
+  if (params.get('where[active][equals]') === 'false') return 'inactive'
+  if (params.get('where[type][equals]') === 'partner') return 'partner'
+  return 'sponsor'
+}
 
 const SponsorStatusTabs: React.FC = () => {
   const searchParams = useSearchParams()
-  const filter = searchParams.get('where[active][equals]')
-
-  // Sans parametre, `baseFilter` n'a laisse passer que les actifs : l'onglet
-  // correspondant doit donc apparaitre selectionne.
-  const current = filter ?? (searchParams.has('where[active][exists]') ? 'all' : 'true')
+  const current = currentTab(new URLSearchParams(searchParams.toString()))
 
   return (
     <nav
@@ -33,12 +48,12 @@ const SponsorStatusTabs: React.FC = () => {
       }}
     >
       {TABS.map((tab) => {
-        const isActive = current === tab.match
+        const isActive = current === tab.key
 
         return (
           <Link
-            key={tab.label}
-            href={tab.href}
+            key={tab.key}
+            href={`${BASE}?${tab.query}`}
             style={{
               padding: '8px 16px',
               fontSize: '14px',

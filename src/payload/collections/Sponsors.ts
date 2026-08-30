@@ -20,14 +20,15 @@ export const Sponsors: CollectionConfig = {
     components: {
       beforeListTable: ['@/payload/components/SponsorStatusTabs'],
     },
-    // Sans vue explicite dans l'URL, la liste s'ouvre sur les sponsors actifs.
+    // Sans vue explicite dans l'URL, la liste s'ouvre sur les sponsors actifs,
+    // qui est l'onglet par defaut.
     // Des qu'un onglet passe son propre `where`, ce filtre par defaut s'efface
     // pour ne pas se cumuler avec lui.
     baseFilter: ({ req }) => {
       const keys = Array.from(req.searchParams.keys())
       const hasExplicitView = keys.some((key) => key.startsWith('where'))
 
-      return hasExplicitView ? null : { active: { equals: true } }
+      return hasExplicitView ? null : { active: { equals: true }, type: { equals: 'sponsor' } }
     },
     hidden: ({ user }) => user?.role !== 'admin',
   },
