@@ -185,22 +185,13 @@ export default async function Sponsors() {
 
           {/* Aucune mention des sponsors du moment : le texte reste valable
               quel que soit le panel, sans avoir a etre reecrit. */}
-          {/* Sans ecart entre les paragraphes : les quatre phrases se lisent
-              d'un bloc, comme un seul texte. */}
-          <div className="flex flex-col text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
-            <p>Une équipe ne se construit jamais seule.</p>
-            <p>
-              Derrière chaque match et chaque projet, il y a des partenaires qui
-              choisissent de nous faire confiance.
-            </p>
-            <p>
-              Leur soutien nous permet de continuer à grandir, sur le terrain
-              comme en dehors.
-            </p>
-            <p>
-              Merci à tous ceux qui font partie de l&apos;aventure UD Asturiana.
-            </p>
-          </div>
+          <p className="text-base leading-relaxed text-pretty text-white/70 lg:text-lg">
+            Une équipe ne se construit jamais seule. Derrière chaque match et
+            chaque projet, il y a des partenaires qui choisissent de nous faire
+            confiance. Leur soutien nous permet de continuer à grandir, sur le
+            terrain comme en dehors. Merci à tous ceux qui font partie de
+            l&apos;aventure UD Asturiana.
+          </p>
         </div>
 
         {groups.length > 0 ? (
