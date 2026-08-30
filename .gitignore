@@ -41,3 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 media/
+
+# skills : `.agents/` porte le contenu reel et est versionne, `.claude/` n'est
+# qu'un miroir de liens symboliques en chemin absolu, propre a chaque machine.
+.claude/
