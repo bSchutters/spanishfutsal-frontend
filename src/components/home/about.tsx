@@ -14,7 +14,10 @@ export default function About() {
             alt="Comité UD Asturiana"
             width={0}
             height={0}
-            sizes="100vw"
+            // Moitie du conteneur a partir de lg (gap-12 deduit), 11/12 de la
+            // fenetre en dessous. `100vw` faisait telecharger la variante 3840 px
+            // la ou 1080 suffit.
+            sizes="(min-width: 1024px) 48vw, 92vw"
             className="w-full lg:h-96 h-46 rounded-lg grayscale object-cover"
           />
         </div>

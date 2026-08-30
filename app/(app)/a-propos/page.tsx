@@ -66,7 +66,9 @@ export default function Apropos() {
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl my-6"
-              sizes="100vw"
+              // Colonne de texte bornee a max-w-4xl, soit 896 px : l image ne fait
+              // jamais la largeur de la fenetre.
+              sizes="(min-width: 1024px) 896px, 92vw"
               loading="lazy"
             />
 
@@ -108,7 +110,9 @@ export default function Apropos() {
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
-              sizes="100vw"
+              // Colonne de texte bornee a max-w-4xl, soit 896 px : l image ne fait
+              // jamais la largeur de la fenetre.
+              sizes="(min-width: 1024px) 896px, 92vw"
               loading="lazy"
             />
           </div>
@@ -142,7 +146,9 @@ export default function Apropos() {
               width={0}
               height={0}
               className="w-full h-auto rounded-2xl mt-6"
-              sizes="100vw"
+              // Colonne de texte bornee a max-w-4xl, soit 896 px : l image ne fait
+              // jamais la largeur de la fenetre.
+              sizes="(min-width: 1024px) 896px, 92vw"
               loading="lazy"
             />
           </div>
