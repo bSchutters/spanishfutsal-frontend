@@ -1,4 +1,3 @@
-import { RichText } from "@payloadcms/richtext-lexical/react";
 import {
   Facebook,
   Globe,
@@ -15,10 +14,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  getSponsorsPage,
+  getSponsors,
   type Sponsor,
   type SponsorPlatform,
-} from "@/lib/getSponsorsPage";
+} from "@/lib/getSponsors";
 
 export const metadata: Metadata = {
   title: "Sponsors | UD Asturiana - Nos partenaires",
@@ -44,6 +43,22 @@ const PLATFORM_META: Record<
   youtube: { label: "YouTube", Icon: Youtube },
   x: { label: "X", Icon: Twitter },
 };
+
+const GROUPS = [
+  {
+    type: "sponsor",
+    // Sans « Nos » : le titre de page le porte deja.
+    heading: "Sponsors",
+    singular: "sponsor",
+    plural: "sponsors",
+  },
+  {
+    type: "partner",
+    heading: "Partenaires",
+    singular: "partenaire",
+    plural: "partenaires",
+  },
+] as const;
 
 function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
   return (
@@ -98,9 +113,7 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
           <h3
             className={cn(
               "font-marjorie font-bold italic leading-tight",
-              sponsor.description
-                ? "text-xl"
-                : "text-base text-white/60"
+              sponsor.description ? "text-xl" : "text-base text-white/60"
             )}
           >
             {sponsor.name}
@@ -142,33 +155,14 @@ function SponsorCard({ sponsor, index }: { sponsor: Sponsor; index: number }) {
 }
 
 export default async function Sponsors() {
-  const { sponsors, page } = await getSponsorsPage();
-  const cta = page.cta;
+  const sponsors = await getSponsors();
 
   // Sponsors puis partenaires, chacun dans sa section. L'ordre defini par
   // glisser-deposer dans l'admin est conserve a l'interieur de chaque groupe.
-  const groups = (
-    [
-      {
-        type: "sponsor",
-        // Sans « Nos » : le titre de page le porte deja.
-        heading: "Sponsors",
-        singular: "sponsor",
-        plural: "sponsors",
-      },
-      {
-        type: "partner",
-        heading: "Partenaires",
-        singular: "partenaire",
-        plural: "partenaires",
-      },
-    ] as const
-  )
-    .map((group) => ({
-      ...group,
-      items: sponsors.filter((sponsor) => sponsor.type === group.type),
-    }))
-    .filter((group) => group.items.length > 0);
+  const groups = GROUPS.map((group) => ({
+    ...group,
+    items: sponsors.filter((sponsor) => sponsor.type === group.type),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div className="relative overflow-hidden">
@@ -187,14 +181,14 @@ export default async function Sponsors() {
           </p>
 
           <h1 className="font-marjorie text-4xl font-bold italic leading-tight lg:text-5xl">
-            {page.title}
+            Sponsors &amp; partenaires
           </h1>
 
-          {page.intro && (
-            <div className="flex flex-col gap-3 text-base leading-relaxed text-white/70 lg:text-lg">
-              <RichText data={page.intro} />
-            </div>
-          )}
+          <p className="text-base leading-relaxed text-white/70 lg:text-lg">
+            Le club avance aussi grâce aux entreprises qui le soutiennent. Elles
+            nous permettent d&apos;équiper les joueurs, de payer les salles et de
+            faire vivre UD Asturiana saison après saison.
+          </p>
         </header>
 
         {groups.length > 0 ? (
@@ -220,11 +214,7 @@ export default async function Sponsors() {
 
               <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((sponsor, index) => (
-                  <SponsorCard
-                    key={sponsor.id}
-                    sponsor={sponsor}
-                    index={index}
-                  />
+                  <SponsorCard key={sponsor.id} sponsor={sponsor} index={index} />
                 ))}
               </div>
             </section>
@@ -235,55 +225,29 @@ export default async function Sponsors() {
           </p>
         )}
 
-        {page.sections.length > 0 && (
-          <div className="mt-20 flex flex-col gap-12 lg:mt-28">
-            {page.sections.map((section, index) => (
-              <section
-                key={section.id ?? index}
-                className="flex max-w-3xl flex-col gap-4"
-              >
-                {section.title && (
-                  <h2 className="font-marjorie text-2xl font-bold italic lg:text-3xl">
-                    {section.title}
-                  </h2>
-                )}
-                {section.content && (
-                  <div className="flex flex-col gap-3 leading-relaxed text-white/70">
-                    <RichText data={section.content} />
-                  </div>
-                )}
-              </section>
-            ))}
+        <section className="relative mt-20 overflow-hidden rounded-3xl border border-spanish-accent-2/20 bg-spanish-bg-dark px-6 py-12 lg:mt-28 lg:px-16 lg:py-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_100%_0%,rgba(254,209,100,0.16),transparent_60%)]"
+          />
+
+          <div className="relative flex flex-col items-start gap-5 lg:max-w-2xl">
+            <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
+              Devenir sponsor
+            </h2>
+            <p className="leading-relaxed text-white/70">
+              Envie d&apos;associer votre entreprise à un club de futsal
+              bruxellois ? Parlons-en : nous vous présenterons les différentes
+              formules de soutien et la visibilité qui va avec.
+            </p>
+            <Button
+              asChild
+              className="transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97]"
+            >
+              <Link href="/contact">Nous contacter</Link>
+            </Button>
           </div>
-        )}
-
-        {cta.enabled && (cta.title || cta.text) && (
-          <section className="relative mt-20 overflow-hidden rounded-3xl border border-spanish-accent-2/20 bg-spanish-bg-dark px-6 py-12 lg:mt-28 lg:px-16 lg:py-16">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_100%_0%,rgba(254,209,100,0.16),transparent_60%)]"
-            />
-
-            <div className="relative flex flex-col items-start gap-5 lg:max-w-2xl">
-              {cta.title && (
-                <h2 className="font-marjorie text-3xl font-bold italic leading-tight lg:text-4xl">
-                  {cta.title}
-                </h2>
-              )}
-              {cta.text && (
-                <p className="leading-relaxed text-white/70">{cta.text}</p>
-              )}
-              {cta.button_label && cta.button_url && (
-                <Button
-                  asChild
-                  className="transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97]"
-                >
-                  <Link href={cta.button_url}>{cta.button_label}</Link>
-                </Button>
-              )}
-            </div>
-          </section>
-        )}
+        </section>
       </div>
     </div>
   );

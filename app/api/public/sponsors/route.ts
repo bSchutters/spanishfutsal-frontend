@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
-import { sponsorLinks } from '@/lib/getSponsorsPage'
+import { sponsorLinks } from '@/lib/getSponsors'
 
 export const dynamic = 'force-static'
 export const revalidate = false
