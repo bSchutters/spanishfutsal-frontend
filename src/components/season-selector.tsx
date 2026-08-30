@@ -64,7 +64,7 @@ export default function SeasonSelector({
       onValueChange={handleChange}
       onOpenChange={handleOpenChange}
     >
-      <SelectTrigger size="sm">
+      <SelectTrigger size="sm" aria-label="Saison">
         <SelectValue placeholder="Saison" />
       </SelectTrigger>
       <SelectContent>
