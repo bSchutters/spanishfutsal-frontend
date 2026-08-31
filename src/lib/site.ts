@@ -13,3 +13,16 @@ export const SITE_URL = "https://www.udasturiana.be";
 export function siteUrl(path = ""): string {
   return path ? `${SITE_URL}${path}` : SITE_URL;
 }
+
+/**
+ * Vignette des partages, celle qui s'affiche sur WhatsApp, Facebook ou dans
+ * un resultat Google. Elle vit dans `public` et non dans `app` : chaque page
+ * qui declare son propre bloc `openGraph` remplace celui du gabarit, la
+ * convention de fichier de Next serait alors perdue sur six pages sur sept.
+ */
+export const OG_IMAGE = {
+  url: `${SITE_URL}/assets/images/og-uda.png`,
+  width: 1200,
+  height: 630,
+  alt: "Blason de l'UD Asturiana",
+};

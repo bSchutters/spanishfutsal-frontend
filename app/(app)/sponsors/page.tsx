@@ -14,7 +14,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 import {
   getSponsors,
   type Sponsor,
@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     description:
       "Découvrez les entreprises qui soutiennent UD Asturiana, club de futsal bruxellois.",
     url: `${SITE_URL}/sponsors`,
+    images: [OG_IMAGE],
   },
   alternates: {
     canonical: `${SITE_URL}/sponsors`,

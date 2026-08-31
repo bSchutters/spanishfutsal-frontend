@@ -6,13 +6,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
+  // Sans cela, Next resout og:image sur l hote de la requete. Les partages
+  // faits depuis une preview pointaient alors sur l URL de la preview.
+  metadataBase: new URL(SITE_URL),
   title: "UD Asturiana - Club de Futsal à Bruxelles",
   description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
   keywords: "futsal, Bruxelles, club de sport, UD Asturiana, Union Deportiva Asturiana, football en salle, équipe, compétition, Belgique",
@@ -22,6 +25,7 @@ export const metadata: Metadata = {
     title: "UD Asturiana - Club de Futsal à Bruxelles",
     description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
     url: SITE_URL,
+    images: [OG_IMAGE],
     siteName: "UD Asturiana",
     type: "website",
     locale: "fr_BE",
@@ -30,6 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "UD Asturiana - Club de Futsal à Bruxelles",
     description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles.",
+    images: [OG_IMAGE],
   },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,

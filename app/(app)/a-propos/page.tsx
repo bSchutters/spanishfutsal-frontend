@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Metadata } from "next";
 
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "À Propos | UD Asturiana - Notre Histoire",
   description: "Découvrez l'histoire d'UD Asturiana, née de la fusion entre Spanish Futsal et Sporting Roja. Une famille unie par la passion du futsal à Bruxelles.",
@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "À Propos | UD Asturiana - Notre Histoire",
     description: "Découvrez l'histoire d'UD Asturiana, née de la fusion entre Spanish Futsal et Sporting Roja. Une famille unie par la passion du futsal à Bruxelles.",
     url: `${SITE_URL}/a-propos`,
+    images: [OG_IMAGE],
   },
   alternates: {
     canonical: `${SITE_URL}/a-propos`,

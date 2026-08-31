@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const matchsMetadata: Metadata = {
   title: "Matchs | UD Asturiana - Calendrier et Résultats",
   description: "Consultez le calendrier des matchs d'UD Asturiana : prochaines rencontres, résultats, replays et matchs en direct. Suivez notre parcours en futsal.",
@@ -8,6 +8,7 @@ export const matchsMetadata: Metadata = {
     title: "Matchs | UD Asturiana - Calendrier et Résultats",
     description: "Consultez le calendrier des matchs d'UD Asturiana : prochaines rencontres, résultats, replays et matchs en direct. Suivez notre parcours en futsal.",
     url: `${SITE_URL}/matchs`,
+    images: [OG_IMAGE],
   },
   alternates: {
     canonical: `${SITE_URL}/matchs`,
