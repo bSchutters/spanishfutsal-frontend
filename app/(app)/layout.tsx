@@ -36,6 +36,11 @@ export const metadata: Metadata = {
     description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles.",
     images: [OG_IMAGE],
   },
+  // Nom affiche quand la page est ajoutee a l ecran d accueil sur iOS.
+  // Rend <meta name="apple-mobile-web-app-title" content="UDA">.
+  appleWebApp: {
+    title: "UDA",
+  },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
