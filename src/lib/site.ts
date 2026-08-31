@@ -21,8 +21,15 @@ export function siteUrl(path = ""): string {
  * convention de fichier de Next serait alors perdue sur six pages sur sept.
  */
 export const OG_IMAGE = {
-  url: `${SITE_URL}/assets/images/og-uda.png`,
+  url: `${SITE_URL}/assets/images/og-uda.jpg`,
   width: 1200,
   height: 630,
   alt: "Blason de l'UD Asturiana",
 };
+
+/**
+ * Carre du blason. C'est ce champ que Google lit pour la vignette d'un
+ * resultat de recherche, et il la veut carree : la vignette de partage en
+ * 1200x630 ne convient pas pour cet usage.
+ */
+export const LOGO_URL = `${SITE_URL}/assets/images/blason-uda.jpg`;

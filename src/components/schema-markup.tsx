@@ -1,4 +1,4 @@
-import { SITE_URL } from "@/lib/site";
+import { LOGO_URL, SITE_URL } from "@/lib/site";
 
 export default function SchemaMarkup() {
   const organizationSchema = {
@@ -8,7 +8,7 @@ export default function SchemaMarkup() {
     "alternateName": "UD Asturiana",
     "description": "Club de futsal passionné basé à Bruxelles, né de la fusion entre Spanish Futsal et Sporting Roja.",
     "url": SITE_URL,
-    "logo": `${SITE_URL}/assets/images/svg/logo-asturiana.svg`,
+    "logo": LOGO_URL,
     "sport": "Futsal",
     "address": {
       "@type": "PostalAddress",
