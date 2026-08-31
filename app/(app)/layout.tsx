@@ -50,33 +50,15 @@ export default function AppLayout({
     <html lang="fr" className="h-full" suppressHydrationWarning>
       <head>
         {/*
-          Les polices n'etaient decouvertes qu'apres l'analyse de la feuille de
-          styles : HTML, puis CSS, puis polices. Lighthouse mesurait 182 ms sur
-          cette chaine. Les trois faces visibles des le premier ecran sont
-          prechargees pour la raccourcir. Les autres graisses restent chargees
-          par le CSS, elles n'apparaissent que plus bas dans la page.
+          Pas de prechargement de polices ici. Il avait ete ajoute pour
+          raccourcir une chaine critique de 182 ms que Lighthouse signalait sur
+          bureau, ou elle ne coutait rien au score. Sur mobile en revanche, les
+          trois faces prechargees, 88 Ko, partaient en meme temps que l image du
+          LCP et a la meme priorite : elles lui prenaient sa bande passante. Les
+          retirer fait tomber le LCP mobile de 2343 a 1246 ms en local, pour
+          18 ms de FCP. `font-display: swap` affiche de toute facon le texte
+          immediatement dans la police de repli.
         */}
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          href="/assets/fonts/nugros/Nugros-Regular.woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          href="/assets/fonts/nugros/Nugros-Bold.woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          href="/assets/fonts/marjorie2/MarjorieVariableItalic-Italic.woff2"
-          crossOrigin="anonymous"
-        />
         <SchemaMarkup />
       </head>
       <body
