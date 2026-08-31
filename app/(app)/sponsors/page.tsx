@@ -13,7 +13,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 import {
   getSponsors,
   type Sponsor,
@@ -28,10 +29,10 @@ export const metadata: Metadata = {
     title: "Sponsors | UD Asturiana - Nos partenaires",
     description:
       "Découvrez les entreprises qui soutiennent UD Asturiana, club de futsal bruxellois.",
-    url: "https://udasturiana.be/sponsors",
+    url: `${SITE_URL}/sponsors`,
   },
   alternates: {
-    canonical: "https://udasturiana.be/sponsors",
+    canonical: `${SITE_URL}/sponsors`,
   },
 };
 

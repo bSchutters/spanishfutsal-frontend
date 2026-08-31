@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-
-const baseUrl = "https://udasturiana.be";
+
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Le site n'en avait aucun : /robots.txt repondait 404, donc rien ne declarait
@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/api/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

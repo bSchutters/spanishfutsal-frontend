@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/site";
+
 export default function SchemaMarkup() {
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -5,8 +7,8 @@ export default function SchemaMarkup() {
     "name": "Union Deportiva Asturiana",
     "alternateName": "UD Asturiana",
     "description": "Club de futsal passionné basé à Bruxelles, né de la fusion entre Spanish Futsal et Sporting Roja.",
-    "url": "https://udasturiana.be",
-    "logo": "https://udasturiana.be/assets/images/svg/logo-asturiana.svg",
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/assets/images/svg/logo-asturiana.svg`,
     "sport": "Futsal",
     "address": {
       "@type": "PostalAddress",
@@ -16,7 +18,7 @@ export default function SchemaMarkup() {
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
-      "url": "https://udasturiana.be/contact"
+      "url": `${SITE_URL}/contact`
     },
     "sameAs": [
       "https://www.lffs.eu"

@@ -8,12 +8,13 @@ import { getMatchs } from "@/lib/getMatchs";
 import { getPlayersForDisplay } from "@/lib/getPlayers";
 import { getRankings } from "@/lib/getRankings";
 import type { Metadata } from "next";
-
+
+import { SITE_URL } from "@/lib/site";
 // Le titre et la description viennent du layout ; seule la canonique manquait,
 // et elle ne peut pas etre heritee sans s'appliquer a tort aux autres pages.
 export const metadata: Metadata = {
   alternates: {
-    canonical: "https://udasturiana.be",
+    canonical: SITE_URL,
   },
 };
 

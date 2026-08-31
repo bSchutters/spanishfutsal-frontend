@@ -1,45 +1,45 @@
+import { SITE_URL } from "@/lib/site";
+
 export default function sitemap() {
-  const baseUrl = 'https://udasturiana.be';
-  
   return [
     {
-      url: baseUrl,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: `${baseUrl}/a-propos`,
+      url: `${SITE_URL}/a-propos`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/equipe`,
+      url: `${SITE_URL}/equipe`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/classement`,
+      url: `${SITE_URL}/classement`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/matchs`,
+      url: `${SITE_URL}/matchs`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/sponsors`,
+      url: `${SITE_URL}/sponsors`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/contact`,
+      url: `${SITE_URL}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,

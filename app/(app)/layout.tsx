@@ -5,7 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
-
+
+import { SITE_URL } from "@/lib/site";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "UD Asturiana - Club de Futsal à Bruxelles",
     description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
-    url: "https://udasturiana.be",
+    url: SITE_URL,
     siteName: "UD Asturiana",
     type: "website",
     locale: "fr_BE",
