@@ -250,11 +250,11 @@ export default function YoutubePlayer({
           type="button"
           onClick={basculerLecture}
           aria-label="Reprendre la lecture"
-          className="group absolute inset-0 z-[6] flex cursor-pointer items-center justify-center bg-spanish-bg-dark/85"
+          className="group absolute inset-0 z-[6] flex cursor-pointer items-center justify-center"
         >
-          <span className="flex size-16 items-center justify-center rounded-full bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
+          <span className="flex size-20 items-center justify-center rounded-full bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
             <Play
-              className="size-7 translate-x-0.5 fill-spanish-bg text-spanish-bg"
+              className="size-8 translate-x-0.5 fill-spanish-bg text-spanish-bg"
               aria-hidden
             />
           </span>
