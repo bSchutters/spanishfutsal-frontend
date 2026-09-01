@@ -4,6 +4,7 @@ import BoxModule from "@/components/layout/boxModule";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
+import useLiveStatus from "@/hooks/useLiveStatus";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/getMatchs";
@@ -96,6 +97,15 @@ export default function MatchsClient({
     }
   }, [fallbackIndex, isMobile, isArchived]);
 
+  const hasLiveMatch = validMatchs.some((match) => {
+    const end = new Date(match.matchDate.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+    return now >= match.matchDate && now < end;
+  });
+
+  // La diffusion detectee sur la chaine du club, cherchee pendant la rencontre
+  // seulement. Le lien saisi dans l'admin reste prioritaire.
+  const detectedLiveUrl = useLiveStatus(hasLiveMatch);
+
   if (isLoading) {
     return (
       <div className="my-30 container mx-auto flex flex-col gap-8 lg:px-0 px-6">
@@ -174,18 +184,15 @@ export default function MatchsClient({
           const isWaitingScore =
             match.homeScore === null && match.awayScore === null;
 
-          const hasLiveMatch = validMatchs.some((m) => {
-            const matchStart = m.matchDate;
-            const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
-            return now >= matchStart && now < matchEnd;
-          });
+          const liveUrl =
+            status === "live" ? match.liveLink || detectedLiveUrl : null;
 
           return (
             <div
               className={cn(
                 "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
                 status === "live"
-                  ? match.liveLink
+                  ? liveUrl
                     ? "border-2 border-red-600"
                     : "border-2 border-spanish-accent-2"
                   : "",
@@ -274,9 +281,7 @@ export default function MatchsClient({
                 <div
                   className={cn(
                     "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
-                    status === "live" && match.liveLink
-                      ? "justify-between"
-                      : "justify-center",
+                    liveUrl ? "justify-between" : "justify-center",
                   )}
                 >
                   {status === "finished" && match.replayLink && (
@@ -292,8 +297,8 @@ export default function MatchsClient({
                     </Link>
                   )}
 
-                  {status === "live" && match.liveLink && (
-                    <Link href={match.liveLink} target="_blank">
+                  {liveUrl && (
+                    <Link href={liveUrl} target="_blank">
                       <Button className="font-nugros uppercase relative flex gap-4">
                         regarder le live
                         <div className="relative flex items-center justify-center">

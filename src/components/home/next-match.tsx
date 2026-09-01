@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import useBreakpoint from "@/hooks/useBreakpoints";
+import useLiveStatus from "@/hooks/useLiveStatus";
 import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
@@ -15,7 +16,7 @@ function formatCountdown(ms: number) {
   const days = Math.floor(totalSeconds / 86400);
   const hours = String(Math.floor((totalSeconds % 86400) / 3600)).padStart(
     2,
-    "0"
+    "0",
   );
   const minutes = String(Math.floor((totalSeconds / 60) % 60)).padStart(2, "0");
   const seconds = String(totalSeconds % 60).padStart(2, "0");
@@ -26,7 +27,6 @@ function formatCountdown(ms: number) {
 export default function NextMatch({ matchs }: { matchs: Match[] }) {
   const { breakpoint, isMobile } = useBreakpoint();
   const [timeLeft, setTimeLeft] = useState<string>("");
-
 
   const nextMatch = useMemo(() => {
     return matchs
@@ -74,6 +74,10 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
     return () => clearInterval(interval);
   }, [matchDate]);
 
+  // La diffusion detectee sur la chaine du club, cherchee pendant la rencontre
+  // seulement. Le lien saisi dans l'admin reste prioritaire.
+  const detectedLiveUrl = useLiveStatus(status === "live");
+
   if (!nextMatch || status === "after") return null;
 
   const {
@@ -86,20 +90,22 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
     liveLink,
   } = nextMatch;
 
+  const liveUrl = liveLink || detectedLiveUrl;
+
   return (
     <BoxModule
       className={cn(
         "relative lg:-mt-24 -mt-16 z-20 p-6  2xl:w-1/3 xl:w-2/5 lg:w-3/5 sm:w-2/3 w-5/6 flex flex-col md:flex-row gap-4 items-center justify-center hover:bg-spanish-bg-dark-minus cursor-pointer transition-colors duration-300",
-        status === "live" && liveLink
+        status === "live" && liveUrl
           ? "border-spanish-accent-2"
           : status === "live"
             ? "border-spanish-accent"
-            : ""
+            : "",
       )}
     >
       <Link
-        href={liveLink ? liveLink : "/matchs"}
-        {...(liveLink && { target: "_blank" })}
+        href={liveUrl ? liveUrl : "/matchs"}
+        {...(liveUrl && { target: "_blank" })}
         className="w-full flex items-center justify-center"
       >
         {status !== "live" && (
@@ -107,12 +113,12 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
             {timeLeft || "Prochain match"}
           </div>
         )}
-        {status === "live" && liveLink && (
+        {status === "live" && liveUrl && (
           <div className="absolute sm:-top-6 -top-4 sm:p-2 p-1 w-36 flex items-center justify-center bg-spanish-accent-2 italic  rounded-md text-sm font-bold">
             VOIR LE LIVE
           </div>
         )}
-        {status === "live" && !liveLink && (
+        {status === "live" && !liveUrl && (
           <div className="absolute sm:-top-6 -top-4 sm:p-2 p-1 w-40 flex items-center justify-center bg-spanish-accent text-spanish-bg italic rounded-md text-sm font-bold">
             MATCH EN COURS
           </div>
@@ -151,7 +157,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
         <div
           className={cn(
             "flex items-center gap-6",
-            isMobile ? "w-full justify-between" : ""
+            isMobile ? "w-full justify-between" : "",
           )}
         >
           <Team
