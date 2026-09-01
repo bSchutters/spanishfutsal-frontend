@@ -252,9 +252,9 @@ export default function YoutubePlayer({
           aria-label="Reprendre la lecture"
           className="group absolute inset-0 z-[6] flex cursor-pointer items-center justify-center"
         >
-          <span className="flex size-20 items-center justify-center rounded-full bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-light">
+          <span className="flex size-16 items-center justify-center rounded-full bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-light">
             <Play
-              className="size-8 translate-x-0.5 fill-spanish-bg-dark text-spanish-bg-dark"
+              className="size-7 translate-x-0.5 fill-spanish-bg-dark text-spanish-bg-dark"
               aria-hidden
             />
           </span>
@@ -317,7 +317,7 @@ export default function YoutubePlayer({
           value={muet ? 0 : volume}
           onChange={(e) => changerVolume(Number(e.target.value))}
           aria-label="Volume"
-          className="hidden w-24 accent-spanish-accent-2 sm:block"
+          className="hidden w-24 cursor-pointer accent-spanish-accent-2 sm:block"
         />
 
         <span className="ms-auto flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
