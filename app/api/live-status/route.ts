@@ -3,12 +3,16 @@ import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
 import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
-// La fenetre s ouvre cinq minutes avant le coup d envoi. C est la seule periode
-// ou la recherche tourne pour rien, a cent unites de quota l appel : l ouvrir
-// trente minutes avant coutait mille unites les soirs ou la chaine ne diffusait
-// pas encore. La meme duree de match que sur le front ferme la fenetre.
+// La fenetre de la rencontre : cinq minutes avant le coup d envoi, et la meme
+// duree de match que sur le front pour la fermer.
 const WINDOW_BEFORE_MS = 5 * 60 * 1000
 const WINDOW_AFTER_MS = 70 * 60 * 1000
+
+// La fenetre de recherche, plus courte. La recherche coute cent unites de quota
+// contre une pour tout le reste, et c est le seul appel qui tourne pour rien
+// quand le club ne diffuse pas. Passe ce delai sans rien avoir trouve, il n y a
+// plus rien a trouver : la chaine n a pas ouvert pour ce match.
+const RECHERCHE_APRES_MS = 15 * 60 * 1000
 
 // Une minute cote navigateur comme cote CDN : la reponse change pendant la
 // rencontre, elle ne peut pas etre figee comme les autres routes publiques.
@@ -108,6 +112,9 @@ export async function GET() {
       )
     }
 
+    const coupDEnvoi = kickoff(current.date, current.time)
+    const chercheEncore = now < coupDEnvoi + RECHERCHE_APRES_MS
+
     const affiche = {
       // L identifiant permet a la bonne carte de /matchs de se reconnaitre,
       // sans avoir a comparer des noms d equipes.
@@ -161,6 +168,10 @@ export async function GET() {
         { live: true, ...encoreEnCours, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },
         { headers: CACHE_HEADERS }
       )
+    }
+
+    if (!chercheEncore) {
+      return NextResponse.json({ live: false, nextCheckIn: RAPPEL_APPROCHE }, { headers: CACHE_HEADERS })
     }
 
     const broadcast = await getYoutubeLive()
