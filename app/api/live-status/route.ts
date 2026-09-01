@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
-import { extractVideoId, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
+import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
-// La diffusion demarre avant le coup d envoi et la meme duree de match que sur
-// le front ferme la fenetre : au-dela, la rencontre est consideree terminee.
-const WINDOW_BEFORE_MS = 30 * 60 * 1000
+// La fenetre s ouvre cinq minutes avant le coup d envoi. C est la seule periode
+// ou la recherche tourne pour rien, a cent unites de quota l appel : l ouvrir
+// trente minutes avant coutait mille unites les soirs ou la chaine ne diffusait
+// pas encore. La meme duree de match que sur le front ferme la fenetre.
+const WINDOW_BEFORE_MS = 5 * 60 * 1000
 const WINDOW_AFTER_MS = 70 * 60 * 1000
 
 // Une minute cote navigateur comme cote CDN : la reponse change pendant la
@@ -17,7 +19,7 @@ const CACHE_HEADERS = {
 // Delais que la route conseille au navigateur avant de revenir. Le bandeau est
 // monte sur toutes les pages : sans cette indication, il interrogerait la route
 // toutes les minutes, jour et nuit, pour une rencontre par semaine.
-const RAPPEL_PENDANT = 60
+const RAPPEL_PENDANT = 45
 const RAPPEL_APPROCHE = 300
 const RAPPEL_LOIN = 3600
 
@@ -141,15 +143,33 @@ export async function GET() {
       )
     }
 
+    // La recherche ne sert qu a decouvrir la diffusion, une fois. Son
+    // identifiant est ensuite retenu dans le champ Lien Replay, et la
+    // surveiller ne coute plus qu une unite de quota au lieu de cent.
+    const dejaConnu = current.replayLink ? extractVideoId(current.replayLink) : null
+
+    if (dejaConnu) {
+      const encoreEnCours = await getBroadcastById(dejaConnu)
+
+      // Elle s est arretee : la rencontre a eu sa diffusion, il n y a plus rien
+      // a chercher jusqu a la fermeture de la fenetre.
+      if (!encoreEnCours) {
+        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_HEADERS })
+      }
+
+      return NextResponse.json(
+        { live: true, ...encoreEnCours, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },
+        { headers: CACHE_HEADERS }
+      )
+    }
+
     const broadcast = await getYoutubeLive()
 
     if (!broadcast) {
       return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, true) }, { headers: CACHE_HEADERS })
     }
 
-    if (!current.replayLink) {
-      await memoriserLeReplay(current.id, broadcast.url)
-    }
+    await memoriserLeReplay(current.id, broadcast.url)
 
     return NextResponse.json(
       { live: true, ...broadcast, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },

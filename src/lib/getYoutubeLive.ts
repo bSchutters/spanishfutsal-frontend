@@ -9,10 +9,22 @@ const API = "https://www.googleapis.com/youtube/v3";
 // moins. Cette resolution evite d'avoir a relever l'identifiant a la main.
 const CHANNEL_ID_TTL = 30 * 24 * 60 * 60;
 
-// Trois minutes : c'est le delai maximum entre le debut de la diffusion et
-// l'apparition du bandeau. Toutes les visites d'un meme intervalle partagent
-// un seul appel, la consommation de quota ne depend donc pas de l'affluence.
-const LIVE_TTL = 180;
+/**
+ * Deux rythmes, parce que les deux appels n'ont pas le meme prix.
+ *
+ * La recherche coute cent unites et tourne tant qu'aucune diffusion n'a ete
+ * trouvee, y compris les soirs ou le club ne diffuse pas : trois minutes
+ * plafonnent la depense a trois mille quatre cents unites sur une fenetre de
+ * match, sur les dix mille de la journee.
+ *
+ * La surveillance d'une diffusion deja connue ne coute qu'une unite : rien
+ * n'oblige a la ralentir, et le compteur de spectateurs y gagne en fraicheur.
+ *
+ * Dans les deux cas, toutes les visites d'un meme intervalle partagent un seul
+ * appel : la consommation ne depend pas de l'affluence.
+ */
+const RECHERCHE_TTL = 180;
+const SUIVI_TTL = 45;
 
 export type LiveBroadcast = {
   videoId: string;
@@ -57,7 +69,7 @@ export async function getViewers(videoId: string): Promise<number | null> {
   try {
     const data = await fetchJson(
       `${API}/videos?part=liveStreamingDetails&id=${videoId}&key=${key}`,
-      LIVE_TTL,
+      SUIVI_TTL,
     );
 
     const compte = Number(
@@ -67,6 +79,44 @@ export async function getViewers(videoId: string): Promise<number | null> {
     return Number.isFinite(compte) ? compte : null;
   } catch (error) {
     console.error("Compte des spectateurs indisponible :", error);
+    return null;
+  }
+}
+
+/**
+ * La diffusion dont on connait deja l'identifiant, si elle est toujours en
+ * cours. Une unite de quota, contre cent pour la recherche.
+ *
+ * C'est le chemin normal pendant une rencontre : la recherche ne sert qu'a
+ * decouvrir la diffusion, une fois. Ensuite l'identifiant est connu, retenu
+ * dans le champ Lien Replay, et il suffit de demander a YouTube si cette video
+ * precise diffuse encore.
+ */
+export async function getBroadcastById(
+  videoId: string,
+): Promise<LiveBroadcast | null> {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) return null;
+
+  try {
+    const data = await fetchJson(
+      `${API}/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${key}`,
+      SUIVI_TTL,
+    );
+
+    const item = data?.items?.[0];
+    if (item?.snippet?.liveBroadcastContent !== "live") return null;
+
+    const compte = Number(item.liveStreamingDetails?.concurrentViewers);
+
+    return {
+      videoId,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      title: item.snippet.title ?? "",
+      viewers: Number.isFinite(compte) ? compte : null,
+    };
+  } catch (error) {
+    console.error("Verification de la diffusion impossible :", error);
     return null;
   }
 }
@@ -90,7 +140,7 @@ export async function getYoutubeLive(): Promise<LiveBroadcast | null> {
 
     const data = await fetchJson(
       `${API}/search?part=snippet&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${key}`,
-      LIVE_TTL,
+      RECHERCHE_TTL,
     );
 
     const item = data?.items?.[0];
