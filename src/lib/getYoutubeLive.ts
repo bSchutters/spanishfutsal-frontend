@@ -6,16 +6,14 @@ const API = "https://www.googleapis.com/youtube/v3";
 const CHANNEL_ID_TTL = 30 * 24 * 60 * 60;
 
 // Trois minutes : c'est le delai maximum entre le debut de la diffusion et
-// l'apparition du bouton. Toutes les visites d'un meme intervalle partagent un
-// seul appel, la consommation de quota ne depend donc pas de l'affluence.
+// l'apparition du bandeau. Toutes les visites d'un meme intervalle partagent
+// un seul appel, la consommation de quota ne depend donc pas de l'affluence.
 const LIVE_TTL = 180;
 
 export type LiveBroadcast = {
   videoId: string;
   url: string;
   title: string;
-  /** Vignette de la diffusion, servie par le proxy d'images du site. */
-  thumbnail: string | null;
   /** Spectateurs simultanes, tels que YouTube les compte. */
   viewers: number | null;
 };
@@ -23,8 +21,8 @@ export type LiveBroadcast = {
 /**
  * L'identifiant contenu dans une adresse YouTube, ou null si l'adresse pointe
  * ailleurs. Sert au champ Lien Live de l'admin : une diffusion collee a la
- * main s'integre au site comme une diffusion detectee, pour peu qu'elle soit
- * bien sur YouTube.
+ * main s'ouvre dans le lecteur du site comme une diffusion detectee, pour peu
+ * qu'elle soit bien sur YouTube.
  */
 export function extractVideoId(url: string): string | null {
   try {
@@ -73,54 +71,27 @@ async function getChannelId(key: string): Promise<string | null> {
   return data?.items?.[0]?.id ?? null;
 }
 
-type Thumbnails = Record<string, { url?: string } | undefined> | undefined;
-
-function bestThumbnail(thumbnails: Thumbnails): string | null {
-  // De la plus large a la plus etroite. `high` arrive en 4/3, avec deux bandes
-  // noires que le cadrage en 16/9 de la facade recoupe exactement.
-  for (const taille of ["maxres", "standard", "high", "medium"]) {
-    const url = thumbnails?.[taille]?.url;
-    if (url) return url;
-  }
-
-  return null;
-}
-
 /**
- * Vignette la plus large disponible et nombre de spectateurs. `videos` ne
- * coute qu'une unite de quota, contre cent pour la recherche qui precede : le
- * detour est negligeable, et il evite d'etirer une vignette de 480 px sur
- * toute la largeur de la facade.
+ * Le nombre de spectateurs d'une diffusion. `videos` ne coute qu'une unite de
+ * quota, contre cent pour la recherche : le detour est negligeable.
  */
-async function getDetails(key: string, videoId: string, secours: Thumbnails) {
-  const data = await fetchJson(
-    `${API}/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${key}`,
-    LIVE_TTL,
-  );
-
-  const item = data?.items?.[0];
-  const viewers = Number(item?.liveStreamingDetails?.concurrentViewers);
-
-  return {
-    thumbnail:
-      bestThumbnail(item?.snippet?.thumbnails) ?? bestThumbnail(secours),
-    viewers: Number.isFinite(viewers) ? viewers : null,
-  };
-}
-
-/**
- * Vignette et spectateurs d'une diffusion dont on connait deja l'identifiant.
- * Sert au lien saisi dans l'admin : sans cle API, la facade se rabat sur son
- * fond aux couleurs du club, avec le lecteur au clic comme dans l'autre cas.
- */
-export async function getVideoDetails(videoId: string) {
+export async function getViewers(videoId: string): Promise<number | null> {
   const key = process.env.YOUTUBE_API_KEY;
   if (!key) return null;
 
   try {
-    return await getDetails(key, videoId, undefined);
+    const data = await fetchJson(
+      `${API}/videos?part=liveStreamingDetails&id=${videoId}&key=${key}`,
+      LIVE_TTL,
+    );
+
+    const compte = Number(
+      data?.items?.[0]?.liveStreamingDetails?.concurrentViewers,
+    );
+
+    return Number.isFinite(compte) ? compte : null;
   } catch (error) {
-    console.error("Details de la diffusion indisponibles :", error);
+    console.error("Compte des spectateurs indisponible :", error);
     return null;
   }
 }
@@ -155,10 +126,10 @@ export async function getYoutubeLive(): Promise<LiveBroadcast | null> {
       videoId,
       url: `https://www.youtube.com/watch?v=${videoId}`,
       title: item.snippet?.title ?? "",
-      ...(await getDetails(key, videoId, item.snippet?.thumbnails)),
+      viewers: await getViewers(videoId),
     };
   } catch (error) {
-    // Une panne chez YouTube ne doit pas priver la page de son bouton.
+    // Une panne chez YouTube ne doit pas priver le site de son bandeau.
     console.error("Detection du live YouTube impossible :", error);
     return null;
   }

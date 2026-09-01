@@ -4,8 +4,7 @@ import BoxModule from "@/components/layout/boxModule";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
-import useLiveStatus from "@/hooks/useLiveStatus";
-import LivePlayer from "@/components/live/live-player";
+import { useLiveStore } from "@/store/useLiveStore";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/getMatchs";
@@ -24,12 +23,30 @@ import Link from "next/link";
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
+/**
+ * L'etat de la rencontre, pas une commande : le seul bouton du direct est celui
+ * du bandeau, en haut du site. Deux boutons pour la meme action, dans deux
+ * couleurs, c'etait un doublon.
+ */
+function Pastille() {
+  return (
+    <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
+      <span className="relative flex size-2 items-center justify-center">
+        <span className="absolute size-2 rounded-full bg-white" />
+        <span className="absolute size-2 animate-ping rounded-full bg-white" />
+      </span>
+      en direct
+    </span>
+  );
+}
+
 export default function MatchsClient({
   initialMatchs,
 }: {
   initialMatchs: Match[];
 }) {
   const { isMobile } = useBreakpoint();
+  const live = useLiveStore((s) => s.live);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
   const { setSelectedSeason } = useSeasonStore();
@@ -97,14 +114,6 @@ export default function MatchsClient({
       });
     }
   }, [fallbackIndex, isMobile, isArchived]);
-
-  const hasLiveMatch = validMatchs.some((match) => {
-    const end = new Date(match.matchDate.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
-    return now >= match.matchDate && now < end;
-  });
-
-  // La diffusion en cours, cherchee pendant la rencontre seulement.
-  const live = useLiveStatus(hasLiveMatch);
 
   if (isLoading) {
     return (
@@ -181,210 +190,190 @@ export default function MatchsClient({
             status = "finished";
           }
 
+          // La route fait foi sur ce qui diffuse, y compris avant le coup
+          // d'envoi : la chaine ouvre souvent une demi-heure plus tot.
+          const enDirect =
+            live?.match?.id === match.id ||
+            (status === "live" && Boolean(match.liveLink));
+
           const isWaitingScore =
             match.homeScore === null && match.awayScore === null;
 
-          // La route applique deja la priorite du champ Lien Live sur la
-          // detection ; le lien du match ne sert que si elle n'a pas repondu.
-          const liveUrl =
-            status === "live" ? live?.url || match.liveLink : null;
-
-          // Une diffusion qui n'est pas sur YouTube ne s'integre pas a la
-          // carte : le bouton sortant reste.
-          const embedded = status === "live" && Boolean(live?.videoId);
+          const hasLiveMatch = validMatchs.some((m) => {
+            const matchStart = m.matchDate;
+            const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+            return now >= matchStart && now < matchEnd;
+          });
 
           return (
-            <div key={index} className="flex flex-col gap-4">
-              <div
-                className={cn(
-                  "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
-                  status === "live"
-                    ? liveUrl
-                      ? "border-2 border-red-600"
-                      : "border-2 border-spanish-accent-2"
-                    : "",
-                  fallbackIndex === index &&
-                    !isArchived &&
-                    !hasLiveMatch &&
-                    "border-2 border-spanish-accent",
+            <div
+              className={cn(
+                "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
+                status === "live"
+                  ? enDirect
+                    ? "border-2 border-red-600"
+                    : "border-2 border-spanish-accent-2"
+                  : "",
+                fallbackIndex === index &&
+                  !isArchived &&
+                  !hasLiveMatch &&
+                  "border-2 border-spanish-accent",
+              )}
+              key={index}
+              ref={(el) => {
+                matchRefs.current[index] = el;
+              }}
+            >
+              <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
+                {isLffsCompetition && (
+                  <Image
+                    src="/assets/images/lffs.png"
+                    alt="Team Logo"
+                    width={0}
+                    height={0}
+                    // Largeur reelle de l'emplacement (logo dans une rencontre), et non celle de la fenetre.
+                    sizes="96px"
+                    className="w-6 h-auto"
+                  />
                 )}
-                ref={(el) => {
-                  matchRefs.current[index] = el;
-                }}
-              >
-                <div className="flex items-center lg:gap-3 gap-2 lg:w-1/6 w-full text-end justify-between lg:justify-start lg:text-start">
-                  {isLffsCompetition && (
-                    <Image
-                      src="/assets/images/lffs.png"
-                      alt="Team Logo"
-                      width={0}
-                      height={0}
-                      // Largeur reelle de l'emplacement (logo dans une rencontre), et non celle de la fenetre.
-                      sizes="96px"
-                      className="w-6 h-auto"
-                    />
-                  )}
-                  {match.serieReference === "AMICAL" && (
-                    <div>
-                      <Handshake className="w-6 h-auto text-spanish-accent" />
-                    </div>
-                  )}
-                  {match.serieReference === "TOURNOIS" && (
-                    <div>
-                      <Trophy className="w-6 h-auto text-spanish-accent" />
-                    </div>
-                  )}
-                  <div className="flex flex-col text-sm  leading-4">
-                    <p className="font-bold">
-                      {isLffsCompetition ? "LFFS " : ""}
-                      {match.competitionName}
-                    </p>
-                    {match.date && (
-                      <p className="capitalize">
-                        {new Date(match.date).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}{" "}
-                        • {match.time}
-                      </p>
-                    )}
+                {match.serieReference === "AMICAL" && (
+                  <div>
+                    <Handshake className="w-6 h-auto text-spanish-accent" />
                   </div>
-                </div>
-                <div className="grid gap-2 sm:gap-0 xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
-                  <Team
-                    logo={match.homeTeamLogo}
-                    teamName={match.homeTeam}
-                    isClub={match.homeIsClub}
-                    isMatchPage
-                    {...(isMobile && { logoFirst: true })}
-                    isMobile={isMobile}
-                  />
-                  <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex ">
-                    {status === "finished" && !isWaitingScore
-                      ? match.homeScore + " - " + match.awayScore
-                      : "vs"}
+                )}
+                {match.serieReference === "TOURNOIS" && (
+                  <div>
+                    <Trophy className="w-6 h-auto text-spanish-accent" />
+                  </div>
+                )}
+                <div className="flex flex-col text-sm  leading-4">
+                  <p className="font-bold">
+                    {isLffsCompetition ? "LFFS " : ""}
+                    {match.competitionName}
                   </p>
-                  <Team
-                    logo={match.awayTeamLogo}
-                    teamName={match.awayTeam}
-                    isClub={match.awayIsClub}
-                    isMatchPage
-                    logoFirst
-                    isMobile={isMobile}
-                  />
-                </div>
-
-                <div
-                  className={cn(
-                    "w-full lg:w-1/6 flex items-center lg:justify-end justify-center",
-                    breakpoint === "xs" &&
-                      !match.replayLink &&
-                      status === "finished" &&
-                      "hidden",
+                  {match.date && (
+                    <p className="capitalize">
+                      {new Date(match.date).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}{" "}
+                      • {match.time}
+                    </p>
                   )}
-                >
-                  <div
-                    className={cn(
-                      "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
-                      liveUrl && !embedded
-                        ? "justify-between"
-                        : "justify-center",
-                    )}
-                  >
-                    {status === "finished" && match.replayLink && (
-                      <Link href={match.replayLink} target="_blank">
-                        <Button className="font-nugros uppercase">
-                          {status === "finished" && (
-                            <>
-                              replay
-                              <ExternalLink />
-                            </>
-                          )}
-                        </Button>
-                      </Link>
-                    )}
-
-                    {liveUrl && !embedded && (
-                      <Link href={liveUrl} target="_blank">
-                        <Button className="font-nugros uppercase relative flex gap-4">
-                          regarder le live
-                          <div className="relative flex items-center justify-center">
-                            <div className="w-2 h-2  bg-red-600 rounded-full absolute" />
-                            <div className="w-2 h-2 animate-ping bg-red-600 rounded-full absolute" />
-                          </div>
-                        </Button>
-                      </Link>
-                    )}
-                    {match.venueId && status !== "finished" && (
-                      <Button
-                        className="font-nugros uppercase"
-                        onClick={() => {
-                          toast(
-                            <div className="flex flex-col">
-                              <p className="font-bold">
-                                {getVenueById(Number(match.venueId))?.street}{" "}
-                                {getVenueById(Number(match.venueId))?.street2}
-                              </p>
-                              <p>
-                                {getVenueById(Number(match.venueId))?.city}{" "}
-                                {getVenueById(Number(match.venueId))?.zip}
-                              </p>
-                            </div>,
-                            {
-                              classNames: {
-                                toast:
-                                  "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
-                                title: "title",
-                                description: "description",
-                                actionButton:
-                                  "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-colors",
-                                cancelButton: "cancel-button",
-                                closeButton: "close-button",
-                                icon: "!mr-2",
-                              },
-                              icon: <MapPinned />,
-                              duration: 50000,
-                              action: {
-                                label: "Copier l'adresse",
-                                onClick: () => {
-                                  const venue = getVenueById(
-                                    Number(match.venueId),
-                                  );
-                                  if (venue) {
-                                    navigator.clipboard.writeText(
-                                      (venue.street || "") +
-                                        " " +
-                                        (venue.street2 || "") +
-                                        ", " +
-                                        (venue.zip || "") +
-                                        " " +
-                                        (venue.city || ""),
-                                    );
-                                  }
-                                },
-                              },
-                            },
-                          );
-                        }}
-                      >
-                        Adresse
-                        <MapPin />
-                      </Button>
-                    )}
-                  </div>
                 </div>
               </div>
-
-              {embedded && live?.videoId && (
-                <LivePlayer
-                  videoId={live.videoId}
-                  url={live.url}
-                  thumbnail={live.thumbnail}
-                  viewers={live.viewers}
-                  title={live.title}
+              <div className="grid gap-2 sm:gap-0 xl:grid-cols-[1fr_100px_1fr] grid-cols-[1fr_50px_1fr]">
+                <Team
+                  logo={match.homeTeamLogo}
+                  teamName={match.homeTeam}
+                  isClub={match.homeIsClub}
+                  isMatchPage
+                  {...(isMobile && { logoFirst: true })}
+                  isMobile={isMobile}
                 />
-              )}
+                <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex ">
+                  {status === "finished" && !isWaitingScore
+                    ? match.homeScore + " - " + match.awayScore
+                    : "vs"}
+                </p>
+                <Team
+                  logo={match.awayTeamLogo}
+                  teamName={match.awayTeam}
+                  isClub={match.awayIsClub}
+                  isMatchPage
+                  logoFirst
+                  isMobile={isMobile}
+                />
+              </div>
+
+              <div
+                className={cn(
+                  "w-full lg:w-1/6 flex items-center lg:justify-end justify-center",
+                  breakpoint === "xs" &&
+                    !match.replayLink &&
+                    status === "finished" &&
+                    "hidden",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
+                    enDirect ? "justify-between" : "justify-center",
+                  )}
+                >
+                  {status === "finished" && match.replayLink && (
+                    <Link href={match.replayLink} target="_blank">
+                      <Button className="font-nugros uppercase">
+                        {status === "finished" && (
+                          <>
+                            replay
+                            <ExternalLink />
+                          </>
+                        )}
+                      </Button>
+                    </Link>
+                  )}
+
+                  {enDirect && <Pastille />}
+                  {match.venueId && status !== "finished" && (
+                    <Button
+                      className="font-nugros uppercase"
+                      onClick={() => {
+                        toast(
+                          <div className="flex flex-col">
+                            <p className="font-bold">
+                              {getVenueById(Number(match.venueId))?.street}{" "}
+                              {getVenueById(Number(match.venueId))?.street2}
+                            </p>
+                            <p>
+                              {getVenueById(Number(match.venueId))?.city}{" "}
+                              {getVenueById(Number(match.venueId))?.zip}
+                            </p>
+                          </div>,
+                          {
+                            classNames: {
+                              toast:
+                                "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
+                              title: "title",
+                              description: "description",
+                              actionButton:
+                                "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-colors",
+                              cancelButton: "cancel-button",
+                              closeButton: "close-button",
+                              icon: "!mr-2",
+                            },
+                            icon: <MapPinned />,
+                            duration: 50000,
+                            action: {
+                              label: "Copier l'adresse",
+                              onClick: () => {
+                                const venue = getVenueById(
+                                  Number(match.venueId),
+                                );
+                                if (venue) {
+                                  navigator.clipboard.writeText(
+                                    (venue.street || "") +
+                                      " " +
+                                      (venue.street2 || "") +
+                                      ", " +
+                                      (venue.zip || "") +
+                                      " " +
+                                      (venue.city || ""),
+                                  );
+                                }
+                              },
+                            },
+                          },
+                        );
+                      }}
+                    >
+                      Adresse
+                      <MapPin />
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}

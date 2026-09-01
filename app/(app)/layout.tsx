@@ -1,11 +1,13 @@
 import Footer from "@/components/layout/footer";
+import LiveDialog from "@/components/live/live-dialog";
 import Nav from "@/components/layout/nav";
 import SchemaMarkup from "@/components/schema-markup";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
-
+
+
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const viewport: Viewport = {
   width: "device-width",
@@ -82,6 +84,7 @@ export default function AppLayout({
           <main>{children}</main>
           <Toaster />
           <Footer />
+          <LiveDialog />
         </ThemeProvider>
       </body>
     </html>

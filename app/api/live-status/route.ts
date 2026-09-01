@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
-import { extractVideoId, getVideoDetails, getYoutubeLive } from '@/lib/getYoutubeLive'
+import { extractVideoId, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
 // La diffusion demarre avant le coup d envoi et la meme duree de match que sur
 // le front ferme la fenetre : au-dela, la rencontre est consideree terminee.
@@ -13,15 +13,14 @@ const CACHE_HEADERS = {
   'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
 }
 
-const OFF_AIR = {
-  live: false,
-  url: null,
-  videoId: null,
-  thumbnail: null,
-  viewers: null,
-  title: null,
-  source: null,
-}
+// Delais que la route conseille au navigateur avant de revenir. Le bandeau est
+// monte sur toutes les pages : sans cette indication, il interrogerait la route
+// toutes les minutes, jour et nuit, pour une rencontre par semaine.
+const RAPPEL_PENDANT = 60
+const RAPPEL_APPROCHE = 300
+const RAPPEL_LOIN = 3600
+
+const APPROCHE_MS = 6 * 60 * 60 * 1000
 
 export const dynamic = 'force-dynamic'
 
@@ -42,8 +41,18 @@ function kickoff(date: string, time: string): number {
   return Number.isNaN(naive) ? NaN : naive - brusselsOffset(naive)
 }
 
+/** Dans combien de secondes le navigateur a interet a redemander. */
+function rappel(coupsDEnvoi: number[], now: number, enCours: boolean): number {
+  if (enCours) return RAPPEL_PENDANT
+
+  const prochain = coupsDEnvoi.filter((t) => t > now).sort((a, b) => a - b)[0]
+  if (prochain && prochain - now < APPROCHE_MS) return RAPPEL_APPROCHE
+
+  return RAPPEL_LOIN
+}
+
 /**
- * Y a-t-il une diffusion en cours, et a quelle adresse.
+ * Y a-t-il une diffusion en cours, laquelle, et pour quelle rencontre.
  *
  * L interrogation de YouTube n a lieu que si une rencontre est en cours : sans
  * cette condition, une verification toutes les trois minutes autour de l horloge
@@ -54,6 +63,11 @@ export async function GET() {
     const matchs = await getMatchs()
     const now = Date.now()
 
+    const coupsDEnvoi = matchs
+      .filter((match) => match.date && match.time)
+      .map((match) => kickoff(match.date, match.time))
+      .filter((t) => !Number.isNaN(t))
+
     const current = matchs.find((match) => {
       if (!match.date || !match.time) return false
       const start = kickoff(match.date, match.time)
@@ -62,7 +76,20 @@ export async function GET() {
     })
 
     if (!current) {
-      return NextResponse.json(OFF_AIR, { headers: CACHE_HEADERS })
+      return NextResponse.json(
+        { live: false, nextCheckIn: rappel(coupsDEnvoi, now, false) },
+        { headers: CACHE_HEADERS }
+      )
+    }
+
+    const affiche = {
+      // L identifiant permet a la bonne carte de /matchs de se reconnaitre,
+      // sans avoir a comparer des noms d equipes.
+      id: current.id,
+      homeTeam: current.homeTeam,
+      awayTeam: current.awayTeam,
+      competition: current.competitionName,
+      time: current.time,
     }
 
     // Le champ Lien Live de l admin l emporte sur la detection : il permet de
@@ -70,17 +97,17 @@ export async function GET() {
     // s integre a la page que si elle est bien sur YouTube.
     if (current.liveLink) {
       const videoId = extractVideoId(current.liveLink)
-      const details = videoId ? await getVideoDetails(videoId) : null
 
       return NextResponse.json(
         {
           live: true,
           url: current.liveLink,
           videoId,
-          thumbnail: details?.thumbnail ?? null,
-          viewers: details?.viewers ?? null,
+          viewers: videoId ? await getViewers(videoId) : null,
           title: null,
           source: 'manuel',
+          match: affiche,
+          nextCheckIn: RAPPEL_PENDANT,
         },
         { headers: CACHE_HEADERS }
       )
@@ -89,13 +116,16 @@ export async function GET() {
     const broadcast = await getYoutubeLive()
 
     if (!broadcast) {
-      return NextResponse.json(OFF_AIR, { headers: CACHE_HEADERS })
+      return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, true) }, { headers: CACHE_HEADERS })
     }
 
-    return NextResponse.json({ live: true, ...broadcast, source: 'youtube' }, { headers: CACHE_HEADERS })
+    return NextResponse.json(
+      { live: true, ...broadcast, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },
+      { headers: CACHE_HEADERS }
+    )
   } catch (error) {
-    // Une erreur ici ne vaut pas une page en echec : le bouton reste masque.
+    // Une erreur ici ne vaut pas une page en echec : le bandeau reste masque.
     console.error('Etat du live indisponible :', error)
-    return NextResponse.json(OFF_AIR, { headers: CACHE_HEADERS })
+    return NextResponse.json({ live: false, nextCheckIn: RAPPEL_LOIN }, { headers: CACHE_HEADERS })
   }
 }

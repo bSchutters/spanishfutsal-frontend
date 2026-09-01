@@ -1,0 +1,116 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { useLiveStore } from "@/store/useLiveStore";
+
+// Si la route ne dit rien, on repasse dans un quart d'heure.
+const RAPPEL_DEFAUT = 900;
+
+/**
+ * Le bandeau du direct, monte dans la navigation, donc present sur toutes les
+ * pages. Le direct est un etat du club et non d'une page : quelqu'un qui arrive
+ * sur le classement doit voir que le match est en cours.
+ *
+ * C'est aussi le seul endroit qui interroge la route. Elle repond avec le delai
+ * avant la prochaine verification, ce qui evite d'appeler toutes les minutes,
+ * jour et nuit, pour une rencontre par semaine.
+ */
+export default function LiveBanner() {
+  const live = useLiveStore((s) => s.live);
+  const setLive = useLiveStore((s) => s.setLive);
+  const open = useLiveStore((s) => s.open);
+
+  useEffect(() => {
+    let arrete = false;
+    let minuteur: ReturnType<typeof setTimeout>;
+
+    const verifier = async () => {
+      let rappel = RAPPEL_DEFAUT;
+
+      try {
+        const res = await fetch("/api/live-status");
+
+        if (res.ok) {
+          const data = await res.json();
+          rappel = data.nextCheckIn ?? RAPPEL_DEFAUT;
+
+          if (!arrete) {
+            setLive(
+              data.live
+                ? {
+                    url: data.url,
+                    videoId: data.videoId ?? null,
+                    viewers: data.viewers ?? null,
+                    match: data.match ?? null,
+                  }
+                : null,
+            );
+          }
+        }
+      } catch {
+        // Hors ligne ou route indisponible : on garde l'etat precedent plutot
+        // que de faire disparaitre un bandeau deja affiche.
+      }
+
+      if (!arrete) minuteur = setTimeout(verifier, rappel * 1000);
+    };
+
+    verifier();
+
+    return () => {
+      arrete = true;
+      clearTimeout(minuteur);
+    };
+  }, [setLive]);
+
+  if (!live) return null;
+
+  const affiche = live.match
+    ? `${live.match.homeTeam} - ${live.match.awayTeam}`
+    : "Match en cours";
+
+  const habillageAction =
+    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-transform duration-[180ms] ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+  return (
+    <div
+      // Le blason de la navigation deborde sous la barre : le contenu du
+      // bandeau commence apres lui, faute de quoi il passe dessous.
+      className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-red-600 py-2 pe-8 ps-28 text-white md:ps-32"
+    >
+      <span className="flex items-center gap-2 text-xs font-bold uppercase italic">
+        <span className="relative flex size-2 items-center justify-center">
+          <span className="absolute size-2 rounded-full bg-white" />
+          <span className="absolute size-2 animate-ping rounded-full bg-white" />
+        </span>
+        en direct
+      </span>
+
+      <span className="text-sm font-semibold">{affiche}</span>
+
+      {live.viewers !== null && (
+        <span className="hidden text-xs tabular-nums sm:inline">
+          {new Intl.NumberFormat("fr-BE").format(live.viewers)}{" "}
+          {live.viewers > 1 ? "spectateurs" : "spectateur"}
+        </span>
+      )}
+
+      {live.videoId ? (
+        <button type="button" onClick={open} className={habillageAction}>
+          Regarder
+        </button>
+      ) : (
+        // Diffusion hors YouTube : elle ne s'ouvre pas dans le lecteur du site.
+        <a
+          href={live.url}
+          target="_blank"
+          rel="noreferrer"
+          className={habillageAction}
+        >
+          Regarder
+        </a>
+      )}
+    </div>
+  );
+}
