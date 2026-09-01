@@ -348,8 +348,7 @@ export default function MatchsClient({
                     ))}
 
                   {ouvreLeLecteur ? (
-                    <button
-                      type="button"
+                    <Button
                       onClick={() =>
                         ouvrir({
                           mode: "direct",
@@ -361,11 +360,11 @@ export default function MatchsClient({
                         })
                       }
                       aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
-                      className="flex cursor-pointer items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-bold uppercase italic text-white transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      className="font-nugros uppercase bg-red-600 border-red-800 text-white hover:bg-red-700"
                     >
                       <Bulle />
                       regarder
-                    </button>
+                    </Button>
                   ) : (
                     enDirect && (
                       <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">

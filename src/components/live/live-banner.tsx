@@ -7,6 +7,11 @@ import { useLiveStore } from "@/store/useLiveStore";
 // Si la route ne dit rien, on repasse dans un quart d'heure.
 const RAPPEL_DEFAUT = 900;
 
+// En dessous de dix, le compteur dessert la diffusion plus qu'il ne la sert :
+// il est alors tu, et la place revient a l'affiche. Le filtre est pose ici,
+// a l'entree, pour que le bandeau et le lecteur ne se contredisent jamais.
+const SEUIL_SPECTATEURS = 10;
+
 /**
  * Le bandeau du direct, monte dans la navigation, donc present sur toutes les
  * pages. Le direct est un etat du club et non d'une page : quelqu'un qui arrive
@@ -43,7 +48,11 @@ export default function LiveBanner() {
                 ? {
                     url: data.url,
                     videoId: data.videoId ?? null,
-                    viewers: data.viewers ?? null,
+                    viewers:
+                      typeof data.viewers === "number" &&
+                      data.viewers >= SEUIL_SPECTATEURS
+                        ? data.viewers
+                        : null,
                     match: data.match ?? null,
                   }
                 : null,
@@ -93,7 +102,7 @@ export default function LiveBanner() {
     : "Match en cours";
 
   const habillageAction =
-    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-100 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
   return (
     <div
