@@ -67,7 +67,7 @@ export default function LivePlayer({
         </Link>
       </div>
 
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-red-600 bg-spanish-bg-dark">
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-spanish-bg-lighter bg-spanish-bg-dark">
         {playing ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`}
@@ -107,7 +107,7 @@ export default function LivePlayer({
         )}
       </div>
 
-      {title && <p className="text-sm text-spanish-accent">{title}</p>}
+      {title && <p className="text-sm opacity-80">{title}</p>}
     </section>
   );
 }
