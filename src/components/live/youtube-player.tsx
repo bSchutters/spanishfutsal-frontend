@@ -55,6 +55,10 @@ declare global {
   }
 }
 
+// Le triangle de lucide est trace de 6 a 20 dans une grille de 24 : son centre
+// tombe donc a 13 et non a 12. Le decalage optique est deja dans l'icone, en
+// ajouter un le pousse trop loin, et d'autant plus visiblement que le bouton
+// est petit.
 const EN_LECTURE = 1;
 
 // Hauteur rognee en haut et en bas, assez pour avaler les bandeaux de YouTube.
@@ -298,7 +302,7 @@ export default function YoutubePlayer({
         >
           <span className="flex size-16 items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
             <Play
-              className="size-7 translate-x-0.5 fill-spanish-bg-dark text-spanish-bg-dark"
+              className="size-7 fill-spanish-bg-dark text-spanish-bg-dark"
               aria-hidden
             />
           </span>
@@ -334,10 +338,7 @@ export default function YoutubePlayer({
           {enLecture ? (
             <Pause className="size-5 fill-spanish-bg-dark" aria-hidden />
           ) : (
-            <Play
-              className="size-5 translate-x-0.5 fill-spanish-bg-dark"
-              aria-hidden
-            />
+            <Play className="size-5 fill-spanish-bg-dark" aria-hidden />
           )}
         </button>
 
