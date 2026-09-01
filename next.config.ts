@@ -11,11 +11,20 @@ import { withPayload } from "@payloadcms/next/withPayload";
  * et `frame-ancestors`, `base-uri`, `form-action` et `object-src` couvrent des
  * attaques que l'echappement de React ne couvre pas.
  */
+// En developpement, Next enveloppe chaque module dans un `eval` pour le
+// rechargement a chaud. Sans cette permission, l'hydratation echoue des la
+// premiere page : le compte a rebours reste fige, les menus ne s'ouvrent plus.
+// La production, elle, ne compile aucun `eval`.
+const EN_DEV = process.env.NODE_ENV !== "production";
+
 const CSP_PUBLIC = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${EN_DEV ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // i.ytimg.com sert les images du lecteur une fois qu'il tourne. La vignette
+  // de la facade, elle, passe par le proxy d'images du site : aucune requete
+  // ne part chez Google avant que le visiteur ne lance la diffusion.
+  "img-src 'self' data: blob: https://i.ytimg.com",
   "font-src 'self'",
   "connect-src 'self'",
   // Seule ouverture de la politique : le lecteur du match en direct. Le
