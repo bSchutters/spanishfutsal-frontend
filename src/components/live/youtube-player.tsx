@@ -54,6 +54,9 @@ declare global {
 
 const EN_LECTURE = 1;
 
+// Hauteur rognee en haut et en bas, assez pour avaler les bandeaux de YouTube.
+const MARGE = 90;
+
 let apiChargee: Promise<ApiYouTube> | null = null;
 
 /** Le script n'est telecharge qu'une fois pour toute la session. */
@@ -93,6 +96,28 @@ export default function YoutubePlayer({
   const [erreur, setErreur] = useState(false);
   const [pleinEcran, setPleinEcran] = useState(false);
 
+  /**
+   * Deborde le cadre de YouTube au-dela du notre, de MARGE en haut comme en bas.
+   *
+   * Leur interface est ancree aux bords de leur lecteur, pas a l'image : titre
+   * et nom de chaine en haut, suggestions en bas. En rendant leur cadre plus
+   * haut que le notre, la video se cale au centre en 16/9 et occupe exactement
+   * notre surface, tandis que leurs bandeaux tombent dans les bandes noires,
+   * que le debordement masque. C'est le seul moyen : `controls=0` ne les
+   * supprime pas, et ils reviennent a chaque changement d'etat, pas seulement
+   * au survol.
+   */
+  const recadrer = useCallback(() => {
+    const cadre = conteneur.current?.querySelector("iframe");
+    if (!cadre) return;
+
+    cadre.style.position = "absolute";
+    cadre.style.left = "0";
+    cadre.style.width = "100%";
+    cadre.style.top = `-${MARGE}px`;
+    cadre.style.height = `calc(100% + ${MARGE * 2}px)`;
+  }, []);
+
   useEffect(() => {
     let annule = false;
 
@@ -124,6 +149,7 @@ export default function YoutubePlayer({
           onReady: () => {
             if (annule) return;
             setPret(true);
+            recadrer();
             // `autoplay` seul ne suffit pas : le cadre est cree apres le clic,
             // et le navigateur ne lui rattache pas toujours le geste. A l'arret,
             // YouTube reaffiche son titre et son bouton par-dessus les notres.
@@ -143,7 +169,7 @@ export default function YoutubePlayer({
       lecteur.current = null;
       hote.remove();
     };
-  }, [videoId]);
+  }, [videoId, recadrer]);
 
   useEffect(() => {
     const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
@@ -189,7 +215,10 @@ export default function YoutubePlayer({
     "flex size-9 cursor-pointer items-center justify-center rounded-md text-white transition-[scale,color] duration-200 ease-[var(--ease-out-strong)] hover:text-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2";
 
   return (
-    <div ref={conteneur} className="relative aspect-video w-full bg-black">
+    <div
+      ref={conteneur}
+      className="relative aspect-video w-full overflow-hidden bg-black"
+    >
       {erreur && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-spanish-bg-dark px-6 text-center">
           <p className="font-semibold">
@@ -205,16 +234,6 @@ export default function YoutubePlayer({
           </a>
         </div>
       )}
-
-      {/* Voile du haut. Le calque ci-dessous empeche deja le survol de reveiller
-          l'interface de YouTube, mais leur titre et leur nom de chaine
-          reapparaissent dans d'autres circonstances, au chargement notamment.
-          Ce degrade les couvre quoi qu'il arrive, et sert d'assise a la
-          pastille du son. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-[7] h-24 bg-gradient-to-b from-black via-black/70 to-transparent"
-      />
 
       {/* Calque qui capture le pointeur avant le cadre. Sans lui, le survol
           reveille l'interface de YouTube par-dessus la notre : titre de la
