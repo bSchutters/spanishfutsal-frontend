@@ -14,7 +14,40 @@ export type LiveBroadcast = {
   videoId: string;
   url: string;
   title: string;
+  /** Vignette de la diffusion, servie par le proxy d'images du site. */
+  thumbnail: string | null;
+  /** Spectateurs simultanes, tels que YouTube les compte. */
+  viewers: number | null;
 };
+
+/**
+ * L'identifiant contenu dans une adresse YouTube, ou null si l'adresse pointe
+ * ailleurs. Sert au champ Lien Live de l'admin : une diffusion collee a la
+ * main s'integre au site comme une diffusion detectee, pour peu qu'elle soit
+ * bien sur YouTube.
+ */
+export function extractVideoId(url: string): string | null {
+  try {
+    const { hostname, pathname, searchParams } = new URL(url);
+    const host = hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") return pathname.slice(1) || null;
+    if (!host.endsWith("youtube.com") && !host.endsWith("youtube-nocookie.com"))
+      return null;
+
+    if (pathname === "/watch") return searchParams.get("v");
+
+    // /live/ID et /embed/ID
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length === 2 && ["live", "embed"].includes(segments[0])) {
+      return segments[1];
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 async function fetchJson(url: string, revalidate: number) {
   const res = await fetch(url, { next: { revalidate } });
@@ -38,6 +71,58 @@ async function getChannelId(key: string): Promise<string | null> {
   );
 
   return data?.items?.[0]?.id ?? null;
+}
+
+type Thumbnails = Record<string, { url?: string } | undefined> | undefined;
+
+function bestThumbnail(thumbnails: Thumbnails): string | null {
+  // De la plus large a la plus etroite. `high` arrive en 4/3, avec deux bandes
+  // noires que le cadrage en 16/9 de la facade recoupe exactement.
+  for (const taille of ["maxres", "standard", "high", "medium"]) {
+    const url = thumbnails?.[taille]?.url;
+    if (url) return url;
+  }
+
+  return null;
+}
+
+/**
+ * Vignette la plus large disponible et nombre de spectateurs. `videos` ne
+ * coute qu'une unite de quota, contre cent pour la recherche qui precede : le
+ * detour est negligeable, et il evite d'etirer une vignette de 480 px sur
+ * toute la largeur de la facade.
+ */
+async function getDetails(key: string, videoId: string, secours: Thumbnails) {
+  const data = await fetchJson(
+    `${API}/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${key}`,
+    LIVE_TTL,
+  );
+
+  const item = data?.items?.[0];
+  const viewers = Number(item?.liveStreamingDetails?.concurrentViewers);
+
+  return {
+    thumbnail:
+      bestThumbnail(item?.snippet?.thumbnails) ?? bestThumbnail(secours),
+    viewers: Number.isFinite(viewers) ? viewers : null,
+  };
+}
+
+/**
+ * Vignette et spectateurs d'une diffusion dont on connait deja l'identifiant.
+ * Sert au lien saisi dans l'admin : sans cle API, la facade se rabat sur son
+ * fond aux couleurs du club, avec le lecteur au clic comme dans l'autre cas.
+ */
+export async function getVideoDetails(videoId: string) {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) return null;
+
+  try {
+    return await getDetails(key, videoId, undefined);
+  } catch (error) {
+    console.error("Details de la diffusion indisponibles :", error);
+    return null;
+  }
 }
 
 /**
@@ -70,6 +155,7 @@ export async function getYoutubeLive(): Promise<LiveBroadcast | null> {
       videoId,
       url: `https://www.youtube.com/watch?v=${videoId}`,
       title: item.snippet?.title ?? "",
+      ...(await getDetails(key, videoId, item.snippet?.thumbnails)),
     };
   } catch (error) {
     // Une panne chez YouTube ne doit pas priver la page de son bouton.

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
-import { getYoutubeLive } from '@/lib/getYoutubeLive'
+import { extractVideoId, getVideoDetails, getYoutubeLive } from '@/lib/getYoutubeLive'
 
 // La diffusion demarre avant le coup d envoi et la meme duree de match que sur
 // le front ferme la fenetre : au-dela, la rencontre est consideree terminee.
@@ -13,7 +13,15 @@ const CACHE_HEADERS = {
   'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
 }
 
-const OFF_AIR = { live: false, url: null, source: null }
+const OFF_AIR = {
+  live: false,
+  url: null,
+  videoId: null,
+  thumbnail: null,
+  viewers: null,
+  title: null,
+  source: null,
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -58,9 +66,24 @@ export async function GET() {
     }
 
     // Le champ Lien Live de l admin l emporte sur la detection : il permet de
-    // pointer une diffusion qui n est pas sur la chaine du club.
+    // pointer une diffusion qui n est pas sur la chaine du club. Elle ne
+    // s integre a la page que si elle est bien sur YouTube.
     if (current.liveLink) {
-      return NextResponse.json({ live: true, url: current.liveLink, source: 'manuel' }, { headers: CACHE_HEADERS })
+      const videoId = extractVideoId(current.liveLink)
+      const details = videoId ? await getVideoDetails(videoId) : null
+
+      return NextResponse.json(
+        {
+          live: true,
+          url: current.liveLink,
+          videoId,
+          thumbnail: details?.thumbnail ?? null,
+          viewers: details?.viewers ?? null,
+          title: null,
+          source: 'manuel',
+        },
+        { headers: CACHE_HEADERS }
+      )
     }
 
     const broadcast = await getYoutubeLive()
@@ -69,7 +92,7 @@ export async function GET() {
       return NextResponse.json(OFF_AIR, { headers: CACHE_HEADERS })
     }
 
-    return NextResponse.json({ live: true, url: broadcast.url, source: 'youtube' }, { headers: CACHE_HEADERS })
+    return NextResponse.json({ live: true, ...broadcast, source: 'youtube' }, { headers: CACHE_HEADERS })
   } catch (error) {
     // Une erreur ici ne vaut pas une page en echec : le bouton reste masque.
     console.error('Etat du live indisponible :', error)

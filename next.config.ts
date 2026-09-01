@@ -18,7 +18,10 @@ const CSP_PUBLIC = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "connect-src 'self'",
-  "frame-src 'none'",
+  // Seule ouverture de la politique : le lecteur du match en direct. Le
+  // domaine sans cookie de YouTube, et lui seul, peut donc etre place dans un
+  // cadre. Rien n'y est charge tant que le visiteur n'a pas clique.
+  "frame-src https://www.youtube-nocookie.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -86,6 +89,13 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        // Vignettes des diffusions. Elles passent par le proxy d'images plutot
+        // que d'etre chargees directement : la page n'appelle ainsi aucun
+        // serveur de Google avant que le visiteur ne lance le lecteur.
+        protocol: "https",
+        hostname: "i.ytimg.com",
       },
     ],
   },
