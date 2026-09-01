@@ -5,6 +5,7 @@ import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
 import { useLiveStore } from "@/store/useLiveStore";
+import { extractVideoId } from "@/lib/youtubeVideoId";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/getMatchs";
@@ -40,7 +41,7 @@ export default function MatchsClient({
 }) {
   const { isMobile } = useBreakpoint();
   const live = useLiveStore((s) => s.live);
-  const openLive = useLiveStore((s) => s.open);
+  const ouvrir = useLiveStore((s) => s.ouvrir);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
   const { setSelectedSeason } = useSeasonStore();
@@ -196,6 +197,16 @@ export default function MatchsClient({
           const ouvreLeLecteur =
             live?.match?.id === match.id && Boolean(live.videoId);
 
+          // Le replay s'ouvre dans le lecteur du site s'il est sur YouTube.
+          // Rempli a la main ou retenu par la route pendant la diffusion, le
+          // champ a la meme forme dans les deux cas.
+          const replayVideoId = match.replayLink
+            ? extractVideoId(match.replayLink)
+            : null;
+
+          const affiche = `${match.homeTeam} - ${match.awayTeam}`;
+          const contexte = `${match.competitionName} · ${match.time}`;
+
           const isWaitingScore =
             match.homeScore === null && match.awayScore === null;
 
@@ -308,23 +319,47 @@ export default function MatchsClient({
                     enDirect ? "justify-between" : "justify-center",
                   )}
                 >
-                  {status === "finished" && match.replayLink && (
-                    <Link href={match.replayLink} target="_blank">
-                      <Button className="font-nugros uppercase">
-                        {status === "finished" && (
-                          <>
-                            replay
-                            <ExternalLink />
-                          </>
-                        )}
+                  {status === "finished" &&
+                    match.replayLink &&
+                    (replayVideoId ? (
+                      <Button
+                        onClick={() =>
+                          ouvrir({
+                            mode: "replay",
+                            videoId: replayVideoId,
+                            url: match.replayLink,
+                            affiche,
+                            contexte,
+                            viewers: null,
+                          })
+                        }
+                        className="font-nugros uppercase"
+                      >
+                        replay
                       </Button>
-                    </Link>
-                  )}
+                    ) : (
+                      // Replay heberge ailleurs : il reste un lien sortant.
+                      <Link href={match.replayLink} target="_blank">
+                        <Button className="font-nugros uppercase">
+                          replay
+                          <ExternalLink />
+                        </Button>
+                      </Link>
+                    ))}
 
                   {ouvreLeLecteur ? (
                     <button
                       type="button"
-                      onClick={openLive}
+                      onClick={() =>
+                        ouvrir({
+                          mode: "direct",
+                          videoId: live!.videoId as string,
+                          url: live!.url,
+                          affiche,
+                          contexte,
+                          viewers: live!.viewers,
+                        })
+                      }
                       aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
                       className="flex cursor-pointer items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-bold uppercase italic text-white transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                     >

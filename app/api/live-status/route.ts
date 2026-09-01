@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
+import { getPayloadClient } from '@/lib/payload'
 import { extractVideoId, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
 // La diffusion demarre avant le coup d envoi et la meme duree de match que sur
@@ -52,6 +53,29 @@ function rappel(coupsDEnvoi: number[], now: number, enCours: boolean): number {
 }
 
 /**
+ * Retient l adresse de la diffusion dans le champ Lien Replay.
+ *
+ * Une fois le direct termine, la video reste sur la chaine sous le meme
+ * identifiant : l adresse du direct est donc deja celle du replay. L ecrire
+ * pendant la rencontre evite d avoir a la retrouver apres coup, ce qui
+ * demanderait de fouiller la chaine et de deviner quelle video correspond a
+ * quel match.
+ *
+ * Le champ n est rempli que s il est vide : une saisie manuelle garde la main.
+ * Le crochet de la collection revalide le cache des matchs, la carte affiche
+ * donc son bouton Replay sans autre intervention.
+ */
+async function memoriserLeReplay(matchId: number, url: string) {
+  try {
+    const payload = await getPayloadClient()
+    await payload.update({ collection: 'matches', id: matchId, data: { replay_link: url } })
+  } catch (error) {
+    // Un echec ici ne doit pas priver les visiteurs du direct en cours.
+    console.error('Memorisation du replay impossible :', error)
+  }
+}
+
+/**
  * Y a-t-il une diffusion en cours, laquelle, et pour quelle rencontre.
  *
  * L interrogation de YouTube n a lieu que si une rencontre est en cours : sans
@@ -98,6 +122,10 @@ export async function GET() {
     if (current.liveLink) {
       const videoId = extractVideoId(current.liveLink)
 
+      if (videoId && !current.replayLink) {
+        await memoriserLeReplay(current.id, current.liveLink)
+      }
+
       return NextResponse.json(
         {
           live: true,
@@ -117,6 +145,10 @@ export async function GET() {
 
     if (!broadcast) {
       return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, true) }, { headers: CACHE_HEADERS })
+    }
+
+    if (!current.replayLink) {
+      await memoriserLeReplay(current.id, broadcast.url)
     }
 
     return NextResponse.json(

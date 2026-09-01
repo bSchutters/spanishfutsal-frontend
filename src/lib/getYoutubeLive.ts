@@ -1,3 +1,7 @@
+import { extractVideoId } from "./youtubeVideoId";
+
+export { extractVideoId };
+
 const CHANNEL_HANDLE = "@UDAsturiana";
 const API = "https://www.googleapis.com/youtube/v3";
 
@@ -17,35 +21,6 @@ export type LiveBroadcast = {
   /** Spectateurs simultanes, tels que YouTube les compte. */
   viewers: number | null;
 };
-
-/**
- * L'identifiant contenu dans une adresse YouTube, ou null si l'adresse pointe
- * ailleurs. Sert au champ Lien Live de l'admin : une diffusion collee a la
- * main s'ouvre dans le lecteur du site comme une diffusion detectee, pour peu
- * qu'elle soit bien sur YouTube.
- */
-export function extractVideoId(url: string): string | null {
-  try {
-    const { hostname, pathname, searchParams } = new URL(url);
-    const host = hostname.replace(/^www\./, "");
-
-    if (host === "youtu.be") return pathname.slice(1) || null;
-    if (!host.endsWith("youtube.com") && !host.endsWith("youtube-nocookie.com"))
-      return null;
-
-    if (pathname === "/watch") return searchParams.get("v");
-
-    // /live/ID et /embed/ID
-    const segments = pathname.split("/").filter(Boolean);
-    if (segments.length === 2 && ["live", "embed"].includes(segments[0])) {
-      return segments[1];
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 async function fetchJson(url: string, revalidate: number) {
   const res = await fetch(url, { next: { revalidate } });

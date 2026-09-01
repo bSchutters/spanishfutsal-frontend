@@ -16,15 +16,29 @@ export type Live = {
   match: LiveMatch | null;
 };
 
+/**
+ * Ce que le lecteur joue. Un direct n'a ni fin ni barre de progression, un
+ * replay n'a ni pastille rouge ni compteur de spectateurs : c'est le meme
+ * lecteur, dans deux modes.
+ */
+export type Lecture = {
+  mode: "direct" | "replay";
+  videoId: string;
+  url: string;
+  affiche: string;
+  contexte: string | null;
+  viewers: number | null;
+};
+
 type State = {
   live: Live | null;
-  isOpen: boolean;
+  lecture: Lecture | null;
   /** Hauteur reelle du bandeau, en pixels. Zero quand il n'y a pas de direct. */
   hauteurBandeau: number;
   setLive: (live: Live | null) => void;
   setHauteurBandeau: (hauteur: number) => void;
-  open: () => void;
-  close: () => void;
+  ouvrir: (lecture: Lecture) => void;
+  fermer: () => void;
 };
 
 /**
@@ -34,15 +48,23 @@ type State = {
  * resultat ici ; les cartes de match s'y abonnent. Sans ce point commun, chaque
  * composant aurait son propre minuteur et sa propre requete.
  */
-export const useLiveStore = create<State>((set) => ({
+export const useLiveStore = create<State>((set, get) => ({
   live: null,
-  isOpen: false,
+  lecture: null,
   hauteurBandeau: 0,
-  // La fin de la diffusion referme le lecteur : le laisser ouvert sur un flux
-  // termine afficherait un cadre noir sans explication.
   setLive: (live) =>
-    set(live ? { live } : { live: null, isOpen: false, hauteurBandeau: 0 }),
+    set(
+      live
+        ? { live }
+        : {
+            live: null,
+            hauteurBandeau: 0,
+            // La fin de la diffusion referme le lecteur, mais pas un replay,
+            // qui n'a rien a voir avec l'etat du direct.
+            lecture: get().lecture?.mode === "direct" ? null : get().lecture,
+          },
+    ),
   setHauteurBandeau: (hauteurBandeau) => set({ hauteurBandeau }),
-  open: () => set({ isOpen: true }),
-  close: () => set({ isOpen: false }),
+  ouvrir: (lecture) => set({ lecture }),
+  fermer: () => set({ lecture: null }),
 }));

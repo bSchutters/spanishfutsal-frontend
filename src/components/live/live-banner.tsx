@@ -20,7 +20,7 @@ export default function LiveBanner() {
   const live = useLiveStore((s) => s.live);
   const setLive = useLiveStore((s) => s.setLive);
   const setHauteurBandeau = useLiveStore((s) => s.setHauteurBandeau);
-  const open = useLiveStore((s) => s.open);
+  const ouvrir = useLiveStore((s) => s.ouvrir);
   const bandeau = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -120,7 +120,22 @@ export default function LiveBanner() {
       )}
 
       {live.videoId ? (
-        <button type="button" onClick={open} className={habillageAction}>
+        <button
+          type="button"
+          onClick={() =>
+            ouvrir({
+              mode: "direct",
+              videoId: live.videoId as string,
+              url: live.url,
+              affiche,
+              contexte: live.match
+                ? `${live.match.competition} · ${live.match.time}`
+                : null,
+              viewers: live.viewers,
+            })
+          }
+          className={habillageAction}
+        >
           Regarder
         </button>
       ) : (

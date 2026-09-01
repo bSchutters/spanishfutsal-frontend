@@ -36,7 +36,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
   const { breakpoint, isMobile } = useBreakpoint();
   const [timeLeft, setTimeLeft] = useState<string>("");
   const live = useLiveStore((s) => s.live);
-  const openLive = useLiveStore((s) => s.open);
+  const ouvrir = useLiveStore((s) => s.ouvrir);
 
   const nextMatch = useMemo(() => {
     return matchs
@@ -214,7 +214,16 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
       {ouvreLeLecteur ? (
         <button
           type="button"
-          onClick={openLive}
+          onClick={() =>
+            ouvrir({
+              mode: "direct",
+              videoId: live!.videoId as string,
+              url: live!.url,
+              affiche: `${homeTeam} - ${awayTeam}`,
+              contexte: `${nextMatch.competitionName} · ${nextMatch.time}`,
+              viewers: live!.viewers,
+            })
+          }
           aria-label={`Regarder ${homeTeam} contre ${awayTeam} en direct`}
           className="w-full flex items-center justify-center cursor-pointer"
         >

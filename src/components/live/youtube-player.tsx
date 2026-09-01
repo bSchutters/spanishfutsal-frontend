@@ -26,6 +26,9 @@ type Lecteur = {
   mute: () => void;
   unMute: () => void;
   setVolume: (valeur: number) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  seekTo: (secondes: number, immediat: boolean) => void;
   destroy: () => void;
 };
 
@@ -57,6 +60,20 @@ const EN_LECTURE = 1;
 // Hauteur rognee en haut et en bas, assez pour avaler les bandeaux de YouTube.
 const MARGE = 90;
 
+/** 4:07, ou 1:12:30 au-dela de l'heure. */
+function formatDuree(secondes: number) {
+  if (!Number.isFinite(secondes) || secondes < 0) return "0:00";
+
+  const heures = Math.floor(secondes / 3600);
+  const minutes = Math.floor((secondes % 3600) / 60);
+  const reste = Math.floor(secondes % 60);
+  const deux = (n: number) => String(n).padStart(2, "0");
+
+  if (heures > 0) return `${heures}:${deux(minutes)}:${deux(reste)}`;
+
+  return `${minutes}:${deux(reste)}`;
+}
+
 let apiChargee: Promise<ApiYouTube> | null = null;
 
 /** Le script n'est telecharge qu'une fois pour toute la session. */
@@ -82,10 +99,13 @@ function chargerApi(): Promise<ApiYouTube> {
 export default function YoutubePlayer({
   videoId,
   url,
+  mode,
 }: {
   videoId: string;
   url: string;
+  mode: "direct" | "replay";
 }) {
+  const enDirect = mode === "direct";
   const conteneur = useRef<HTMLDivElement>(null);
   const lecteur = useRef<Lecteur | null>(null);
 
@@ -95,6 +115,8 @@ export default function YoutubePlayer({
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
   const [pleinEcran, setPleinEcran] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duree, setDuree] = useState(0);
 
   /**
    * Deborde le cadre de YouTube au-dela du notre, de MARGE en haut comme en bas.
@@ -172,6 +194,23 @@ export default function YoutubePlayer({
   }, [videoId, recadrer]);
 
   useEffect(() => {
+    if (enDirect || !pret) return;
+
+    const suivre = () => {
+      const lu = lecteur.current;
+      if (!lu) return;
+
+      setPosition(lu.getCurrentTime());
+      setDuree(lu.getDuration());
+    };
+
+    suivre();
+    const minuteur = setInterval(suivre, 500);
+
+    return () => clearInterval(minuteur);
+  }, [enDirect, pret]);
+
+  useEffect(() => {
     const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", suivre);
 
@@ -204,6 +243,11 @@ export default function YoutubePlayer({
       lecteur.current?.unMute();
       setMuet(false);
     }
+  }, []);
+
+  const deplacer = useCallback((secondes: number) => {
+    setPosition(secondes);
+    lecteur.current?.seekTo(secondes, true);
   }, []);
 
   const basculerPleinEcran = useCallback(() => {
@@ -320,13 +364,31 @@ export default function YoutubePlayer({
           className="hidden w-24 cursor-pointer accent-spanish-accent-2 sm:block"
         />
 
-        <span className="ms-auto flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
-          <span className="relative flex size-2 items-center justify-center">
-            <span className="absolute size-2 rounded-full bg-white" />
-            <span className="absolute size-2 animate-ping rounded-full bg-white" />
+        {enDirect ? (
+          <span className="ms-auto flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
+            <span className="relative flex size-2 items-center justify-center">
+              <span className="absolute size-2 rounded-full bg-white" />
+              <span className="absolute size-2 animate-ping rounded-full bg-white" />
+            </span>
+            en direct
           </span>
-          en direct
-        </span>
+        ) : (
+          <div className="flex flex-1 items-center gap-3">
+            <input
+              type="range"
+              min={0}
+              max={duree || 0}
+              step={1}
+              value={position}
+              onChange={(e) => deplacer(Number(e.target.value))}
+              aria-label="Position dans la video"
+              className="w-full cursor-pointer accent-spanish-accent-2"
+            />
+            <span className="shrink-0 text-xs tabular-nums text-white">
+              {formatDuree(position)} / {formatDuree(duree)}
+            </span>
+          </div>
+        )}
 
         <button
           type="button"

@@ -19,10 +19,10 @@ import YoutubePlayer from "./youtube-player";
  * main est le nid a defauts d'accessibilite habituel des surimpressions.
  */
 export default function LiveDialog() {
-  const live = useLiveStore((s) => s.live);
-  const isOpen = useLiveStore((s) => s.isOpen);
-  const close = useLiveStore((s) => s.close);
+  const lecture = useLiveStore((s) => s.lecture);
+  const close = useLiveStore((s) => s.fermer);
   const cadre = useRef<HTMLDialogElement>(null);
+  const isOpen = Boolean(lecture);
 
   useEffect(() => {
     const dialogue = cadre.current;
@@ -32,7 +32,7 @@ export default function LiveDialog() {
     if (!isOpen && dialogue.open) dialogue.close();
     // `videoId` en dependance : l'element n'est rendu qu'une fois la diffusion
     // connue, et sans cela l'effet ne repasserait jamais a son apparition.
-  }, [isOpen, live?.videoId]);
+  }, [isOpen]);
 
   useEffect(() => {
     const dialogue = cadre.current;
@@ -45,7 +45,7 @@ export default function LiveDialog() {
     dialogue.addEventListener("close", surFermeture);
 
     return () => dialogue.removeEventListener("close", surFermeture);
-  }, [close, live?.videoId]);
+  }, [close, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,11 +60,9 @@ export default function LiveDialog() {
     };
   }, [isOpen]);
 
-  if (!live?.videoId) return null;
+  if (!lecture) return null;
 
-  const affiche = live.match
-    ? `${live.match.homeTeam} - ${live.match.awayTeam}`
-    : "Match en direct";
+  const enDirect = lecture.mode === "direct";
 
   return (
     <dialog
@@ -74,18 +72,24 @@ export default function LiveDialog() {
         // son contenu, referme la surimpression.
         if (e.target === cadre.current) close();
       }}
-      aria-label={`Diffusion en direct, ${affiche}`}
+      aria-label={`${enDirect ? "Diffusion en direct" : "Replay"}, ${lecture.affiche}`}
       className="m-auto w-[min(96vw,1120px)] rounded-xl bg-spanish-bg-dark p-0 text-white backdrop:bg-black/80"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
         {/* La pastille du direct vit dans la barre du lecteur, ou elle est a sa
             place. L'ecrire ici aussi la doublonnait a deux centimetres. */}
-        <p className="text-sm font-semibold uppercase">{affiche}</p>
+        <p className="text-sm font-semibold uppercase">{lecture.affiche}</p>
 
-        {live.viewers !== null && (
+        {!enDirect && (
+          <span className="text-xs uppercase tracking-wide opacity-70">
+            Replay
+          </span>
+        )}
+
+        {lecture.viewers !== null && (
           <span className="hidden text-xs tabular-nums opacity-80 sm:inline">
-            {new Intl.NumberFormat("fr-BE").format(live.viewers)}{" "}
-            {live.viewers > 1 ? "spectateurs" : "spectateur"}
+            {new Intl.NumberFormat("fr-BE").format(lecture.viewers)}{" "}
+            {lecture.viewers > 1 ? "spectateurs" : "spectateur"}
           </span>
         )}
 
@@ -101,17 +105,21 @@ export default function LiveDialog() {
 
       {/* Monte a l'ouverture seulement : rien de YouTube n'est charge avant,
           et la fermeture demonte le lecteur, ce qui coupe le son. */}
-      {isOpen && <YoutubePlayer videoId={live.videoId} url={live.url} />}
+      {isOpen && (
+        <YoutubePlayer
+          videoId={lecture.videoId}
+          url={lecture.url}
+          mode={lecture.mode}
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
-        <span className="opacity-80">
-          {live.match ? `${live.match.competition} · ${live.match.time}` : ""}
-        </span>
+        <span className="opacity-80">{lecture.contexte ?? ""}</span>
 
         {/* Sortie de secours : une chaine peut refuser l'integration, et le
             cadre n'affiche alors qu'un message d'erreur de YouTube. */}
         <a
-          href={live.url}
+          href={lecture.url}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-1.5 rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
