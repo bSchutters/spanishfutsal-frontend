@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ExternalLink, X } from "lucide-react";
 
 import { useLiveStore } from "@/store/useLiveStore";
+import YoutubePlayer from "./youtube-player";
 
 /**
  * Le lecteur, par-dessus la page.
@@ -74,17 +75,11 @@ export default function LiveDialog() {
         if (e.target === cadre.current) close();
       }}
       aria-label={`Diffusion en direct, ${affiche}`}
-      className="m-auto w-[min(96vw,1120px)] rounded-xl border-2 border-red-600/60 bg-spanish-bg-dark p-0 text-white backdrop:bg-black/80"
+      className="m-auto w-[min(96vw,1120px)] rounded-xl bg-spanish-bg-dark p-0 text-white backdrop:bg-black/80"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-        <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic">
-          <span className="relative flex size-2 items-center justify-center">
-            <span className="absolute size-2 rounded-full bg-white" />
-            <span className="absolute size-2 animate-ping rounded-full bg-white" />
-          </span>
-          en direct
-        </span>
-
+        {/* La pastille du direct vit dans la barre du lecteur, ou elle est a sa
+            place. L'ecrire ici aussi la doublonnait a deux centimetres. */}
         <p className="text-sm font-semibold uppercase">{affiche}</p>
 
         {live.viewers !== null && (
@@ -98,23 +93,15 @@ export default function LiveDialog() {
           type="button"
           onClick={close}
           aria-label="Fermer le lecteur"
-          className="ms-auto flex size-9 cursor-pointer items-center justify-center rounded-md bg-spanish-bg-lighter/40 transition-transform duration-[180ms] ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
+          className="ms-auto flex size-9 cursor-pointer items-center justify-center rounded-md bg-spanish-bg-lighter/40 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-bg-lighter active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
         >
           <X className="size-5" aria-hidden />
         </button>
       </div>
 
-      <div className="relative aspect-video w-full bg-black">
-        {isOpen && (
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${live.videoId}?autoplay=1&rel=0`}
-            title={`Diffusion en direct, ${affiche}`}
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full"
-          />
-        )}
-      </div>
+      {/* Monte a l'ouverture seulement : rien de YouTube n'est charge avant,
+          et la fermeture demonte le lecteur, ce qui coupe le son. */}
+      {isOpen && <YoutubePlayer videoId={live.videoId} url={live.url} />}
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
         <span className="opacity-80">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useLiveStore } from "@/store/useLiveStore";
 
@@ -19,7 +19,9 @@ const RAPPEL_DEFAUT = 900;
 export default function LiveBanner() {
   const live = useLiveStore((s) => s.live);
   const setLive = useLiveStore((s) => s.setLive);
+  const setHauteurBandeau = useLiveStore((s) => s.setHauteurBandeau);
   const open = useLiveStore((s) => s.open);
+  const bandeau = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let arrete = false;
@@ -64,6 +66,26 @@ export default function LiveBanner() {
     };
   }, [setLive]);
 
+  useEffect(() => {
+    const element = bandeau.current;
+    if (!element) return;
+
+    // La navigation est fixe : le bandeau qu'elle porte ne pousse rien. Sa
+    // hauteur est donc mesuree ici et reportee par un cale-pied dans le flux,
+    // faute de quoi le haut de chaque page passe dessous. Elle est mesuree
+    // plutot que devinee : le bandeau se replie sur deux lignes en petite
+    // largeur.
+    const observateur = new ResizeObserver(([entree]) =>
+      setHauteurBandeau(entree.contentRect.height),
+    );
+    observateur.observe(element);
+
+    return () => {
+      observateur.disconnect();
+      setHauteurBandeau(0);
+    };
+  }, [live, setHauteurBandeau]);
+
   if (!live) return null;
 
   const affiche = live.match
@@ -71,10 +93,11 @@ export default function LiveBanner() {
     : "Match en cours";
 
   const habillageAction =
-    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-transform duration-[180ms] ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
   return (
     <div
+      ref={bandeau}
       // Le blason de la navigation deborde sous la barre : le contenu du
       // bandeau commence apres lui, faute de quoi il passe dessous.
       className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-red-600 py-2 pe-8 ps-28 text-white md:ps-32"

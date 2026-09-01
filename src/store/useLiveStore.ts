@@ -19,7 +19,10 @@ export type Live = {
 type State = {
   live: Live | null;
   isOpen: boolean;
+  /** Hauteur reelle du bandeau, en pixels. Zero quand il n'y a pas de direct. */
+  hauteurBandeau: number;
   setLive: (live: Live | null) => void;
+  setHauteurBandeau: (hauteur: number) => void;
   open: () => void;
   close: () => void;
 };
@@ -34,9 +37,12 @@ type State = {
 export const useLiveStore = create<State>((set) => ({
   live: null,
   isOpen: false,
+  hauteurBandeau: 0,
   // La fin de la diffusion referme le lecteur : le laisser ouvert sur un flux
   // termine afficherait un cadre noir sans explication.
-  setLive: (live) => set(live ? { live } : { live: null, isOpen: false }),
+  setLive: (live) =>
+    set(live ? { live } : { live: null, isOpen: false, hauteurBandeau: 0 }),
+  setHauteurBandeau: (hauteurBandeau) => set({ hauteurBandeau }),
   open: () => set({ isOpen: true }),
   close: () => set({ isOpen: false }),
 }));

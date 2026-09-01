@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 import { withPayload } from "@payloadcms/next/withPayload";
 
-
 /**
  * Politique de securite du contenu. `'unsafe-inline'` sur les scripts est
  * inevitable ici : Next diffuse la charge utile des composants serveur dans
@@ -19,7 +18,11 @@ const EN_DEV = process.env.NODE_ENV !== "production";
 
 const CSP_PUBLIC = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${EN_DEV ? " 'unsafe-eval'" : ""}`,
+  // youtube.com sert le script de l'API IFrame, qui permet de masquer les
+  // commandes natives du lecteur et de piloter la lecture depuis les notres.
+  // C'est une ouverture plus large que `frame-src` : ce script s'execute dans
+  // notre origine, la ou un cadre reste isole.
+  `script-src 'self' 'unsafe-inline' https://www.youtube.com${EN_DEV ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   // i.ytimg.com sert les images du lecteur une fois qu'il tourne. La vignette
   // de la facade, elle, passe par le proxy d'images du site : aucune requete

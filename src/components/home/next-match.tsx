@@ -36,6 +36,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
   const { breakpoint, isMobile } = useBreakpoint();
   const [timeLeft, setTimeLeft] = useState<string>("");
   const live = useLiveStore((s) => s.live);
+  const openLive = useLiveStore((s) => s.open);
 
   const nextMatch = useMemo(() => {
     return matchs
@@ -101,6 +102,12 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
   const enDirect =
     live?.match?.id === nextMatch.id ||
     (status === "live" && Boolean(liveLink));
+
+  // Deux conditions, et pas une de moins : la route voit une diffusion pour
+  // cette rencontre precise, et cette diffusion est sur YouTube donc lisible
+  // sur le site. Sinon la carte reste un lien vers le calendrier.
+  const ouvreLeLecteur =
+    live?.match?.id === nextMatch.id && Boolean(live.videoId);
 
   const contenu = (
     <>
@@ -204,9 +211,23 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
             : "",
       )}
     >
-      <Link href="/matchs" className="w-full flex items-center justify-center">
-        {contenu}
-      </Link>
+      {ouvreLeLecteur ? (
+        <button
+          type="button"
+          onClick={openLive}
+          aria-label={`Regarder ${homeTeam} contre ${awayTeam} en direct`}
+          className="w-full flex items-center justify-center cursor-pointer"
+        >
+          {contenu}
+        </button>
+      ) : (
+        <Link
+          href="/matchs"
+          className="w-full flex items-center justify-center"
+        >
+          {contenu}
+        </Link>
+      )}
     </BoxModule>
   );
 }

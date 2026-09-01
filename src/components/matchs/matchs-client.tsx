@@ -23,19 +23,12 @@ import Link from "next/link";
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
-/**
- * L'etat de la rencontre, pas une commande : le seul bouton du direct est celui
- * du bandeau, en haut du site. Deux boutons pour la meme action, dans deux
- * couleurs, c'etait un doublon.
- */
-function Pastille() {
+/** Le point qui bat, commun au bandeau, au bouton et a la pastille d'etat. */
+function Bulle() {
   return (
-    <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
-      <span className="relative flex size-2 items-center justify-center">
-        <span className="absolute size-2 rounded-full bg-white" />
-        <span className="absolute size-2 animate-ping rounded-full bg-white" />
-      </span>
-      en direct
+    <span className="relative flex size-2 items-center justify-center">
+      <span className="absolute size-2 rounded-full bg-white" />
+      <span className="absolute size-2 animate-ping rounded-full bg-white" />
     </span>
   );
 }
@@ -47,6 +40,7 @@ export default function MatchsClient({
 }) {
   const { isMobile } = useBreakpoint();
   const live = useLiveStore((s) => s.live);
+  const openLive = useLiveStore((s) => s.open);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
   const { setSelectedSeason } = useSeasonStore();
@@ -196,24 +190,36 @@ export default function MatchsClient({
             live?.match?.id === match.id ||
             (status === "live" && Boolean(match.liveLink));
 
+          // Deux conditions, et pas une de moins : la route voit une diffusion
+          // pour cette rencontre precise, et elle est sur YouTube donc lisible
+          // sur le site.
+          const ouvreLeLecteur =
+            live?.match?.id === match.id && Boolean(live.videoId);
+
           const isWaitingScore =
             match.homeScore === null && match.awayScore === null;
 
-          const hasLiveMatch = validMatchs.some((m) => {
-            const matchStart = m.matchDate;
-            const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
-            return now >= matchStart && now < matchEnd;
-          });
+          // Une rencontre est-elle en cours, d'apres l'horloge ou d'apres la
+          // route ? La seconde fait foi et voit la diffusion avant le coup
+          // d'envoi, sans quoi le lisere du prochain match l'emporterait sur le
+          // rouge du direct.
+          const hasLiveMatch =
+            Boolean(live) ||
+            validMatchs.some((m) => {
+              const matchStart = m.matchDate;
+              const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+              return now >= matchStart && now < matchEnd;
+            });
 
           return (
             <div
               className={cn(
                 "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
-                status === "live"
-                  ? enDirect
-                    ? "border-2 border-red-600"
-                    : "border-2 border-spanish-accent-2"
-                  : "",
+                enDirect
+                  ? "border-2 border-red-600"
+                  : status === "live"
+                    ? "border-2 border-spanish-accent-2"
+                    : "",
                 fallbackIndex === index &&
                   !isArchived &&
                   !hasLiveMatch &&
@@ -315,7 +321,24 @@ export default function MatchsClient({
                     </Link>
                   )}
 
-                  {enDirect && <Pastille />}
+                  {ouvreLeLecteur ? (
+                    <button
+                      type="button"
+                      onClick={openLive}
+                      aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
+                      className="flex cursor-pointer items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-bold uppercase italic text-white transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    >
+                      <Bulle />
+                      regarder
+                    </button>
+                  ) : (
+                    enDirect && (
+                      <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
+                        <Bulle />
+                        en direct
+                      </span>
+                    )
+                  )}
                   {match.venueId && status !== "finished" && (
                     <Button
                       className="font-nugros uppercase"
