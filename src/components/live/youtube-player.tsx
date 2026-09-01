@@ -206,6 +206,16 @@ export default function YoutubePlayer({
         </div>
       )}
 
+      {/* Voile du haut. Le calque ci-dessous empeche deja le survol de reveiller
+          l'interface de YouTube, mais leur titre et leur nom de chaine
+          reapparaissent dans d'autres circonstances, au chargement notamment.
+          Ce degrade les couvre quoi qu'il arrive, et sert d'assise a la
+          pastille du son. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-[7] h-24 bg-gradient-to-b from-black via-black/70 to-transparent"
+      />
+
       {/* Calque qui capture le pointeur avant le cadre. Sans lui, le survol
           reveille l'interface de YouTube par-dessus la notre : titre de la
           video, suggestions, bouton central. Il sert aussi de commande, un clic
