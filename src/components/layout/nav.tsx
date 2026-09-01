@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import LiveBanner from "../live/live-banner";
 
 const Nav = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -148,6 +149,8 @@ const Nav = () => {
           ))}
         </nav>
       </div>
+
+      <LiveBanner />
     </header>
   );
 };

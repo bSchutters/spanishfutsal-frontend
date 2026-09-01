@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 import { withPayload } from "@payloadcms/next/withPayload";
 
-
 /**
  * Politique de securite du contenu. `'unsafe-inline'` sur les scripts est
  * inevitable ici : Next diffuse la charge utile des composants serveur dans
@@ -11,14 +10,30 @@ import { withPayload } from "@payloadcms/next/withPayload";
  * et `frame-ancestors`, `base-uri`, `form-action` et `object-src` couvrent des
  * attaques que l'echappement de React ne couvre pas.
  */
+// En developpement, Next enveloppe chaque module dans un `eval` pour le
+// rechargement a chaud. Sans cette permission, l'hydratation echoue des la
+// premiere page : le compte a rebours reste fige, les menus ne s'ouvrent plus.
+// La production, elle, ne compile aucun `eval`.
+const EN_DEV = process.env.NODE_ENV !== "production";
+
 const CSP_PUBLIC = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // youtube.com sert le script de l'API IFrame, qui permet de masquer les
+  // commandes natives du lecteur et de piloter la lecture depuis les notres.
+  // C'est une ouverture plus large que `frame-src` : ce script s'execute dans
+  // notre origine, la ou un cadre reste isole.
+  `script-src 'self' 'unsafe-inline' https://www.youtube.com${EN_DEV ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // i.ytimg.com sert les images du lecteur une fois qu'il tourne. La vignette
+  // de la facade, elle, passe par le proxy d'images du site : aucune requete
+  // ne part chez Google avant que le visiteur ne lance la diffusion.
+  "img-src 'self' data: blob: https://i.ytimg.com",
   "font-src 'self'",
   "connect-src 'self'",
-  "frame-src 'none'",
+  // Seule ouverture de la politique : le lecteur du match en direct. Le
+  // domaine sans cookie de YouTube, et lui seul, peut donc etre place dans un
+  // cadre. Rien n'y est charge tant que le visiteur n'a pas clique.
+  "frame-src https://www.youtube-nocookie.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -86,6 +101,13 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        // Vignettes des diffusions. Elles passent par le proxy d'images plutot
+        // que d'etre chargees directement : la page n'appelle ainsi aucun
+        // serveur de Google avant que le visiteur ne lance le lecteur.
+        protocol: "https",
+        hostname: "i.ytimg.com",
       },
     ],
   },

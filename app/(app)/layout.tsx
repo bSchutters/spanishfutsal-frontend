@@ -1,11 +1,13 @@
 import Footer from "@/components/layout/footer";
+import LiveDialog from "@/components/live/live-dialog";
+import LiveSpacer from "@/components/live/live-spacer";
 import Nav from "@/components/layout/nav";
 import SchemaMarkup from "@/components/schema-markup";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
-
+
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const viewport: Viewport = {
   width: "device-width",
@@ -17,13 +19,16 @@ export const metadata: Metadata = {
   // faits depuis une preview pointaient alors sur l URL de la preview.
   metadataBase: new URL(SITE_URL),
   title: "UD Asturiana - Club de Futsal à Bruxelles",
-  description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
-  keywords: "futsal, Bruxelles, club de sport, UD Asturiana, Union Deportiva Asturiana, football en salle, équipe, compétition, Belgique",
+  description:
+    "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
+  keywords:
+    "futsal, Bruxelles, club de sport, UD Asturiana, Union Deportiva Asturiana, football en salle, équipe, compétition, Belgique",
   authors: [{ name: "UD Asturiana" }],
   robots: "index, follow",
   openGraph: {
     title: "UD Asturiana - Club de Futsal à Bruxelles",
-    description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
+    description:
+      "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles. Rejoignez notre famille sportive pour vivre l'esprit d'équipe et la compétition.",
     url: SITE_URL,
     images: [OG_IMAGE],
     siteName: "UD Asturiana",
@@ -33,7 +38,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "UD Asturiana - Club de Futsal à Bruxelles",
-    description: "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles.",
+    description:
+      "Union Deportiva Asturiana, club de futsal passionné basé à Bruxelles.",
     images: [OG_IMAGE],
   },
   // Nom affiche quand la page est ajoutee a l ecran d accueil sur iOS.
@@ -69,7 +75,7 @@ export default function AppLayout({
       <body
         className={cn(
           "antialiased",
-          "h-full bg-spanish-bg text-white font-nugros"
+          "h-full bg-spanish-bg text-white font-nugros",
         )}
       >
         <ThemeProvider
@@ -79,9 +85,11 @@ export default function AppLayout({
           disableTransitionOnChange
         >
           <Nav />
+          <LiveSpacer />
           <main>{children}</main>
           <Toaster />
           <Footer />
+          <LiveDialog />
         </ThemeProvider>
       </body>
     </html>

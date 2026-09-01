@@ -4,6 +4,8 @@ import BoxModule from "@/components/layout/boxModule";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
+import { useLiveStore } from "@/store/useLiveStore";
+import { extractVideoId } from "@/lib/youtubeVideoId";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/getMatchs";
@@ -22,12 +24,24 @@ import Link from "next/link";
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
+/** Le point qui bat, commun au bandeau, au bouton et a la pastille d'etat. */
+function Bulle() {
+  return (
+    <span className="relative flex size-2 items-center justify-center">
+      <span className="absolute size-2 rounded-full bg-white" />
+      <span className="absolute size-2 animate-ping rounded-full bg-white" />
+    </span>
+  );
+}
+
 export default function MatchsClient({
   initialMatchs,
 }: {
   initialMatchs: Match[];
 }) {
   const { isMobile } = useBreakpoint();
+  const live = useLiveStore((s) => s.live);
+  const ouvrir = useLiveStore((s) => s.ouvrir);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
   const { breakpoint } = useBreakpoint();
   const { setSelectedSeason } = useSeasonStore();
@@ -171,24 +185,52 @@ export default function MatchsClient({
             status = "finished";
           }
 
+          // La route fait foi sur ce qui diffuse, y compris avant le coup
+          // d'envoi : la chaine ouvre souvent une demi-heure plus tot.
+          const enDirect =
+            live?.match?.id === match.id ||
+            (status === "live" && Boolean(match.liveLink));
+
+          // Deux conditions, et pas une de moins : la route voit une diffusion
+          // pour cette rencontre precise, et elle est sur YouTube donc lisible
+          // sur le site.
+          const ouvreLeLecteur =
+            live?.match?.id === match.id && Boolean(live.videoId);
+
+          // Le replay s'ouvre dans le lecteur du site s'il est sur YouTube.
+          // Rempli a la main ou retenu par la route pendant la diffusion, le
+          // champ a la meme forme dans les deux cas.
+          const replayVideoId = match.replayLink
+            ? extractVideoId(match.replayLink)
+            : null;
+
+          const affiche = `${match.homeTeam} - ${match.awayTeam}`;
+          const contexte = `${match.competitionName} · ${match.time}`;
+
           const isWaitingScore =
             match.homeScore === null && match.awayScore === null;
 
-          const hasLiveMatch = validMatchs.some((m) => {
-            const matchStart = m.matchDate;
-            const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
-            return now >= matchStart && now < matchEnd;
-          });
+          // Une rencontre est-elle en cours, d'apres l'horloge ou d'apres la
+          // route ? La seconde fait foi et voit la diffusion avant le coup
+          // d'envoi, sans quoi le lisere du prochain match l'emporterait sur le
+          // rouge du direct.
+          const hasLiveMatch =
+            Boolean(live) ||
+            validMatchs.some((m) => {
+              const matchStart = m.matchDate;
+              const matchEnd = new Date(matchStart.getTime() + 70 * 60 * 1000); // Durée estimée d'un match
+              return now >= matchStart && now < matchEnd;
+            });
 
           return (
             <div
               className={cn(
                 "relative lg:p-6 p-4 bg-spanish-bg-dark rounded-lg flex lg:flex-row flex-col items-center justify-between gap-8",
-                status === "live"
-                  ? match.liveLink
-                    ? "border-2 border-red-600"
-                    : "border-2 border-spanish-accent-2"
-                  : "",
+                enDirect
+                  ? "border-2 border-red-600"
+                  : status === "live"
+                    ? "border-2 border-spanish-accent-2"
+                    : "",
                 fallbackIndex === index &&
                   !isArchived &&
                   !hasLiveMatch &&
@@ -274,34 +316,62 @@ export default function MatchsClient({
                 <div
                   className={cn(
                     "flex items-center gap-2 w-full lg:w-auto", // S'il y a deux boutons (replay/live + adresse)
-                    status === "live" && match.liveLink
-                      ? "justify-between"
-                      : "justify-center",
+                    enDirect ? "justify-between" : "justify-center",
                   )}
                 >
-                  {status === "finished" && match.replayLink && (
-                    <Link href={match.replayLink} target="_blank">
-                      <Button className="font-nugros uppercase">
-                        {status === "finished" && (
-                          <>
-                            replay
-                            <ExternalLink />
-                          </>
-                        )}
+                  {status === "finished" &&
+                    match.replayLink &&
+                    (replayVideoId ? (
+                      <Button
+                        onClick={() =>
+                          ouvrir({
+                            mode: "replay",
+                            videoId: replayVideoId,
+                            url: match.replayLink,
+                            affiche,
+                            contexte,
+                            viewers: null,
+                          })
+                        }
+                        className="font-nugros uppercase"
+                      >
+                        replay
                       </Button>
-                    </Link>
-                  )}
+                    ) : (
+                      // Replay heberge ailleurs : il reste un lien sortant.
+                      <Link href={match.replayLink} target="_blank">
+                        <Button className="font-nugros uppercase">
+                          replay
+                          <ExternalLink />
+                        </Button>
+                      </Link>
+                    ))}
 
-                  {status === "live" && match.liveLink && (
-                    <Link href={match.liveLink} target="_blank">
-                      <Button className="font-nugros uppercase relative flex gap-4">
-                        regarder le live
-                        <div className="relative flex items-center justify-center">
-                          <div className="w-2 h-2  bg-red-600 rounded-full absolute" />
-                          <div className="w-2 h-2 animate-ping bg-red-600 rounded-full absolute" />
-                        </div>
-                      </Button>
-                    </Link>
+                  {ouvreLeLecteur ? (
+                    <Button
+                      onClick={() =>
+                        ouvrir({
+                          mode: "direct",
+                          videoId: live!.videoId as string,
+                          url: live!.url,
+                          affiche,
+                          contexte,
+                          viewers: live!.viewers,
+                        })
+                      }
+                      aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
+                      className="font-nugros uppercase bg-red-600 border-red-800 text-white hover:bg-red-800"
+                    >
+                      <Bulle />
+                      regarder
+                    </Button>
+                  ) : (
+                    enDirect && (
+                      <span className="flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
+                        <Bulle />
+                        en direct
+                      </span>
+                    )
                   )}
                   {match.venueId && status !== "finished" && (
                     <Button

@@ -1,0 +1,70 @@
+import { create } from "zustand";
+
+export type LiveMatch = {
+  id: number;
+  homeTeam: string;
+  awayTeam: string;
+  competition: string;
+  time: string;
+};
+
+export type Live = {
+  url: string;
+  /** Absent si la diffusion saisie dans l'admin n'est pas sur YouTube. */
+  videoId: string | null;
+  viewers: number | null;
+  match: LiveMatch | null;
+};
+
+/**
+ * Ce que le lecteur joue. Un direct n'a ni fin ni barre de progression, un
+ * replay n'a ni pastille rouge ni compteur de spectateurs : c'est le meme
+ * lecteur, dans deux modes.
+ */
+export type Lecture = {
+  mode: "direct" | "replay";
+  videoId: string;
+  url: string;
+  affiche: string;
+  contexte: string | null;
+  viewers: number | null;
+};
+
+type State = {
+  live: Live | null;
+  lecture: Lecture | null;
+  /** Hauteur reelle du bandeau, en pixels. Zero quand il n'y a pas de direct. */
+  hauteurBandeau: number;
+  setLive: (live: Live | null) => void;
+  setHauteurBandeau: (hauteur: number) => void;
+  ouvrir: (lecture: Lecture) => void;
+  fermer: () => void;
+};
+
+/**
+ * L'etat du direct, partage par tout le site.
+ *
+ * Le bandeau interroge la route une seule fois pour tout le monde et depose le
+ * resultat ici ; les cartes de match s'y abonnent. Sans ce point commun, chaque
+ * composant aurait son propre minuteur et sa propre requete.
+ */
+export const useLiveStore = create<State>((set, get) => ({
+  live: null,
+  lecture: null,
+  hauteurBandeau: 0,
+  setLive: (live) =>
+    set(
+      live
+        ? { live }
+        : {
+            live: null,
+            hauteurBandeau: 0,
+            // La fin de la diffusion referme le lecteur, mais pas un replay,
+            // qui n'a rien a voir avec l'etat du direct.
+            lecture: get().lecture?.mode === "direct" ? null : get().lecture,
+          },
+    ),
+  setHauteurBandeau: (hauteurBandeau) => set({ hauteurBandeau }),
+  ouvrir: (lecture) => set({ lecture }),
+  fermer: () => set({ lecture: null }),
+}));
