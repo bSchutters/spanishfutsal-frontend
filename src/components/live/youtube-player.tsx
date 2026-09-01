@@ -272,7 +272,7 @@ export default function YoutubePlayer({
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-colors duration-200 hover:bg-spanish-accent-2-light"
+            className="rounded-md border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-colors duration-200 hover:bg-spanish-accent-2-dark"
           >
             Regarder sur YouTube
           </a>
@@ -296,7 +296,7 @@ export default function YoutubePlayer({
           aria-label="Reprendre la lecture"
           className="group absolute inset-0 z-[6] flex cursor-pointer items-center justify-center"
         >
-          <span className="flex size-16 items-center justify-center rounded-full bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-light">
+          <span className="flex size-16 items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
             <Play
               className="size-7 translate-x-0.5 fill-spanish-bg-dark text-spanish-bg-dark"
               aria-hidden
@@ -309,7 +309,7 @@ export default function YoutubePlayer({
         <button
           type="button"
           onClick={basculerSon}
-          className="absolute inset-x-0 top-4 z-20 mx-auto flex w-fit cursor-pointer items-center gap-2 rounded-full bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-light active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="absolute inset-x-0 top-4 z-20 mx-auto flex w-fit cursor-pointer items-center gap-2 rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <VolumeX className="size-4" aria-hidden />
           Activer le son
@@ -329,7 +329,7 @@ export default function YoutubePlayer({
           type="button"
           onClick={basculerLecture}
           aria-label={enLecture ? "Mettre en pause" : "Reprendre la lecture"}
-          className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-spanish-accent-2 text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-light active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           {enLecture ? (
             <Pause className="size-5 fill-spanish-bg-dark" aria-hidden />

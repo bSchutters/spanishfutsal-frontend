@@ -360,7 +360,7 @@ export default function MatchsClient({
                         })
                       }
                       aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
-                      className="font-nugros uppercase bg-red-600 border-red-800 text-white hover:bg-red-700"
+                      className="font-nugros uppercase bg-red-600 border-red-800 text-white hover:bg-red-800"
                     >
                       <Bulle />
                       regarder

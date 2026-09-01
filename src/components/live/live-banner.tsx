@@ -102,7 +102,7 @@ export default function LiveBanner() {
     : "Match en cours";
 
   const habillageAction =
-    "ms-auto rounded-md bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-100 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "ms-auto rounded-md border-2 border-red-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
   return (
     <div

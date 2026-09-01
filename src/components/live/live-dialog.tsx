@@ -97,7 +97,7 @@ export default function LiveDialog() {
           type="button"
           onClick={close}
           aria-label="Fermer le lecteur"
-          className="ms-auto flex size-9 cursor-pointer items-center justify-center rounded-md bg-spanish-bg-lighter/40 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-bg-lighter active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
+          className="ms-auto flex size-9 cursor-pointer items-center justify-center rounded-md border-2 border-spanish-bg-lighter bg-spanish-bg-lighter/40 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-bg-lighter active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
         >
           <X className="size-5" aria-hidden />
         </button>
