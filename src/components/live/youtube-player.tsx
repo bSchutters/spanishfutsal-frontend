@@ -55,6 +55,16 @@ declare global {
   }
 }
 
+/**
+ * Retard supplementaire a partir duquel on considere que le visiteur a decroche.
+ *
+ * Il se compte a partir du plus faible retard observe, jamais dans l'absolu :
+ * YouTube place deja tout le monde une vingtaine de secondes derriere le bord
+ * du direct, c'est sa latence normale. Mesure telle quelle, elle ferait dire au
+ * lecteur que le visiteur a decroche alors qu'il vient d'arriver.
+ */
+const DECROCHAGE_TOLERE = 10;
+
 // Le triangle de lucide est trace de 6 a 20 dans une grille de 24 : son centre
 // tombe donc a 13 et non a 12. Le decalage optique est deja dans l'icone, en
 // ajouter un le pousse trop loin, et d'autant plus visiblement que le bouton
@@ -121,6 +131,8 @@ export default function YoutubePlayer({
   const [pleinEcran, setPleinEcran] = useState(false);
   const [position, setPosition] = useState(0);
   const [duree, setDuree] = useState(0);
+  const [decrochage, setDecrochage] = useState(0);
+  const retardMinimal = useRef<number | null>(null);
 
   /**
    * Deborde le cadre de YouTube au-dela du notre, de MARGE en haut comme en bas.
@@ -198,14 +210,30 @@ export default function YoutubePlayer({
   }, [videoId, recadrer]);
 
   useEffect(() => {
-    if (enDirect || !pret) return;
+    if (!pret) return;
 
     const suivre = () => {
       const lu = lecteur.current;
       if (!lu) return;
 
-      setPosition(lu.getCurrentTime());
-      setDuree(lu.getDuration());
+      const maintenant = lu.getCurrentTime();
+      const totale = lu.getDuration();
+
+      setPosition(maintenant);
+      setDuree(totale);
+
+      if (enDirect) {
+        // Sur un direct, `getDuration` donne la longueur de la memoire tampon
+        // et `getCurrentTime` la position dedans : leur ecart est le retard.
+        const retard = Math.max(0, totale - maintenant);
+
+        retardMinimal.current =
+          retardMinimal.current === null
+            ? retard
+            : Math.min(retardMinimal.current, retard);
+
+        setDecrochage(retard - retardMinimal.current);
+      }
     };
 
     suivre();
@@ -247,6 +275,18 @@ export default function YoutubePlayer({
       lecteur.current?.unMute();
       setMuet(false);
     }
+  }, []);
+
+  const revenirAuDirect = useCallback(() => {
+    const lu = lecteur.current;
+    if (!lu) return;
+
+    lu.seekTo(lu.getDuration(), true);
+    lu.playVideo();
+
+    // Le saut ramene au bord : ce nouveau retard devient la reference.
+    retardMinimal.current = null;
+    setDecrochage(0);
   }, []);
 
   const deplacer = useCallback((secondes: number) => {
@@ -365,15 +405,12 @@ export default function YoutubePlayer({
           className="hidden w-24 cursor-pointer accent-spanish-accent-2 sm:block"
         />
 
-        {enDirect ? (
-          <span className="ms-auto flex items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
-            <span className="relative flex size-2 items-center justify-center">
-              <span className="absolute size-2 rounded-full bg-white" />
-              <span className="absolute size-2 animate-ping rounded-full bg-white" />
-            </span>
-            en direct
-          </span>
-        ) : (
+        {/* La barre existe dans les deux modes, mais seulement quand il y a
+            une plage a parcourir. Sur un direct, `getDuration` reste a zero
+            tant que la lecture n'a pas commence, et pour toujours si le
+            diffuseur a coupe la memoire tampon : une barre vide au depart ne
+            dirait rien de vrai. */}
+        {duree > 0 && (
           <div className="flex flex-1 items-center gap-3">
             <input
               type="range"
@@ -382,14 +419,47 @@ export default function YoutubePlayer({
               step={1}
               value={position}
               onChange={(e) => deplacer(Number(e.target.value))}
-              aria-label="Position dans la video"
+              aria-label={
+                enDirect ? "Position dans le direct" : "Position dans la video"
+              }
               className="w-full cursor-pointer accent-spanish-accent-2"
             />
-            <span className="shrink-0 text-xs tabular-nums text-white">
-              {formatDuree(position)} / {formatDuree(duree)}
-            </span>
+
+            {enDirect ? (
+              decrochage > DECROCHAGE_TOLERE && (
+                <span className="shrink-0 text-xs tabular-nums text-white">
+                  -{formatDuree(decrochage)}
+                </span>
+              )
+            ) : (
+              <span className="shrink-0 text-xs tabular-nums text-white">
+                {formatDuree(position)} / {formatDuree(duree)}
+              </span>
+            )}
           </div>
         )}
+
+        {enDirect &&
+          (decrochage > DECROCHAGE_TOLERE ? (
+            // Decroche du direct, par une pause ou un deplacement : la pastille
+            // devient le chemin du retour, comme chez YouTube.
+            <button
+              type="button"
+              onClick={revenirAuDirect}
+              className="ms-auto flex shrink-0 cursor-pointer items-center gap-2 rounded-md border-2 border-spanish-bg-lighter bg-spanish-bg-lighter/40 px-2.5 py-1 text-xs font-bold uppercase italic text-white transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-bg-lighter active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2"
+            >
+              <span className="size-2 rounded-full bg-white/50" />
+              revenir au direct
+            </button>
+          ) : (
+            <span className="ms-auto flex shrink-0 items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white">
+              <span className="relative flex size-2 items-center justify-center">
+                <span className="absolute size-2 rounded-full bg-white" />
+                <span className="absolute size-2 animate-ping rounded-full bg-white" />
+              </span>
+              en direct
+            </span>
+          ))}
 
         <button
           type="button"
