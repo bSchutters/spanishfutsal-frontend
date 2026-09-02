@@ -12,6 +12,8 @@ export type Live = {
   url: string;
   /** Absent si la diffusion saisie dans l'admin n'est pas sur YouTube. */
   videoId: string | null;
+  /** TEMPORAIRE : flux HLS d'une salle XbotGo, lu par notre propre lecteur. */
+  hlsUrl: string | null;
   viewers: number | null;
   match: LiveMatch | null;
 };
@@ -22,8 +24,10 @@ export type Live = {
  * lecteur, dans deux modes.
  */
 export type Lecture = {
-  mode: "direct" | "replay";
+  mode: "direct" | "replay" | "hls";
+  /** Vide en mode hls, ou c'est `hlsUrl` qui porte la source. */
   videoId: string;
+  hlsUrl?: string | null;
   url: string;
   affiche: string;
   contexte: string | null;

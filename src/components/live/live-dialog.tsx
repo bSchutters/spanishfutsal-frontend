@@ -5,6 +5,7 @@ import { ExternalLink, X } from "lucide-react";
 
 import { useLiveStore } from "@/store/useLiveStore";
 import YoutubePlayer from "./youtube-player";
+import HlsPlayer from "./hls-player";
 
 /**
  * Le lecteur, par-dessus la page.
@@ -62,7 +63,7 @@ export default function LiveDialog() {
 
   if (!lecture) return null;
 
-  const enDirect = lecture.mode === "direct";
+  const enDirect = lecture.mode !== "replay";
 
   return (
     <dialog
@@ -105,13 +106,16 @@ export default function LiveDialog() {
 
       {/* Monte a l'ouverture seulement : rien de YouTube n'est charge avant,
           et la fermeture demonte le lecteur, ce qui coupe le son. */}
-      {isOpen && (
-        <YoutubePlayer
-          videoId={lecture.videoId}
-          url={lecture.url}
-          mode={lecture.mode}
-        />
-      )}
+      {isOpen &&
+        (lecture.mode === "hls" ? (
+          <HlsPlayer url={lecture.hlsUrl as string} />
+        ) : (
+          <YoutubePlayer
+            videoId={lecture.videoId}
+            url={lecture.url}
+            mode={lecture.mode}
+          />
+        ))}
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
         <span className="opacity-80">{lecture.contexte ?? ""}</span>

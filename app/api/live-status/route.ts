@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
+import { extractRoomId, getXbotgoLive } from '@/lib/getXbotgoLive'
 import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
 // La fenetre de la rencontre : cinq minutes avant le coup d envoi, et la meme
@@ -123,6 +124,34 @@ export async function GET() {
       awayTeam: current.awayTeam,
       competition: current.competitionName,
       time: current.time,
+    }
+
+    // Une salle XbotGo collee dans le champ Lien Live se joue sur le site comme
+    // une diffusion YouTube : leur API rend une adresse HLS que notre lecteur
+    // lit directement, sans cadre ni page intermediaire.
+    const salleXbotgo = current.liveLink ? extractRoomId(current.liveLink) : null
+
+    if (salleXbotgo) {
+      const diffusion = await getXbotgoLive(salleXbotgo)
+
+      if (!diffusion) {
+        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_HEADERS })
+      }
+
+      return NextResponse.json(
+        {
+          live: true,
+          url: current.liveLink,
+          hlsUrl: diffusion.hlsUrl,
+          videoId: null,
+          viewers: diffusion.viewers,
+          title: diffusion.title,
+          source: 'xbotgo',
+          match: affiche,
+          nextCheckIn: RAPPEL_PENDANT,
+        },
+        { headers: CACHE_HEADERS }
+      )
     }
 
     // Le champ Lien Live de l admin l emporte sur la detection : il permet de

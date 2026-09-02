@@ -29,7 +29,12 @@ const CSP_PUBLIC = [
   // ne part chez Google avant que le visiteur ne lance la diffusion.
   "img-src 'self' data: blob: https://i.ytimg.com",
   "font-src 'self'",
-  "connect-src 'self'",
+  // TEMPORAIRE, le temps que le direct YouTube du club soit actif. Le lecteur
+  // HLS telecharge les segments depuis leur diffuseur et les assemble en
+  // memoire, d'ou `connect-src` pour les requetes et `media-src blob:` pour la
+  // source ainsi construite.
+  "connect-src 'self' https://prod-eu-live-pull.xbotgo.net",
+  "media-src 'self' blob: https://prod-eu-live-pull.xbotgo.net",
   // Seule ouverture de la politique : le lecteur du match en direct. Le
   // domaine sans cookie de YouTube, et lui seul, peut donc etre place dans un
   // cadre. Rien n'y est charge tant que le visiteur n'a pas clique.

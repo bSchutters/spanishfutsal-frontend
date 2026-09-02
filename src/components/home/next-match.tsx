@@ -107,7 +107,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
   // cette rencontre precise, et cette diffusion est sur YouTube donc lisible
   // sur le site. Sinon la carte reste un lien vers le calendrier.
   const ouvreLeLecteur =
-    live?.match?.id === nextMatch.id && Boolean(live.videoId);
+    live?.match?.id === nextMatch.id && Boolean(live.videoId || live.hlsUrl);
 
   const contenu = (
     <>
@@ -216,8 +216,9 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
           type="button"
           onClick={() =>
             ouvrir({
-              mode: "direct",
-              videoId: live!.videoId as string,
+              mode: live!.hlsUrl ? "hls" : "direct",
+              videoId: (live!.videoId ?? "") as string,
+              hlsUrl: live!.hlsUrl,
               url: live!.url,
               affiche: `${homeTeam} - ${awayTeam}`,
               contexte: `${nextMatch.competitionName} · ${nextMatch.time}`,
