@@ -4,9 +4,10 @@ import { getPayloadClient } from '@/lib/payload'
 import { extractRoomId, getXbotgoLive } from '@/lib/getXbotgoLive'
 import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
 
-// La fenetre de la rencontre : cinq minutes avant le coup d envoi, et la meme
-// duree de match que sur le front pour la fermer.
-const WINDOW_BEFORE_MS = 5 * 60 * 1000
+// La fenetre de la rencontre : un quart d heure avant le coup d envoi, et la
+// meme duree de match que sur le front pour la fermer. Pour un essai plus tot,
+// la case des parametres ouvre la porte sans toucher a cette fenetre.
+const WINDOW_BEFORE_MS = 15 * 60 * 1000
 const WINDOW_AFTER_MS = 70 * 60 * 1000
 
 // La fenetre de recherche, plus courte. La recherche coute cent unites de quota
@@ -83,6 +84,25 @@ async function memoriserLeReplay(matchId: number, url: string) {
 }
 
 /**
+ * La case « Verifier le direct XbotGo maintenant » des parametres.
+ *
+ * Elle sert aux essais sur place : le club arrive, lance sa diffusion et veut
+ * la voir sur le site sans attendre le coup d envoi. Elle ne vaut que pour
+ * XbotGo, dont l interrogation ne coute rien ; la recherche YouTube reste
+ * enfermee dans sa fenetre puisque c est elle qui consomme le quota.
+ */
+async function verificationForcee(): Promise<boolean> {
+  try {
+    const payload = await getPayloadClient()
+    const parametres = await payload.findGlobal({ slug: 'settings' })
+    return Boolean(parametres?.force_live_check)
+  } catch (error) {
+    console.error('Parametres illisibles :', error)
+    return false
+  }
+}
+
+/**
  * Y a-t-il une diffusion en cours, laquelle, et pour quelle rencontre.
  *
  * L interrogation de YouTube n a lieu que si une rencontre est en cours : sans
@@ -99,12 +119,22 @@ export async function GET() {
       .map((match) => kickoff(match.date, match.time))
       .filter((t) => !Number.isNaN(t))
 
-    const current = matchs.find((match) => {
+    let current = matchs.find((match) => {
       if (!match.date || !match.time) return false
       const start = kickoff(match.date, match.time)
       if (Number.isNaN(start)) return false
+
       return now >= start - WINDOW_BEFORE_MS && now < start + WINDOW_AFTER_MS
     })
+
+    // Hors fenetre, la case des parametres permet un essai sur place. Elle ne
+    // designe que des rencontres portant une salle XbotGo : la recherche
+    // YouTube n est jamais declenchee de cette facon, c est elle qui coute.
+    if (!current && (await verificationForcee())) {
+      current = matchs
+        .filter((match) => match.date && match.time && extractRoomId(match.liveLink ?? ''))
+        .sort((a, b) => Math.abs(kickoff(a.date, a.time) - now) - Math.abs(kickoff(b.date, b.time) - now))[0]
+    }
 
     if (!current) {
       return NextResponse.json(

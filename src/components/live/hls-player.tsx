@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  basculerPleinEcran as basculer,
+  suivrePleinEcran,
+} from "@/lib/pleinEcran";
 import {
   Maximize,
   Minimize,
@@ -128,12 +133,7 @@ export default function HlsPlayer({ url }: { url: string }) {
     };
   }, [url, essai]);
 
-  useEffect(() => {
-    const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", suivre);
-
-    return () => document.removeEventListener("fullscreenchange", suivre);
-  }, []);
+  useEffect(() => suivrePleinEcran(setPleinEcran), []);
 
   /**
    * Le bord du direct, tel que le flux le declare a l'instant.
@@ -210,12 +210,11 @@ export default function HlsPlayer({ url }: { url: string }) {
   }, [auBordDuDirect]);
 
   const basculerPleinEcran = useCallback(() => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else conteneur.current?.requestFullscreen();
+    basculer(conteneur.current, video.current);
   }, []);
 
   const habillageBouton =
-    "flex size-9 cursor-pointer items-center justify-center rounded-md text-white transition-[scale,color] duration-200 ease-[var(--ease-out-strong)] hover:text-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2";
+    "flex size-8 cursor-pointer items-center justify-center rounded-md text-white sm:size-9 transition-[scale,color] duration-200 ease-[var(--ease-out-strong)] hover:text-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2";
 
   return (
     <div ref={conteneur} className="relative aspect-video w-full bg-black">
@@ -259,9 +258,9 @@ export default function HlsPlayer({ url }: { url: string }) {
         <button
           type="button"
           onClick={basculerSon}
-          className="absolute inset-x-0 top-4 z-20 mx-auto flex w-fit cursor-pointer items-center gap-2 rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="absolute inset-x-0 top-2 z-20 mx-auto flex w-fit cursor-pointer items-center gap-2 rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-3 py-1 text-xs font-bold uppercase text-spanish-bg-dark sm:top-4 sm:px-4 sm:py-2 sm:text-sm transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          <VolumeX className="size-4" aria-hidden />
+          <VolumeX className="size-3.5 sm:size-4" aria-hidden />
           Activer le son
         </button>
       )}
@@ -273,26 +272,32 @@ export default function HlsPlayer({ url }: { url: string }) {
           aria-label="Reprendre la lecture"
           className="group absolute inset-0 z-[6] flex cursor-pointer items-center justify-center"
         >
-          <span className="flex size-16 items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
+          <span className="flex size-12 items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 sm:size-16 transition-colors duration-200 group-hover:bg-spanish-accent-2-dark">
             <Play
-              className="size-7 fill-spanish-bg-dark text-spanish-bg-dark"
+              className="size-5 fill-spanish-bg-dark text-spanish-bg-dark sm:size-7"
               aria-hidden
             />
           </span>
         </button>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 z-10 flex items-center gap-2 bg-gradient-to-t from-black via-black/80 to-transparent px-3 pb-3 pt-24 sm:gap-3 sm:px-4">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 bg-gradient-to-t from-black via-black/80 to-transparent px-2 pb-2 pt-12 sm:gap-3 sm:px-4 sm:pb-3 sm:pt-24">
         <button
           type="button"
           onClick={basculerLecture}
           aria-label={enLecture ? "Mettre en pause" : "Reprendre la lecture"}
-          className="flex size-11 cursor-pointer items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="flex size-9 cursor-pointer items-center justify-center rounded-full border-2 border-spanish-accent-2-dark bg-spanish-accent-2 text-spanish-bg-dark sm:size-11 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           {enLecture ? (
-            <Pause className="size-5 fill-spanish-bg-dark" aria-hidden />
+            <Pause
+              className="size-4 fill-spanish-bg-dark sm:size-5"
+              aria-hidden
+            />
           ) : (
-            <Play className="size-5 fill-spanish-bg-dark" aria-hidden />
+            <Play
+              className="size-4 fill-spanish-bg-dark sm:size-5"
+              aria-hidden
+            />
           )}
         </button>
 
@@ -303,9 +308,9 @@ export default function HlsPlayer({ url }: { url: string }) {
           className={habillageBouton}
         >
           {muet ? (
-            <VolumeX className="size-5" aria-hidden />
+            <VolumeX className="size-4 sm:size-5" aria-hidden />
           ) : (
-            <Volume2 className="size-5" aria-hidden />
+            <Volume2 className="size-4 sm:size-5" aria-hidden />
           )}
         </button>
 
@@ -322,7 +327,7 @@ export default function HlsPlayer({ url }: { url: string }) {
         <button
           type="button"
           onClick={revenirAuDirect}
-          className="ms-auto flex shrink-0 cursor-pointer items-center gap-2 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase italic text-white transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="ms-auto flex shrink-0 cursor-pointer items-center gap-2 rounded-md bg-red-600 px-2 py-0.5 text-[0.65rem] font-bold uppercase italic text-white sm:px-2.5 sm:py-1 sm:text-xs transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-700 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <span className="relative flex size-2 items-center justify-center">
             <span className="absolute size-2 rounded-full bg-white" />
@@ -338,9 +343,9 @@ export default function HlsPlayer({ url }: { url: string }) {
           className={habillageBouton}
         >
           {pleinEcran ? (
-            <Minimize className="size-5" aria-hidden />
+            <Minimize className="size-4 sm:size-5" aria-hidden />
           ) : (
-            <Maximize className="size-5" aria-hidden />
+            <Maximize className="size-4 sm:size-5" aria-hidden />
           )}
         </button>
       </div>
