@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  basculerPleinEcran as basculer,
+  suivrePleinEcran,
+} from "@/lib/pleinEcran";
 import {
   Maximize,
   Minimize,
@@ -128,12 +133,7 @@ export default function HlsPlayer({ url }: { url: string }) {
     };
   }, [url, essai]);
 
-  useEffect(() => {
-    const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", suivre);
-
-    return () => document.removeEventListener("fullscreenchange", suivre);
-  }, []);
+  useEffect(() => suivrePleinEcran(setPleinEcran), []);
 
   /**
    * Le bord du direct, tel que le flux le declare a l'instant.
@@ -210,8 +210,7 @@ export default function HlsPlayer({ url }: { url: string }) {
   }, [auBordDuDirect]);
 
   const basculerPleinEcran = useCallback(() => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else conteneur.current?.requestFullscreen();
+    basculer(conteneur.current, video.current);
   }, []);
 
   const habillageBouton =

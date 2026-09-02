@@ -35,6 +35,11 @@ const CSP_PUBLIC = [
   // source ainsi construite.
   "connect-src 'self' https://prod-eu-live-pull.xbotgo.net",
   "media-src 'self' blob: https://prod-eu-live-pull.xbotgo.net",
+  // hls.js decode les segments dans un worker pour laisser le fil principal
+  // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,
+  // et le decodage retombe sur le fil principal : tenable sur un ordinateur,
+  // hachant sur un telephone.
+  "worker-src 'self' blob:",
   // Seule ouverture de la politique : le lecteur du match en direct. Le
   // domaine sans cookie de YouTube, et lui seul, peut donc etre place dans un
   // cadre. Rien n'y est charge tant que le visiteur n'a pas clique.

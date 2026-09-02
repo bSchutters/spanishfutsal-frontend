@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  basculerPleinEcran as basculer,
+  suivrePleinEcran,
+} from "@/lib/pleinEcran";
 import {
   Maximize,
   Minimize,
@@ -242,12 +247,7 @@ export default function YoutubePlayer({
     return () => clearInterval(minuteur);
   }, [enDirect, pret]);
 
-  useEffect(() => {
-    const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", suivre);
-
-    return () => document.removeEventListener("fullscreenchange", suivre);
-  }, []);
+  useEffect(() => suivrePleinEcran(setPleinEcran), []);
 
   const basculerLecture = useCallback(() => {
     if (!lecteur.current) return;
@@ -295,8 +295,7 @@ export default function YoutubePlayer({
   }, []);
 
   const basculerPleinEcran = useCallback(() => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else conteneur.current?.requestFullscreen();
+    basculer(conteneur.current);
   }, []);
 
   const habillageBouton =
