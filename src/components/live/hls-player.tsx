@@ -81,6 +81,8 @@ export default function HlsPlayer({ url }: { url: string }) {
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
   const [pleinEcran, setPleinEcran] = useState(false);
+  // Incremente pour remonter le lecteur apres un echec.
+  const [essai, setEssai] = useState(0);
 
   useEffect(() => {
     const element = video.current;
@@ -124,7 +126,7 @@ export default function HlsPlayer({ url }: { url: string }) {
       annule = true;
       lecteur?.destroy();
     };
-  }, [url]);
+  }, [url, essai]);
 
   useEffect(() => {
     const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
@@ -133,13 +135,35 @@ export default function HlsPlayer({ url }: { url: string }) {
     return () => document.removeEventListener("fullscreenchange", suivre);
   }, []);
 
+  /**
+   * Le bord du direct, tel que le flux le declare a l'instant.
+   *
+   * Leur diffuseur ne garde que douze secondes en memoire, sur une fenetre qui
+   * glisse : une pause un peu longue laisse le lecteur en dehors, et il calerait
+   * sans ce rattrapage.
+   */
+  const auBordDuDirect = useCallback((element: HTMLVideoElement) => {
+    if (!element.seekable.length) return;
+
+    const bord = element.seekable.end(element.seekable.length - 1);
+    const debut = element.seekable.start(0);
+
+    if (element.currentTime < debut || element.currentTime > bord) {
+      element.currentTime = bord;
+    }
+  }, []);
+
   const basculerLecture = useCallback(() => {
     const element = video.current;
     if (!element) return;
 
-    if (element.paused) element.play();
-    else element.pause();
-  }, []);
+    if (element.paused) {
+      auBordDuDirect(element);
+      element.play();
+    } else {
+      element.pause();
+    }
+  }, [auBordDuDirect]);
 
   const basculerSon = useCallback(() => {
     const element = video.current;
@@ -173,6 +197,18 @@ export default function HlsPlayer({ url }: { url: string }) {
     element.play();
   }, []);
 
+  useEffect(() => {
+    const element = video.current;
+    if (!element) return;
+
+    // Le lecteur attend des donnees qui ne viendront pas : il est sorti de la
+    // fenetre. On le ramene au bord plutot que de le laisser caler.
+    const rattraper = () => auBordDuDirect(element);
+    element.addEventListener("waiting", rattraper);
+
+    return () => element.removeEventListener("waiting", rattraper);
+  }, [auBordDuDirect]);
+
   const basculerPleinEcran = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen();
     else conteneur.current?.requestFullscreen();
@@ -197,17 +233,19 @@ export default function HlsPlayer({ url }: { url: string }) {
 
       {erreur && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-spanish-bg-dark px-6 text-center">
-          <p className="font-semibold">
-            La diffusion ne peut pas être lue ici pour le moment.
-          </p>
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
+          <p className="font-semibold">La diffusion s&apos;est interrompue.</p>
+          {/* Reessayer plutot qu'un lien sortant : leur page reclame un mot de
+              passe, y envoyer un visiteur ne l'avancerait pas. */}
+          <button
+            type="button"
+            onClick={() => {
+              setErreur(false);
+              setEssai((n) => n + 1);
+            }}
             className="rounded-md border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-colors duration-200 hover:bg-spanish-accent-2-dark"
           >
-            Ouvrir le flux
-          </a>
+            Réessayer
+          </button>
         </div>
       )}
 

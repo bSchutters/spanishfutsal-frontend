@@ -120,17 +120,21 @@ export default function LiveDialog() {
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
         <span className="opacity-80">{lecture.contexte ?? ""}</span>
 
-        {/* Sortie de secours : une chaine peut refuser l'integration, et le
-            cadre n'affiche alors qu'un message d'erreur de YouTube. */}
-        <a
-          href={lecture.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1.5 rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
-        >
-          Ouvrir sur YouTube
-          <ExternalLink className="size-3.5" aria-hidden />
-        </a>
+        {/* Sortie de secours pour une video YouTube, dont la chaine peut
+            refuser l'integration. Une diffusion XbotGo ne se regarde que sur le
+            site : leur page reclame un mot de passe, l'y envoyer ne servirait a
+            rien. */}
+        {lecture.mode !== "hls" && (
+          <a
+            href={lecture.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
+          >
+            Ouvrir sur YouTube
+            <ExternalLink className="size-3.5" aria-hidden />
+          </a>
+        )}
       </div>
     </dialog>
   );

@@ -63,9 +63,9 @@ export const useLiveStore = create<State>((set, get) => ({
         : {
             live: null,
             hauteurBandeau: 0,
-            // La fin de la diffusion referme le lecteur, mais pas un replay,
-            // qui n'a rien a voir avec l'etat du direct.
-            lecture: get().lecture?.mode === "direct" ? null : get().lecture,
+            // La fin de la diffusion referme le lecteur, quelle qu'en soit la
+            // source. Seul un replay survit : il ne depend pas du direct.
+            lecture: get().lecture?.mode === "replay" ? get().lecture : null,
           },
     ),
   setHauteurBandeau: (hauteurBandeau) => set({ hauteurBandeau }),
