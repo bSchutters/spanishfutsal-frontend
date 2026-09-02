@@ -103,16 +103,20 @@ export default function LiveBanner() {
     : "Match en cours";
 
   const habillageAction =
-    "ms-auto rounded-md border-2 border-red-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "ms-auto shrink-0 rounded-md border-2 border-red-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-red-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
   return (
     <div
       ref={bandeau}
-      // Le blason de la navigation deborde sous la barre : le contenu du
-      // bandeau commence apres lui, faute de quoi il passe dessous.
-      className="flex flex-wrap items-center gap-x-4 gap-y-1 bg-red-600 py-2 pe-8 ps-28 text-white md:ps-32"
+      // Une seule ligne, toujours. En petite largeur le repli donnait trois
+      // lignes empilees et un bandeau plus haut que la navigation. C'est
+      // l'affiche qui cede, en se tronquant.
+      //
+      // Le blason de la navigation deborde sous la barre : le contenu commence
+      // apres lui, faute de quoi il passerait dessous.
+      className="flex items-center gap-3 bg-red-600 py-2 pe-3 ps-28 text-white sm:gap-4 sm:pe-8 md:ps-32"
     >
-      <span className="flex items-center gap-2 text-xs font-bold uppercase italic">
+      <span className="flex shrink-0 items-center gap-2 text-xs font-bold uppercase italic">
         <span className="relative flex size-2 items-center justify-center">
           <span className="absolute size-2 rounded-full bg-white" />
           <span className="absolute size-2 animate-ping rounded-full bg-white" />
@@ -120,10 +124,15 @@ export default function LiveBanner() {
         en direct
       </span>
 
-      <span className="text-sm font-semibold">{affiche}</span>
+      {/* Sous 640 px, le blason de la navigation mange cent douze pixels et il
+          ne reste pas de quoi lire une affiche : tronquee, elle ne disait plus
+          rien. L'essentiel tient sans elle, et la carte du match la porte. */}
+      <span className="hidden min-w-0 truncate text-sm font-semibold sm:block">
+        {affiche}
+      </span>
 
       {live.viewers !== null && (
-        <span className="hidden text-xs tabular-nums sm:inline">
+        <span className="hidden shrink-0 text-xs tabular-nums lg:inline">
           {new Intl.NumberFormat("fr-BE").format(live.viewers)}{" "}
           {live.viewers > 1 ? "spectateurs" : "spectateur"}
         </span>
