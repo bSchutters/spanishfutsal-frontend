@@ -5,6 +5,7 @@ import { ExternalLink, X } from "lucide-react";
 
 import { useLiveStore } from "@/store/useLiveStore";
 import YoutubePlayer from "./youtube-player";
+import HlsPlayer from "./hls-player";
 
 /**
  * Le lecteur, par-dessus la page.
@@ -62,7 +63,7 @@ export default function LiveDialog() {
 
   if (!lecture) return null;
 
-  const enDirect = lecture.mode === "direct";
+  const enDirect = lecture.mode !== "replay";
 
   return (
     <dialog
@@ -105,28 +106,35 @@ export default function LiveDialog() {
 
       {/* Monte a l'ouverture seulement : rien de YouTube n'est charge avant,
           et la fermeture demonte le lecteur, ce qui coupe le son. */}
-      {isOpen && (
-        <YoutubePlayer
-          videoId={lecture.videoId}
-          url={lecture.url}
-          mode={lecture.mode}
-        />
-      )}
+      {isOpen &&
+        (lecture.mode === "hls" ? (
+          <HlsPlayer url={lecture.hlsUrl as string} />
+        ) : (
+          <YoutubePlayer
+            videoId={lecture.videoId}
+            url={lecture.url}
+            mode={lecture.mode}
+          />
+        ))}
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
         <span className="opacity-80">{lecture.contexte ?? ""}</span>
 
-        {/* Sortie de secours : une chaine peut refuser l'integration, et le
-            cadre n'affiche alors qu'un message d'erreur de YouTube. */}
-        <a
-          href={lecture.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1.5 rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
-        >
-          Ouvrir sur YouTube
-          <ExternalLink className="size-3.5" aria-hidden />
-        </a>
+        {/* Sortie de secours pour une video YouTube, dont la chaine peut
+            refuser l'integration. Une diffusion XbotGo ne se regarde que sur le
+            site : leur page reclame un mot de passe, l'y envoyer ne servirait a
+            rien. */}
+        {lecture.mode !== "hls" && (
+          <a
+            href={lecture.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent"
+          >
+            Ouvrir sur YouTube
+            <ExternalLink className="size-3.5" aria-hidden />
+          </a>
+        )}
       </div>
     </dialog>
   );

@@ -48,6 +48,7 @@ export default function LiveBanner() {
                 ? {
                     url: data.url,
                     videoId: data.videoId ?? null,
+                    hlsUrl: data.hlsUrl ?? null,
                     viewers:
                       typeof data.viewers === "number" &&
                       data.viewers >= SEUIL_SPECTATEURS
@@ -128,13 +129,14 @@ export default function LiveBanner() {
         </span>
       )}
 
-      {live.videoId ? (
+      {live.hlsUrl || live.videoId ? (
         <button
           type="button"
           onClick={() =>
             ouvrir({
-              mode: "direct",
-              videoId: live.videoId as string,
+              mode: live.hlsUrl ? "hls" : "direct",
+              videoId: (live.videoId ?? "") as string,
+              hlsUrl: live.hlsUrl,
               url: live.url,
               affiche,
               contexte: live.match

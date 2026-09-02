@@ -195,7 +195,8 @@ export default function MatchsClient({
           // pour cette rencontre precise, et elle est sur YouTube donc lisible
           // sur le site.
           const ouvreLeLecteur =
-            live?.match?.id === match.id && Boolean(live.videoId);
+            live?.match?.id === match.id &&
+            Boolean(live.videoId || live.hlsUrl);
 
           // Le replay s'ouvre dans le lecteur du site s'il est sur YouTube.
           // Rempli a la main ou retenu par la route pendant la diffusion, le
