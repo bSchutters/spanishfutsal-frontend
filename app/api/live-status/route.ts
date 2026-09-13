@@ -2,13 +2,10 @@ import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
 import { extractRoomId, getXbotgoLive } from '@/lib/getXbotgoLive'
+import { coupDEnvoi as kickoff, dansLaFenetre } from '@/lib/fenetreDuMatch'
+import { compterLesSpectateurs } from '@/lib/audience'
+import { cloturerLaDiffusion } from '@/lib/rapportDeDiffusion'
 import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/lib/getYoutubeLive'
-
-// La fenetre de la rencontre : un quart d heure avant le coup d envoi, et la
-// meme duree de match que sur le front pour la fermer. Pour un essai plus tot,
-// la case des parametres ouvre la porte sans toucher a cette fenetre.
-const WINDOW_BEFORE_MS = 15 * 60 * 1000
-const WINDOW_AFTER_MS = 70 * 60 * 1000
 
 // La fenetre de recherche, plus courte. La recherche coute cent unites de quota
 // contre une pour tout le reste, et c est le seul appel qui tourne pour rien
@@ -31,24 +28,11 @@ const RAPPEL_LOIN = 3600
 
 const APPROCHE_MS = 6 * 60 * 60 * 1000
 
+// Avant cela, une salle eteinte veut dire que la diffusion n a pas encore
+// commence, ou qu elle a hoquete. Apres, c est une fin de rencontre.
+const CLOTURE_APRES_MS = 45 * 60 * 1000
+
 export const dynamic = 'force-dynamic'
-
-/**
- * La LFFS donne la date et l heure en heure belge, sans decalage ecrit. Le
- * navigateur du visiteur les lit donc juste, mais pas la fonction Vercel, qui
- * tourne en UTC : une rencontre de 20h30 y serait placee deux heures trop tot.
- */
-function brusselsOffset(utcMs: number): number {
-  const date = new Date(utcMs)
-  const local = new Date(date.toLocaleString('en-US', { timeZone: 'Europe/Brussels' }))
-  const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
-  return local.getTime() - utc.getTime()
-}
-
-function kickoff(date: string, time: string): number {
-  const naive = Date.parse(`${date}T${time.slice(0, 5)}:00Z`)
-  return Number.isNaN(naive) ? NaN : naive - brusselsOffset(naive)
-}
 
 /** Dans combien de secondes le navigateur a interet a redemander. */
 function rappel(coupsDEnvoi: number[], now: number, enCours: boolean): number {
@@ -146,13 +130,7 @@ export async function GET() {
       .map((match) => kickoff(match.date, match.time))
       .filter((t) => !Number.isNaN(t))
 
-    let current = matchs.find((match) => {
-      if (!match.date || !match.time) return false
-      const start = kickoff(match.date, match.time)
-      if (Number.isNaN(start)) return false
-
-      return now >= start - WINDOW_BEFORE_MS && now < start + WINDOW_AFTER_MS
-    })
+    let current = matchs.find((match) => dansLaFenetre(match, now))
 
     // Hors fenetre, la case des parametres permet un essai sur place. Elle ne
     // designe que des rencontres portant une salle XbotGo : la recherche
@@ -197,6 +175,14 @@ export async function GET() {
       const diffusion = await getXbotgoLive(salleXbotgo)
 
       if (!diffusion) {
+        // Salle eteinte alors que la rencontre est bien avancee : c'est une fin
+        // de diffusion, pas un essai avant le coup d envoi. Le rapport
+        // d audience est ecrit ici, une seule fois, et le rattrapage du matin
+        // sert de filet si personne n a constate cette fin.
+        if (now > coupDEnvoi + CLOTURE_APRES_MS) {
+          await cloturerLaDiffusion(current.id, `${current.homeTeam} - ${current.awayTeam}`)
+        }
+
         return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_HEADERS })
       }
 
@@ -206,7 +192,9 @@ export async function GET() {
           url: current.liveLink || reglages.salle,
           hlsUrl: diffusion.hlsUrl,
           videoId: null,
-          viewers: diffusion.viewers,
+          // Nos spectateurs, et non les leurs : leur compteur decrit les gens
+          // sur leur page, qui est vide depuis que le match se regarde ici.
+          viewers: await compterLesSpectateurs(current.id),
           title: diffusion.title,
           source: 'xbotgo',
           match: affiche,

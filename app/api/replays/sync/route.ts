@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getPayloadClient } from "@/lib/payload";
+import { balayerLesDiffusions } from "@/lib/rapportDeDiffusion";
 import { rattraperLesReplays } from "@/lib/trouverLesReplays";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Le rattrapage des replays, declenche de trois facons.
+ * Le rattrapage du matin, declenche de trois facons.
  *
  * - le cron de Vercel, une fois par jour, en GET avec le secret ;
  * - un administrateur connecte, en POST, pour ne pas attendre demain ;
@@ -34,10 +35,22 @@ async function estAdministrateur(request: NextRequest): Promise<boolean> {
   }
 }
 
+/**
+ * Le rattrapage du matin, celui de tout ce que la soiree a pu manquer.
+ *
+ * Deux taches, pour la meme raison : elles reparent apres coup ce qui depend de
+ * la presence de quelqu un sur le site. Le replay parce que la mise en ligne
+ * arrive le lendemain, le rapport d audience parce que la fin d une diffusion
+ * n est constatee que par un visiteur encore present.
+ */
 async function executer() {
   const rapport = await rattraperLesReplays();
+  const clotures = await balayerLesDiffusions();
 
-  return NextResponse.json(rapport, { status: rapport.erreur ? 502 : 200 });
+  return NextResponse.json(
+    { ...rapport, diffusionsExaminees: clotures },
+    { status: rapport.erreur ? 502 : 200 },
+  );
 }
 
 export async function GET(request: NextRequest) {

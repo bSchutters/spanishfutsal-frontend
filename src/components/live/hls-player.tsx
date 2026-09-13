@@ -6,6 +6,7 @@ import {
   basculerPleinEcran as basculer,
   suivrePleinEcran,
 } from "@/lib/pleinEcran";
+import { useBattementAudience } from "@/hooks/useBattementAudience";
 import { useLiveStore } from "@/store/useLiveStore";
 import {
   Maximize,
@@ -88,6 +89,11 @@ export default function HlsPlayer({ url }: { url: string }) {
   const lecteur = useRef<LecteurHls | null>(null);
 
   const reveiller = useLiveStore((s) => s.reveiller);
+  const matchId = useLiveStore((s) => s.live?.match?.id ?? null);
+
+  // Tant que ce lecteur est ouvert, le site sait qu'une personne de plus
+  // regarde. Ferme, le compteur la laisse expirer d'elle-meme.
+  useBattementAudience(matchId);
 
   const [pret, setPret] = useState(false);
   const [enLecture, setEnLecture] = useState(true);
