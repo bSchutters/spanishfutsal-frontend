@@ -50,8 +50,16 @@ Avec l'en-tete **`DATA-REGION: EU`**, sans quoi elle repond
 `ERR_REGION_NOT_EXIST`. Leur application le derive du parametre `region` de
 l'adresse de la salle.
 
-Ce qui en est lu : `playState` valant 1 quand la salle diffuse, `liveTitle`, et
-`livePlayUrl`, une chaine JSON imbriquee qui contient `hlsPlayUrl`.
+Ce qui en est lu : `playState` valant 1 quand la salle diffuse, et `livePlayUrl`,
+une chaine JSON imbriquee qui contient `hlsPlayUrl`.
+
+`liveTitle` est lu mais ne sert a rien : leur application le remplit toute seule
+avec l'adresse de courriel du diffuseur, du genre « Transmision en vivo de
+xxx@privaterelay.appleid.com ». Le site affiche l'affiche de la rencontre, prise
+dans le calendrier, et c'est heureux.
+
+Leur compteur `currentPlayer` n'est pas lu non plus : il compte les gens sur leur
+page, pas sur la notre.
 
 Trois choses a savoir :
 
@@ -61,23 +69,39 @@ Trois choses a savoir :
   finit par etre refusee. Le lecteur s'abonne donc a l'adresse fraiche et se
   rebranche tout seul quand la sienne est refusee, trois fois avant de rendre la
   main au visiteur.
-- **Leur memoire tampon fait douze secondes** (trois segments de quatre). Il n'y
-  a donc pas de retour arriere possible, et aucune barre de progression n'est
-  affichee.
+- **Leur liste de lecture ne declare que trois segments**, soit douze secondes.
+  hls.js garde toutefois ce qu'il a deja telecharge : sur une diffusion reelle,
+  la fenetre de retour observee montait a quarante puis soixante secondes au fil
+  de la lecture. Trop peu et trop variable pour offrir une barre de progression,
+  qui n'est donc pas affichee.
 
-### Leurs segments portent l'heure reelle
-
-Le `#EXT-X-MEDIA-SEQUENCE` de leur manifeste **est** l'horloge unix. Releve a
-17h28 heure belge le 2 septembre 2026, il valait `1788362880`, soit exactement
-`2026-09-02 15:28:00 UTC`, et il est aligne sur la grille de quatre secondes.
+### Le numero de segment, et pourquoi il ne faut pas s'y fier
 
 Leur manifeste ne porte pas `EXT-X-PROGRAM-DATE-TIME`, l'etiquette standard qui
-dirait la meme chose. La lecture se fait donc sur le numero de segment :
+dirait l'heure reelle de chaque segment. Une piste avait ete relevee a la place,
+et **elle s'est revelee fausse en general.**
+
+Sur la diffusion du club, le 2 septembre a 17h28 heure belge, le
+`#EXT-X-MEDIA-SEQUENCE` valait `1788362880`, soit exactement
+`2026-09-02 15:28:00 UTC`, et aligne sur la grille de quatre secondes. La
+coincidence est impossible : sur ce flux-la, le numero de segment etait bien
+l'horloge unix.
+
+Sur une seconde diffusion, relevee le 13 septembre, il n'en est rien : le numero
+retarde de quarante-trois minutes sur l'horloge et n'est pas aligne sur quatre.
+Cette diffusion etait servie par `prod-us-live-pull` quand celle du club l'etait
+par `prod-eu-live-pull`, ce qui laisse penser a deux reglages de segmenteur
+plutot qu'a une regle commune.
+
+**Consequence pour un tableau de score synchronise :** la formule
 
     seconde reelle affichee = frag.sn + (currentTime - frag.start)
 
-C'est ce qui permettra a un tableau de score maison de s'afficher au bon moment
-pour chaque spectateur, quel que soit son retard.
+ne vaut que si le flux du club numerote encore ses segments a l'heure, ce qui
+demande un nouveau releve a la prochaine diffusion. Un tableau de score ne doit
+donc pas reposer dessus seul. La parade qui marche sans elle reste la plus
+simple : l'operateur regarde le flux et non le terrain, et clique quand il voit
+l'action a l'ecran.
 
 ## Le replay
 
