@@ -9,8 +9,16 @@ import { BATTEMENT_S } from "./battement";
  * `pnpm test:audience`.
  */
 
-/** Duree creditee a un spectateur qui n'a envoye qu'un seul signe. */
-const DUREE_MINIMALE_MS = BATTEMENT_S * 1000;
+/**
+ * La duree d'un intervalle de presence.
+ *
+ * L'ecart entre le premier et le dernier signe, plus un battement : le dernier
+ * signe couvre les quarante-cinq secondes qui le suivent, et sans cette addition
+ * une presence d'un seul signe durerait zero. Le compte est juste a un battement
+ * pres, ce qui est la precision de la mesure elle-meme.
+ */
+const dureeDe = (trace: Trace) =>
+  Date.parse(trace.fin) - Date.parse(trace.debut) + BATTEMENT_S * 1000;
 
 const BARRES = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 
@@ -44,8 +52,15 @@ export function esquisse(courbe: number[]): string {
     .join("");
 }
 
+/**
+ * Un intervalle de presence, et non une personne : quelqu'un qui met en pause et
+ * revient un quart d'heure plus tard laisse deux intervalles. C'est ce qui
+ * permet a la courbe et a la pointe de ne pas le compter pendant son absence.
+ */
 export type Trace = {
   id: number | string;
+  /** Identifiant de session, tire au hasard. Plusieurs traces peuvent le porter. */
+  visiteur: string;
   debut: string;
   fin: string;
   mobile?: boolean | null;
@@ -132,21 +147,24 @@ export function resumer(traces: Trace[]): Rapport | null {
   const debut = Math.min(...debuts);
   const fin = Math.max(...fins);
 
-  const durees = traces.map((trace) =>
-    Math.max(
-      Date.parse(trace.fin) - Date.parse(trace.debut),
-      DUREE_MINIMALE_MS,
-    ),
-  );
-  const dureeMoyenne = durees.reduce((a, b) => a + b, 0) / durees.length;
+  // Les personnes, et non les intervalles : deux allers-retours d'un meme
+  // spectateur ne font pas deux spectateurs.
+  const personnes = new Set(traces.map((trace) => trace.visiteur));
 
-  const surTelephone = traces.filter((trace) => trace.mobile).length;
+  // Le temps reellement regarde, pauses et absences exclues, rapporte aux
+  // personnes et non aux intervalles.
+  const visionne = traces.reduce((total, trace) => total + dureeDe(trace), 0);
+
+  const surTelephone = new Set(
+    traces.filter((trace) => trace.mobile).map((trace) => trace.visiteur),
+  ).size;
 
   return {
-    uniques: traces.length,
+    uniques: personnes.size,
     pointe: pointeSimultanee(traces),
-    dureeMoyenneMinutes: Math.round((dureeMoyenne / 60_000) * 10) / 10,
-    partMobile: Math.round((surTelephone / traces.length) * 100),
+    dureeMoyenneMinutes:
+      Math.round((visionne / personnes.size / 60_000) * 10) / 10,
+    partMobile: Math.round((surTelephone / personnes.size) * 100),
     debut: new Date(debut).toISOString(),
     fin: new Date(fin).toISOString(),
     courbe: courbeParMinute(traces, debut, fin),

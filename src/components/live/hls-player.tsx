@@ -39,6 +39,18 @@ const REPRISES_MAX = 3;
 // rythme du bandeau, qui repond en une seconde quand on le reveille.
 const ATTENTE_ADRESSE_MS = 20_000;
 
+/**
+ * Lance la lecture en avalant les refus attendus.
+ *
+ * `play()` rend une promesse, et le navigateur la refuse regulierement sans que
+ * ce soit une panne : lecture automatique interdite, onglet mis en veille pour
+ * economiser la batterie, appel remplace par un autre. Sans ce filet, chacun de
+ * ces cas laissait une erreur rouge dans la console du visiteur.
+ */
+function lancer(element: HTMLVideoElement) {
+  element.play().catch(() => {});
+}
+
 type FabriqueHls = typeof Hls;
 
 let bibliotheque: Promise<FabriqueHls | null> | null = null;
@@ -69,10 +81,6 @@ export default function HlsPlayer({ url }: { url: string }) {
   const reveiller = useLiveStore((s) => s.reveiller);
   const matchId = useLiveStore((s) => s.live?.match?.id ?? null);
 
-  // Tant que ce lecteur est ouvert, le site sait qu'une personne de plus
-  // regarde. Ferme, le compteur la laisse expirer d'elle-meme.
-  useBattementAudience(matchId);
-
   const [pret, setPret] = useState(false);
   const [enLecture, setEnLecture] = useState(true);
   const [muet, setMuet] = useState(true);
@@ -83,6 +91,10 @@ export default function HlsPlayer({ url }: { url: string }) {
   const [essai, setEssai] = useState(0);
   // Vrai entre la panne et l'arrivee d'une adresse fraiche.
   const [reprise, setReprise] = useState(false);
+
+  // Tant que la lecture tourne, le site sait qu'une personne de plus regarde.
+  // En pause, ferme, ou l'onglet en arriere-plan, le compteur la laisse expirer.
+  useBattementAudience(matchId, enLecture);
 
   // L'adresse change a chaque verification du bandeau, parce qu'elle est signee.
   // Elle est suivie dans une reference et non dans les dependances d'un effet :
@@ -199,7 +211,7 @@ export default function HlsPlayer({ url }: { url: string }) {
       const element = video.current;
       if (element) {
         element.src = fraiche;
-        element.play();
+        lancer(element);
       }
     });
   }, []);
@@ -232,17 +244,34 @@ export default function HlsPlayer({ url }: { url: string }) {
     }
   }, []);
 
+  /** Retour au bord du direct, la ou le flux en est vraiment. */
+  const revenirAuDirect = useCallback(() => {
+    const element = video.current;
+    if (!element || !element.seekable.length) return;
+
+    element.currentTime = element.seekable.end(element.seekable.length - 1);
+    lancer(element);
+  }, []);
+
+  /**
+   * Reprendre, c'est revenir au direct.
+   *
+   * Sans cela, la reprise repartait de l'instant ou l'on avait mis en pause, et
+   * le spectateur regardait le match avec le retard de sa pause jusqu'a la fin.
+   * Mesure faite sur une vraie diffusion : vingt-deux secondes de retard apres
+   * une pause de meme duree. Un direct se regarde en direct ; celui qui veut
+   * revoir une action a le replay.
+   */
   const basculerLecture = useCallback(() => {
     const element = video.current;
     if (!element) return;
 
     if (element.paused) {
-      auBordDuDirect(element);
-      element.play();
+      revenirAuDirect();
     } else {
       element.pause();
     }
-  }, [auBordDuDirect]);
+  }, [revenirAuDirect]);
 
   const basculerSon = useCallback(() => {
     const element = video.current;
@@ -265,15 +294,6 @@ export default function HlsPlayer({ url }: { url: string }) {
       element.muted = false;
       setMuet(false);
     }
-  }, []);
-
-  /** Retour au bord du direct, la ou le flux en est vraiment. */
-  const revenirAuDirect = useCallback(() => {
-    const element = video.current;
-    if (!element || !element.seekable.length) return;
-
-    element.currentTime = element.seekable.end(element.seekable.length - 1);
-    element.play();
   }, []);
 
   useEffect(() => {

@@ -41,9 +41,16 @@ function identifiant(): string | null {
   }
 }
 
-export function useBattementAudience(matchId: number | null | undefined) {
+export function useBattementAudience(
+  matchId: number | null | undefined,
+  enLecture: boolean,
+) {
   useEffect(() => {
-    if (typeof matchId !== "number") return;
+    // Rien n'est compte si la lecture est en pause ou si l'onglet est passe a
+    // l'arriere-plan. Sans cela, un onglet oublie ouvert toute la soiree pesait
+    // autant qu'une personne devant son ecran, et la duree moyenne racontait
+    // n'importe quoi.
+    if (typeof matchId !== "number" || !enLecture) return;
 
     const visiteur = identifiant();
     if (!visiteur) return;
@@ -56,7 +63,7 @@ export function useBattementAudience(matchId: number | null | undefined) {
     let arrete = false;
 
     const battre = () => {
-      if (arrete) return;
+      if (arrete || document.hidden) return;
 
       fetch("/api/live-audience", {
         method: "POST",
@@ -72,9 +79,17 @@ export function useBattementAudience(matchId: number | null | undefined) {
     battre();
     const rythme = setInterval(battre, BATTEMENT_S * 1000);
 
+    // Le retour sur l'onglet recompte tout de suite, plutot que d'attendre le
+    // prochain battement : quelqu'un qui revient veut etre compte tout de suite.
+    const surRetour = () => {
+      if (!document.hidden) battre();
+    };
+    document.addEventListener("visibilitychange", surRetour);
+
     return () => {
       arrete = true;
       clearInterval(rythme);
+      document.removeEventListener("visibilitychange", surRetour);
     };
-  }, [matchId]);
+  }, [matchId, enLecture]);
 }

@@ -32,9 +32,14 @@ const PLAFOND_VISITEURS = 2000;
 /**
  * Enregistre le signe de vie d'un spectateur.
  *
- * Un enregistrement par personne et par rencontre : le premier signe le cree,
- * les suivants repoussent sa fin. Compter les battements plutot que les lignes
- * garde la table petite, et donne la duree de presence gratuitement.
+ * Une ligne est un intervalle de presence, pas une personne. Tant que les signes
+ * s'enchainent, le meme intervalle s'allonge ; apres un silence plus long que la
+ * fenetre de presence, un nouvel intervalle s'ouvre.
+ *
+ * C'est ce qui rend la courbe honnete : quelqu'un qui met en pause et revient un
+ * quart d'heure plus tard ne doit pas compter comme present pendant tout ce
+ * temps. Les deux lignes portent le meme identifiant de visiteur, donc il reste
+ * une seule personne au comptage.
  */
 export async function enregistrerBattement(
   matchId: number,
@@ -49,15 +54,19 @@ export async function enregistrerBattement(
     where: {
       and: [{ match: { equals: matchId } }, { visiteur: { equals: visiteur } }],
     },
+    sort: "-fin",
     limit: 1,
     depth: 0,
   });
 
   const trace = docs[0] as
-    | { id: number | string; battements?: number }
+    | { id: number | string; fin: string; battements?: number }
     | undefined;
 
-  if (trace) {
+  // Le dernier signe est-il assez recent pour prolonger le meme intervalle ?
+  const enchaine = trace && Date.parse(trace.fin) > Date.now() - PRESENCE_MS;
+
+  if (trace && enchaine) {
     await payload.update({
       collection: "live-audience",
       id: trace.id,

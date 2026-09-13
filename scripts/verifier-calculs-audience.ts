@@ -13,9 +13,15 @@ import { courbeParMinute, esquisse, pointeSimultanee, resumer, type Trace } from
 const MINUTE = 60_000
 const DEPART = Date.parse('2026-09-12T20:00:00Z')
 
-/** Une trace, exprimee en minutes depuis le depart. */
-const trace = (arrivee: number, depart: number, mobile = false): Trace => ({
-  id: `${arrivee}-${depart}`,
+/**
+ * Un intervalle de presence, exprime en minutes depuis le depart.
+ *
+ * Le visiteur est unique a chaque trace par defaut ; le passer explicitement
+ * decrit quelqu'un qui part et revient, donc deux intervalles pour une personne.
+ */
+const trace = (arrivee: number, depart: number, mobile = false, visiteur?: string): Trace => ({
+  id: `${arrivee}-${depart}-${visiteur ?? ''}`,
+  visiteur: visiteur ?? `v${arrivee}-${depart}`,
   debut: new Date(DEPART + arrivee * MINUTE).toISOString(),
   fin: new Date(DEPART + depart * MINUTE).toISOString(),
   mobile,
@@ -90,8 +96,9 @@ const rapport = resumer([trace(0, 60, true), trace(10, 40, true), trace(30, 35, 
 
 verifie('resume, spectateurs differents', rapport?.uniques, 3)
 verifie('resume, pointe', rapport?.pointe, 3)
-// Soixante, trente et cinq minutes : trente-et-une virgule sept de moyenne.
-verifie('resume, duree moyenne', rapport?.dureeMoyenneMinutes, 31.7)
+// Soixante, trente et cinq minutes regardees, plus un battement chacune, pour
+// trois personnes.
+verifie('resume, duree moyenne par personne', rapport?.dureeMoyenneMinutes, 32.4)
 verifie('resume, part de telephones', rapport?.partMobile, 67)
 verifie('resume, premiere arrivee', rapport?.debut, new Date(DEPART).toISOString())
 verifie('resume, dernier depart', rapport?.fin, new Date(DEPART + 60 * MINUTE).toISOString())
@@ -101,6 +108,18 @@ verifie('resume, longueur de la courbe', rapport?.courbe.length, 61)
 // est credite d'un battement, sinon la moyenne serait tiree vers le bas par
 // tous ceux qui ouvrent et referment.
 verifie('resume, un seul battement credite un battement', resumer([trace(0, 0)])?.dureeMoyenneMinutes, 0.8)
+
+// --- Le spectateur qui part et revient ---
+
+// Deux intervalles pour une seule personne : c'est ce qui separe le comptage des
+// gens de celui des presences.
+const allerRetour = [trace(0, 5, false, 'meme'), trace(20, 25, false, 'meme')]
+
+verifie('aller-retour, une seule personne', resumer(allerRetour)?.uniques, 1)
+verifie('aller-retour, jamais deux en meme temps', pointeSimultanee(allerRetour), 1)
+verifie('aller-retour, absent pendant son absence', courbeParMinute(allerRetour, DEPART, DEPART + 25 * MINUTE)[10], 0)
+// Deux fois cinq minutes plus deux battements : la pause n'est pas comptee.
+verifie('aller-retour, seul le temps regarde compte', resumer(allerRetour)?.dureeMoyenneMinutes, 11.5)
 
 console.log(echecs ? `\n${echecs} cas en echec` : '\nTous les cas passent')
 process.exit(echecs ? 1 : 0)
