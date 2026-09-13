@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, isAdminOrManager } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Matches: CollectionConfig = {
@@ -12,14 +12,15 @@ export const Matches: CollectionConfig = {
   admin: {
     useAsTitle: 'home_team',
     defaultColumns: ['home_team', 'away_team', 'score_home', 'score_away', 'date', 'serie_reference'],
+    hidden: isHidden('matches'),
   },
   access: {
     read: () => true,
-    create: isAdminOrManager,
-    update: isAdminOrManager,
-    delete: isAdmin,
+    create: canWrite('matches'),
+    update: canWrite('matches'),
+    delete: canDelete('matches'),
   },
-  fields: [
+  fields: withFieldPermissions('matches', [
     {
       name: 'lffs_id',
       type: 'number',
@@ -183,5 +184,5 @@ export const Matches: CollectionConfig = {
         },
       ],
     },
-  ],
+  ]),
 }

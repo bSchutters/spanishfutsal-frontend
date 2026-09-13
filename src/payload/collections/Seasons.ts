@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Seasons: CollectionConfig = {
@@ -7,13 +7,13 @@ export const Seasons: CollectionConfig = {
   labels: { singular: 'Saison', plural: 'Saisons' },
   admin: {
     useAsTitle: 'name',
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: isHidden('seasons'),
   },
   access: {
     read: () => true,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    create: canWrite('seasons'),
+    update: canWrite('seasons'),
+    delete: canDelete('seasons'),
   },
   hooks: {
     beforeChange: [
@@ -33,7 +33,7 @@ export const Seasons: CollectionConfig = {
     afterChange: [revalidateAfterChange(['seasons', 'rankings', 'matches'])],
     afterDelete: [revalidateAfterDelete(['seasons'])],
   },
-  fields: [
+  fields: withFieldPermissions('seasons', [
     {
       name: 'name',
       type: 'text',
@@ -79,5 +79,5 @@ export const Seasons: CollectionConfig = {
       type: 'date',
       label: 'Date de fin',
     },
-  ],
+  ]),
 }

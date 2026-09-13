@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, isAdminOrManager } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -28,16 +28,19 @@ export const Media: CollectionConfig = {
       withoutEnlargement: true,
     },
   },
+  admin: {
+    hidden: isHidden('media'),
+  },
   access: {
     read: () => true,
-    create: isAdminOrManager,
-    update: isAdminOrManager,
-    delete: isAdmin,
+    create: canWrite('media'),
+    update: canWrite('media'),
+    delete: canDelete('media'),
   },
-  fields: [
+  fields: withFieldPermissions('media', [
     {
       name: 'alt',
       type: 'text',
     },
-  ],
+  ]),
 }
