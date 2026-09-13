@@ -11,7 +11,9 @@
     "db:refresh": "node scripts/db-refresh.mjs",
     "schema:push": "node scripts/db-schema-push.mjs",
     "schema:push:prod": "node scripts/db-schema-push.mjs --prod",
-    "test:replays": "tsx scripts/verifier-rapprochement-replays.ts"
+    "test:replays": "tsx scripts/verifier-rapprochement-replays.ts",
+    "test:audience": "tsx scripts/verifier-calculs-audience.ts",
+    "test": "tsx scripts/verifier-rapprochement-replays.ts && tsx scripts/verifier-calculs-audience.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

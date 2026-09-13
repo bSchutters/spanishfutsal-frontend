@@ -1,4 +1,5 @@
-import { calculerLeRapport, type Rapport } from "./audience";
+import { calculerLeRapport } from "./audience";
+import { esquisse, type Rapport } from "./audienceCalculs";
 import { coupDEnvoi, FENETRE_APRES_MS } from "./fenetreDuMatch";
 import { getMatchs } from "./getMatchs";
 import { getPayloadClient } from "./payload";
@@ -14,25 +15,6 @@ import { getPayloadClient } from "./payload";
  * encore present comme par le rattrapage du matin. La case « rapport envoye »
  * est ce qui garantit un seul message.
  */
-
-const BARRES = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-
-/** La courbe de la soiree, ramenee a une ligne lisible dans un message. */
-function esquisse(courbe: number[]): string {
-  if (!courbe.length) return "";
-
-  const haut = Math.max(...courbe);
-  if (haut <= 0) return "";
-
-  // Une minute sur deux au-dela de soixante points : une ligne de cent barres
-  // ne se lit plus sur un telephone.
-  const pas = Math.ceil(courbe.length / 60);
-  const points = courbe.filter((_, index) => index % pas === 0);
-
-  return points
-    .map((valeur) => BARRES[Math.min(BARRES.length - 1, Math.round((valeur / haut) * (BARRES.length - 1)))])
-    .join("");
-}
 
 const heure = (iso: string | null) =>
   iso

@@ -1,5 +1,8 @@
+import { resumer, type Rapport, type Trace } from "./audienceCalculs";
 import { BATTEMENT_S, TOLERANCE_BATTEMENTS } from "./battement";
 import { getPayloadClient } from "./payload";
+
+export type { Rapport };
 
 /**
  * Le comptage des spectateurs, chez nous.
@@ -15,9 +18,6 @@ import { getPayloadClient } from "./payload";
 /** Au-dela de ce delai sans signe, le spectateur n'est plus compte comme present. */
 const PRESENCE_MS = TOLERANCE_BATTEMENTS * BATTEMENT_S * 1000;
 
-/** Duree creditee a un spectateur qui n'a envoye qu'un seul signe. */
-const DUREE_MINIMALE_MS = BATTEMENT_S * 1000;
-
 /**
  * Nombre de spectateurs differents admis pour une rencontre.
  *
@@ -28,13 +28,6 @@ const DUREE_MINIMALE_MS = BATTEMENT_S * 1000;
  * un club de futsal, et seule la creation d'une nouvelle ligne le consulte.
  */
 const PLAFOND_VISITEURS = 2000;
-
-type Trace = {
-  id: number | string;
-  debut: string;
-  fin: string;
-  mobile?: boolean | null;
-};
 
 /**
  * Enregistre le signe de vie d'un spectateur.
@@ -118,65 +111,7 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
   }
 }
 
-export type Rapport = {
-  uniques: number;
-  pointe: number;
-  dureeMoyenneMinutes: number;
-  partMobile: number;
-  debut: string | null;
-  fin: string | null;
-  /** Spectateurs simultanes, minute par minute. */
-  courbe: number[];
-};
-
-/**
- * La pointe simultanee, par balayage des arrivees et des departs.
- *
- * C'est le chiffre qui decrit une audience : le total des visiteurs melange
- * ceux qui sont restes une heure et ceux qui ont ouvert par curiosite.
- */
-function pointeSimultanee(traces: Trace[]): number {
-  const mouvements: { instant: number; delta: number }[] = [];
-
-  for (const trace of traces) {
-    mouvements.push({ instant: Date.parse(trace.debut), delta: 1 });
-    mouvements.push({ instant: Date.parse(trace.fin), delta: -1 });
-  }
-
-  // A instant egal, les departs d'abord : deux spectateurs qui se croisent a la
-  // seconde pres ne font pas une pointe de deux.
-  mouvements.sort((a, b) => a.instant - b.instant || a.delta - b.delta);
-
-  let presents = 0;
-  let pointe = 0;
-
-  for (const { delta } of mouvements) {
-    presents += delta;
-    if (presents > pointe) pointe = presents;
-  }
-
-  return pointe;
-}
-
-/** Le nombre de presents a chaque minute, du premier arrive au dernier parti. */
-function courbeParMinute(traces: Trace[], debut: number, fin: number): number[] {
-  const minutes = Math.max(1, Math.ceil((fin - debut) / 60_000));
-  const courbe: number[] = [];
-
-  for (let minute = 0; minute < minutes; minute += 1) {
-    const instant = debut + minute * 60_000;
-    courbe.push(
-      traces.filter(
-        (trace) =>
-          Date.parse(trace.debut) <= instant && Date.parse(trace.fin) >= instant,
-      ).length,
-    );
-  }
-
-  return courbe;
-}
-
-/** Les chiffres d'une diffusion, calcules depuis ses traces. */
+/** Les chiffres d'une diffusion, lus en base puis resumes. */
 export async function calculerLeRapport(matchId: number): Promise<Rapport | null> {
   const payload = await getPayloadClient();
 
@@ -188,28 +123,5 @@ export async function calculerLeRapport(matchId: number): Promise<Rapport | null
     depth: 0,
   });
 
-  const traces = docs as unknown as Trace[];
-  if (!traces.length) return null;
-
-  const debuts = traces.map((trace) => Date.parse(trace.debut));
-  const fins = traces.map((trace) => Date.parse(trace.fin));
-  const debut = Math.min(...debuts);
-  const fin = Math.max(...fins);
-
-  const durees = traces.map((trace) =>
-    Math.max(Date.parse(trace.fin) - Date.parse(trace.debut), DUREE_MINIMALE_MS),
-  );
-  const dureeMoyenne = durees.reduce((a, b) => a + b, 0) / durees.length;
-
-  const surTelephone = traces.filter((trace) => trace.mobile).length;
-
-  return {
-    uniques: traces.length,
-    pointe: pointeSimultanee(traces),
-    dureeMoyenneMinutes: Math.round((dureeMoyenne / 60_000) * 10) / 10,
-    partMobile: Math.round((surTelephone / traces.length) * 100),
-    debut: new Date(debut).toISOString(),
-    fin: new Date(fin).toISOString(),
-    courbe: courbeParMinute(traces, debut, fin),
-  };
+  return resumer(docs as unknown as Trace[]);
 }
