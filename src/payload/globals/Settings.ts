@@ -35,6 +35,16 @@ export const Settings: GlobalConfig = {
       },
     },
     {
+      name: 'replays_auto',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Rattrapage automatique des replays',
+      admin: {
+        description:
+          "Une fois par jour, cherche sur la chaine YouTube du club la video de chaque rencontre jouee dont le champ Lien Replay est encore vide, et le remplit. La reconnaissance se fait sur le nom de l'adversaire, et sur la date quand elle est ecrite dans le titre. Laisse decoche, rien n'est ecrit dans les fiches de match.",
+      },
+    },
+    {
       name: 'report_webhook',
       type: 'text',
       label: 'Webhook du rapport de diffusion',

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type Hls from "hls.js";
+
 import {
   basculerPleinEcran as basculer,
   suivrePleinEcran,
@@ -29,8 +31,6 @@ import {
  * que le visiteur ne voie aucune difference selon la source.
  */
 
-const HLS = "/hls.light.min.js";
-
 // Nombre de reprises automatiques avant de rendre la main au visiteur. Trois
 // suffisent : au-dela, ce n'est plus une adresse perimee, c'est une panne.
 const REPRISES_MAX = 3;
@@ -39,54 +39,32 @@ const REPRISES_MAX = 3;
 // rythme du bandeau, qui repond en une seconde quand on le reveille.
 const ATTENTE_ADRESSE_MS = 20_000;
 
-type IncidentHls = { fatal?: boolean; details?: string };
+type FabriqueHls = typeof Hls;
 
-type LecteurHls = {
-  loadSource: (url: string) => void;
-  attachMedia: (video: HTMLVideoElement) => void;
-  startLoad: () => void;
-  destroy: () => void;
-  on: (evenement: string, rappel: (e: unknown, d: IncidentHls) => void) => void;
-};
+let bibliotheque: Promise<FabriqueHls | null> | null = null;
 
-type FabriqueHls = {
-  new (options?: Record<string, unknown>): LecteurHls;
-  isSupported: () => boolean;
-  Events: { ERROR: string };
-};
-
-declare global {
-  interface Window {
-    Hls?: FabriqueHls;
-  }
-}
-
-let scriptCharge: Promise<FabriqueHls | null> | null = null;
-
-/** Le lecteur n'est telecharge qu'une fois, et seulement s'il sert. */
+/**
+ * La bibliotheque, chargee une fois et seulement si elle sert.
+ *
+ * Import dynamique, donc paquet separe : rien de tout cela ne part avec les
+ * pages, seulement quand un visiteur clique sur Regarder. La variante « light »
+ * laisse de cote les pistes audio alternatives, les sous-titres et le
+ * chiffrement, dont ce flux n'a pas l'usage.
+ */
 function chargerHls(): Promise<FabriqueHls | null> {
-  if (scriptCharge) return scriptCharge;
+  if (!bibliotheque) {
+    bibliotheque = import("hls.js/light")
+      .then((module) => module.default)
+      .catch(() => null);
+  }
 
-  scriptCharge = new Promise((resoudre) => {
-    if (window.Hls) {
-      resoudre(window.Hls);
-      return;
-    }
-
-    const balise = document.createElement("script");
-    balise.src = HLS;
-    balise.onload = () => resoudre(window.Hls ?? null);
-    balise.onerror = () => resoudre(null);
-    document.head.appendChild(balise);
-  });
-
-  return scriptCharge;
+  return bibliotheque;
 }
 
 export default function HlsPlayer({ url }: { url: string }) {
   const conteneur = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const lecteur = useRef<LecteurHls | null>(null);
+  const lecteur = useRef<Hls | null>(null);
 
   const reveiller = useLiveStore((s) => s.reveiller);
   const matchId = useLiveStore((s) => s.live?.match?.id ?? null);

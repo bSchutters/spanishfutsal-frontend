@@ -8,7 +8,14 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Le rattrapage du matin, declenche de trois facons.
+ * Le rattrapage du matin, celui de tout ce que la soiree a pu manquer.
+ *
+ * Deux taches, pour la meme raison : elles reparent apres coup ce qui depend de
+ * la presence de quelqu'un sur le site. Le rapport d'audience parce que la fin
+ * d'une diffusion n'est constatee que par un visiteur encore present, le replay
+ * parce que la mise en ligne arrive le lendemain.
+ *
+ * Declenchee de trois facons :
  *
  * - le cron de Vercel, une fois par jour, en GET avec le secret ;
  * - un administrateur connecte, en POST, pour ne pas attendre demain ;
@@ -35,22 +42,31 @@ async function estAdministrateur(request: NextRequest): Promise<boolean> {
   }
 }
 
-/**
- * Le rattrapage du matin, celui de tout ce que la soiree a pu manquer.
- *
- * Deux taches, pour la meme raison : elles reparent apres coup ce qui depend de
- * la presence de quelqu un sur le site. Le replay parce que la mise en ligne
- * arrive le lendemain, le rapport d audience parce que la fin d une diffusion
- * n est constatee que par un visiteur encore present.
- */
 async function executer() {
+  const diffusionsExaminees = await balayerLesDiffusions();
+
+  // Le rattrapage des replays attend sa case dans les parametres. Il ecrit dans
+  // les fiches de match, ce qui ne se declenche pas sans l'avoir voulu.
+  if (!(await replaysAutomatiques())) {
+    return NextResponse.json({ diffusionsExaminees, replays: 'en pause' });
+  }
+
   const rapport = await rattraperLesReplays();
-  const clotures = await balayerLesDiffusions();
 
   return NextResponse.json(
-    { ...rapport, diffusionsExaminees: clotures },
+    { diffusionsExaminees, ...rapport },
     { status: rapport.erreur ? 502 : 200 },
   );
+}
+
+async function replaysAutomatiques(): Promise<boolean> {
+  try {
+    const payload = await getPayloadClient();
+    const parametres = await payload.findGlobal({ slug: 'settings' });
+    return Boolean(parametres?.replays_auto);
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(request: NextRequest) {

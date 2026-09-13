@@ -24,7 +24,10 @@ Dans **Parametres** de l'administration :
   la fenetre du match, le temps d'un essai en arrivant sur place. Sans effet sur
   YouTube. A decocher ensuite.
 - **Webhook du rapport de diffusion** : ou envoyer le compte rendu d'audience a
-  la fin de chaque direct.
+  la fin de chaque direct. Une adresse de webhook Discord, de bot Telegram, ou de
+  n'importe quel service qui accepte un message ; la forme du corps envoye
+  s'adapte a la destination. Laisse vide, le rapport reste dans l'administration.
+- **Rattrapage automatique des replays** : en pause, voir plus bas.
 
 Sur un **match** precis, le champ **Lien Live** l'emporte sur la salle des
 parametres. Il sert a la rencontre exceptionnelle diffusee ailleurs : un lien
@@ -78,10 +81,14 @@ pour chaque spectateur, quel que soit son retard.
 
 ## Le replay
 
+**En pause.** Le mecanisme est en place mais sa case n'est pas cochee : rien ne
+s'ecrit dans les fiches de match. Pour l'activer, cocher **Rattrapage
+automatique des replays** dans les Parametres.
+
 Le flux ne survit pas a la rencontre, son adresse expire. Le replay vient donc de
 la mise en ligne de l'enregistrement sur la chaine YouTube du club, et le champ
-**Lien Replay** se remplit tout seul : un rattrapage quotidien lit les dernieres
-mises en ligne et les rapproche des rencontres jouees.
+**Lien Replay** peut se remplir tout seul : un rattrapage quotidien lit les
+dernieres mises en ligne et les rapproche des rencontres jouees.
 
 Deux signaux sont exiges ensemble, le nom de l'adversaire et soit la date ecrite
 dans le titre, soit une mise en ligne dans les trois semaines. Une date dans le
@@ -108,15 +115,19 @@ pousse vers le webhook des parametres : pointe simultanee, spectateurs
 differents, duree moyenne, part de telephones, et la courbe de la soiree. Il
 n'apparait nulle part sur le site public.
 
+Cette fin est constatee par le dernier visiteur encore present. Si tout le monde
+ferme son onglet au coup de sifflet, personne ne la constate : le rattrapage
+quotidien (`/api/live-catchup`, a 9h) sert alors de filet.
+
 ## Le quota YouTube
 
-Il ne se consomme plus. La recherche, qui coute cent unites, ne s'execute que si
-aucun lien de diffusion n'est connu ; comme la salle du club est reglee dans les
-parametres, elle ne part plus jamais. Il reste deux unites par jour pour le
-rattrapage des replays, sur dix mille.
+Il ne se consomme plus du tout. La recherche, qui coute cent unites, ne s'execute
+que si aucun lien de diffusion n'est connu ; comme la salle du club est reglee
+dans les parametres, elle ne part plus jamais. Le rattrapage des replays, deux
+unites par jour sur dix mille, est en pause.
 
-La cle d'API YouTube devient donc facultative pour le direct. Elle reste
-necessaire au rattrapage des replays.
+La cle d'API YouTube devient donc facultative pour le direct. Elle redeviendra
+necessaire le jour ou le rattrapage des replays sera active.
 
 ## Ce qui n'est pas fait
 
