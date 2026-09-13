@@ -107,7 +107,9 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
     const payload = await getPayloadClient();
     const depuis = new Date(Date.now() - PRESENCE_MS).toISOString();
 
-    const { totalDocs } = await payload.count({
+    // Des personnes, et non des lignes : une meme personne peut en avoir
+    // plusieurs, et deux battements partis ensemble en creent deux d'un coup.
+    const { docs } = await payload.find({
       collection: "live-audience",
       where: {
         and: [
@@ -115,9 +117,14 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
           { fin: { greater_than: depuis } },
         ],
       },
+      limit: 1000,
+      pagination: false,
+      depth: 0,
     });
 
-    return totalDocs;
+    return new Set(
+      docs.map((trace) => (trace as unknown as { visiteur: string }).visiteur),
+    ).size;
   } catch (error) {
     // Le bandeau se passe tres bien d'un compteur ; il ne se passe pas d'exister.
     console.error("Comptage des spectateurs indisponible :", error);

@@ -121,5 +121,17 @@ verifie('aller-retour, absent pendant son absence', courbeParMinute(allerRetour,
 // Deux fois cinq minutes plus deux battements : la pause n'est pas comptee.
 verifie('aller-retour, seul le temps regarde compte', resumer(allerRetour)?.dureeMoyenneMinutes, 11.5)
 
+// --- Les presences en double ---
+
+// Deux battements partis ensemble creent deux presences pour une seule
+// personne : c'est arrive des le premier essai sur un vrai direct. Elles sont
+// fusionnees avant tout calcul.
+const doublon = [trace(0, 5, false, 'meme'), trace(0, 6, false, 'meme')]
+
+verifie('doublon, une seule personne', resumer(doublon)?.uniques, 1)
+verifie('doublon, jamais deux en meme temps', resumer(doublon)?.pointe, 1)
+// Une seule presence de six minutes, plus un battement.
+verifie('doublon, duree non doublee', resumer(doublon)?.dureeMoyenneMinutes, 6.8)
+
 console.log(echecs ? `\n${echecs} cas en echec` : '\nTous les cas passent')
 process.exit(echecs ? 1 : 0)

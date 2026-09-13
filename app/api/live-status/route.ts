@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
@@ -33,6 +34,24 @@ const APPROCHE_MS = 6 * 60 * 60 * 1000
 const CLOTURE_APRES_MS = 45 * 60 * 1000
 
 export const dynamic = 'force-dynamic'
+
+/**
+ * Une salle imposee par le cookie `salle-essai`, en developpement seulement.
+ *
+ * Eprouver le direct demande un direct, et il ne s'en presente pas sur commande.
+ * Ce detour joue n'importe quelle salle en cours sur le site lui-meme, bandeau
+ * et lecteur compris, sans attendre une rencontre et sans ecrire dans les
+ * parametres, qui sont partages avec la production.
+ *
+ * Le garde sur l'environnement est ce qui compte : en production, ce cookie ne
+ * peut rien, quoi qu'on y mette.
+ */
+async function salleDEssai(): Promise<string | null> {
+  if (process.env.NODE_ENV === 'production') return null
+
+  const valeur = (await cookies()).get('salle-essai')?.value ?? ''
+  return /^\d+$/.test(valeur) ? valeur : null
+}
 
 /** Dans combien de secondes le navigateur a interet a redemander. */
 function rappel(coupsDEnvoi: number[], now: number, enCours: boolean): number {
@@ -130,7 +149,17 @@ export async function GET() {
       .map((match) => kickoff(match.date, match.time))
       .filter((t) => !Number.isNaN(t))
 
+    const essai = await salleDEssai()
+
     let current = matchs.find((match) => dansLaFenetre(match, now))
+
+    // Hors fenetre, une salle d'essai designe la rencontre la plus proche, pour
+    // que l'affiche et le compteur aient de quoi s'accrocher.
+    if (!current && essai) {
+      current = matchs
+        .filter((match) => match.date && match.time)
+        .sort((a, b) => Math.abs(kickoff(a.date, a.time) - now) - Math.abs(kickoff(b.date, b.time) - now))[0]
+    }
 
     // Hors fenetre, la case des parametres permet un essai sur place. Elle ne
     // designe que des rencontres portant une salle XbotGo : la recherche
@@ -166,7 +195,7 @@ export async function GET() {
     //
     // Le champ Lien Live du match l emporte sur la salle des parametres, pour
     // la rencontre exceptionnelle diffusee ailleurs.
-    const salleXbotgo = current.liveLink ? extractRoomId(current.liveLink) : salleDuClub
+    const salleXbotgo = essai ?? (current.liveLink ? extractRoomId(current.liveLink) : salleDuClub)
 
     if (salleXbotgo) {
       const diffusion = await getXbotgoLive(salleXbotgo)
@@ -192,7 +221,6 @@ export async function GET() {
           // Nos spectateurs, et non les leurs : leur compteur decrit les gens
           // sur leur page, qui est vide depuis que le match se regarde ici.
           viewers: await compterLesSpectateurs(current.id),
-          title: diffusion.title,
           source: 'xbotgo',
           match: affiche,
           nextCheckIn: RAPPEL_PENDANT,
@@ -217,7 +245,6 @@ export async function GET() {
           url: current.liveLink,
           videoId,
           viewers: videoId ? await getViewers(videoId) : null,
-          title: null,
           source: 'manuel',
           match: affiche,
           nextCheckIn: RAPPEL_PENDANT,

@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { enregistrerBattement } from '@/lib/audience'
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Rencontre inconnue' }, { status: 404 })
     }
 
-    if (!dansLaFenetre(match, Date.now()) && !(await verificationForcee())) {
+    if (!dansLaFenetre(match, Date.now()) && !(await horsFenetreAutorise())) {
       return NextResponse.json({ error: 'Hors fenetre' }, { status: 409 })
     }
 
@@ -59,6 +60,17 @@ export async function POST(request: NextRequest) {
  * match. En fenetre, la question ne se pose pas : c'est ce qui evite une lecture
  * des parametres a chaque battement de chaque spectateur.
  */
+async function horsFenetreAutorise(): Promise<boolean> {
+  // La meme salle d'essai que la route du direct, en developpement seulement :
+  // sans elle, le compteur resterait a zero pendant qu'on eprouve le lecteur.
+  if (process.env.NODE_ENV !== 'production') {
+    const essai = (await cookies()).get('salle-essai')?.value ?? ''
+    if (/^\d+$/.test(essai)) return true
+  }
+
+  return verificationForcee()
+}
+
 async function verificationForcee(): Promise<boolean> {
   try {
     const payload = await getPayloadClient()

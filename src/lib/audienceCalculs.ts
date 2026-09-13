@@ -78,6 +78,60 @@ export type Rapport = {
 };
 
 /**
+ * Fusionne, pour chaque personne, les presences qui se chevauchent ou se
+ * touchent.
+ *
+ * Deux battements partis en meme temps peuvent creer deux lignes pour la meme
+ * personne au meme instant : chacun cherche une presence en cours, aucun ne voit
+ * celle que l'autre est en train d'ecrire. C'est arrive des le premier essai sur
+ * un vrai direct, et cela comptait deux spectateurs la ou il y en avait un.
+ *
+ * Le comptage se defend donc ici, plutot que d'esperer que l'ecriture ne se
+ * croise jamais : une meme personne ne peut pas etre presente deux fois.
+ */
+function fusionner(traces: Trace[]): Trace[] {
+  const parPersonne = new Map<string, Trace[]>();
+
+  for (const trace of traces) {
+    const siennes = parPersonne.get(trace.visiteur) ?? [];
+    siennes.push(trace);
+    parPersonne.set(trace.visiteur, siennes);
+  }
+
+  const fusionnees: Trace[] = [];
+
+  for (const siennes of parPersonne.values()) {
+    const triees = [...siennes].sort(
+      (a, b) => Date.parse(a.debut) - Date.parse(b.debut),
+    );
+    let courante = triees[0];
+
+    for (const suivante of triees.slice(1)) {
+      // Le chevauchement se juge a un battement pres : deux presences qui se
+      // touchent decrivent une seule presence continue.
+      if (
+        Date.parse(suivante.debut) <=
+        Date.parse(courante.fin) + BATTEMENT_S * 1000
+      ) {
+        const fin = Math.max(
+          Date.parse(courante.fin),
+          Date.parse(suivante.fin),
+        );
+        courante = { ...courante, fin: new Date(fin).toISOString() };
+        continue;
+      }
+
+      fusionnees.push(courante);
+      courante = suivante;
+    }
+
+    fusionnees.push(courante);
+  }
+
+  return fusionnees;
+}
+
+/**
  * La pointe simultanee, par balayage des arrivees et des departs.
  *
  * C'est le chiffre qui decrit une audience : le total des visiteurs melange
@@ -139,8 +193,10 @@ export function courbeParMinute(
 /**
  * Le resume d'une liste de traces, ou null si personne n'a regarde.
  */
-export function resumer(traces: Trace[]): Rapport | null {
-  if (!traces.length) return null;
+export function resumer(brutes: Trace[]): Rapport | null {
+  if (!brutes.length) return null;
+
+  const traces = fusionner(brutes);
 
   const debuts = traces.map((trace) => Date.parse(trace.debut));
   const fins = traces.map((trace) => Date.parse(trace.fin));
