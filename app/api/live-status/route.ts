@@ -137,10 +137,7 @@ export async function GET() {
     // YouTube n est jamais declenchee de cette facon, c est elle qui coute.
     if (!current && reglages.forcer) {
       current = matchs
-        .filter(
-          (match) =>
-            match.date && match.time && (salleDuClub || extractRoomId(match.liveLink ?? '')),
-        )
+        .filter((match) => match.date && match.time && (salleDuClub || extractRoomId(match.liveLink ?? '')))
         .sort((a, b) => Math.abs(kickoff(a.date, a.time) - now) - Math.abs(kickoff(b.date, b.time) - now))[0]
     }
 

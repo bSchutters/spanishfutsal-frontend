@@ -53,7 +53,9 @@ export async function enregistrerBattement(
     depth: 0,
   });
 
-  const trace = docs[0] as { id: number | string; battements?: number } | undefined;
+  const trace = docs[0] as
+    | { id: number | string; battements?: number }
+    | undefined;
 
   if (trace) {
     await payload.update({
@@ -99,7 +101,10 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
     const { totalDocs } = await payload.count({
       collection: "live-audience",
       where: {
-        and: [{ match: { equals: matchId } }, { fin: { greater_than: depuis } }],
+        and: [
+          { match: { equals: matchId } },
+          { fin: { greater_than: depuis } },
+        ],
       },
     });
 
@@ -112,7 +117,9 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
 }
 
 /** Les chiffres d'une diffusion, lus en base puis resumes. */
-export async function calculerLeRapport(matchId: number): Promise<Rapport | null> {
+export async function calculerLeRapport(
+  matchId: number,
+): Promise<Rapport | null> {
   const payload = await getPayloadClient();
 
   const { docs } = await payload.find({

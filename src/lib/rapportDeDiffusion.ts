@@ -42,6 +42,13 @@ function rediger(affiche: string, rapport: Rapport): string {
   return lignes.join("\n");
 }
 
+/** Le meme texte sans ses marques de gras. */
+const sansGras = (texte: string) => texte.replace(/\*\*/g, "");
+
+/** L'hote est-il celui-la, ou un de ses sous-domaines ? */
+const estLHote = (hostname: string, domaine: string) =>
+  hostname === domaine || hostname.endsWith(`.${domaine}`);
+
 /**
  * Pousse le message vers le webhook des parametres.
  *
@@ -50,17 +57,27 @@ function rediger(affiche: string, rapport: Rapport): string {
  * verifie et des modeles de message approuves pour ecrire en dehors d'une
  * conversation en cours, ce qui n'a pas de sens pour six lignes de statistiques.
  */
-async function pousser(url: string, texte: string, rapport: Rapport): Promise<boolean> {
+async function pousser(
+  url: string,
+  texte: string,
+  rapport: Rapport,
+): Promise<boolean> {
   try {
     const { hostname } = new URL(url);
 
-    const corps = hostname.endsWith("discord.com")
-      ? { content: texte }
-      : hostname === "api.telegram.org"
-        ? { text: texte, parse_mode: "Markdown" }
-        : // N'importe quel autre service : le texte et les chiffres bruts, a
-          // charge pour lui d'en faire ce qu'il veut.
-          { text: texte, rapport };
+    const corps =
+      estLHote(hostname, "discord.com") || estLHote(hostname, "discordapp.com")
+        ? { content: texte }
+        : estLHote(hostname, "telegram.org")
+          ? // Le gras de Discord s'ecrit avec deux etoiles, celui de Telegram avec
+            // une seule : lui envoyer la notation de Discord lui fait refuser tout
+            // le message pour entites non analysables. Il le recoit donc en texte
+            // brut, sans mode d'analyse. L'identifiant de conversation, lui, se
+            // met dans l'adresse du webhook.
+            { text: sansGras(texte) }
+          : // N'importe quel autre service : le texte et les chiffres bruts, a
+            // charge pour lui d'en faire ce qu'il veut.
+            { text: sansGras(texte), rapport };
 
     const res = await fetch(url, {
       method: "POST",
@@ -100,7 +117,9 @@ export async function cloturerLaDiffusion(
       depth: 0,
     });
 
-    const existant = docs[0] as { id: number | string; envoye?: boolean } | undefined;
+    const existant = docs[0] as
+      | { id: number | string; envoye?: boolean }
+      | undefined;
     if (existant?.envoye) return;
 
     const parametres = await payload.findGlobal({ slug: "settings" });
@@ -175,9 +194,13 @@ export async function balayerLesDiffusions(): Promise<number> {
 
     // Les trois derniers jours : au-dela, une diffusion sans rapport n'en aura
     // jamais, et ratisser toute la saison a chaque passage ne servirait a rien.
-    if (finDeFenetre > now || now - finDeFenetre > 3 * 24 * 60 * 60 * 1000) continue;
+    if (finDeFenetre > now || now - finDeFenetre > 3 * 24 * 60 * 60 * 1000)
+      continue;
 
-    await cloturerLaDiffusion(match.id, `${match.homeTeam} - ${match.awayTeam}`);
+    await cloturerLaDiffusion(
+      match.id,
+      `${match.homeTeam} - ${match.awayTeam}`,
+    );
     clotures += 1;
   }
 

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server'
 
-import { getPayloadClient } from "@/lib/payload";
-import { balayerLesDiffusions } from "@/lib/rapportDeDiffusion";
-import { rattraperLesReplays } from "@/lib/trouverLesReplays";
+import { getPayloadClient } from '@/lib/payload'
+import { balayerLesDiffusions } from '@/lib/rapportDeDiffusion'
+import { rattraperLesReplays } from '@/lib/trouverLesReplays'
 
-export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 /**
  * Le rattrapage du matin, celui de tout ce que la soiree a pu manquer.
@@ -26,61 +26,58 @@ export const maxDuration = 60;
  */
 
 function autoriseParLeSecret(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
 
-  return request.headers.get("authorization") === `Bearer ${secret}`;
+  return request.headers.get('authorization') === `Bearer ${secret}`
 }
 
 async function estAdministrateur(request: NextRequest): Promise<boolean> {
   try {
-    const payload = await getPayloadClient();
-    const { user } = await payload.auth({ headers: request.headers });
-    return user?.role === "admin";
+    const payload = await getPayloadClient()
+    const { user } = await payload.auth({ headers: request.headers })
+    return user?.role === 'admin'
   } catch {
-    return false;
+    return false
   }
 }
 
 async function executer() {
-  const diffusionsExaminees = await balayerLesDiffusions();
+  const diffusionsExaminees = await balayerLesDiffusions()
 
   // Le rattrapage des replays attend sa case dans les parametres. Il ecrit dans
   // les fiches de match, ce qui ne se declenche pas sans l'avoir voulu.
   if (!(await replaysAutomatiques())) {
-    return NextResponse.json({ diffusionsExaminees, replays: 'en pause' });
+    return NextResponse.json({ diffusionsExaminees, replays: 'en pause' })
   }
 
-  const rapport = await rattraperLesReplays();
+  const rapport = await rattraperLesReplays()
 
-  return NextResponse.json(
-    { diffusionsExaminees, ...rapport },
-    { status: rapport.erreur ? 502 : 200 },
-  );
+  return NextResponse.json({ diffusionsExaminees, ...rapport }, { status: rapport.erreur ? 502 : 200 })
 }
 
 async function replaysAutomatiques(): Promise<boolean> {
   try {
-    const payload = await getPayloadClient();
-    const parametres = await payload.findGlobal({ slug: 'settings' });
-    return Boolean(parametres?.replays_auto);
+    const payload = await getPayloadClient()
+    const parametres = await payload.findGlobal({ slug: 'settings' })
+    return Boolean(parametres?.replays_auto)
   } catch {
-    return false;
+    return false
   }
 }
 
 export async function GET(request: NextRequest) {
   if (!autoriseParLeSecret(request)) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorise' }, { status: 401 })
   }
 
-  return executer();
+  return executer()
 }
 
 export async function POST(request: NextRequest) {
   if (autoriseParLeSecret(request) || (await estAdministrateur(request))) {
-    return executer();
+    return executer()
   }
 
-  return NextResponse.json({ error: "Non autorise" }, { status: 401 });
+  return NextResponse.json({ error: 'Non autorise' }, { status: 401 })
 }

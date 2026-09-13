@@ -205,9 +205,12 @@ export default function HlsPlayer({ url }: { url: string }) {
   }, []);
 
   // Un minuteur de reprise ne doit pas survivre a la fermeture du lecteur.
-  useEffect(() => () => {
-    if (minuteur.current) clearTimeout(minuteur.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (minuteur.current) clearTimeout(minuteur.current);
+    },
+    [],
+  );
 
   useEffect(() => suivrePleinEcran(setPleinEcran), []);
 

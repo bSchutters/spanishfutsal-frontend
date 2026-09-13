@@ -112,7 +112,8 @@ export function courbeParMinute(
     courbe.push(
       traces.filter(
         (trace) =>
-          Date.parse(trace.debut) <= instant && Date.parse(trace.fin) >= instant,
+          Date.parse(trace.debut) <= instant &&
+          Date.parse(trace.fin) >= instant,
       ).length,
     );
   }
@@ -132,7 +133,10 @@ export function resumer(traces: Trace[]): Rapport | null {
   const fin = Math.max(...fins);
 
   const durees = traces.map((trace) =>
-    Math.max(Date.parse(trace.fin) - Date.parse(trace.debut), DUREE_MINIMALE_MS),
+    Math.max(
+      Date.parse(trace.fin) - Date.parse(trace.debut),
+      DUREE_MINIMALE_MS,
+    ),
   );
   const dureeMoyenne = durees.reduce((a, b) => a + b, 0) / durees.length;
 

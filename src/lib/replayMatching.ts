@@ -71,7 +71,10 @@ function reduire(texte: string): string {
 function motsDistinctifs(nom: string): string[] {
   return reduire(nom)
     .split(" ")
-    .filter((mot) => mot.length >= 3 && !MOTS_TROP_COMMUNS.has(mot) && !/^\d+$/.test(mot));
+    .filter(
+      (mot) =>
+        mot.length >= 3 && !MOTS_TROP_COMMUNS.has(mot) && !/^\d+$/.test(mot),
+    );
 }
 
 /**
@@ -79,7 +82,9 @@ function motsDistinctifs(nom: string): string[] {
  * 12/09/2026, 12-09-26, 12.09 et leurs variantes. L'annee est facultative, et
  * un titre ne porte jamais la date au format americain dans ce contexte.
  */
-function datesEcrites(texte: string): { jour: number; mois: number; annee: number | null }[] {
+function datesEcrites(
+  texte: string,
+): { jour: number; mois: number; annee: number | null }[] {
   const trouvees: { jour: number; mois: number; annee: number | null }[] = [];
   const motif = /(\d{1,2})[/.\-](\d{1,2})(?:[/.\-](\d{2,4}))?/g;
 
@@ -130,7 +135,10 @@ type Candidate = {
  * rencontre. Le nom seul ne suffit pas, sinon l'aller et le retour se
  * disputeraient la meme video.
  */
-export function rapprocher(match: Match, videos: MiseEnLigne[]): MiseEnLigne | null {
+export function rapprocher(
+  match: Match,
+  videos: MiseEnLigne[],
+): MiseEnLigne | null {
   const attendus = motsDistinctifs(adversaire(match));
   if (!attendus.length) return null;
 
