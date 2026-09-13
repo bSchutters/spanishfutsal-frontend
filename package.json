@@ -10,7 +10,8 @@
     "seed:teams": "node scripts/seed-teams.mjs",
     "db:refresh": "node scripts/db-refresh.mjs",
     "schema:push": "node scripts/db-schema-push.mjs",
-    "schema:push:prod": "node scripts/db-schema-push.mjs --prod"
+    "schema:push:prod": "node scripts/db-schema-push.mjs --prod",
+    "test:replays": "tsx scripts/verifier-rapprochement-replays.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

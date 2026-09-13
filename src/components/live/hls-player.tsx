@@ -183,33 +183,42 @@ export default function HlsPlayer({ url }: { url: string }) {
   /**
    * L'adresse fraiche arrive : on rebranche la source sans remonter le lecteur.
    *
-   * Tant qu'elle est identique a celle qui vient d'etre refusee, il n'y a rien a
-   * faire : le bandeau n'a pas encore rendu la main.
+   * L'abonnement direct au magasin plutot qu'un effet sur une propriete : ce
+   * n'est pas un rendu qui doit declencher le rebranchement, c'est l'arrivee
+   * d'une adresse. Passer par les dependances d'un effet enchainait deux rendus
+   * pour un evenement venu du dehors.
    */
   useEffect(() => {
-    adresse.current = url;
+    return useLiveStore.subscribe((etat) => {
+      const fraiche = etat.live?.hlsUrl;
+      if (!fraiche) return;
 
-    if (!reprise || url === adresseRefusee.current) return;
+      adresse.current = fraiche;
 
-    if (minuteur.current) clearTimeout(minuteur.current);
-    setReprise(false);
-    adresseRefusee.current = null;
+      // Rien a faire hors reprise, ni tant que le bandeau rend la meme adresse
+      // que celle qui vient d'etre refusee.
+      if (!adresseRefusee.current || fraiche === adresseRefusee.current) return;
 
-    const instance = lecteur.current;
-    const element = video.current;
+      if (minuteur.current) clearTimeout(minuteur.current);
+      adresseRefusee.current = null;
+      setReprise(false);
 
-    if (instance) {
-      instance.loadSource(url);
-      instance.startLoad();
-      return;
-    }
+      const instance = lecteur.current;
 
-    // Lecture native : la balise porte la source elle-meme.
-    if (element) {
-      element.src = url;
-      element.play();
-    }
-  }, [url, reprise]);
+      if (instance) {
+        instance.loadSource(fraiche);
+        instance.startLoad();
+        return;
+      }
+
+      // Lecture native : la balise porte la source elle-meme.
+      const element = video.current;
+      if (element) {
+        element.src = fraiche;
+        element.play();
+      }
+    });
+  }, []);
 
   // Un minuteur de reprise ne doit pas survivre a la fermeture du lecteur.
   useEffect(() => () => {

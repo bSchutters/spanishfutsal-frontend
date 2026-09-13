@@ -15,10 +15,10 @@ export type Live = {
   /**
    * Flux HLS de la salle de diffusion du club, lu par notre propre lecteur.
    *
-   * L'adresse est signee et datee : elle change a chaque interrogation, et
-   * celle qui a servi a ouvrir le lecteur finit par etre refusee. C'est
-   * pourquoi elle redescend jusqu'au lecteur a chaque verification, et non
-   * une seule fois a l'ouverture.
+   * L'adresse est signee et datee : elle change a chaque verification, et celle
+   * qui a servi a ouvrir le lecteur finit par etre refusee. Le lecteur s'abonne
+   * donc a ce champ pour se rebrancher quand la sienne est refusee, au lieu de
+   * garder jusqu'au bout celle de son ouverture.
    */
   hlsUrl: string | null;
   viewers: number | null;
@@ -40,24 +40,6 @@ export type Lecture = {
   contexte: string | null;
   viewers: number | null;
 };
-
-/**
- * Repose la lecture en cours sur une adresse fraiche.
- *
- * Ne concerne que le flux du club : une video YouTube est designee par un
- * identifiant stable, qui n'expire pas. L'objet n'est recree que si l'adresse a
- * reellement change, pour ne pas reveiller les abonnes du magasin a chaque
- * verification.
- */
-function rafraichirLaSource(
-  lecture: Lecture | null,
-  hlsUrl: string | null,
-): Lecture | null {
-  if (!lecture || lecture.mode !== "hls" || !hlsUrl) return lecture;
-  if (lecture.hlsUrl === hlsUrl) return lecture;
-
-  return { ...lecture, hlsUrl };
-}
 
 type State = {
   live: Live | null;
@@ -93,14 +75,7 @@ export const useLiveStore = create<State>((set, get) => ({
   setLive: (live) =>
     set(
       live
-        ? {
-            live,
-            // L'adresse signee vient d'etre renouvelee : le lecteur ouvert doit
-            // en profiter, sinon il garderait jusqu'au bout celle de son
-            // ouverture. Rien n'est remonte ici, c'est la meme lecture avec une
-            // source a jour.
-            lecture: rafraichirLaSource(get().lecture, live.hlsUrl),
-          }
+        ? { live }
         : {
             live: null,
             hauteurBandeau: 0,

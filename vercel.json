@@ -3,6 +3,10 @@
     {
       "path": "/api/import/trigger",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/replays/sync",
+      "schedule": "0 9 * * *"
     }
   ]
 }
