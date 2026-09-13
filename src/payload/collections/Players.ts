@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrManager } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Players: CollectionConfig = {
@@ -12,14 +12,15 @@ export const Players: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['prenom', 'nom', 'numero', 'poste', 'actif'],
+    hidden: isHidden('players'),
   },
   access: {
     read: () => true,
-    create: isAdminOrManager,
-    update: isAdminOrManager,
-    delete: isAdminOrManager,
+    create: canWrite('players'),
+    update: canWrite('players'),
+    delete: canDelete('players'),
   },
-  fields: [
+  fields: withFieldPermissions('players', [
     {
       name: 'displayName',
       type: 'text',
@@ -84,5 +85,5 @@ export const Players: CollectionConfig = {
       defaultValue: true,
       label: 'Actif',
     },
-  ],
+  ]),
 }

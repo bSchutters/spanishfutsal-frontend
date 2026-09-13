@@ -24,6 +24,18 @@ import { Settings } from '@/payload/globals/Settings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const schemaPush = process.env.PAYLOAD_DB_PUSH !== 'false'
+
+if (!schemaPush) {
+  // Bruyant volontairement : oublier ce drapeau en place, c'est developper des
+  // collections dont les colonnes n'arriveront jamais en base, et ne s'en
+  // apercevoir qu'au premier import qui echoue.
+  console.warn(
+    '\n  PAYLOAD_DB_PUSH=false : le schema ne sera PAS synchronise avec la base.',
+    '\n  Aucune colonne ne sera creee. A retirer de .env.local des que possible.\n',
+  )
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -70,6 +82,17 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'src/payload/payload-types.ts'),
   },
   db: postgresAdapter({
+    /**
+     * Le developpement tape dans la base de production, ou Payload aligne le
+     * schema au demarrage. Travailler sur une branche dont les collections
+     * different de ce qui est en base revient alors a proposer de supprimer les
+     * colonnes de l'autre branche.
+     *
+     * `PAYLOAD_DB_PUSH=false` demarre sans y toucher. A n'utiliser que pour
+     * lire ou tester : les colonnes manquantes ne seront pas creees. Voir
+     * docs/base-de-donnees.md.
+     */
+    push: schemaPush,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },

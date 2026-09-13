@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Rankings: CollectionConfig = {
@@ -12,15 +12,15 @@ export const Rankings: CollectionConfig = {
   admin: {
     useAsTitle: 'team_name',
     defaultColumns: ['team_name', 'position', 'points', 'played'],
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: isHidden('rankings'),
   },
   access: {
     read: () => true,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    create: canWrite('rankings'),
+    update: canWrite('rankings'),
+    delete: canDelete('rankings'),
   },
-  fields: [
+  fields: withFieldPermissions('rankings', [
     {
       name: 'team_name',
       type: 'text',
@@ -99,5 +99,5 @@ export const Rankings: CollectionConfig = {
       relationTo: 'seasons',
       label: 'Saison',
     },
-  ],
+  ]),
 }
