@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Sponsors: CollectionConfig = {
@@ -30,15 +30,15 @@ export const Sponsors: CollectionConfig = {
 
       return hasExplicitView ? null : { active: { equals: true }, type: { equals: 'sponsor' } }
     },
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: isHidden('sponsors'),
   },
   access: {
     read: () => true,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    create: canWrite('sponsors'),
+    update: canWrite('sponsors'),
+    delete: canDelete('sponsors'),
   },
-  fields: [
+  fields: withFieldPermissions('sponsors', [
     {
       name: 'name',
       type: 'text',
@@ -146,5 +146,5 @@ export const Sponsors: CollectionConfig = {
         description: 'Remplace par le glisser-deposer. Conserve pour ne pas perdre les valeurs existantes.',
       },
     },
-  ],
+  ]),
 }

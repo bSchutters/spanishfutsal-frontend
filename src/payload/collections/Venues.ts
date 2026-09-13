@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
 
 export const Venues: CollectionConfig = {
   slug: 'venues',
@@ -7,15 +7,15 @@ export const Venues: CollectionConfig = {
   admin: {
     useAsTitle: 'short_name',
     defaultColumns: ['short_name', 'city', 'street', 'zip'],
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: isHidden('venues'),
   },
   access: {
     read: () => true,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    create: canWrite('venues'),
+    update: canWrite('venues'),
+    delete: canDelete('venues'),
   },
-  fields: [
+  fields: withFieldPermissions('venues', [
     {
       name: 'short_name',
       type: 'text',
@@ -58,5 +58,5 @@ export const Venues: CollectionConfig = {
       unique: true,
       label: 'LFFS ID',
     },
-  ],
+  ]),
 }
