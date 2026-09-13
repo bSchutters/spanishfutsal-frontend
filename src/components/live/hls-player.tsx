@@ -6,6 +6,7 @@ import {
   basculerPleinEcran as basculer,
   suivrePleinEcran,
 } from "@/lib/pleinEcran";
+import { useLiveStore } from "@/store/useLiveStore";
 import {
   Maximize,
   Minimize,
@@ -16,28 +17,33 @@ import {
 } from "lucide-react";
 
 /**
- * Le lecteur des diffusions XbotGo.
+ * Le lecteur de la diffusion du club.
  *
- * TEMPORAIRE : en place le temps que le direct YouTube de la chaine du club
- * soit actif. Contrairement a YouTube, leur diffuseur sert un flux HLS avec
- * CORS ouvert : on le joue donc dans une vraie balise video, sans cadre et sans
- * interface etrangere. Le filigrane du club reste visible, il est incruste dans
- * le flux lui-meme.
+ * Leur diffuseur sert un flux HLS avec CORS ouvert : on le joue donc dans une
+ * vraie balise video, sans cadre et sans interface etrangere, ce que YouTube
+ * n'autorise pas. Le filigrane du club reste visible, il est incruste dans le
+ * flux lui-meme.
  *
  * La barre de commandes est celle du lecteur YouTube, aux memes couleurs, pour
  * que le visiteur ne voie aucune difference selon la source.
  */
 
-// Verse dans public/ plutot qu'installe : le magasin pnpm de la machine ne
-// correspond plus a celui du projet, et cette integration est temporaire. Le
-// fichier part avec elle.
 const HLS = "/hls.light.min.js";
+
+// Nombre de reprises automatiques avant de rendre la main au visiteur. Trois
+// suffisent : au-dela, ce n'est plus une adresse perimee, c'est une panne.
+const REPRISES_MAX = 3;
+
+// Au-dela, on considere qu'aucune adresse fraiche ne viendra. Large devant le
+// rythme du bandeau, qui repond en une seconde quand on le reveille.
+const ATTENTE_ADRESSE_MS = 20_000;
 
 type IncidentHls = { fatal?: boolean; details?: string };
 
 type LecteurHls = {
   loadSource: (url: string) => void;
   attachMedia: (video: HTMLVideoElement) => void;
+  startLoad: () => void;
   destroy: () => void;
   on: (evenement: string, rappel: (e: unknown, d: IncidentHls) => void) => void;
 };
@@ -79,6 +85,9 @@ function chargerHls(): Promise<FabriqueHls | null> {
 export default function HlsPlayer({ url }: { url: string }) {
   const conteneur = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const lecteur = useRef<LecteurHls | null>(null);
+
+  const reveiller = useLiveStore((s) => s.reveiller);
 
   const [pret, setPret] = useState(false);
   const [enLecture, setEnLecture] = useState(true);
@@ -88,13 +97,49 @@ export default function HlsPlayer({ url }: { url: string }) {
   const [pleinEcran, setPleinEcran] = useState(false);
   // Incremente pour remonter le lecteur apres un echec.
   const [essai, setEssai] = useState(0);
+  // Vrai entre la panne et l'arrivee d'une adresse fraiche.
+  const [reprise, setReprise] = useState(false);
+
+  // L'adresse change a chaque verification du bandeau, parce qu'elle est signee.
+  // Elle est suivie dans une reference et non dans les dependances d'un effet :
+  // la relier a l'effet de montage remonterait tout le lecteur toutes les
+  // quarante-cinq secondes, image coupee et son avec.
+  const adresse = useRef(url);
+  const adresseRefusee = useRef<string | null>(null);
+  const reprises = useRef(0);
+  const minuteur = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * Une panne fatale, et la tentative de s'en remettre.
+   *
+   * Le cas attendu est l'adresse signee arrivee a expiration : le diffuseur
+   * refuse alors la liste de lecture en pleine rencontre. On demande au bandeau
+   * une adresse fraiche plutot que d'afficher un echec, et la lecture reprend
+   * sans que le visiteur ait a toucher a quoi que ce soit.
+   */
+  const tenterUneReprise = useCallback(() => {
+    if (reprises.current >= REPRISES_MAX) {
+      setErreur(true);
+      return;
+    }
+
+    reprises.current += 1;
+    adresseRefusee.current = adresse.current;
+    setReprise(true);
+    reveiller();
+
+    if (minuteur.current) clearTimeout(minuteur.current);
+    minuteur.current = setTimeout(() => {
+      setReprise(false);
+      setErreur(true);
+    }, ATTENTE_ADRESSE_MS);
+  }, [reveiller]);
 
   useEffect(() => {
     const element = video.current;
     if (!element) return;
 
     let annule = false;
-    let lecteur: LecteurHls | null = null;
 
     const demarrer = async () => {
       const Hls = await chargerHls();
@@ -104,21 +149,22 @@ export default function HlsPlayer({ url }: { url: string }) {
       // `canPlayType` pour le HLS sans savoir le lire : s'y fier envoyait
       // l'adresse directement a la balise video, ou elle echouait.
       if (Hls?.isSupported()) {
-        lecteur = new Hls({ lowLatencyMode: true });
+        const instance = new Hls({ lowLatencyMode: true });
+        lecteur.current = instance;
         // hls.js signale beaucoup d'incidents sans gravite, un segment en
         // retard par exemple, et se retablit seul. Seuls les incidents fatals
-        // meritent de couvrir l'image, sinon on masque un direct qui tourne.
-        lecteur.on(Hls.Events.ERROR, (_evenement, incident) => {
-          if (!annule && incident?.fatal) setErreur(true);
+        // demandent une intervention, sinon on couvrirait un direct qui tourne.
+        instance.on(Hls.Events.ERROR, (_evenement, incident) => {
+          if (!annule && incident?.fatal) tenterUneReprise();
         });
-        lecteur.loadSource(url);
-        lecteur.attachMedia(element);
+        instance.loadSource(adresse.current);
+        instance.attachMedia(element);
         return;
       }
 
       // Safari et iOS, qui lisent le HLS nativement et ou hls.js ne sert pas.
       if (element.canPlayType("application/vnd.apple.mpegurl")) {
-        element.src = url;
+        element.src = adresse.current;
         return;
       }
 
@@ -129,9 +175,46 @@ export default function HlsPlayer({ url }: { url: string }) {
 
     return () => {
       annule = true;
-      lecteur?.destroy();
+      lecteur.current?.destroy();
+      lecteur.current = null;
     };
-  }, [url, essai]);
+  }, [essai, tenterUneReprise]);
+
+  /**
+   * L'adresse fraiche arrive : on rebranche la source sans remonter le lecteur.
+   *
+   * Tant qu'elle est identique a celle qui vient d'etre refusee, il n'y a rien a
+   * faire : le bandeau n'a pas encore rendu la main.
+   */
+  useEffect(() => {
+    adresse.current = url;
+
+    if (!reprise || url === adresseRefusee.current) return;
+
+    if (minuteur.current) clearTimeout(minuteur.current);
+    setReprise(false);
+    adresseRefusee.current = null;
+
+    const instance = lecteur.current;
+    const element = video.current;
+
+    if (instance) {
+      instance.loadSource(url);
+      instance.startLoad();
+      return;
+    }
+
+    // Lecture native : la balise porte la source elle-meme.
+    if (element) {
+      element.src = url;
+      element.play();
+    }
+  }, [url, reprise]);
+
+  // Un minuteur de reprise ne doit pas survivre a la fermeture du lecteur.
+  useEffect(() => () => {
+    if (minuteur.current) clearTimeout(minuteur.current);
+  }, []);
 
   useEffect(() => suivrePleinEcran(setPleinEcran), []);
 
@@ -238,7 +321,13 @@ export default function HlsPlayer({ url }: { url: string }) {
           <button
             type="button"
             onClick={() => {
+              // Le compteur repart de zero : le visiteur qui insiste a droit
+              // aux memes trois reprises automatiques qu'au debut.
+              reprises.current = 0;
+              adresseRefusee.current = null;
               setErreur(false);
+              setReprise(false);
+              reveiller();
               setEssai((n) => n + 1);
             }}
             className="rounded-md border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-sm font-bold uppercase text-spanish-bg-dark transition-colors duration-200 hover:bg-spanish-accent-2-dark"
@@ -248,7 +337,10 @@ export default function HlsPlayer({ url }: { url: string }) {
         </div>
       )}
 
-      {!pret && !erreur && (
+      {/* Le meme rond tournant sert au premier chargement et a la reprise : dans
+          les deux cas l'image n'est pas encore la, et un message d'erreur serait
+          faux puisque la lecture est en train de repartir. */}
+      {(!pret || reprise) && !erreur && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <span className="size-8 animate-spin rounded-full border-2 border-white/25 border-t-spanish-accent-2" />
         </div>

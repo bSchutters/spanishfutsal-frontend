@@ -29,12 +29,17 @@ const CSP_PUBLIC = [
   // ne part chez Google avant que le visiteur ne lance la diffusion.
   "img-src 'self' data: blob: https://i.ytimg.com",
   "font-src 'self'",
-  // TEMPORAIRE, le temps que le direct YouTube du club soit actif. Le lecteur
-  // HLS telecharge les segments depuis leur diffuseur et les assemble en
-  // memoire, d'ou `connect-src` pour les requetes et `media-src blob:` pour la
-  // source ainsi construite.
-  "connect-src 'self' https://prod-eu-live-pull.xbotgo.net",
-  "media-src 'self' blob: https://prod-eu-live-pull.xbotgo.net",
+  // Le lecteur HLS telecharge les segments depuis le diffuseur du club et les
+  // assemble en memoire, d'ou `connect-src` pour les requetes et
+  // `media-src blob:` pour la source ainsi construite.
+  //
+  // Le domaine est ouvert au caractere generique, et non a un hote precis :
+  // ils en exploitent au moins trois, un par role et par region, et un
+  // basculement de leur cote refuserait le flux sans aucun message. Le
+  // caractere generique ne couvre qu'un niveau, les sous-domaines de
+  // sous-domaines resteraient refuses.
+  "connect-src 'self' https://*.xbotgo.net",
+  "media-src 'self' blob: https://*.xbotgo.net",
   // hls.js decode les segments dans un worker pour laisser le fil principal
   // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,
   // et le decodage retombe sur le fil principal : tenable sur un ordinateur,

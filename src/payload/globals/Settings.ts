@@ -16,6 +16,15 @@ export const Settings: GlobalConfig = {
       label: 'Auto-import actif',
     },
     {
+      name: 'xbotgo_room',
+      type: 'text',
+      label: 'Salle de diffusion XbotGo',
+      admin: {
+        description:
+          "Le lien de la salle du club, tel qu'il apparait dans leur application : https://cloud.xbotgo.net/live?userId=... Il ne change jamais, il se colle ici une seule fois et sert a toutes les rencontres. Le champ Lien Live d'un match reste prioritaire, pour la rencontre exceptionnelle diffusee ailleurs.",
+      },
+    },
+    {
       name: 'force_live_check',
       type: 'checkbox',
       defaultValue: false,

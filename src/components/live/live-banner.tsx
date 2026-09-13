@@ -26,6 +26,7 @@ export default function LiveBanner() {
   const setLive = useLiveStore((s) => s.setLive);
   const setHauteurBandeau = useLiveStore((s) => s.setHauteurBandeau);
   const ouvrir = useLiveStore((s) => s.ouvrir);
+  const reveil = useLiveStore((s) => s.reveil);
   const bandeau = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,7 +75,11 @@ export default function LiveBanner() {
       arrete = true;
       clearTimeout(minuteur);
     };
-  }, [setLive]);
+    // `reveil` en dependance : quand le lecteur voit sa source refusee, il
+    // l'incremente, l'effet est rejoue, le minuteur en cours est annule et la
+    // route interrogee tout de suite. Il recoit ainsi une adresse fraiche en
+    // une seconde au lieu d'attendre le prochain rendez-vous.
+  }, [setLive, reveil]);
 
   useEffect(() => {
     const element = bandeau.current;

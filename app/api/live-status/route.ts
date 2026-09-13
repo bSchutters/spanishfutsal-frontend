@@ -83,22 +83,44 @@ async function memoriserLeReplay(matchId: number, url: string) {
   }
 }
 
+type Reglages = {
+  /**
+   * La case « Verifier le direct XbotGo maintenant ».
+   *
+   * Elle sert aux essais sur place : le club arrive, lance sa diffusion et veut
+   * la voir sur le site sans attendre le coup d envoi. Elle ne vaut que pour
+   * XbotGo, dont l interrogation ne coute rien ; la recherche YouTube reste
+   * enfermee dans sa fenetre puisque c est elle qui consomme le quota.
+   */
+  forcer: boolean
+  /**
+   * La salle de diffusion du club, reglee une fois pour toutes. Le lien ne
+   * change jamais d une rencontre a l autre : le demander dans chaque match
+   * etait une corvee et une occasion d oubli.
+   */
+  salle: string | null
+}
+
 /**
- * La case « Verifier le direct XbotGo maintenant » des parametres.
+ * Les reglages, relus a chaque invocation.
  *
- * Elle sert aux essais sur place : le club arrive, lance sa diffusion et veut
- * la voir sur le site sans attendre le coup d envoi. Elle ne vaut que pour
- * XbotGo, dont l interrogation ne coute rien ; la recherche YouTube reste
- * enfermee dans sa fenetre puisque c est elle qui consomme le quota.
+ * Une seule ligne dans une table d une ligne, et l entete de cache de la route
+ * ramene le tout a une lecture par minute quelle que soit l affluence. La
+ * mettre en cache ferait perdre a la case son interet, qui est de repondre tout
+ * de suite quand on la coche depuis le terrain.
  */
-async function verificationForcee(): Promise<boolean> {
+async function lireReglages(): Promise<Reglages> {
   try {
     const payload = await getPayloadClient()
     const parametres = await payload.findGlobal({ slug: 'settings' })
-    return Boolean(parametres?.force_live_check)
+
+    return {
+      forcer: Boolean(parametres?.force_live_check),
+      salle: parametres?.xbotgo_room ?? null,
+    }
   } catch (error) {
     console.error('Parametres illisibles :', error)
-    return false
+    return { forcer: false, salle: null }
   }
 }
 
@@ -113,6 +135,11 @@ export async function GET() {
   try {
     const matchs = await getMatchs()
     const now = Date.now()
+    const reglages = await lireReglages()
+
+    // La salle du club, celle des parametres. Le champ Lien Live d une
+    // rencontre precise reste prioritaire sur elle.
+    const salleDuClub = extractRoomId(reglages.salle ?? '')
 
     const coupsDEnvoi = matchs
       .filter((match) => match.date && match.time)
@@ -130,9 +157,12 @@ export async function GET() {
     // Hors fenetre, la case des parametres permet un essai sur place. Elle ne
     // designe que des rencontres portant une salle XbotGo : la recherche
     // YouTube n est jamais declenchee de cette facon, c est elle qui coute.
-    if (!current && (await verificationForcee())) {
+    if (!current && reglages.forcer) {
       current = matchs
-        .filter((match) => match.date && match.time && extractRoomId(match.liveLink ?? ''))
+        .filter(
+          (match) =>
+            match.date && match.time && (salleDuClub || extractRoomId(match.liveLink ?? '')),
+        )
         .sort((a, b) => Math.abs(kickoff(a.date, a.time) - now) - Math.abs(kickoff(b.date, b.time) - now))[0]
     }
 
@@ -156,10 +186,12 @@ export async function GET() {
       time: current.time,
     }
 
-    // Une salle XbotGo collee dans le champ Lien Live se joue sur le site comme
-    // une diffusion YouTube : leur API rend une adresse HLS que notre lecteur
-    // lit directement, sans cadre ni page intermediaire.
-    const salleXbotgo = current.liveLink ? extractRoomId(current.liveLink) : null
+    // La diffusion du club se joue sur le site meme : leur API rend une adresse
+    // HLS que notre lecteur lit directement, sans cadre ni page intermediaire.
+    //
+    // Le champ Lien Live du match l emporte sur la salle des parametres, pour
+    // la rencontre exceptionnelle diffusee ailleurs.
+    const salleXbotgo = current.liveLink ? extractRoomId(current.liveLink) : salleDuClub
 
     if (salleXbotgo) {
       const diffusion = await getXbotgoLive(salleXbotgo)
@@ -171,7 +203,7 @@ export async function GET() {
       return NextResponse.json(
         {
           live: true,
-          url: current.liveLink,
+          url: current.liveLink || reglages.salle,
           hlsUrl: diffusion.hlsUrl,
           videoId: null,
           viewers: diffusion.viewers,
