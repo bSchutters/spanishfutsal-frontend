@@ -206,3 +206,77 @@ export async function balayerLesDiffusions(): Promise<number> {
 
   return clotures;
 }
+
+/**
+ * Un rapport d'essai, envoye au webhook des parametres.
+ *
+ * Rien n'est lu ni ecrit dans les traces : les chiffres sont fabriques, la
+ * courbe a la forme d'une vraie soiree, montee au coup d'envoi et decrochage a
+ * la fin. Sert a verifier une adresse de webhook le jour ou on la change, sans
+ * attendre une rencontre.
+ *
+ * Le compte rendu ne dit jamais l'adresse, seulement son hote : c'est un secret
+ * qui n'a pas a ressortir dans une reponse ni dans un journal.
+ */
+export async function envoyerUnRapportDEssai(): Promise<{
+  envoye: boolean;
+  hote: string | null;
+  raison?: string;
+}> {
+  const payload = await getPayloadClient();
+  const parametres = await payload.findGlobal({ slug: "settings" });
+  const webhook = parametres?.report_webhook;
+
+  if (!webhook) {
+    return {
+      envoye: false,
+      hote: null,
+      raison: "Aucun webhook dans les parametres.",
+    };
+  }
+
+  let hote: string;
+  try {
+    hote = new URL(webhook).hostname;
+  } catch {
+    return {
+      envoye: false,
+      hote: null,
+      raison: "L'adresse du webhook n'est pas une URL valide.",
+    };
+  }
+
+  // Une soiree plausible : quelques curieux avant le coup d'envoi, la salle qui
+  // se remplit, un plateau pendant la rencontre, et tout le monde qui part au
+  // coup de sifflet.
+  const courbe = [
+    2, 3, 5, 9, 14, 18, 23, 27, 30, 31, 33, 34, 34, 33, 31, 30, 32, 33, 31, 28,
+    26, 24, 21, 17, 12, 6, 3, 1,
+  ];
+
+  const essai: Rapport = {
+    uniques: 61,
+    pointe: 34,
+    dureeMoyenneMinutes: 27.4,
+    partMobile: 68,
+    debut: new Date(Date.now() - 77 * 60 * 1000).toISOString(),
+    fin: new Date().toISOString(),
+    courbe,
+  };
+
+  const texte = [
+    rediger("ESSAI, UD Asturiana - Futsal Team Antwerpen", essai),
+    "",
+    "_Message d'essai, chiffres fabriques. Le vrai rapport part a la fin de chaque diffusion._",
+  ].join("\n");
+
+  const envoye = await pousser(webhook, texte, essai);
+
+  return envoye
+    ? { envoye: true, hote }
+    : {
+        envoye: false,
+        hote,
+        raison: "Le webhook a refuse le message, voir le journal du serveur.",
+      };
+}
