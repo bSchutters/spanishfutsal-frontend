@@ -53,7 +53,12 @@ const CSP_PUBLIC = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
+  // Convertit toute requete http en https. Indispensable en production, nuisible
+  // en developpement : le navigateur exempte `localhost`, qu'il tient pour sure,
+  // mais pas une adresse du reseau local. Depuis un telephone branche sur
+  // http://192.168.x.x, il convertissait donc la feuille de style et le
+  // JavaScript vers un https qui n'existe pas, et le site arrivait tout nu.
+  ...(EN_DEV ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 // L'admin Payload embarque son propre editeur et ses propres travailleurs :
