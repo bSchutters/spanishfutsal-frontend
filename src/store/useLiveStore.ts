@@ -113,8 +113,3 @@ export const useLiveStore = create<State>((set, get) => ({
   fermer: () => set({ lecture: null }),
   reveiller: () => set({ reveil: get().reveil + 1 }),
 }));
-
-// TEMPORAIRE, pour eprouver le lecteur depuis la console. A retirer.
-if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
-  (window as unknown as { magasinLive: unknown }).magasinLive = useLiveStore;
-}
