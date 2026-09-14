@@ -42,10 +42,14 @@ export default function BandeauMesure() {
     <div
       role="region"
       aria-label="Mesure d'audience"
-      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-spanish-accent-2 bg-spanish-bg-dark/95 px-4 py-3 backdrop-blur-sm sm:px-6"
+      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-spanish-accent-2 bg-spanish-bg-dark/95 px-4 py-2.5 backdrop-blur-sm sm:px-6"
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-        <p className="text-xs leading-relaxed text-white/90 sm:text-sm">
+      {/* Le texte prend la place qui reste, ce qui pousse le bouton contre le
+          bord droit quelle que soit la longueur de la phrase. Un bandeau
+          d'information se lit en passant : il reste sur une ligne et ne pese
+          pas plus que la barre de navigation. */}
+      <div className="mx-auto flex max-w-5xl items-center gap-4 sm:gap-6">
+        <p className="min-w-0 flex-1 text-xs leading-snug text-white/90">
           <span className="font-bold uppercase tracking-wide">
             Mesure d&apos;audience.
           </span>{" "}
@@ -56,7 +60,7 @@ export default function BandeauMesure() {
         <button
           type="button"
           onClick={donnerLAccord}
-          className="shrink-0 cursor-pointer self-start rounded-md border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-4 py-2 text-xs font-bold uppercase tracking-wide text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:self-auto sm:text-sm"
+          className="shrink-0 cursor-pointer rounded-md border-2 border-spanish-accent-2-dark bg-spanish-accent-2 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-wide text-spanish-bg-dark transition-[scale,background-color] duration-200 ease-[var(--ease-out-strong)] hover:bg-spanish-accent-2-dark active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           C&apos;est noté
         </button>
