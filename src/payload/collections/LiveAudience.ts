@@ -80,6 +80,15 @@ export const LiveAudience: CollectionConfig = {
       label: 'Dernier signe a',
     },
     {
+      // Vrai quand la personne a annonce son depart en fermant l'onglet ou le
+      // lecteur. Sans cette annonce, il faut attendre l'expiration de sa
+      // presence, pres de deux minutes pendant lesquelles le compteur la garde.
+      name: 'parti',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Depart annonce',
+    },
+    {
       name: 'battements',
       type: 'number',
       defaultValue: 1,

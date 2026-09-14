@@ -56,6 +56,42 @@ export type Mesures = {
   coupures: number;
 };
 
+/**
+ * Enregistre le depart annonce d'un spectateur.
+ *
+ * Envoye quand l'onglet se ferme ou que le lecteur se referme. Sans lui, il faut
+ * attendre l'expiration de la presence, pres de deux minutes pendant lesquelles
+ * le compteur garde quelqu'un qui est deja parti.
+ *
+ * La fin de la presence n'est pas touchee : elle dit ce qui a ete regarde, le
+ * depart dit seulement que la place est libre.
+ */
+export async function enregistrerDepart(
+  matchId: number,
+  visiteur: string,
+): Promise<void> {
+  const payload = await getPayloadClient();
+
+  const { docs } = await payload.find({
+    collection: "live-audience",
+    where: {
+      and: [{ match: { equals: matchId } }, { visiteur: { equals: visiteur } }],
+    },
+    sort: "-fin",
+    limit: 1,
+    depth: 0,
+  });
+
+  const trace = docs[0] as { id: number | string } | undefined;
+  if (!trace) return;
+
+  await payload.update({
+    collection: "live-audience",
+    id: trace.id,
+    data: { parti: true },
+  });
+}
+
 export async function enregistrerBattement(
   matchId: number,
   visiteur: string,
@@ -103,6 +139,8 @@ export async function enregistrerBattement(
         // garde donc le plus grand des deux.
         coupures: Math.max(trace.coupures ?? 0, mesures.coupures),
         largeur: mesures.largeur,
+        // Un battement apres un depart annonce veut dire qu'on est revenu.
+        parti: false,
         // Quelqu'un peut fermer le bandeau en cours de match : son identite
         // arrive alors au milieu de sa presence, et on la rattrape.
         ...(mesures.durable ? { durable: mesures.durable } : {}),
@@ -157,6 +195,8 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
         and: [
           { match: { equals: matchId } },
           { fin: { greater_than: depuis } },
+          // Ceux qui ont annonce leur depart liberent la place tout de suite.
+          { parti: { not_equals: true } },
         ],
       },
       limit: 1000,

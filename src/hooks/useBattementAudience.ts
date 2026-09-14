@@ -118,8 +118,46 @@ export function useBattementAudience(
       });
     };
 
+    /**
+     * Annonce que la place est libre.
+     *
+     * Un onglet ferme ne previent personne : sans cette annonce, il faut
+     * attendre l'expiration de la presence, pres de deux minutes pendant
+     * lesquelles le compteur garde quelqu'un qui est deja parti.
+     *
+     * `sendBeacon` existe pour ce moment precis : le navigateur se charge de
+     * l'envoi meme si la page disparait dans la seconde, ce qu'une requete
+     * ordinaire ne survit pas.
+     */
+    const annoncerLeDepart = () => {
+      const corps = JSON.stringify({ match: matchId, visiteur, depart: true });
+
+      try {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(
+            "/api/live-audience",
+            new Blob([corps], { type: "application/json" }),
+          );
+          return;
+        }
+      } catch {
+        // Refuse ou indisponible : on tente la voie ordinaire ci-dessous.
+      }
+
+      fetch("/api/live-audience", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: corps,
+        keepalive: true,
+      }).catch(() => {});
+    };
+
     battre();
     const rythme = setInterval(battre, BATTEMENT_S * 1000);
+
+    // `pagehide` plutot que `beforeunload` : c'est le seul que Safari mobile
+    // declenche a coup sur, et il couvre aussi la mise en cache de la page.
+    window.addEventListener("pagehide", annoncerLeDepart);
 
     // Le retour sur l'onglet recompte tout de suite, plutot que d'attendre le
     // prochain battement : quelqu'un qui revient veut etre compte tout de suite.
@@ -132,6 +170,12 @@ export function useBattementAudience(
       arrete = true;
       clearInterval(rythme);
       document.removeEventListener("visibilitychange", surRetour);
+      window.removeEventListener("pagehide", annoncerLeDepart);
+
+      // Fermer le lecteur ou mettre en pause, c'est aussi partir. Un onglet
+      // simplement passe a l'arriere-plan, lui, expire tout seul : l'annoncer
+      // ferait danser le compteur a chaque coup d'oeil ailleurs.
+      annoncerLeDepart();
     };
   }, [matchId, etat.enLecture]);
 }

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { enregistrerBattement } from '@/lib/audience'
+import { enregistrerBattement, enregistrerDepart } from '@/lib/audience'
 import { dansLaFenetre } from '@/lib/fenetreDuMatch'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
@@ -38,6 +38,13 @@ export async function POST(request: NextRequest) {
     const largeur = Number(corps?.largeur)
     const coupures = Number(corps?.coupures)
     const source = String(corps?.source ?? 'direct')
+
+    // Un depart n'a rien d'autre a dire que son existence : il ne mesure rien,
+    // il annonce que la place est libre.
+    if (corps?.depart) {
+      await enregistrerDepart(matchId, visiteur)
+      return NextResponse.json({ ok: true })
+    }
 
     const durable = String(corps?.durable ?? '')
 
