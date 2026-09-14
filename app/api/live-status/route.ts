@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
-import { extractRoomId, getXbotgoLive } from '@/lib/getXbotgoLive'
+import { extraireSalle, getXbotgoLive, salleDepuisTexte, type SalleXbotgo } from '@/lib/getXbotgoLive'
 import { coupDEnvoi as kickoff, dansLaFenetre } from '@/lib/fenetreDuMatch'
 import { compterLesSpectateurs } from '@/lib/audience'
 import { cloturerLaDiffusion } from '@/lib/rapportDeDiffusion'
@@ -69,11 +69,10 @@ export const dynamic = 'force-dynamic'
  * Le garde sur l'environnement est ce qui compte : en production, ce cookie ne
  * peut rien, quoi qu'on y mette.
  */
-async function salleDEssai(): Promise<string | null> {
+async function salleDEssai(): Promise<SalleXbotgo | null> {
   if (process.env.NODE_ENV === 'production') return null
 
-  const valeur = (await cookies()).get('salle-essai')?.value ?? ''
-  return /^\d+$/.test(valeur) ? valeur : null
+  return salleDepuisTexte((await cookies()).get('salle-essai')?.value ?? '')
 }
 
 /** Dans combien de secondes le navigateur a interet a redemander. */
@@ -165,7 +164,7 @@ export async function GET() {
 
     // La salle du club, celle des parametres. Le champ Lien Live d une
     // rencontre precise reste prioritaire sur elle.
-    const salleDuClub = extractRoomId(reglages.salle ?? '')
+    const salleDuClub = extraireSalle(reglages.salle ?? '')
 
     const coupsDEnvoi = matchs
       .filter((match) => match.date && match.time)
@@ -189,7 +188,7 @@ export async function GET() {
     // YouTube n est jamais declenchee de cette facon, c est elle qui coute.
     if (!current && reglages.forcer) {
       current = matchs
-        .filter((match) => match.date && match.time && (salleDuClub || extractRoomId(match.liveLink ?? '')))
+        .filter((match) => match.date && match.time && (salleDuClub || extraireSalle(match.liveLink ?? '')))
         .sort((a, b) => Math.abs(kickoff(a.date, a.time) - now) - Math.abs(kickoff(b.date, b.time) - now))[0]
     }
 
@@ -215,7 +214,7 @@ export async function GET() {
     //
     // Le champ Lien Live du match l emporte sur la salle des parametres, pour
     // la rencontre exceptionnelle diffusee ailleurs.
-    const salleXbotgo = essai ?? (current.liveLink ? extractRoomId(current.liveLink) : salleDuClub)
+    const salleXbotgo = essai ?? (current.liveLink ? extraireSalle(current.liveLink) : salleDuClub)
 
     if (salleXbotgo) {
       const diffusion = await getXbotgoLive(salleXbotgo)

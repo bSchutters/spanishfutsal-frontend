@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { extractRoomId } from '@/lib/getXbotgoLive'
+import { extraireSalle, salleVersTexte } from '@/lib/getXbotgoLive'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +25,12 @@ export async function GET(request: NextRequest) {
 
   const donne = request.nextUrl.searchParams
   const brut = donne.get('lien') ?? donne.get('salle') ?? ''
-  const salle = /^\d+$/.test(brut) ? brut : extractRoomId(brut)
+
+  // La region compte autant que l'identifiant : une salle chinoise interrogee
+  // en Europe reste introuvable. Elle voyage donc avec lui dans le cookie.
+  const salle = /^\d+$/.test(brut)
+    ? { id: brut, region: (donne.get('region') ?? 'EU').toUpperCase() }
+    : extraireSalle(brut)
 
   const reponse = NextResponse.redirect(new URL('/', request.url))
 
@@ -34,7 +39,7 @@ export async function GET(request: NextRequest) {
     return reponse
   }
 
-  reponse.cookies.set('salle-essai', salle, {
+  reponse.cookies.set('salle-essai', salleVersTexte(salle), {
     path: '/',
     maxAge: 4 * 60 * 60,
     sameSite: 'lax',
