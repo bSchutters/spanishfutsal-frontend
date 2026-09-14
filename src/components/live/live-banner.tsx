@@ -38,7 +38,10 @@ export default function LiveBanner() {
       let rappel = RAPPEL_DEFAUT;
 
       try {
-        const res = await fetch("/api/live-status");
+        // Sans `no-store`, le navigateur sert sa propre copie et le bandeau
+        // relit ce qu'il a deja : le nombre de spectateurs ne bougeait qu'apres
+        // un rechargement force. Le rythme est decide ici, pas par le cache.
+        const res = await fetch("/api/live-status", { cache: "no-store" });
 
         if (res.ok) {
           const data = await res.json();

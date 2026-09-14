@@ -70,6 +70,8 @@ export type Trace = {
   plein_ecran?: boolean | null;
   source?: string | null;
   coupures?: number | null;
+  /** Identite qui survit a la fermeture du navigateur, si elle a ete acceptee. */
+  durable?: string | null;
 };
 
 /**
@@ -89,6 +91,7 @@ type Personne = {
   largeur: number | null;
   source: string;
   coupures: number;
+  durable: string | null;
 };
 
 /** Regroupe les presences par personne. */
@@ -111,6 +114,7 @@ function parPersonne(traces: Trace[]): Personne[] {
         largeur: trace.largeur ?? null,
         source: trace.source ?? "direct",
         coupures: trace.coupures ?? 0,
+        durable: trace.durable ?? null,
       });
       continue;
     }
@@ -124,6 +128,9 @@ function parPersonne(traces: Trace[]): Personne[] {
     deja.pleinEcran = deja.pleinEcran || Boolean(trace.plein_ecran);
     deja.coupures = Math.max(deja.coupures, trace.coupures ?? 0);
     deja.largeur = trace.largeur ?? deja.largeur;
+    // Le bandeau de mesure peut etre ferme en cours de match : l'identite
+    // arrive alors sur une presence et pas sur les precedentes.
+    deja.durable = deja.durable ?? trace.durable ?? null;
   }
 
   return [...gens.values()];
@@ -210,6 +217,13 @@ export type Rapport = {
   provenances: Record<string, number>;
   /** Personnes par famille d'ecran. */
   ecrans: Record<string, number>;
+  /** Personnes ayant ferme le bandeau, donc reconnaissables d'un match a l'autre. */
+  avecIdentite: number;
+  /**
+   * Parmi elles, celles deja vues a une diffusion precedente. Vaut null quand la
+   * question n'a pas ete posee a la base, le calcul pur ne pouvant pas y repondre.
+   */
+  habitues: number | null;
   /** Coupures subies par personne, en moyenne. */
   coupuresMoyennes: number;
   /** Part de personnes qui n'ont subi aucune coupure. */
@@ -398,6 +412,8 @@ export function resumer(brutes: Trace[]): Rapport | null {
     },
     provenances,
     ecrans,
+    avecIdentite: compte((p) => Boolean(p.durable)),
+    habitues: null,
     coupuresMoyennes: arrondi(coupures / gens.length),
     partSansCoupure: pourcentage(
       compte((p) => p.coupures === 0),
@@ -408,4 +424,21 @@ export function resumer(brutes: Trace[]): Rapport | null {
     courbe,
     arrivees: arriveesParMinute(gens, debut, fin),
   };
+}
+
+/**
+ * Les identites durables presentes dans ces traces.
+ *
+ * Rendues a part et jamais dans le rapport : celui-ci est enregistre en base et
+ * pousse vers un webhook, et des identifiants n'ont rien a faire dans un message
+ * qui sort du site.
+ */
+export function identitesDurables(traces: Trace[]): string[] {
+  return [
+    ...new Set(
+      traces
+        .map((trace) => trace.durable)
+        .filter((durable): durable is string => Boolean(durable)),
+    ),
+  ];
 }

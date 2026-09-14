@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { BATTEMENT_S } from "@/lib/battement";
+import { identiteDurable } from "@/lib/identiteDurable";
 import { provenance } from "@/lib/provenance";
 
 /**
@@ -102,6 +103,10 @@ export function useBattementAudience(
           mobile,
           largeur,
           source,
+          // Nulle tant que le bandeau de mesure n'a pas ete ferme : sans
+          // elle, la personne est comptee mais pas reconnue d'un match a
+          // l'autre.
+          durable: identiteDurable(),
           son: dernier.current.son,
           pleinEcran: dernier.current.pleinEcran,
           coupures: dernier.current.coupures,

@@ -39,7 +39,12 @@ export async function POST(request: NextRequest) {
     const coupures = Number(corps?.coupures)
     const source = String(corps?.source ?? 'direct')
 
+    const durable = String(corps?.durable ?? '')
+
     const mesures = {
+      // Le meme format que l'identifiant de session : tire au hasard, et rien
+      // d'autre. Absent tant que le bandeau de mesure n'a pas ete ferme.
+      durable: VISITEUR_VALIDE.test(durable) ? durable : null,
       mobile: Boolean(corps?.mobile),
       son: Boolean(corps?.son),
       pleinEcran: Boolean(corps?.pleinEcran),

@@ -14,16 +14,37 @@ import { extractVideoId, getBroadcastById, getViewers, getYoutubeLive } from '@/
 // plus rien a trouver : la chaine n a pas ouvert pour ce match.
 const RECHERCHE_APRES_MS = 15 * 60 * 1000
 
-// Une minute cote navigateur comme cote CDN : la reponse change pendant la
-// rencontre, elle ne peut pas etre figee comme les autres routes publiques.
-const CACHE_HEADERS = {
-  'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
+/**
+ * Deux regimes de cache, et jamais de cache dans le navigateur.
+ *
+ * `max-age=60` figeait la reponse chez le visiteur : le bandeau relisait sa
+ * propre copie au lieu d'interroger le site, et le nombre de spectateurs ne
+ * bougeait qu'apres un rechargement force. C'est le bandeau qui decide du
+ * rythme, pas le cache du navigateur.
+ *
+ * Le CDN, lui, garde toujours quelque chose : c'est lui qui fait que la
+ * consommation ne depend pas de l'affluence. Quinze secondes pendant la
+ * rencontre, pour que le compteur reste vivant, une minute le reste du temps.
+ */
+const CACHE_DIRECT = {
+  'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=30',
 }
+
+const CACHE_REPOS = {
+  'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=120',
+}
+
+// La regle : toute reponse qui donne rendez-vous dans quarante-cinq secondes
+// decrit une rencontre en cours et prend CACHE_DIRECT. Les autres, CACHE_REPOS.
 
 // Delais que la route conseille au navigateur avant de revenir. Le bandeau est
 // monte sur toutes les pages : sans cette indication, il interrogerait la route
 // toutes les minutes, jour et nuit, pour une rencontre par semaine.
-const RAPPEL_PENDANT = 45
+//
+// Trente secondes pendant la rencontre : c'est le rythme du compteur de
+// spectateurs, et il doit se voir bouger. Le CDN, lui, ne laisse passer qu'une
+// interrogation toutes les quinze secondes, donc l'affluence ne coute rien.
+const RAPPEL_PENDANT = 30
 const RAPPEL_APPROCHE = 300
 const RAPPEL_LOIN = 3600
 
@@ -171,10 +192,7 @@ export async function GET() {
     }
 
     if (!current) {
-      return NextResponse.json(
-        { live: false, nextCheckIn: rappel(coupsDEnvoi, now, false) },
-        { headers: CACHE_HEADERS }
-      )
+      return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, false) }, { headers: CACHE_REPOS })
     }
 
     const coupDEnvoi = kickoff(current.date, current.time)
@@ -209,7 +227,7 @@ export async function GET() {
           await cloturerLaDiffusion(current.id, `${current.homeTeam} - ${current.awayTeam}`)
         }
 
-        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_HEADERS })
+        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_DIRECT })
       }
 
       return NextResponse.json(
@@ -225,7 +243,7 @@ export async function GET() {
           match: affiche,
           nextCheckIn: RAPPEL_PENDANT,
         },
-        { headers: CACHE_HEADERS }
+        { headers: CACHE_DIRECT }
       )
     }
 
@@ -249,7 +267,7 @@ export async function GET() {
           match: affiche,
           nextCheckIn: RAPPEL_PENDANT,
         },
-        { headers: CACHE_HEADERS }
+        { headers: CACHE_DIRECT }
       )
     }
 
@@ -264,34 +282,34 @@ export async function GET() {
       // Elle s est arretee : la rencontre a eu sa diffusion, il n y a plus rien
       // a chercher jusqu a la fermeture de la fenetre.
       if (!encoreEnCours) {
-        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_HEADERS })
+        return NextResponse.json({ live: false, nextCheckIn: RAPPEL_PENDANT }, { headers: CACHE_DIRECT })
       }
 
       return NextResponse.json(
         { live: true, ...encoreEnCours, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },
-        { headers: CACHE_HEADERS }
+        { headers: CACHE_DIRECT }
       )
     }
 
     if (!chercheEncore) {
-      return NextResponse.json({ live: false, nextCheckIn: RAPPEL_APPROCHE }, { headers: CACHE_HEADERS })
+      return NextResponse.json({ live: false, nextCheckIn: RAPPEL_APPROCHE }, { headers: CACHE_REPOS })
     }
 
     const broadcast = await getYoutubeLive()
 
     if (!broadcast) {
-      return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, true) }, { headers: CACHE_HEADERS })
+      return NextResponse.json({ live: false, nextCheckIn: rappel(coupsDEnvoi, now, true) }, { headers: CACHE_DIRECT })
     }
 
     await memoriserLeReplay(current.id, broadcast.url)
 
     return NextResponse.json(
       { live: true, ...broadcast, source: 'youtube', match: affiche, nextCheckIn: RAPPEL_PENDANT },
-      { headers: CACHE_HEADERS }
+      { headers: CACHE_DIRECT }
     )
   } catch (error) {
     // Une erreur ici ne vaut pas une page en echec : le bandeau reste masque.
     console.error('Etat du live indisponible :', error)
-    return NextResponse.json({ live: false, nextCheckIn: RAPPEL_LOIN }, { headers: CACHE_HEADERS })
+    return NextResponse.json({ live: false, nextCheckIn: RAPPEL_LOIN }, { headers: CACHE_REPOS })
   }
 }

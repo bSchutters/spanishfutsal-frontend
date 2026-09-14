@@ -196,5 +196,30 @@ verifie('soiree, arrivees', bilan?.arrivees[0], 1)
 verifie('soiree, arrivee a la dixieme minute', bilan?.arrivees[10], 1)
 verifie('soiree, aucune arrivee a la vingtieme', bilan?.arrivees[20], 0)
 
+// --- L identite durable ---
+
+// Seuls ceux qui ont ferme le bandeau de mesure sont reconnaissables. Les autres
+// sont comptes, jamais reconnus, et c'est le fonctionnement voulu.
+const melange = resumer([
+  avec(trace(0, 30, false, 'a'), { durable: 'aaa' }),
+  avec(trace(0, 30, false, 'b'), { durable: 'bbb' }),
+  trace(0, 30, false, 'c'),
+])
+
+verifie('identite, trois personnes comptees', melange?.uniques, 3)
+verifie('identite, deux reconnaissables', melange?.avecIdentite, 2)
+// Le calcul pur ne peut pas savoir qui etait la au match precedent : il ne dit
+// pas zero, il dit qu'il ne sait pas.
+verifie('identite, habitues inconnus du calcul pur', melange?.habitues, null)
+
+// L'identite peut arriver en cours de match, si le bandeau est ferme a ce
+// moment-la : elle vaut alors pour toute la personne.
+const tardive = resumer([
+  trace(0, 10, false, 'd'),
+  avec(trace(20, 30, false, 'd'), { durable: 'ddd' }),
+])
+
+verifie('identite, acceptee en cours de match', tardive?.avecIdentite, 1)
+
 console.log(echecs ? `\n${echecs} cas en echec` : '\nTous les cas passent')
 process.exit(echecs ? 1 : 0)

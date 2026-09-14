@@ -65,6 +65,11 @@ function rediger(affiche: string, rapport: Rapport): string {
     `Son activé : ${rapport.partSon} % · Plein écran : ${rapport.partPleinEcran} %`,
     `Provenance : ${enumerer(rapport.provenances)}`,
     `Confort : ${nombre(rapport.coupuresMoyennes)} coupure par personne, ${rapport.partSansCoupure} % n'en ont eu aucune`,
+    ...(rapport.habitues === null
+      ? []
+      : [
+          `Fidélité : ${rapport.habitues} habitués sur ${rapport.avecIdentite} spectateurs reconnaissables`,
+        ]),
     "",
     `De ${heure(rapport.debut)} à ${heure(rapport.fin)}`,
   ];
@@ -320,6 +325,8 @@ export async function envoyerUnRapportDEssai(): Promise<{
     },
     provenances: { direct: 30, facebook: 22, recherche: 9 },
     ecrans: { telephone: 41, ordinateur: 14, tablette: 6 },
+    avecIdentite: 38,
+    habitues: 21,
     coupuresMoyennes: 1.8,
     partSansCoupure: 44,
     debut: new Date(Date.now() - 77 * 60 * 1000).toISOString(),

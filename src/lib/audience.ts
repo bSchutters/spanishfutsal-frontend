@@ -1,4 +1,9 @@
-import { resumer, type Rapport, type Trace } from "./audienceCalculs";
+import {
+  identitesDurables,
+  resumer,
+  type Rapport,
+  type Trace,
+} from "./audienceCalculs";
 import { BATTEMENT_S, TOLERANCE_BATTEMENTS } from "./battement";
 import { getPayloadClient } from "./payload";
 
@@ -42,6 +47,7 @@ const PLAFOND_VISITEURS = 2000;
  * une seule personne au comptage.
  */
 export type Mesures = {
+  durable: string | null;
   mobile: boolean;
   son: boolean;
   pleinEcran: boolean;
@@ -97,6 +103,9 @@ export async function enregistrerBattement(
         // garde donc le plus grand des deux.
         coupures: Math.max(trace.coupures ?? 0, mesures.coupures),
         largeur: mesures.largeur,
+        // Quelqu'un peut fermer le bandeau en cours de match : son identite
+        // arrive alors au milieu de sa presence, et on la rattrape.
+        ...(mesures.durable ? { durable: mesures.durable } : {}),
       },
     });
     return;
@@ -117,6 +126,7 @@ export async function enregistrerBattement(
       debut: maintenant,
       fin: maintenant,
       battements: 1,
+      durable: mesures.durable,
       mobile: mesures.mobile,
       largeur: mesures.largeur,
       son: mesures.son,
@@ -178,5 +188,47 @@ export async function calculerLeRapport(
     depth: 0,
   });
 
-  return resumer(docs as unknown as Trace[]);
+  const traces = docs as unknown as Trace[];
+  const rapport = resumer(traces);
+  if (!rapport) return null;
+
+  return { ...rapport, habitues: await compterLesHabitues(traces, matchId) };
+}
+
+/**
+ * Combien de ces spectateurs avaient deja regarde une diffusion precedente.
+ *
+ * Ne concerne que ceux qui ont ferme le bandeau de mesure : les autres sont
+ * comptes mais pas reconnus, et c'est le fonctionnement voulu. Rend null quand
+ * personne n'est reconnaissable, pour ne pas annoncer zero fidele la ou la
+ * question n'a simplement pas de reponse.
+ */
+async function compterLesHabitues(
+  traces: Trace[],
+  matchId: number,
+): Promise<number | null> {
+  const identites = identitesDurables(traces);
+  if (!identites.length) return null;
+
+  try {
+    const payload = await getPayloadClient();
+
+    const { docs } = await payload.find({
+      collection: "live-audience",
+      where: {
+        and: [
+          { durable: { in: identites } },
+          { match: { not_equals: matchId } },
+        ],
+      },
+      limit: 5000,
+      pagination: false,
+      depth: 0,
+    });
+
+    return identitesDurables(docs as unknown as Trace[]).length;
+  } catch (error) {
+    console.error("Comptage des habitues impossible :", error);
+    return null;
+  }
 }

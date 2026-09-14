@@ -52,6 +52,16 @@ export const LiveAudience: CollectionConfig = {
       label: 'Visiteur',
     },
     {
+      // Ne vaut que pour ceux qui ont ferme le bandeau de mesure. Tire au
+      // hasard comme l'autre, mais il survit a la fermeture du navigateur :
+      // c'est ce qui permet de savoir combien de spectateurs reviennent d'un
+      // match a l'autre, et rien de plus.
+      name: 'durable',
+      type: 'text',
+      index: true,
+      label: 'Identite durable',
+    },
+    {
       name: 'debut',
       type: 'date',
       required: true,
