@@ -1,18 +1,10 @@
-import {
-  Facebook,
-  Globe,
-  Instagram,
-  Linkedin,
-  Mail,
-  Music2,
-  Twitter,
-  Youtube,
-} from "lucide-react";
+import { Globe, Mail, Music2 } from "lucide-react";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "@/components/icons/marques";
 import { cn } from "@/lib/utils";
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
 import {
