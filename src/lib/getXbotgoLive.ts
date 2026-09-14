@@ -77,11 +77,6 @@ export function extraireSalle(url: string): SalleXbotgo | null {
   }
 }
 
-/** L'identifiant seul, pour qui n'a pas besoin de la region. */
-export function extractRoomId(url: string): string | null {
-  return extraireSalle(url)?.id ?? null;
-}
-
 /**
  * La diffusion en cours dans une salle XbotGo, ou null.
  *

@@ -79,15 +79,3 @@ export function identiteDurable(): string | null {
     return null;
   }
 }
-
-/** Efface tout, pour qui veut revenir en arriere. */
-export function oublierLIdentite(): void {
-  try {
-    localStorage.removeItem(CLE_ACCORD);
-    localStorage.removeItem(CLE_IDENTITE);
-  } catch {
-    // Rien a effacer s'il n'y a pas de stockage.
-  }
-
-  prevenirLesAbonnes();
-}

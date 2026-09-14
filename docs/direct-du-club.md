@@ -114,6 +114,24 @@ donc pas reposer dessus seul. La parade qui marche sans elle reste la plus
 simple : l'operateur regarde le flux et non le terrain, et clique quand il voit
 l'action a l'ecran.
 
+## Le plein ecran
+
+Trois chemins, selon ce que le navigateur accepte, et le bouton fait quelque
+chose dans les trois cas.
+
+- **Ordinateur et Android** : le vrai plein ecran du navigateur.
+- **iPhone** : le plein ecran d'un element quelconque n'existe pas, seule une
+  balise video y a droit. Le lecteur du direct en a une, donc c'est le lecteur
+  natif d'Apple qui prend la main, avec ses propres commandes.
+- **Navigateurs integres aux applications**, celui de Facebook ou d'Instagram par
+  exemple, ou le plein ecran est souvent refuse : le lecteur s'etale alors sur
+  tout l'ecran par la mise en page. La barre du navigateur reste visible, mais
+  l'image occupe tout le reste. Ce cas n'a rien de theorique, Facebook est une
+  des provenances que le rapport compte.
+
+Echap sort de ce dernier mode, en capture et avec `preventDefault` : sans cela
+la touche refermerait la surimpression entiere.
+
 ## Eprouver le direct sans rencontre
 
 Un direct ne se presente pas sur commande. En developpement seulement, un lien
