@@ -64,17 +64,162 @@ export type Trace = {
   debut: string;
   fin: string;
   mobile?: boolean | null;
+  /** Largeur d'ecran arrondie a la centaine. */
+  largeur?: number | null;
+  son?: boolean | null;
+  plein_ecran?: boolean | null;
+  source?: string | null;
+  coupures?: number | null;
 };
 
+/**
+ * Une personne, reconstituee depuis ses presences.
+ *
+ * Tout ce qui decrit une audience se compte par personne et non par presence :
+ * quelqu'un qui revient trois fois reste un spectateur, et sa duree est la somme
+ * de ce qu'il a regarde.
+ */
+type Personne = {
+  visionne: number;
+  arrivee: number;
+  depart: number;
+  mobile: boolean;
+  son: boolean;
+  pleinEcran: boolean;
+  largeur: number | null;
+  source: string;
+  coupures: number;
+};
+
+/** Regroupe les presences par personne. */
+function parPersonne(traces: Trace[]): Personne[] {
+  const gens = new Map<string, Personne>();
+
+  for (const trace of traces) {
+    const debut = Date.parse(trace.debut);
+    const fin = Date.parse(trace.fin);
+    const deja = gens.get(trace.visiteur);
+
+    if (!deja) {
+      gens.set(trace.visiteur, {
+        visionne: dureeDe(trace),
+        arrivee: debut,
+        depart: fin,
+        mobile: Boolean(trace.mobile),
+        son: Boolean(trace.son),
+        pleinEcran: Boolean(trace.plein_ecran),
+        largeur: trace.largeur ?? null,
+        source: trace.source ?? "direct",
+        coupures: trace.coupures ?? 0,
+      });
+      continue;
+    }
+
+    deja.visionne += dureeDe(trace);
+    deja.arrivee = Math.min(deja.arrivee, debut);
+    deja.depart = Math.max(deja.depart, fin);
+    // Ces quatre-la s'enclenchent : une seule presence suffit a les etablir.
+    deja.mobile = deja.mobile || Boolean(trace.mobile);
+    deja.son = deja.son || Boolean(trace.son);
+    deja.pleinEcran = deja.pleinEcran || Boolean(trace.plein_ecran);
+    deja.coupures = Math.max(deja.coupures, trace.coupures ?? 0);
+    deja.largeur = trace.largeur ?? deja.largeur;
+  }
+
+  return [...gens.values()];
+}
+
+/** La valeur du milieu, moins sensible aux extremes que la moyenne. */
+function mediane(valeurs: number[]): number {
+  if (!valeurs.length) return 0;
+
+  const triees = [...valeurs].sort((a, b) => a - b);
+  const milieu = Math.floor(triees.length / 2);
+
+  return triees.length % 2
+    ? triees[milieu]
+    : (triees[milieu - 1] + triees[milieu]) / 2;
+}
+
+/** Les arrivees minute par minute, pour voir quand la salle se remplit. */
+function arriveesParMinute(
+  gens: Personne[],
+  debut: number,
+  fin: number,
+): number[] {
+  const points = Math.floor((fin - debut) / 60_000) + 1;
+  const arrivees = new Array<number>(points).fill(0);
+
+  for (const personne of gens) {
+    const minute = Math.min(
+      points - 1,
+      Math.max(0, Math.floor((personne.arrivee - debut) / 60_000)),
+    );
+    arrivees[minute] += 1;
+  }
+
+  return arrivees;
+}
+
+/**
+ * La famille d'ecran, par sa largeur. Trois familles suffisent a savoir pour qui
+ * on developpe, et aucune ne designe un appareil precis.
+ */
+function familleDEcran(largeur: number | null, mobile: boolean) {
+  if (largeur === null) return mobile ? "telephone" : "ordinateur";
+  if (largeur < 600) return "telephone";
+  if (largeur < 1000) return "tablette";
+  return "ordinateur";
+}
+
+const arrondi = (valeur: number, decimales = 1) => {
+  const facteur = 10 ** decimales;
+  return Math.round(valeur * facteur) / facteur;
+};
+
+const pourcentage = (part: number, total: number) =>
+  total ? Math.round((part / total) * 100) : 0;
+
 export type Rapport = {
+  /** Personnes differentes, et non presences. */
   uniques: number;
+  /** Le plus grand nombre de personnes presentes en meme temps. */
   pointe: number;
+  /** Minute ou la pointe a eu lieu, comptee depuis le debut de la diffusion. */
+  minutePointe: number;
+  /** Temps regarde par personne, pauses et absences exclues. */
   dureeMoyenneMinutes: number;
+  /** La valeur du milieu, qu'une poignee de fideles ne tire pas vers le haut. */
+  dureeMedianeMinutes: number;
+  /** Somme de tout ce qui a ete regarde. */
+  heuresVisionnees: number;
   partMobile: number;
+  /** Part de personnes ayant active le son au moins une fois. */
+  partSon: number;
+  partPleinEcran: number;
+  /** Nombre de personnes ayant tenu au moins tant de minutes. */
+  retention: {
+    cinq: number;
+    quinze: number;
+    trente: number;
+    quarantecinq: number;
+    /** Encore presentes a la derniere minute de la diffusion. */
+    jusquauBout: number;
+  };
+  /** Personnes par provenance. */
+  provenances: Record<string, number>;
+  /** Personnes par famille d'ecran. */
+  ecrans: Record<string, number>;
+  /** Coupures subies par personne, en moyenne. */
+  coupuresMoyennes: number;
+  /** Part de personnes qui n'ont subi aucune coupure. */
+  partSansCoupure: number;
   debut: string | null;
   fin: string | null;
-  /** Spectateurs simultanes, minute par minute. */
+  /** Presents minute par minute. */
   courbe: number[];
+  /** Arrivees minute par minute. */
+  arrivees: number[];
 };
 
 /**
@@ -197,32 +342,70 @@ export function resumer(brutes: Trace[]): Rapport | null {
   if (!brutes.length) return null;
 
   const traces = fusionner(brutes);
+  const gens = parPersonne(traces);
 
-  const debuts = traces.map((trace) => Date.parse(trace.debut));
-  const fins = traces.map((trace) => Date.parse(trace.fin));
-  const debut = Math.min(...debuts);
-  const fin = Math.max(...fins);
+  const debut = Math.min(...gens.map((p) => p.arrivee));
+  const fin = Math.max(...gens.map((p) => p.depart));
 
-  // Les personnes, et non les intervalles : deux allers-retours d'un meme
-  // spectateur ne font pas deux spectateurs.
-  const personnes = new Set(traces.map((trace) => trace.visiteur));
+  const visionne = gens.reduce((total, p) => total + p.visionne, 0);
+  const minutes = gens.map((p) => p.visionne / 60_000);
 
-  // Le temps reellement regarde, pauses et absences exclues, rapporte aux
-  // personnes et non aux intervalles.
-  const visionne = traces.reduce((total, trace) => total + dureeDe(trace), 0);
+  const compte = (filtre: (p: Personne) => boolean) =>
+    gens.filter(filtre).length;
+  const aTenu = (m: number) => compte((p) => p.visionne >= m * 60_000);
 
-  const surTelephone = new Set(
-    traces.filter((trace) => trace.mobile).map((trace) => trace.visiteur),
-  ).size;
+  // Encore la a la derniere minute : c'est ce qui distingue celui qui a suivi le
+  // match de celui qui est parti a la mi-temps.
+  const jusquauBout = compte((p) => fin - p.depart < 60_000);
+
+  const provenances: Record<string, number> = {};
+  const ecrans: Record<string, number> = {};
+
+  for (const personne of gens) {
+    provenances[personne.source] = (provenances[personne.source] ?? 0) + 1;
+    const famille = familleDEcran(personne.largeur, personne.mobile);
+    ecrans[famille] = (ecrans[famille] ?? 0) + 1;
+  }
+
+  const courbe = courbeParMinute(traces, debut, fin);
+  const coupures = gens.reduce((total, p) => total + p.coupures, 0);
 
   return {
-    uniques: personnes.size,
+    uniques: gens.length,
     pointe: pointeSimultanee(traces),
-    dureeMoyenneMinutes:
-      Math.round((visionne / personnes.size / 60_000) * 10) / 10,
-    partMobile: Math.round((surTelephone / personnes.size) * 100),
+    minutePointe: courbe.indexOf(Math.max(...courbe)),
+    dureeMoyenneMinutes: arrondi(visionne / gens.length / 60_000),
+    dureeMedianeMinutes: arrondi(mediane(minutes)),
+    heuresVisionnees: arrondi(visionne / 3_600_000),
+    partMobile: pourcentage(
+      compte((p) => p.mobile),
+      gens.length,
+    ),
+    partSon: pourcentage(
+      compte((p) => p.son),
+      gens.length,
+    ),
+    partPleinEcran: pourcentage(
+      compte((p) => p.pleinEcran),
+      gens.length,
+    ),
+    retention: {
+      cinq: aTenu(5),
+      quinze: aTenu(15),
+      trente: aTenu(30),
+      quarantecinq: aTenu(45),
+      jusquauBout,
+    },
+    provenances,
+    ecrans,
+    coupuresMoyennes: arrondi(coupures / gens.length),
+    partSansCoupure: pourcentage(
+      compte((p) => p.coupures === 0),
+      gens.length,
+    ),
     debut: new Date(debut).toISOString(),
     fin: new Date(fin).toISOString(),
-    courbe: courbeParMinute(traces, debut, fin),
+    courbe,
+    arrivees: arriveesParMinute(gens, debut, fin),
   };
 }

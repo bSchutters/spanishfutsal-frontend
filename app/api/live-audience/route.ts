@@ -21,13 +21,32 @@ export const dynamic = 'force-dynamic'
 /** Un identifiant tire au hasard par le navigateur, et rien d'autre. */
 const VISITEUR_VALIDE = /^[a-z0-9]{8,64}$/
 
+const PROVENANCES = ['direct', 'facebook', 'instagram', 'recherche', 'autre', 'interne']
+
+/** Plafond des coupures declarees : au-dela, c'est une valeur fantaisiste. */
+const COUPURES_MAX = 500
+
 export async function POST(request: NextRequest) {
   try {
     const corps = await request.json()
 
     const matchId = Number(corps?.match)
     const visiteur = String(corps?.visiteur ?? '')
-    const mobile = Boolean(corps?.mobile)
+
+    // Tout le reste est facultatif et borne : cette route est publique, elle ne
+    // fait confiance a rien de ce qu'on lui envoie.
+    const largeur = Number(corps?.largeur)
+    const coupures = Number(corps?.coupures)
+    const source = String(corps?.source ?? 'direct')
+
+    const mesures = {
+      mobile: Boolean(corps?.mobile),
+      son: Boolean(corps?.son),
+      pleinEcran: Boolean(corps?.pleinEcran),
+      largeur: Number.isFinite(largeur) && largeur > 0 && largeur < 10_000 ? Math.round(largeur) : null,
+      source: PROVENANCES.includes(source) ? source : 'direct',
+      coupures: Number.isFinite(coupures) ? Math.min(Math.max(0, Math.round(coupures)), COUPURES_MAX) : 0,
+    }
 
     if (!Number.isInteger(matchId) || !VISITEUR_VALIDE.test(visiteur)) {
       return NextResponse.json({ error: 'Requete invalide' }, { status: 400 })
@@ -42,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Hors fenetre' }, { status: 409 })
     }
 
-    await enregistrerBattement(matchId, visiteur, mobile)
+    await enregistrerBattement(matchId, visiteur, mesures)
 
     return NextResponse.json({ ok: true })
   } catch (error) {

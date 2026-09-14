@@ -92,9 +92,22 @@ export default function HlsPlayer({ url }: { url: string }) {
   // Vrai entre la panne et l'arrivee d'une adresse fraiche.
   const [reprise, setReprise] = useState(false);
 
+  // Trois mesures de confort, envoyees avec le battement. Elles ne decrivent
+  // pas la personne mais la seance : a-t-elle entendu le match, l'a-t-elle mis
+  // en grand, et la diffusion a-t-elle tenu. Elles s'enclenchent et ne
+  // reviennent pas en arriere, c'est un vecu, pas un etat.
+  const [sonActive, setSonActive] = useState(false);
+  const [pleinEcranUtilise, setPleinEcranUtilise] = useState(false);
+  const [coupures, setCoupures] = useState(0);
+
   // Tant que la lecture tourne, le site sait qu'une personne de plus regarde.
   // En pause, ferme, ou l'onglet en arriere-plan, le compteur la laisse expirer.
-  useBattementAudience(matchId, enLecture);
+  useBattementAudience(matchId, {
+    enLecture,
+    son: sonActive,
+    pleinEcran: pleinEcranUtilise,
+    coupures,
+  });
 
   // L'adresse change a chaque verification du bandeau, parce qu'elle est signee.
   // Elle est suivie dans une reference et non dans les dependances d'un effet :
@@ -224,7 +237,14 @@ export default function HlsPlayer({ url }: { url: string }) {
     [],
   );
 
-  useEffect(() => suivrePleinEcran(setPleinEcran), []);
+  useEffect(
+    () =>
+      suivrePleinEcran((actif) => {
+        setPleinEcran(actif);
+        if (actif) setPleinEcranUtilise(true);
+      }),
+    [],
+  );
 
   /**
    * Le bord du direct, tel que le flux le declare a l'instant.
@@ -279,6 +299,7 @@ export default function HlsPlayer({ url }: { url: string }) {
 
     element.muted = !element.muted;
     setMuet(element.muted);
+    if (!element.muted) setSonActive(true);
   }, []);
 
   const changerVolume = useCallback((valeur: number) => {
@@ -293,6 +314,7 @@ export default function HlsPlayer({ url }: { url: string }) {
     if (valeur > 0 && element.muted) {
       element.muted = false;
       setMuet(false);
+      setSonActive(true);
     }
   }, []);
 
@@ -302,7 +324,13 @@ export default function HlsPlayer({ url }: { url: string }) {
 
     // Le lecteur attend des donnees qui ne viendront pas : il est sorti de la
     // fenetre. On le ramene au bord plutot que de le laisser caler.
-    const rattraper = () => auBordDuDirect(element);
+    const rattraper = () => {
+      // Chaque attente est une coupure vecue par le spectateur. C'est la seule
+      // mesure qui dise si la diffusion a ete confortable, ce qu'aucun compteur
+      // d'audience ne raconte.
+      setCoupures((n) => n + 1);
+      auBordDuDirect(element);
+    };
     element.addEventListener("waiting", rattraper);
 
     return () => element.removeEventListener("waiting", rattraper);

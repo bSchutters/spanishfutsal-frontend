@@ -25,15 +25,48 @@ const heure = (iso: string | null) =>
       })
     : "?";
 
+const LIBELLES: Record<string, string> = {
+  direct: "lien direct",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  recherche: "recherche",
+  autre: "autre site",
+  interne: "navigation interne",
+  telephone: "téléphone",
+  tablette: "tablette",
+  ordinateur: "ordinateur",
+};
+
+/** Un decompte par categorie, du plus grand au plus petit, en toutes lettres. */
+function enumerer(compte: Record<string, number>): string {
+  return Object.entries(compte)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cle, valeur]) => `${valeur} ${LIBELLES[cle] ?? cle}`)
+    .join(", ");
+}
+
+const nombre = (valeur: number) => valeur.toLocaleString("fr-BE");
+
 /** Le message, tel qu'il arrive dans la conversation. */
 function rediger(affiche: string, rapport: Rapport): string {
+  const r = rapport.retention;
+
   const lignes = [
-    `**${affiche}**, diffusion terminee`,
-    `Pointe : **${rapport.pointe}** en meme temps`,
-    `Spectateurs differents : ${rapport.uniques}`,
-    `Duree moyenne : ${rapport.dureeMoyenneMinutes.toLocaleString("fr-BE")} min`,
-    `Telephones : ${rapport.partMobile} %`,
-    `De ${heure(rapport.debut)} a ${heure(rapport.fin)}`,
+    `**${affiche}**, diffusion terminée`,
+    "",
+    `Pointe : **${rapport.pointe}** en même temps, à la ${rapport.minutePointe + 1}e minute`,
+    `Spectateurs différents : **${rapport.uniques}**`,
+    `Temps regardé : ${nombre(rapport.dureeMoyenneMinutes)} min en moyenne, ${nombre(
+      rapport.dureeMedianeMinutes,
+    )} en médiane, ${nombre(rapport.heuresVisionnees)} h en tout`,
+    "",
+    `Ont tenu : ${r.cinq} au-delà de 5 min, ${r.quinze} au-delà de 15, ${r.trente} au-delà de 30, ${r.quarantecinq} au-delà de 45, et ${r.jusquauBout} jusqu'au bout`,
+    `Écrans : ${enumerer(rapport.ecrans)}`,
+    `Son activé : ${rapport.partSon} % · Plein écran : ${rapport.partPleinEcran} %`,
+    `Provenance : ${enumerer(rapport.provenances)}`,
+    `Confort : ${nombre(rapport.coupuresMoyennes)} coupure par personne, ${rapport.partSansCoupure} % n'en ont eu aucune`,
+    "",
+    `De ${heure(rapport.debut)} à ${heure(rapport.fin)}`,
   ];
 
   const courbe = esquisse(rapport.courbe);
@@ -133,16 +166,30 @@ export async function cloturerLaDiffusion(
     const rapport = await calculerLeRapport(matchId);
     if (!rapport) return;
 
+    const {
+      uniques,
+      pointe,
+      dureeMoyenneMinutes,
+      partMobile,
+      debut,
+      fin,
+      courbe,
+      ...details
+    } = rapport;
+
     const chiffres = {
       match: matchId,
       affiche,
-      debut: rapport.debut,
-      fin: rapport.fin,
-      uniques: rapport.uniques,
-      pointe: rapport.pointe,
-      duree_moyenne: rapport.dureeMoyenneMinutes,
-      part_mobile: rapport.partMobile,
-      courbe: rapport.courbe,
+      debut,
+      fin,
+      uniques,
+      pointe,
+      duree_moyenne: dureeMoyenneMinutes,
+      part_mobile: partMobile,
+      courbe,
+      // Le reste des mesures dans un seul bloc : en ajouter une ne demande pas
+      // de toucher a la base.
+      details,
     };
 
     const fiche = existant
@@ -257,13 +304,29 @@ export async function envoyerUnRapportDEssai(): Promise<{
   const essai: Rapport = {
     uniques: 61,
     pointe: 34,
+    minutePointe: 11,
     dureeMoyenneMinutes: 27.4,
+    dureeMedianeMinutes: 22,
+    heuresVisionnees: 27.9,
     partMobile: 68,
+    partSon: 72,
+    partPleinEcran: 31,
+    retention: {
+      cinq: 54,
+      quinze: 48,
+      trente: 39,
+      quarantecinq: 31,
+      jusquauBout: 24,
+    },
+    provenances: { direct: 30, facebook: 22, recherche: 9 },
+    ecrans: { telephone: 41, ordinateur: 14, tablette: 6 },
+    coupuresMoyennes: 1.8,
+    partSansCoupure: 44,
     debut: new Date(Date.now() - 77 * 60 * 1000).toISOString(),
     fin: new Date().toISOString(),
     courbe,
+    arrivees: courbe.map((_, index) => (index < 6 ? 8 : index < 12 ? 3 : 1)),
   };
-
   const texte = [
     rediger("ESSAI, UD Asturiana - Futsal Team Antwerpen", essai),
     "",

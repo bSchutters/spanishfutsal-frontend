@@ -26,7 +26,7 @@ export const LiveAudience: CollectionConfig = {
     defaultColumns: ['match', 'debut', 'fin', 'battements'],
     hidden: ({ user }) => user?.role !== 'admin',
     description:
-      "Les traces brutes du comptage, conservees pour recalculer un rapport. Rien ne se saisit ici a la main.",
+      'Les traces brutes du comptage, conservees pour recalculer un rapport. Rien ne se saisit ici a la main.',
   },
   access: {
     read: isAdmin,
@@ -83,6 +83,52 @@ export const LiveAudience: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       label: 'Sur telephone',
+    },
+    {
+      // Arrondie a la centaine : de quoi distinguer un telephone d'un grand
+      // ecran, pas de quoi reconnaitre une machine a sa resolution exacte.
+      name: 'largeur',
+      type: 'number',
+      label: 'Largeur d ecran (px, arrondie)',
+    },
+    {
+      // Vrai des que la personne a active le son au moins une fois. Un match
+      // regarde en silence n'est pas un match regarde.
+      name: 'son',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'A active le son',
+    },
+    {
+      name: 'plein_ecran',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Est passe en plein ecran',
+    },
+    {
+      // D'ou la personne arrive, par grandes familles. Le referent complet n'est
+      // pas conserve : il peut porter une adresse de page privee.
+      name: 'source',
+      type: 'select',
+      defaultValue: 'direct',
+      options: [
+        { label: 'Lien direct', value: 'direct' },
+        { label: 'Facebook', value: 'facebook' },
+        { label: 'Instagram', value: 'instagram' },
+        { label: 'Moteur de recherche', value: 'recherche' },
+        { label: 'Autre site', value: 'autre' },
+        { label: 'Le site lui-meme', value: 'interne' },
+      ],
+      label: 'Provenance',
+    },
+    {
+      // Nombre de fois ou la lecture a cale chez cette personne. C'est la seule
+      // mesure qui dise si la diffusion a ete confortable, ce qu'aucun compteur
+      // d'audience ne raconte.
+      name: 'coupures',
+      type: 'number',
+      defaultValue: 0,
+      label: 'Coupures subies',
     },
   ],
 }

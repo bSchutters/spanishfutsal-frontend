@@ -41,10 +41,19 @@ const PLAFOND_VISITEURS = 2000;
  * temps. Les deux lignes portent le meme identifiant de visiteur, donc il reste
  * une seule personne au comptage.
  */
+export type Mesures = {
+  mobile: boolean;
+  son: boolean;
+  pleinEcran: boolean;
+  largeur: number | null;
+  source: string;
+  coupures: number;
+};
+
 export async function enregistrerBattement(
   matchId: number,
   visiteur: string,
-  mobile: boolean,
+  mesures: Mesures,
 ): Promise<void> {
   const payload = await getPayloadClient();
   const maintenant = new Date().toISOString();
@@ -60,7 +69,14 @@ export async function enregistrerBattement(
   });
 
   const trace = docs[0] as
-    | { id: number | string; fin: string; battements?: number }
+    | {
+        id: number | string;
+        fin: string;
+        battements?: number;
+        son?: boolean | null;
+        plein_ecran?: boolean | null;
+        coupures?: number | null;
+      }
     | undefined;
 
   // Le dernier signe est-il assez recent pour prolonger le meme intervalle ?
@@ -70,7 +86,18 @@ export async function enregistrerBattement(
     await payload.update({
       collection: "live-audience",
       id: trace.id,
-      data: { fin: maintenant, battements: (trace.battements ?? 1) + 1 },
+      data: {
+        fin: maintenant,
+        battements: (trace.battements ?? 1) + 1,
+        // Le son et le plein ecran s'enclenchent et ne reviennent pas : ils
+        // disent ce que la personne a fait, pas ou elle en est a la seconde.
+        son: Boolean(trace.son) || mesures.son,
+        plein_ecran: Boolean(trace.plein_ecran) || mesures.pleinEcran,
+        // Le compteur du navigateur repart de zero s'il remonte le lecteur, on
+        // garde donc le plus grand des deux.
+        coupures: Math.max(trace.coupures ?? 0, mesures.coupures),
+        largeur: mesures.largeur,
+      },
     });
     return;
   }
@@ -90,7 +117,12 @@ export async function enregistrerBattement(
       debut: maintenant,
       fin: maintenant,
       battements: 1,
-      mobile,
+      mobile: mesures.mobile,
+      largeur: mesures.largeur,
+      son: mesures.son,
+      plein_ecran: mesures.pleinEcran,
+      source: mesures.source,
+      coupures: mesures.coupures,
     },
   });
 }

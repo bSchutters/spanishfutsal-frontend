@@ -20,8 +20,7 @@ export const LiveReports: CollectionConfig = {
     useAsTitle: 'affiche',
     defaultColumns: ['affiche', 'pointe', 'uniques', 'duree_moyenne', 'envoye'],
     hidden: ({ user }) => user?.role !== 'admin',
-    description:
-      "Ce que chaque diffusion a rassemble. Ces fiches s'ecrivent toutes seules a la fin du direct.",
+    description: "Ce que chaque diffusion a rassemble. Ces fiches s'ecrivent toutes seules a la fin du direct.",
   },
   access: {
     read: isAdmin,
@@ -87,6 +86,15 @@ export const LiveReports: CollectionConfig = {
       name: 'courbe',
       type: 'json',
       label: 'Courbe par minute',
+    },
+    {
+      // Tout le reste du rapport, dans un seul champ : retention par paliers,
+      // medianes, provenances, appareils, confort de diffusion. Un bloc plutot
+      // que quinze colonnes, pour qu'ajouter une mesure ne demande pas de
+      // toucher a la base.
+      name: 'details',
+      type: 'json',
+      label: 'Detail des mesures',
     },
     {
       name: 'envoye',

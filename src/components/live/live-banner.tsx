@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { noterLaProvenance } from "@/lib/provenance";
 import { useLiveStore } from "@/store/useLiveStore";
 
 // Si la route ne dit rien, on repasse dans un quart d'heure.
@@ -23,6 +24,11 @@ export default function LiveBanner() {
   const ouvrir = useLiveStore((s) => s.ouvrir);
   const reveil = useLiveStore((s) => s.reveil);
   const bandeau = useRef<HTMLDivElement>(null);
+
+  // Le bandeau est monte sur toutes les pages : c'est le seul endroit qui voie
+  // la premiere, donc le seul qui puisse relever d'ou le visiteur arrive avant
+  // que la navigation n'efface l'information.
+  useEffect(() => noterLaProvenance(), []);
 
   useEffect(() => {
     let arrete = false;

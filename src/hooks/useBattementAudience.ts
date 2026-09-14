@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { BATTEMENT_S } from "@/lib/battement";
+import { provenance } from "@/lib/provenance";
 
 /**
  * Signale au site qu'on regarde le match, regulierement, tant que le lecteur est
@@ -41,24 +42,51 @@ function identifiant(): string | null {
   }
 }
 
+/** Ce que le lecteur sait de la seance en cours. */
+export type EtatSpectateur = {
+  enLecture: boolean;
+  /** Le son a ete active au moins une fois. */
+  son: boolean;
+  /** Le plein ecran a ete demande au moins une fois. */
+  pleinEcran: boolean;
+  /** Nombre de fois ou la lecture a cale depuis l'ouverture. */
+  coupures: number;
+};
+
 export function useBattementAudience(
   matchId: number | null | undefined,
-  enLecture: boolean,
+  etat: EtatSpectateur,
 ) {
+  // Lu a chaque battement plutot que capture dans l'effet : le son, le plein
+  // ecran et les coupures changent en cours de seance, et relier l'effet a
+  // chacun d'eux le remonterait a la moindre variation.
+  //
+  // La mise a jour passe par un effet et non par le corps du composant : ecrire
+  // dans une reference pendant le rendu est ce que React interdit, parce qu'un
+  // rendu abandonne laisserait la valeur derriere lui.
+  const dernier = useRef(etat);
+
+  useEffect(() => {
+    dernier.current = etat;
+  });
+
   useEffect(() => {
     // Rien n'est compte si la lecture est en pause ou si l'onglet est passe a
     // l'arriere-plan. Sans cela, un onglet oublie ouvert toute la soiree pesait
     // autant qu'une personne devant son ecran, et la duree moyenne racontait
     // n'importe quoi.
-    if (typeof matchId !== "number" || !enLecture) return;
+    if (typeof matchId !== "number" || !etat.enLecture) return;
 
     const visiteur = identifiant();
     if (!visiteur) return;
 
-    // Le seul renseignement d'appareil envoye, et le plus grossier possible.
+    // Les renseignements d'appareil, aussi grossiers que possible : de quoi
+    // savoir pour qui on developpe, pas de quoi reconnaitre une machine.
     const mobile =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(pointer: coarse)").matches;
+    const largeur = Math.round(window.innerWidth / 100) * 100;
+    const source = provenance();
 
     let arrete = false;
 
@@ -68,7 +96,16 @@ export function useBattementAudience(
       fetch("/api/live-audience", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ match: matchId, visiteur, mobile }),
+        body: JSON.stringify({
+          match: matchId,
+          visiteur,
+          mobile,
+          largeur,
+          source,
+          son: dernier.current.son,
+          pleinEcran: dernier.current.pleinEcran,
+          coupures: dernier.current.coupures,
+        }),
         // Le comptage ne doit jamais retarder la lecture.
         keepalive: true,
       }).catch(() => {
@@ -91,5 +128,5 @@ export function useBattementAudience(
       clearInterval(rythme);
       document.removeEventListener("visibilitychange", surRetour);
     };
-  }, [matchId, enLecture]);
+  }, [matchId, etat.enLecture]);
 }

@@ -133,5 +133,68 @@ verifie('doublon, jamais deux en meme temps', resumer(doublon)?.pointe, 1)
 // Une seule presence de six minutes, plus un battement.
 verifie('doublon, duree non doublee', resumer(doublon)?.dureeMoyenneMinutes, 6.8)
 
+// --- Une soiree complete, toutes mesures ---
+
+/** Ajoute a une presence ce que le battement rapporte du confort de la seance. */
+const avec = (t: Trace, extra: Partial<Trace>): Trace => ({ ...t, ...extra })
+
+// Trois personnes : une qui reste tout le match, une la moitie, une cinq
+// minutes. Durees regardees, un battement compris : 60,75 | 30,75 | 5,75.
+const soiree: Trace[] = [
+  avec(trace(0, 60, true, 'a'), {
+    son: true,
+    plein_ecran: true,
+    source: 'facebook',
+    largeur: 400,
+    coupures: 0,
+  }),
+  avec(trace(10, 40, false, 'b'), {
+    son: true,
+    source: 'direct',
+    largeur: 1200,
+    coupures: 2,
+  }),
+  avec(trace(30, 35, false, 'c'), {
+    source: 'direct',
+    largeur: 800,
+    coupures: 4,
+  }),
+]
+
+const bilan = resumer(soiree)
+
+verifie('soiree, trois personnes', bilan?.uniques, 3)
+verifie('soiree, heures visionnees', bilan?.heuresVisionnees, 1.6)
+// La mediane est la valeur du milieu, pas la moyenne : trente minutes et non
+// trente-deux, la personne restee une heure ne la tire pas vers le haut.
+verifie('soiree, duree mediane', bilan?.dureeMedianeMinutes, 30.8)
+verifie('soiree, minute de la pointe', bilan?.minutePointe, 30)
+verifie('soiree, part de son active', bilan?.partSon, 67)
+verifie('soiree, part de plein ecran', bilan?.partPleinEcran, 33)
+verifie('soiree, familles d ecran', bilan?.ecrans, {
+  telephone: 1,
+  ordinateur: 1,
+  tablette: 1,
+})
+verifie('soiree, provenances', bilan?.provenances, { facebook: 1, direct: 2 })
+verifie('soiree, coupures moyennes', bilan?.coupuresMoyennes, 2)
+verifie('soiree, part sans coupure', bilan?.partSansCoupure, 33)
+
+// Celui qui tient cinq minutes compte dans le premier palier et pas les
+// suivants ; seul celui qui est encore la a la derniere minute va au bout.
+verifie('soiree, retention', bilan?.retention, {
+  cinq: 3,
+  quinze: 2,
+  trente: 2,
+  quarantecinq: 1,
+  jusquauBout: 1,
+})
+
+// Les arrivees disent quand la salle se remplit : une a l'ouverture, une a la
+// dixieme minute, une a la trentieme.
+verifie('soiree, arrivees', bilan?.arrivees[0], 1)
+verifie('soiree, arrivee a la dixieme minute', bilan?.arrivees[10], 1)
+verifie('soiree, aucune arrivee a la vingtieme', bilan?.arrivees[20], 0)
+
 console.log(echecs ? `\n${echecs} cas en echec` : '\nTous les cas passent')
 process.exit(echecs ? 1 : 0)
