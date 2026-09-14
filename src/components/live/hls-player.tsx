@@ -4,12 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type Hls from "hls.js";
 
-import {
-  basculerPleinEcran as basculer,
-  usePleinEcranDisponible,
-  suivrePleinEcran,
-} from "@/lib/pleinEcran";
+import { usePleinEcranDeSecours } from "@/hooks/usePleinEcranDeSecours";
 import { useBattementAudience } from "@/hooks/useBattementAudience";
+import { cn } from "@/lib/utils";
 import { useLiveStore } from "@/store/useLiveStore";
 import {
   Maximize,
@@ -87,11 +84,13 @@ export default function HlsPlayer({ url }: { url: string }) {
   const [muet, setMuet] = useState(true);
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
-  const [pleinEcran, setPleinEcran] = useState(false);
-  // Sur iPhone, c'est la balise video qui porte le plein ecran, pas la boite.
-  // Ce lecteur en a une, donc le bouton garde un sens partout ; il ne
-  // disparaitrait que sur un navigateur qui ne sait faire ni l'un ni l'autre.
-  const pleinEcranPossible = usePleinEcranDisponible(true);
+  // Le plein ecran, avec un repli maison la ou le navigateur ne sait pas faire.
+  const {
+    pleinEcran,
+    secours: pleinEcranDeSecours,
+    dejaUtilise: pleinEcranUtilise,
+    basculer: basculerPleinEcran,
+  } = usePleinEcranDeSecours(conteneur, video);
   // Incremente pour remonter le lecteur apres un echec.
   const [essai, setEssai] = useState(0);
   // Vrai entre la panne et l'arrivee d'une adresse fraiche.
@@ -102,7 +101,6 @@ export default function HlsPlayer({ url }: { url: string }) {
   // en grand, et la diffusion a-t-elle tenu. Elles s'enclenchent et ne
   // reviennent pas en arriere, c'est un vecu, pas un etat.
   const [sonActive, setSonActive] = useState(false);
-  const [pleinEcranUtilise, setPleinEcranUtilise] = useState(false);
   const [coupures, setCoupures] = useState(0);
 
   // Tant que la lecture tourne, le site sait qu'une personne de plus regarde.
@@ -242,14 +240,6 @@ export default function HlsPlayer({ url }: { url: string }) {
     [],
   );
 
-  useEffect(
-    () =>
-      suivrePleinEcran((actif) => {
-        setPleinEcran(actif);
-        if (actif) setPleinEcranUtilise(true);
-      }),
-    [],
-  );
   /**
    * Le bord du direct, tel que le flux le declare a l'instant.
    *
@@ -340,15 +330,25 @@ export default function HlsPlayer({ url }: { url: string }) {
     return () => element.removeEventListener("waiting", rattraper);
   }, [auBordDuDirect]);
 
-  const basculerPleinEcran = useCallback(() => {
-    basculer(conteneur.current, video.current);
-  }, []);
-
   const habillageBouton =
     "flex size-8 cursor-pointer items-center justify-center rounded-md text-white sm:size-9 transition-[scale,color] duration-200 ease-[var(--ease-out-strong)] hover:text-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2";
 
   return (
-    <div ref={conteneur} className="relative aspect-video w-full bg-black">
+    <div
+      ref={conteneur}
+      className={cn(
+        "w-full bg-black",
+        // Le repli : la boite occupe tout l'ecran par la mise en page, faute de
+        // vrai plein ecran. L'image se cale d'elle-meme au centre en gardant ses
+        // proportions, comme elle le ferait dans le plein ecran du navigateur.
+        //
+        // `relative` n'est pose que hors repli : le laisser des deux cotes le
+        // faisait gagner sur `fixed`, et la boite ne s'etalait pas.
+        pleinEcranDeSecours
+          ? "fixed inset-0 z-50 h-dvh"
+          : "relative aspect-video",
+      )}
+    >
       <video
         ref={video}
         autoPlay
@@ -476,20 +476,18 @@ export default function HlsPlayer({ url }: { url: string }) {
           en direct
         </button>
 
-        {pleinEcranPossible && (
-          <button
-            type="button"
-            onClick={basculerPleinEcran}
-            aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
-            className={habillageBouton}
-          >
-            {pleinEcran ? (
-              <Minimize className="size-4 sm:size-5" aria-hidden />
-            ) : (
-              <Maximize className="size-4 sm:size-5" aria-hidden />
-            )}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={basculerPleinEcran}
+          aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
+          className={habillageBouton}
+        >
+          {pleinEcran ? (
+            <Minimize className="size-4 sm:size-5" aria-hidden />
+          ) : (
+            <Maximize className="size-4 sm:size-5" aria-hidden />
+          )}
+        </button>
       </div>
     </div>
   );

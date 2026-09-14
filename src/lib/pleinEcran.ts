@@ -1,5 +1,3 @@
-import { useSyncExternalStore } from "react";
-
 /**
  * Le plein ecran, sur les trois chemins que les navigateurs proposent.
  *
@@ -36,51 +34,6 @@ type DocumentEtendu = Document & {
   webkitExitFullscreen?: () => void;
 };
 
-type DocumentCapable = Document & {
-  webkitFullscreenEnabled?: boolean;
-};
-
-/**
- * Le plein ecran est-il seulement possible ici ?
- *
- * Sur iPhone, le plein ecran d'un element quelconque n'existe pas : seule une
- * balise video peut y passer, par une methode qui lui est propre. Devant un
- * cadre YouTube, il n'y a donc aucun recours, et un bouton qui ne fait rien est
- * pire que pas de bouton du tout.
- *
- * `avecVideo` dit si l'appelant a une vraie balise video sous la main, ce qui
- * est le cas du lecteur du direct mais pas de celui des replays.
- */
-export function pleinEcranDisponible(avecVideo: boolean): boolean {
-  if (typeof document === "undefined") return false;
-
-  const doc = document as DocumentCapable;
-  if (doc.fullscreenEnabled || doc.webkitFullscreenEnabled) return true;
-  if (!avecVideo) return false;
-
-  const essai = document.createElement("video") as VideoEtendue;
-  return typeof essai.webkitEnterFullscreen === "function";
-}
-
-/** La capacite ne change jamais en cours de route : rien a ecouter. */
-const neChangeJamais = () => () => {};
-
-/**
- * La meme reponse, lisible depuis un rendu.
- *
- * Par abonnement plutot que par effet : c'est une propriete du navigateur, donc
- * une source exterieure a React. Le serveur repond « possible », pour que le
- * bouton soit la des le premier rendu et ne disparaisse que la ou il ne peut
- * rien.
- */
-export function usePleinEcranDisponible(avecVideo: boolean): boolean {
-  return useSyncExternalStore(
-    neChangeJamais,
-    () => pleinEcranDisponible(avecVideo),
-    () => true,
-  );
-}
-
 /** Y a-t-il quelque chose en plein ecran, quelle que soit la variante ? */
 export function estEnPleinEcran(): boolean {
   const doc = document as DocumentEtendu;
@@ -95,7 +48,8 @@ export function estEnPleinEcran(): boolean {
  * d'Apple prend alors la main.
  *
  * Rend faux quand aucun chemin n'existe, ce qui arrive sur iPhone devant un
- * cadre plutot qu'une video.
+ * cadre plutot qu'une video. L'appelant se rabat alors sur son propre plein
+ * ecran : le bouton doit marcher partout, pas disparaitre.
  */
 export function basculerPleinEcran(
   boite: HTMLElement | null,

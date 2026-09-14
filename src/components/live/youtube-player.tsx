@@ -2,11 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  basculerPleinEcran as basculer,
-  usePleinEcranDisponible,
-  suivrePleinEcran,
-} from "@/lib/pleinEcran";
+import { usePleinEcranDeSecours } from "@/hooks/usePleinEcranDeSecours";
+import { cn } from "@/lib/utils";
 import {
   Maximize,
   Minimize,
@@ -134,11 +131,14 @@ export default function YoutubePlayer({
   const [muet, setMuet] = useState(true);
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
-  const [pleinEcran, setPleinEcran] = useState(false);
-  // Sur iPhone, le plein ecran d'un cadre n'existe pas, et un replay n'a pas de
-  // balise video a offrir a la place : le bouton est retire plutot que de rester
-  // sans effet.
-  const pleinEcranPossible = usePleinEcranDisponible(false);
+  // Le plein ecran, avec un repli maison la ou le navigateur ne sait pas faire.
+  // Un cadre YouTube n'a pas de balise video a offrir a iOS : sans ce repli, le
+  // bouton n'aurait servi a rien sur iPhone.
+  const {
+    pleinEcran,
+    secours: pleinEcranDeSecours,
+    basculer: basculerPleinEcran,
+  } = usePleinEcranDeSecours(conteneur);
   const [position, setPosition] = useState(0);
   const [duree, setDuree] = useState(0);
   const [decrochage, setDecrochage] = useState(0);
@@ -219,6 +219,24 @@ export default function YoutubePlayer({
     };
   }, [videoId, recadrer]);
 
+  /**
+   * Le recadrage se rejoue a chaque changement de taille.
+   *
+   * Il ne tournait qu'une fois, a l'ouverture : une rotation de telephone, un
+   * redimensionnement de fenetre ou le passage en plein ecran laissaient le
+   * cadre a son ancienne taille, et l'interface de YouTube reapparaissait sur
+   * les bords.
+   */
+  useEffect(() => {
+    const boite = conteneur.current;
+    if (!boite) return;
+
+    const observateur = new ResizeObserver(() => recadrer());
+    observateur.observe(boite);
+
+    return () => observateur.disconnect();
+  }, [recadrer]);
+
   useEffect(() => {
     if (!pret) return;
 
@@ -252,7 +270,6 @@ export default function YoutubePlayer({
     return () => clearInterval(minuteur);
   }, [enDirect, pret]);
 
-  useEffect(() => suivrePleinEcran(setPleinEcran), []);
   const basculerLecture = useCallback(() => {
     if (!lecteur.current) return;
 
@@ -298,17 +315,21 @@ export default function YoutubePlayer({
     lecteur.current?.seekTo(secondes, true);
   }, []);
 
-  const basculerPleinEcran = useCallback(() => {
-    basculer(conteneur.current);
-  }, []);
-
   const habillageBouton =
     "flex size-8 cursor-pointer items-center justify-center rounded-md text-white sm:size-9 transition-[scale,color] duration-200 ease-[var(--ease-out-strong)] hover:text-spanish-accent-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-spanish-accent-2";
 
   return (
     <div
       ref={conteneur}
-      className="relative aspect-video w-full overflow-hidden bg-black"
+      className={cn(
+        "w-full overflow-hidden bg-black",
+        // Le repli : la boite occupe tout l'ecran par la mise en page, faute de
+        // vrai plein ecran sur iPhone devant un cadre. `relative` n'est pose que
+        // hors repli, sans quoi il gagne sur `fixed` et rien ne s'etale.
+        pleinEcranDeSecours
+          ? "fixed inset-0 z-50 h-dvh"
+          : "relative aspect-video",
+      )}
     >
       {erreur && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-spanish-bg-dark px-6 text-center">
@@ -470,20 +491,18 @@ export default function YoutubePlayer({
             </span>
           ))}
 
-        {pleinEcranPossible && (
-          <button
-            type="button"
-            onClick={basculerPleinEcran}
-            aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
-            className={habillageBouton}
-          >
-            {pleinEcran ? (
-              <Minimize className="size-4 sm:size-5" aria-hidden />
-            ) : (
-              <Maximize className="size-4 sm:size-5" aria-hidden />
-            )}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={basculerPleinEcran}
+          aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
+          className={habillageBouton}
+        >
+          {pleinEcran ? (
+            <Minimize className="size-4 sm:size-5" aria-hidden />
+          ) : (
+            <Maximize className="size-4 sm:size-5" aria-hidden />
+          )}
+        </button>
       </div>
     </div>
   );
