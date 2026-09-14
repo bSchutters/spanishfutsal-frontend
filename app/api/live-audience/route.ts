@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { enregistrerBattement, enregistrerDepart } from '@/lib/audience'
 import { dansLaFenetre } from '@/lib/fenetreDuMatch'
+import { salleDepuisTexte } from '@/lib/getXbotgoLive'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
 
@@ -95,8 +96,12 @@ async function horsFenetreAutorise(): Promise<boolean> {
   // La meme salle d'essai que la route du direct, en developpement seulement :
   // sans elle, le compteur resterait a zero pendant qu'on eprouve le lecteur.
   if (process.env.NODE_ENV !== 'production') {
-    const essai = (await cookies()).get('salle-essai')?.value ?? ''
-    if (/^\d+$/.test(essai)) return true
+    // Le cookie porte `identifiant:REGION` depuis que la region voyage avec la
+    // salle : le lire comme un simple nombre le rendait invalide, et le
+    // compteur restait a zero pendant les essais.
+    if (salleDepuisTexte((await cookies()).get('salle-essai')?.value ?? '')) {
+      return true
+    }
   }
 
   return verificationForcee()
