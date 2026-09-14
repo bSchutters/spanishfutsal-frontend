@@ -109,6 +109,14 @@ const nextConfig: NextConfig = {
     // et se voyait servir la variante 3840. Les deux bannieres plein ecran
     // (accueil et /a-propos) sont concernees, elles pesaient 291 Ko.
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3072, 3840],
+    // Depuis Next 16, toute image locale doit correspondre a un motif declare
+    // ici, et une query string est refusee sauf mention explicite. Les medias
+    // Payload en ont une : `/api/media/file/x.webp?prefix=media` quand ils sont
+    // heberges sur Vercel Blob. Les fichiers de public/ n'en ont jamais.
+    localPatterns: [
+      { pathname: "/assets/**", search: "" },
+      { pathname: "/api/media/file/**" },
+    ],
     remotePatterns: [
       {
         protocol: "http",
