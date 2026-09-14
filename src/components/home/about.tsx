@@ -40,7 +40,10 @@ export default function About() {
               renforce nos liens.
             </p>
           </div>
-          <Button asChild className="self-end text-lg">
+          {/* Pas de taille de texte ici : le bouton jumeau de la meme page,
+              « nous soutenir », n'en a pas. Un `text-lg` agrandissait le texte
+              dans une boite restee a la meme hauteur. */}
+          <Button asChild className="self-end">
             <Link href="/a-propos">en savoir plus</Link>
           </Button>
         </div>
