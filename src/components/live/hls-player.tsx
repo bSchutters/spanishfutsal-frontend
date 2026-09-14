@@ -6,6 +6,7 @@ import type Hls from "hls.js";
 
 import {
   basculerPleinEcran as basculer,
+  usePleinEcranDisponible,
   suivrePleinEcran,
 } from "@/lib/pleinEcran";
 import { useBattementAudience } from "@/hooks/useBattementAudience";
@@ -87,6 +88,10 @@ export default function HlsPlayer({ url }: { url: string }) {
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
   const [pleinEcran, setPleinEcran] = useState(false);
+  // Sur iPhone, c'est la balise video qui porte le plein ecran, pas la boite.
+  // Ce lecteur en a une, donc le bouton garde un sens partout ; il ne
+  // disparaitrait que sur un navigateur qui ne sait faire ni l'un ni l'autre.
+  const pleinEcranPossible = usePleinEcranDisponible(true);
   // Incremente pour remonter le lecteur apres un echec.
   const [essai, setEssai] = useState(0);
   // Vrai entre la panne et l'arrivee d'une adresse fraiche.
@@ -245,7 +250,6 @@ export default function HlsPlayer({ url }: { url: string }) {
       }),
     [],
   );
-
   /**
    * Le bord du direct, tel que le flux le declare a l'instant.
    *
@@ -472,18 +476,20 @@ export default function HlsPlayer({ url }: { url: string }) {
           en direct
         </button>
 
-        <button
-          type="button"
-          onClick={basculerPleinEcran}
-          aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
-          className={habillageBouton}
-        >
-          {pleinEcran ? (
-            <Minimize className="size-4 sm:size-5" aria-hidden />
-          ) : (
-            <Maximize className="size-4 sm:size-5" aria-hidden />
-          )}
-        </button>
+        {pleinEcranPossible && (
+          <button
+            type="button"
+            onClick={basculerPleinEcran}
+            aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
+            className={habillageBouton}
+          >
+            {pleinEcran ? (
+              <Minimize className="size-4 sm:size-5" aria-hidden />
+            ) : (
+              <Maximize className="size-4 sm:size-5" aria-hidden />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

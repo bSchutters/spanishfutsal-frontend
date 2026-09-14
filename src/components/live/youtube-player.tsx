@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   basculerPleinEcran as basculer,
+  usePleinEcranDisponible,
   suivrePleinEcran,
 } from "@/lib/pleinEcran";
 import {
@@ -134,6 +135,10 @@ export default function YoutubePlayer({
   const [volume, setVolume] = useState(100);
   const [erreur, setErreur] = useState(false);
   const [pleinEcran, setPleinEcran] = useState(false);
+  // Sur iPhone, le plein ecran d'un cadre n'existe pas, et un replay n'a pas de
+  // balise video a offrir a la place : le bouton est retire plutot que de rester
+  // sans effet.
+  const pleinEcranPossible = usePleinEcranDisponible(false);
   const [position, setPosition] = useState(0);
   const [duree, setDuree] = useState(0);
   const [decrochage, setDecrochage] = useState(0);
@@ -248,7 +253,6 @@ export default function YoutubePlayer({
   }, [enDirect, pret]);
 
   useEffect(() => suivrePleinEcran(setPleinEcran), []);
-
   const basculerLecture = useCallback(() => {
     if (!lecteur.current) return;
 
@@ -466,18 +470,20 @@ export default function YoutubePlayer({
             </span>
           ))}
 
-        <button
-          type="button"
-          onClick={basculerPleinEcran}
-          aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
-          className={habillageBouton}
-        >
-          {pleinEcran ? (
-            <Minimize className="size-4 sm:size-5" aria-hidden />
-          ) : (
-            <Maximize className="size-4 sm:size-5" aria-hidden />
-          )}
-        </button>
+        {pleinEcranPossible && (
+          <button
+            type="button"
+            onClick={basculerPleinEcran}
+            aria-label={pleinEcran ? "Quitter le plein ecran" : "Plein ecran"}
+            className={habillageBouton}
+          >
+            {pleinEcran ? (
+              <Minimize className="size-4 sm:size-5" aria-hidden />
+            ) : (
+              <Maximize className="size-4 sm:size-5" aria-hidden />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
