@@ -39,8 +39,19 @@ devient un simple bouton sortant.
 Le site n'interroge le diffuseur qu'entre un quart d'heure avant le coup d'envoi
 et soixante-dix minutes apres. Hors de la, aucun appel. Le bandeau du direct est
 le seul composant a interroger la route, et la route lui dit elle-meme dans
-combien de temps revenir : quarante-cinq secondes pendant la rencontre, cinq
-minutes a l'approche, une heure le reste du temps.
+combien de temps revenir : trente secondes pendant la rencontre, cinq minutes a
+l'approche, une heure le reste du temps. Dix secondes tant qu'un lecteur est
+ouvert, parce que celui qui regarde a le compteur sous les yeux.
+
+Le CDN, lui, ne laisse passer qu'une interrogation toutes les cinq secondes
+pendant la rencontre : l'affluence ne change donc rien a ce que ca coute.
+
+**Comment savoir si le direct est detecte**, sans attendre :
+
+    curl -s https://www.udasturiana.be/api/live-status
+
+Elle repond `{"live":false,...}` quand rien ne diffuse, et sinon l'adresse du
+flux, l'affiche de la rencontre et le nombre de spectateurs.
 
 ## Leur API
 
@@ -103,6 +114,18 @@ donc pas reposer dessus seul. La parade qui marche sans elle reste la plus
 simple : l'operateur regarde le flux et non le terrain, et clique quand il voit
 l'action a l'ecran.
 
+## Eprouver le direct sans rencontre
+
+Un direct ne se presente pas sur commande. En developpement seulement, un lien
+impose n'importe quelle salle en cours au site entier, bandeau et compteur
+compris :
+
+    /api/salle-essai?lien=<adresse de la salle>
+    /api/salle-essai?lien=                        pour l'enlever
+
+Il pose un cookie que la route lit, et il repond 404 en production : ce detour ne
+peut rien y faire, quoi qu'on mette dans le cookie.
+
 ## Le replay
 
 **En pause.** Le mecanisme est en place mais sa case n'est pas cochee : rien ne
@@ -124,9 +147,16 @@ rapprochement s'executent par `pnpm test:replays`.
 Le compteur est le notre. Celui du diffuseur compte les gens sur leur page, qui
 est vide depuis que le match se regarde ici.
 
-Le lecteur envoie un signe de vie toutes les quarante-cinq secondes ; un
-spectateur compte comme present tant que son dernier signe a moins de deux
-minutes. En dessous de dix spectateurs, le nombre n'est pas affiche.
+Le lecteur envoie un signe de vie toutes les trente secondes, tant que la lecture
+tourne. Un spectateur compte comme present tant que son dernier signe a moins
+d'une minute, et son depart est annonce des qu'il ferme l'onglet ou le lecteur :
+la place se libere alors tout de suite, sans attendre l'expiration.
+
+Un onglet passe a l'arriere-plan continue de compter : le son continue, et
+ecouter le match en travaillant, c'est le regarder. Passe cinq minutes sans
+revenir, en revanche, c'est un onglet oublie et il cesse de compter.
+
+Le nombre s'affiche des le premier spectateur. Seul zero reste tu.
 
 Rien de personnel n'est conserve : l'identifiant du visiteur est tire au hasard
 par son navigateur, vit le temps de l'onglet, et n'est relie a aucun compte, a
@@ -135,9 +165,25 @@ inconnus. C'est suffisant pour compter une audience, et cela evite d'avoir a
 demander un consentement pour la regarder.
 
 A la fin de la diffusion, un rapport est ecrit dans **Rapports de diffusion** et
-pousse vers le webhook des parametres : pointe simultanee, spectateurs
-differents, duree moyenne, part de telephones, et la courbe de la soiree. Il
-n'apparait nulle part sur le site public.
+pousse vers le webhook des parametres. Il n'apparait nulle part sur le site
+public.
+
+Ce qu'il contient : pointe simultanee et la minute ou elle a eu lieu, spectateurs
+differents, temps regarde en moyenne et en mediane, total d'heures visionnees,
+retention par paliers (cinq, quinze, trente, quarante-cinq minutes, jusqu'au
+bout), familles d'ecran, part de son active, part de plein ecran, provenance par
+familles, coupures subies par personne, courbe des presents et courbe des
+arrivees minute par minute. Et, pour ceux qui ont ferme le bandeau de mesure,
+combien avaient deja regarde une diffusion precedente.
+
+Les chiffres sont calcules par personne et non par presence : quelqu'un qui met
+en pause et revient reste un spectateur, et sa duree est la somme de ce qu'il a
+regarde. Les cas s'executent par `pnpm test:audience`.
+
+Pour eprouver le webhook sans attendre une rencontre, une commande envoie un
+rapport d'essai aux chiffres fabriques par le meme chemin que le vrai :
+
+    POST /api/live-report-test
 
 Cette fin est constatee par le dernier visiteur encore present. Si tout le monde
 ferme son onglet au coup de sifflet, personne ne la constate : le rattrapage
