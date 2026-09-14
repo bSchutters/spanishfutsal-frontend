@@ -26,6 +26,11 @@ const CHANNEL_ID_TTL = 30 * 24 * 60 * 60;
 const RECHERCHE_TTL = 180;
 const SUIVI_TTL = 45;
 
+// Un quart d'heure pour la liste des mises en ligne. Elle ne sert qu'au
+// rattrapage des replays, une fois par jour : la garder plus longtemps
+// n'economiserait qu'une unite de quota et ferait mentir un appel manuel.
+const MISES_EN_LIGNE_TTL = 900;
+
 export type LiveBroadcast = {
   videoId: string;
   url: string;
@@ -156,6 +161,83 @@ export async function getYoutubeLive(): Promise<LiveBroadcast | null> {
   } catch (error) {
     // Une panne chez YouTube ne doit pas priver le site de son bandeau.
     console.error("Detection du live YouTube impossible :", error);
+    return null;
+  }
+}
+
+export type MiseEnLigne = {
+  videoId: string;
+  url: string;
+  title: string;
+  description: string;
+  /** Date de publication, telle que YouTube la declare. */
+  publishedAt: string;
+};
+
+/**
+ * La playlist qui contient toutes les mises en ligne de la chaine.
+ *
+ * Son identifiant se deduit de celui de la chaine en changeant deux lettres,
+ * mais la convention n'est ecrite nulle part chez Google : on le demande, et on
+ * le garde un mois. Une unite de quota.
+ */
+async function getUploadsPlaylistId(key: string): Promise<string | null> {
+  const channelId = await getChannelId(key);
+  if (!channelId) return null;
+
+  const data = await fetchJson(
+    `${API}/channels?part=contentDetails&id=${channelId}&key=${key}`,
+    CHANNEL_ID_TTL,
+  );
+
+  return data?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? null;
+}
+
+/**
+ * Les dernieres videos mises en ligne sur la chaine du club.
+ *
+ * Une unite de quota, contre cent pour une recherche. Le prix de cette economie
+ * est un cache qui accuse parfois un quart d'heure de retard, ce qui interdit ce
+ * chemin pour detecter un direct qui commence. Pour retrouver le replay d'une
+ * rencontre jouee la veille, il est sans defaut.
+ */
+export async function getMisesEnLigne(
+  combien = 25,
+): Promise<MiseEnLigne[] | null> {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) return null;
+
+  try {
+    const playlistId = await getUploadsPlaylistId(key);
+    if (!playlistId) return null;
+
+    const data = await fetchJson(
+      `${API}/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=${combien}&key=${key}`,
+      MISES_EN_LIGNE_TTL,
+    );
+
+    const items: unknown[] = data?.items ?? [];
+
+    return items.flatMap((item) => {
+      const snippet = (item as { snippet?: Record<string, unknown> })?.snippet;
+      const videoId = (
+        snippet?.resourceId as { videoId?: string } | undefined
+      )?.videoId;
+
+      if (!videoId) return [];
+
+      return [
+        {
+          videoId,
+          url: `https://www.youtube.com/watch?v=${videoId}`,
+          title: String(snippet?.title ?? ""),
+          description: String(snippet?.description ?? ""),
+          publishedAt: String(snippet?.publishedAt ?? ""),
+        },
+      ];
+    });
+  } catch (error) {
+    console.error("Liste des mises en ligne indisponible :", error);
     return null;
   }
 }

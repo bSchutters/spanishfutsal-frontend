@@ -22,6 +22,16 @@ import HlsPlayer from "./hls-player";
 export default function LiveDialog() {
   const lecture = useLiveStore((s) => s.lecture);
   const close = useLiveStore((s) => s.fermer);
+
+  /**
+   * Le compteur vient du direct en cours, pas de la lecture.
+   *
+   * `lecture` est une copie prise au clic sur Regarder : son nombre de
+   * spectateurs restait celui de cet instant-la, fige pour toute la duree du
+   * match. Le bandeau, lui, continuait de se mettre a jour derriere la
+   * surimpression, ou personne ne le voyait.
+   */
+  const spectateurs = useLiveStore((s) => s.live?.viewers ?? null);
   const cadre = useRef<HTMLDialogElement>(null);
   const isOpen = Boolean(lecture);
 
@@ -65,6 +75,10 @@ export default function LiveDialog() {
 
   const enDirect = lecture.mode !== "replay";
 
+  // Un replay n'a pas de spectateurs simultanes : son compteur reste celui de
+  // la lecture, c'est-a-dire rien.
+  const compte = enDirect ? spectateurs : lecture.viewers;
+
   return (
     <dialog
       ref={cadre}
@@ -87,10 +101,10 @@ export default function LiveDialog() {
           </span>
         )}
 
-        {lecture.viewers !== null && (
+        {compte !== null && compte > 0 && (
           <span className="hidden text-xs tabular-nums opacity-80 sm:inline">
-            {new Intl.NumberFormat("fr-BE").format(lecture.viewers)}{" "}
-            {lecture.viewers > 1 ? "spectateurs" : "spectateur"}
+            {new Intl.NumberFormat("fr-BE").format(compte)}{" "}
+            {compte > 1 ? "spectateurs" : "spectateur"}
           </span>
         )}
 

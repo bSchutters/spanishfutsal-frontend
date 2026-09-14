@@ -1,0 +1,352 @@
+import { calculerLeRapport } from "./audience";
+import { esquisse, type Rapport } from "./audienceCalculs";
+import { coupDEnvoi, FENETRE_APRES_MS } from "./fenetreDuMatch";
+import { getMatchs } from "./getMatchs";
+import { getPayloadClient } from "./payload";
+
+/**
+ * Le compte rendu d'une diffusion, ecrit puis envoye.
+ *
+ * Il ne va pas sur le site : l'audience du club ne regarde personne d'autre. Il
+ * est conserve dans l'administration, et pousse vers un webhook prive si les
+ * parametres en portent un.
+ *
+ * La fin d'une diffusion peut etre constatee deux fois, par le dernier visiteur
+ * encore present comme par le rattrapage du matin. La case « rapport envoye »
+ * est ce qui garantit un seul message.
+ */
+
+const heure = (iso: string | null) =>
+  iso
+    ? new Date(iso).toLocaleTimeString("fr-BE", {
+        timeZone: "Europe/Brussels",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "?";
+
+const LIBELLES: Record<string, string> = {
+  direct: "lien direct",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  recherche: "recherche",
+  autre: "autre site",
+  interne: "navigation interne",
+  telephone: "téléphone",
+  tablette: "tablette",
+  ordinateur: "ordinateur",
+};
+
+/** Un decompte par categorie, du plus grand au plus petit, en toutes lettres. */
+function enumerer(compte: Record<string, number>): string {
+  return Object.entries(compte)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cle, valeur]) => `${valeur} ${LIBELLES[cle] ?? cle}`)
+    .join(", ");
+}
+
+const nombre = (valeur: number) => valeur.toLocaleString("fr-BE");
+
+/** Le message, tel qu'il arrive dans la conversation. */
+function rediger(affiche: string, rapport: Rapport): string {
+  const r = rapport.retention;
+
+  const lignes = [
+    `**${affiche}**, diffusion terminée`,
+    "",
+    `Pointe : **${rapport.pointe}** en même temps, à la ${rapport.minutePointe + 1}e minute`,
+    `Spectateurs différents : **${rapport.uniques}**`,
+    `Temps regardé : ${nombre(rapport.dureeMoyenneMinutes)} min en moyenne, ${nombre(
+      rapport.dureeMedianeMinutes,
+    )} en médiane, ${nombre(rapport.heuresVisionnees)} h en tout`,
+    "",
+    `Ont tenu : ${r.cinq} au-delà de 5 min, ${r.quinze} au-delà de 15, ${r.trente} au-delà de 30, ${r.quarantecinq} au-delà de 45, et ${r.jusquauBout} jusqu'au bout`,
+    `Écrans : ${enumerer(rapport.ecrans)}`,
+    `Son activé : ${rapport.partSon} % · Plein écran : ${rapport.partPleinEcran} %`,
+    `Provenance : ${enumerer(rapport.provenances)}`,
+    `Confort : ${nombre(rapport.coupuresMoyennes)} coupure par personne, ${rapport.partSansCoupure} % n'en ont eu aucune`,
+    ...(rapport.habitues === null
+      ? []
+      : [
+          `Fidélité : ${rapport.habitues} habitués sur ${rapport.avecIdentite} spectateurs reconnaissables`,
+        ]),
+    "",
+    `De ${heure(rapport.debut)} à ${heure(rapport.fin)}`,
+  ];
+
+  const courbe = esquisse(rapport.courbe);
+  if (courbe) lignes.push(`\`${courbe}\``);
+
+  return lignes.join("\n");
+}
+
+/** Le meme texte sans ses marques de gras. */
+const sansGras = (texte: string) => texte.replace(/\*\*/g, "");
+
+/** L'hote est-il celui-la, ou un de ses sous-domaines ? */
+const estLHote = (hostname: string, domaine: string) =>
+  hostname === domaine || hostname.endsWith(`.${domaine}`);
+
+/**
+ * Pousse le message vers le webhook des parametres.
+ *
+ * Trois formes selon la destination, parce que chacune attend son propre champ.
+ * WhatsApp n'en fait pas partie : leur API reclame un compte professionnel
+ * verifie et des modeles de message approuves pour ecrire en dehors d'une
+ * conversation en cours, ce qui n'a pas de sens pour six lignes de statistiques.
+ */
+async function pousser(
+  url: string,
+  texte: string,
+  rapport: Rapport,
+): Promise<boolean> {
+  try {
+    const { hostname } = new URL(url);
+
+    const corps =
+      estLHote(hostname, "discord.com") || estLHote(hostname, "discordapp.com")
+        ? { content: texte }
+        : estLHote(hostname, "telegram.org")
+          ? // Le gras de Discord s'ecrit avec deux etoiles, celui de Telegram avec
+            // une seule : lui envoyer la notation de Discord lui fait refuser tout
+            // le message pour entites non analysables. Il le recoit donc en texte
+            // brut, sans mode d'analyse. L'identifiant de conversation, lui, se
+            // met dans l'adresse du webhook.
+            { text: sansGras(texte) }
+          : // N'importe quel autre service : le texte et les chiffres bruts, a
+            // charge pour lui d'en faire ce qu'il veut.
+            { text: sansGras(texte), rapport };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corps),
+    });
+
+    if (!res.ok) {
+      console.error(`Le webhook du rapport a repondu ${res.status}`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Envoi du rapport impossible :", error);
+    return false;
+  }
+}
+
+/**
+ * Ecrit le rapport d'une rencontre et l'envoie, si ce n'est pas deja fait.
+ *
+ * Sans trace d'audience, il n'y a rien a dire : personne n'a regarde, ou la
+ * diffusion n'a pas eu lieu. Aucun message n'est alors envoye.
+ */
+export async function cloturerLaDiffusion(
+  matchId: number,
+  affiche: string,
+): Promise<void> {
+  try {
+    const payload = await getPayloadClient();
+
+    const { docs } = await payload.find({
+      collection: "live-reports",
+      where: { match: { equals: matchId } },
+      limit: 1,
+      depth: 0,
+    });
+
+    const existant = docs[0] as
+      | { id: number | string; envoye?: boolean }
+      | undefined;
+    if (existant?.envoye) return;
+
+    const parametres = await payload.findGlobal({ slug: "settings" });
+    const webhook = parametres?.report_webhook;
+
+    // Une fiche existe deja et il n'y a nulle part ou l'envoyer : il n'y a plus
+    // rien a faire. Sans cette sortie, chaque interrogation de la route
+    // recalculerait le meme rapport jusqu'a la fermeture de la fenetre.
+    if (existant && !webhook) return;
+
+    const rapport = await calculerLeRapport(matchId);
+    if (!rapport) return;
+
+    const {
+      uniques,
+      pointe,
+      dureeMoyenneMinutes,
+      partMobile,
+      debut,
+      fin,
+      courbe,
+      ...details
+    } = rapport;
+
+    const chiffres = {
+      match: matchId,
+      affiche,
+      debut,
+      fin,
+      uniques,
+      pointe,
+      duree_moyenne: dureeMoyenneMinutes,
+      part_mobile: partMobile,
+      courbe,
+      // Le reste des mesures dans un seul bloc : en ajouter une ne demande pas
+      // de toucher a la base.
+      details,
+    };
+
+    const fiche = existant
+      ? await payload.update({
+          collection: "live-reports",
+          id: existant.id,
+          data: chiffres,
+        })
+      : await payload.create({ collection: "live-reports", data: chiffres });
+
+    // Sans destination, le rapport reste dans l'administration : c'est un
+    // reglage absent, pas un echec.
+    if (!webhook) return;
+
+    const envoye = await pousser(webhook, rediger(affiche, rapport), rapport);
+
+    if (envoye) {
+      await payload.update({
+        collection: "live-reports",
+        id: fiche.id,
+        data: { envoye: true },
+      });
+    }
+  } catch (error) {
+    // Un rapport manque : la diffusion, elle, s'est bien passee.
+    console.error("Cloture de la diffusion impossible :", error);
+  }
+}
+
+/**
+ * Reprend les diffusions passees dont le rapport manque encore.
+ *
+ * La cloture normale a lieu quand un visiteur encore present constate que la
+ * salle s'est eteinte. Si tout le monde ferme son onglet au coup de sifflet
+ * final, personne ne la constate : ce balayage est le filet.
+ */
+export async function balayerLesDiffusions(): Promise<number> {
+  const matchs = await getMatchs();
+  const now = Date.now();
+  let clotures = 0;
+
+  for (const match of matchs) {
+    if (!match.date || !match.time) continue;
+
+    const debut = coupDEnvoi(match.date, match.time);
+    if (Number.isNaN(debut)) continue;
+
+    const finDeFenetre = debut + FENETRE_APRES_MS;
+
+    // Les trois derniers jours : au-dela, une diffusion sans rapport n'en aura
+    // jamais, et ratisser toute la saison a chaque passage ne servirait a rien.
+    if (finDeFenetre > now || now - finDeFenetre > 3 * 24 * 60 * 60 * 1000)
+      continue;
+
+    await cloturerLaDiffusion(
+      match.id,
+      `${match.homeTeam} - ${match.awayTeam}`,
+    );
+    clotures += 1;
+  }
+
+  return clotures;
+}
+
+/**
+ * Un rapport d'essai, envoye au webhook des parametres.
+ *
+ * Rien n'est lu ni ecrit dans les traces : les chiffres sont fabriques, la
+ * courbe a la forme d'une vraie soiree, montee au coup d'envoi et decrochage a
+ * la fin. Sert a verifier une adresse de webhook le jour ou on la change, sans
+ * attendre une rencontre.
+ *
+ * Le compte rendu ne dit jamais l'adresse, seulement son hote : c'est un secret
+ * qui n'a pas a ressortir dans une reponse ni dans un journal.
+ */
+export async function envoyerUnRapportDEssai(): Promise<{
+  envoye: boolean;
+  hote: string | null;
+  raison?: string;
+}> {
+  const payload = await getPayloadClient();
+  const parametres = await payload.findGlobal({ slug: "settings" });
+  const webhook = parametres?.report_webhook;
+
+  if (!webhook) {
+    return {
+      envoye: false,
+      hote: null,
+      raison: "Aucun webhook dans les parametres.",
+    };
+  }
+
+  let hote: string;
+  try {
+    hote = new URL(webhook).hostname;
+  } catch {
+    return {
+      envoye: false,
+      hote: null,
+      raison: "L'adresse du webhook n'est pas une URL valide.",
+    };
+  }
+
+  // Une soiree plausible : quelques curieux avant le coup d'envoi, la salle qui
+  // se remplit, un plateau pendant la rencontre, et tout le monde qui part au
+  // coup de sifflet.
+  const courbe = [
+    2, 3, 5, 9, 14, 18, 23, 27, 30, 31, 33, 34, 34, 33, 31, 30, 32, 33, 31, 28,
+    26, 24, 21, 17, 12, 6, 3, 1,
+  ];
+
+  const essai: Rapport = {
+    uniques: 61,
+    pointe: 34,
+    minutePointe: 11,
+    dureeMoyenneMinutes: 27.4,
+    dureeMedianeMinutes: 22,
+    heuresVisionnees: 27.9,
+    partMobile: 68,
+    partSon: 72,
+    partPleinEcran: 31,
+    retention: {
+      cinq: 54,
+      quinze: 48,
+      trente: 39,
+      quarantecinq: 31,
+      jusquauBout: 24,
+    },
+    provenances: { direct: 30, facebook: 22, recherche: 9 },
+    ecrans: { telephone: 41, ordinateur: 14, tablette: 6 },
+    avecIdentite: 38,
+    habitues: 21,
+    coupuresMoyennes: 1.8,
+    partSansCoupure: 44,
+    debut: new Date(Date.now() - 77 * 60 * 1000).toISOString(),
+    fin: new Date().toISOString(),
+    courbe,
+    arrivees: courbe.map((_, index) => (index < 6 ? 8 : index < 12 ? 3 : 1)),
+  };
+  const texte = [
+    rediger("ESSAI, UD Asturiana - Futsal Team Antwerpen", essai),
+    "",
+    "_Message d'essai, chiffres fabriques. Le vrai rapport part a la fin de chaque diffusion._",
+  ].join("\n");
+
+  const envoye = await pousser(webhook, texte, essai);
+
+  return envoye
+    ? { envoye: true, hote }
+    : {
+        envoye: false,
+        hote,
+        raison: "Le webhook a refuse le message, voir le journal du serveur.",
+      };
+}

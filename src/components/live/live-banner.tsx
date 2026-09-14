@@ -2,15 +2,21 @@
 
 import { useEffect, useRef } from "react";
 
-import { useLiveStore } from "@/store/useLiveStore";
+import { noterLaProvenance } from "@/lib/provenance";
+import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 
 // Si la route ne dit rien, on repasse dans un quart d'heure.
 const RAPPEL_DEFAUT = 900;
 
-// En dessous de dix, le compteur dessert la diffusion plus qu'il ne la sert :
-// il est alors tu, et la place revient a l'affiche. Le filtre est pose ici,
-// a l'entree, pour que le bandeau et le lecteur ne se contredisent jamais.
-const SEUIL_SPECTATEURS = 10;
+/**
+ * Rythme pendant qu'un lecteur est ouvert.
+ *
+ * Celui qui regarde le match a le compteur sous les yeux et voit chaque
+ * changement ; celui qui lit le classement n'en a que faire. On accelere donc
+ * seulement pour lui, et le cache du CDN fait que cette impatience ne coute
+ * presque rien.
+ */
+const RAPPEL_LECTEUR = 10;
 
 /**
  * Le bandeau du direct, monte dans la navigation, donc present sur toutes les
@@ -26,7 +32,14 @@ export default function LiveBanner() {
   const setLive = useLiveStore((s) => s.setLive);
   const setHauteurBandeau = useLiveStore((s) => s.setHauteurBandeau);
   const ouvrir = useLiveStore((s) => s.ouvrir);
+  const reveil = useLiveStore((s) => s.reveil);
+  const lecteurOuvert = useLiveStore((s) => s.lecture !== null);
   const bandeau = useRef<HTMLDivElement>(null);
+
+  // Le bandeau est monte sur toutes les pages : c'est le seul endroit qui voie
+  // la premiere, donc le seul qui puisse relever d'ou le visiteur arrive avant
+  // que la navigation n'efface l'information.
+  useEffect(() => noterLaProvenance(), []);
 
   useEffect(() => {
     let arrete = false;
@@ -36,11 +49,15 @@ export default function LiveBanner() {
       let rappel = RAPPEL_DEFAUT;
 
       try {
-        const res = await fetch("/api/live-status");
+        // Sans `no-store`, le navigateur sert sa propre copie et le bandeau
+        // relit ce qu'il a deja : le nombre de spectateurs ne bougeait qu'apres
+        // un rechargement force. Le rythme est decide ici, pas par le cache.
+        const res = await fetch("/api/live-status", { cache: "no-store" });
 
         if (res.ok) {
           const data = await res.json();
           rappel = data.nextCheckIn ?? RAPPEL_DEFAUT;
+          if (lecteurOuvert) rappel = Math.min(rappel, RAPPEL_LECTEUR);
 
           if (!arrete) {
             setLive(
@@ -49,9 +66,12 @@ export default function LiveBanner() {
                     url: data.url,
                     videoId: data.videoId ?? null,
                     hlsUrl: data.hlsUrl ?? null,
+                    // Affiche des le premier spectateur, puisqu'il compte
+                    // maintenant les gens qui regardent vraiment chez nous.
+                    // Zero reste tu : ecrire « 0 spectateur » a cote d'un
+                    // direct qui commence ne renseigne personne.
                     viewers:
-                      typeof data.viewers === "number" &&
-                      data.viewers >= SEUIL_SPECTATEURS
+                      typeof data.viewers === "number" && data.viewers > 0
                         ? data.viewers
                         : null,
                     match: data.match ?? null,
@@ -74,7 +94,11 @@ export default function LiveBanner() {
       arrete = true;
       clearTimeout(minuteur);
     };
-  }, [setLive]);
+    // `reveil` en dependance : quand le lecteur voit sa source refusee, il
+    // l'incremente, l'effet est rejoue, le minuteur en cours est annule et la
+    // route interrogee tout de suite. Il recoit ainsi une adresse fraiche en
+    // une seconde au lieu d'attendre le prochain rendez-vous.
+  }, [setLive, reveil, lecteurOuvert]);
 
   useEffect(() => {
     const element = bandeau.current;
@@ -142,17 +166,15 @@ export default function LiveBanner() {
         <button
           type="button"
           onClick={() =>
-            ouvrir({
-              mode: live.hlsUrl ? "hls" : "direct",
-              videoId: (live.videoId ?? "") as string,
-              hlsUrl: live.hlsUrl,
-              url: live.url,
-              affiche,
-              contexte: live.match
-                ? `${live.match.competition} · ${live.match.time}`
-                : null,
-              viewers: live.viewers,
-            })
+            ouvrir(
+              lectureDuDirect(
+                live,
+                affiche,
+                live.match
+                  ? `${live.match.competition} · ${live.match.time}`
+                  : null,
+              ),
+            )
           }
           className={habillageAction}
         >

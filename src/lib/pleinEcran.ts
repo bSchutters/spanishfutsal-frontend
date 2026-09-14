@@ -13,6 +13,18 @@ type ElementEtendu = HTMLElement & {
   webkitRequestFullscreen?: () => void;
 };
 
+/**
+ * Avale les refus attendus du plein ecran.
+ *
+ * `requestFullscreen` rend une promesse, et le navigateur la refuse sans que ce
+ * soit une panne : geste utilisateur trop ancien, permission absente dans un
+ * cadre, ou appel deja en cours. Sans ce filet, chacun de ces cas laisse une
+ * erreur rouge dans la console du visiteur.
+ */
+function sansBruit(resultat: unknown) {
+  if (resultat instanceof Promise) resultat.catch(() => {});
+}
+
 type VideoEtendue = HTMLVideoElement & {
   webkitEnterFullscreen?: () => void;
 };
@@ -34,32 +46,46 @@ export function estEnPleinEcran(): boolean {
  * L'ordre compte : on prefere la boite, qui emporte nos commandes avec elle.
  * La video seule est le dernier recours, sur iPhone, ou le lecteur natif
  * d'Apple prend alors la main.
+ *
+ * Rend faux quand aucun chemin n'existe, ce qui arrive sur iPhone devant un
+ * cadre plutot qu'une video. L'appelant se rabat alors sur son propre plein
+ * ecran : le bouton doit marcher partout, pas disparaitre.
  */
 export function basculerPleinEcran(
   boite: HTMLElement | null,
   video?: HTMLVideoElement | null,
-) {
+): boolean {
   const doc = document as DocumentEtendu;
 
   if (estEnPleinEcran()) {
-    if (doc.exitFullscreen) doc.exitFullscreen();
+    if (doc.exitFullscreen) sansBruit(doc.exitFullscreen());
     else doc.webkitExitFullscreen?.();
-    return;
+    return true;
   }
 
   const element = boite as ElementEtendu | null;
 
   if (element?.requestFullscreen) {
-    element.requestFullscreen();
-    return;
+    sansBruit(element.requestFullscreen());
+    return true;
   }
 
   if (element?.webkitRequestFullscreen) {
     element.webkitRequestFullscreen();
-    return;
+    return true;
   }
 
-  (video as VideoEtendue | null | undefined)?.webkitEnterFullscreen?.();
+  const balise = video as VideoEtendue | null | undefined;
+
+  if (balise?.webkitEnterFullscreen) {
+    balise.webkitEnterFullscreen();
+    return true;
+  }
+
+  // Aucun chemin disponible : c'est le cas d'un iPhone devant autre chose
+  // qu'une balise video, un cadre YouTube par exemple. L'appelant doit le
+  // savoir pour ne pas laisser un bouton qui ne fait rien.
+  return false;
 }
 
 /**

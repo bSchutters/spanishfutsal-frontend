@@ -1,12 +1,38 @@
 const API = "https://cloud.xbotgo.net/api/core/api/live/room/user/task/detail";
 
 // Leur application lit `region` et `language` dans l'adresse de la salle et les
-// transforme en en-tetes. Sans DATA-REGION, l'API repond ERR_REGION_NOT_EXIST.
-const ENTETES = {
-  "DATA-REGION": "EU",
+// transforme en en-tetes. Sans DATA-REGION, l'API repond ERR_REGION_NOT_EXIST,
+// et avec la mauvaise region elle repond 14009, « obtention des details de la
+// salle echouee ». Une salle chinoise interrogee en EU est donc invisible, et
+// reciproquement : la region ne peut pas etre ecrite en dur.
+const ENTETES_COMMUNS = {
   "BLINK-APP-MODEL": "WEB",
   "BLINK-APP-LANG": "fr_FR",
 };
+
+/** Region retenue quand l'adresse n'en porte pas : celle du club. */
+const REGION_PAR_DEFAUT = "EU";
+
+export type SalleXbotgo = {
+  id: string;
+  /** EU, CN, US ... telle qu'elle est ecrite dans l'adresse de la salle. */
+  region: string;
+};
+
+/** La salle sous la forme compacte que porte le cookie d'essai : `id:REGION`. */
+export function salleVersTexte(salle: SalleXbotgo): string {
+  return `${salle.id}:${salle.region}`;
+}
+
+export function salleDepuisTexte(texte: string): SalleXbotgo | null {
+  const [id, region] = texte.split(":");
+  if (!/^\d+$/.test(id ?? "")) return null;
+
+  return {
+    id,
+    region: /^[A-Z]{2,4}$/.test(region ?? "") ? region : REGION_PAR_DEFAUT,
+  };
+}
 
 // Quarante-cinq secondes, comme le suivi d'une diffusion YouTube deja connue.
 // L'adresse HLS est signee et datee : elle doit rester fraiche, et de toute
@@ -26,7 +52,7 @@ export type XbotgoLive = {
  * suffit donc de coller le lien de la salle dans le champ Lien Live pour que le
  * site sache quoi interroger, sans reglage supplementaire.
  */
-export function extractRoomId(url: string): string | null {
+export function extraireSalle(url: string): SalleXbotgo | null {
   try {
     const { hostname, searchParams } = new URL(url);
     if (!hostname.endsWith("xbotgo.net")) return null;
@@ -38,7 +64,14 @@ export function extractRoomId(url: string): string | null {
 
     // Un identifiant de salle est un nombre. Refuser le reste evite d'appeler
     // leur API avec n'importe quoi.
-    return /^\d+$/.test(decode) ? decode : null;
+    if (!/^\d+$/.test(decode)) return null;
+
+    const region = (searchParams.get("region") ?? "").toUpperCase();
+
+    return {
+      id: decode,
+      region: /^[A-Z]{2,4}$/.test(region) ? region : REGION_PAR_DEFAUT,
+    };
   } catch {
     return null;
   }
@@ -56,16 +89,16 @@ export function extractRoomId(url: string): string | null {
  * Celui-ci protege leur page, pas le flux.
  */
 export async function getXbotgoLive(
-  roomId: string,
+  salle: SalleXbotgo,
 ): Promise<XbotgoLive | null> {
   try {
-    const res = await fetch(`${API}/${roomId}`, {
-      headers: ENTETES,
+    const res = await fetch(`${API}/${salle.id}`, {
+      headers: { ...ENTETES_COMMUNS, "DATA-REGION": salle.region },
       next: { revalidate: SUIVI_TTL },
     });
 
     if (!res.ok) {
-      console.error(`XbotGo a repondu ${res.status} sur la salle ${roomId}`);
+      console.error(`XbotGo a repondu ${res.status} sur la salle ${salle.id}`);
       return null;
     }
 
@@ -73,6 +106,16 @@ export async function getXbotgoLive(
 
     // 1 signifie que la salle diffuse. Toute autre valeur veut dire terminee,
     // pas encore commencee, ou en erreur.
+    // 14009 signale presque toujours une region qui ne correspond pas a la
+    // salle : c'est le premier endroit ou regarder si une diffusion reste
+    // introuvable alors qu'elle tourne.
+    if (code === 14009) {
+      console.error(
+        `XbotGo refuse la salle ${salle.id} en region ${salle.region} : region probablement incorrecte`,
+      );
+      return null;
+    }
+
     if (code !== 200 || data?.playState !== 1) return null;
 
     // Les adresses de lecture arrivent dans une chaine JSON imbriquee.

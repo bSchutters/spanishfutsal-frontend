@@ -17,6 +17,8 @@ import { LffsUpdates } from '@/payload/collections/LffsUpdates'
 import { Venues } from '@/payload/collections/Venues'
 import { Teams } from '@/payload/collections/Teams'
 import { Sponsors } from '@/payload/collections/Sponsors'
+import { LiveAudience } from '@/payload/collections/LiveAudience'
+import { LiveReports } from '@/payload/collections/LiveReports'
 import { Settings } from '@/payload/globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -55,7 +57,20 @@ export default buildConfig({
     },
     theme: 'dark',
   },
-  collections: [Users, Players, Media, Matches, Rankings, Seasons, LffsUpdates, Venues, Teams, Sponsors],
+  collections: [
+    Users,
+    Players,
+    Media,
+    Matches,
+    Rankings,
+    Seasons,
+    LffsUpdates,
+    Venues,
+    Teams,
+    Sponsors,
+    LiveAudience,
+    LiveReports,
+  ],
   globals: [Settings],
   i18n: {
     supportedLanguages: { fr },

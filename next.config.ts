@@ -29,12 +29,17 @@ const CSP_PUBLIC = [
   // ne part chez Google avant que le visiteur ne lance la diffusion.
   "img-src 'self' data: blob: https://i.ytimg.com",
   "font-src 'self'",
-  // TEMPORAIRE, le temps que le direct YouTube du club soit actif. Le lecteur
-  // HLS telecharge les segments depuis leur diffuseur et les assemble en
-  // memoire, d'ou `connect-src` pour les requetes et `media-src blob:` pour la
-  // source ainsi construite.
-  "connect-src 'self' https://prod-eu-live-pull.xbotgo.net",
-  "media-src 'self' blob: https://prod-eu-live-pull.xbotgo.net",
+  // Le lecteur HLS telecharge les segments depuis le diffuseur du club et les
+  // assemble en memoire, d'ou `connect-src` pour les requetes et
+  // `media-src blob:` pour la source ainsi construite.
+  //
+  // Le domaine est ouvert au caractere generique, et non a un hote precis :
+  // ils en exploitent au moins trois, un par role et par region, et un
+  // basculement de leur cote refuserait le flux sans aucun message. Le
+  // caractere generique ne couvre qu'un niveau, les sous-domaines de
+  // sous-domaines resteraient refuses.
+  "connect-src 'self' https://*.xbotgo.net",
+  "media-src 'self' blob: https://*.xbotgo.net",
   // hls.js decode les segments dans un worker pour laisser le fil principal
   // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,
   // et le decodage retombe sur le fil principal : tenable sur un ordinateur,
@@ -48,7 +53,12 @@ const CSP_PUBLIC = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
+  // Convertit toute requete http en https. Indispensable en production, nuisible
+  // en developpement : le navigateur exempte `localhost`, qu'il tient pour sure,
+  // mais pas une adresse du reseau local. Depuis un telephone branche sur
+  // http://192.168.x.x, il convertissait donc la feuille de style et le
+  // JavaScript vers un https qui n'existe pas, et le site arrivait tout nu.
+  ...(EN_DEV ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 // L'admin Payload embarque son propre editeur et ses propres travailleurs :

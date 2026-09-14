@@ -4,7 +4,7 @@ import BoxModule from "@/components/layout/boxModule";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { useLiveStore } from "@/store/useLiveStore";
+import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 import { extractVideoId } from "@/lib/youtubeVideoId";
 import { getVenueById } from "@/lib/getVenueById";
 import { cn } from "@/lib/utils";
@@ -351,14 +351,7 @@ export default function MatchsClient({
                   {ouvreLeLecteur ? (
                     <Button
                       onClick={() =>
-                        ouvrir({
-                          mode: "direct",
-                          videoId: live!.videoId as string,
-                          url: live!.url,
-                          affiche,
-                          contexte,
-                          viewers: live!.viewers,
-                        })
+                        ouvrir(lectureDuDirect(live!, affiche, contexte))
                       }
                       aria-label={`Regarder ${match.homeTeam} contre ${match.awayTeam} en direct`}
                       className="font-nugros uppercase bg-red-600 border-red-800 text-white hover:bg-red-800"

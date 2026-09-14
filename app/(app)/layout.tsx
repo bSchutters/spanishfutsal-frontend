@@ -1,3 +1,4 @@
+import BandeauMesure from "@/components/layout/bandeau-mesure";
 import Footer from "@/components/layout/footer";
 import LiveDialog from "@/components/live/live-dialog";
 import LiveSpacer from "@/components/live/live-spacer";
@@ -90,6 +91,7 @@ export default function AppLayout({
           <Toaster />
           <Footer />
           <LiveDialog />
+          <BandeauMesure />
         </ThemeProvider>
       </body>
     </html>

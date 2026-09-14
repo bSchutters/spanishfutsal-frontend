@@ -16,6 +16,15 @@ export const Settings: GlobalConfig = {
       label: 'Auto-import actif',
     },
     {
+      name: 'xbotgo_room',
+      type: 'text',
+      label: 'Salle de diffusion XbotGo',
+      admin: {
+        description:
+          "Le lien de la salle du club, tel qu'il apparait dans leur application : https://cloud.xbotgo.net/live?userId=... Il ne change jamais, il se colle ici une seule fois et sert a toutes les rencontres. Le champ Lien Live d'un match reste prioritaire, pour la rencontre exceptionnelle diffusee ailleurs.",
+      },
+    },
+    {
       name: 'force_live_check',
       type: 'checkbox',
       defaultValue: false,
@@ -23,6 +32,25 @@ export const Settings: GlobalConfig = {
       admin: {
         description:
           "Le site ne cherche une diffusion qu'autour du coup d'envoi. Cochez cette case pour qu'il interroge tout de suite la salle XbotGo du prochain match, le temps d'un essai en arrivant. Sans effet sur YouTube, dont la recherche reste limitee a sa fenetre pour ne pas gaspiller le quota. Pensez a decocher ensuite.",
+      },
+    },
+    {
+      name: 'replays_auto',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Rattrapage automatique des replays',
+      admin: {
+        description:
+          "Une fois par jour, cherche sur la chaine YouTube du club la video de chaque rencontre jouee dont le champ Lien Replay est encore vide, et le remplit. La reconnaissance se fait sur le nom de l'adversaire, et sur la date quand elle est ecrite dans le titre. Laisse decoche, rien n'est ecrit dans les fiches de match.",
+      },
+    },
+    {
+      name: 'report_webhook',
+      type: 'text',
+      label: 'Webhook du rapport de diffusion',
+      admin: {
+        description:
+          "Ou envoyer le compte rendu d'audience a la fin de chaque direct : l'adresse d'un webhook Discord, celle d'un bot Telegram, ou n'importe quel service qui accepte un message. Laisse vide, le rapport reste dans les Rapports de diffusion sans etre envoye. WhatsApp n'est pas possible : leur API reclame un compte professionnel verifie et des modeles approuves.",
       },
     },
     {

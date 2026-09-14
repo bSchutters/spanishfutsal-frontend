@@ -10,7 +10,10 @@
     "seed:teams": "node scripts/seed-teams.mjs",
     "db:refresh": "node scripts/db-refresh.mjs",
     "schema:push": "node scripts/db-schema-push.mjs",
-    "schema:push:prod": "node scripts/db-schema-push.mjs --prod"
+    "schema:push:prod": "node scripts/db-schema-push.mjs --prod",
+    "test:replays": "tsx scripts/verifier-rapprochement-replays.ts",
+    "test:audience": "tsx scripts/verifier-calculs-audience.ts",
+    "test": "tsx scripts/verifier-rapprochement-replays.ts && tsx scripts/verifier-calculs-audience.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -31,6 +34,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "graphql": "^16.13.1",
+    "hls.js": "^1.7.3",
     "lucide-react": "^0.577.0",
     "next": "15.3.9",
     "next-themes": "^0.4.6",

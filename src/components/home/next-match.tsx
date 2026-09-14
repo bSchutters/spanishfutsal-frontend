@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import useBreakpoint from "@/hooks/useBreakpoints";
-import { useLiveStore } from "@/store/useLiveStore";
+import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
 import Team from "../team";
@@ -215,15 +215,13 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
         <button
           type="button"
           onClick={() =>
-            ouvrir({
-              mode: live!.hlsUrl ? "hls" : "direct",
-              videoId: (live!.videoId ?? "") as string,
-              hlsUrl: live!.hlsUrl,
-              url: live!.url,
-              affiche: `${homeTeam} - ${awayTeam}`,
-              contexte: `${nextMatch.competitionName} · ${nextMatch.time}`,
-              viewers: live!.viewers,
-            })
+            ouvrir(
+              lectureDuDirect(
+                live!,
+                `${homeTeam} - ${awayTeam}`,
+                `${nextMatch.competitionName} · ${nextMatch.time}`,
+              ),
+            )
           }
           aria-label={`Regarder ${homeTeam} contre ${awayTeam} en direct`}
           className="w-full flex items-center justify-center cursor-pointer"
