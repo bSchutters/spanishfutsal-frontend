@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-import { BATTEMENT_S } from "@/lib/battement";
+import { ABSENCE_MAX_MS, BATTEMENT_S } from "@/lib/battement";
 import { identiteDurable } from "@/lib/identiteDurable";
+import { useLiveStore } from "@/store/useLiveStore";
 import { provenance } from "@/lib/provenance";
 
 /**
@@ -91,8 +92,18 @@ export function useBattementAudience(
 
     let arrete = false;
 
+    // Depuis quand l'onglet est a l'arriere-plan, ou zero s'il est devant.
+    let cacheDepuis = document.hidden ? Date.now() : 0;
+
+    let premier = true;
+
     const battre = () => {
-      if (arrete || document.hidden) return;
+      if (arrete) return;
+
+      // L'onglet cache ne disqualifie pas : le son continue, et ecouter le
+      // match en travaillant, c'est le regarder. Passe cinq minutes sans
+      // revenir, en revanche, c'est un onglet oublie.
+      if (cacheDepuis && Date.now() - cacheDepuis > ABSENCE_MAX_MS) return;
 
       fetch("/api/live-audience", {
         method: "POST",
@@ -113,9 +124,18 @@ export function useBattementAudience(
         }),
         // Le comptage ne doit jamais retarder la lecture.
         keepalive: true,
-      }).catch(() => {
-        // Un battement perdu se rattrape au suivant.
-      });
+      })
+        .then(() => {
+          // Le tout premier : on demande au bandeau de recompter sans attendre,
+          // pour que la personne se voie apparaitre dans le compteur.
+          if (premier) {
+            premier = false;
+            useLiveStore.getState().reveiller();
+          }
+        })
+        .catch(() => {
+          // Un battement perdu se rattrape au suivant.
+        });
     };
 
     /**
@@ -152,6 +172,12 @@ export function useBattementAudience(
       }).catch(() => {});
     };
 
+    /** Le depart, plus le rappel au bandeau pour que la place se libere a vue. */
+    const partirEtPrevenir = () => {
+      annoncerLeDepart();
+      useLiveStore.getState().reveiller();
+    };
+
     battre();
     const rythme = setInterval(battre, BATTEMENT_S * 1000);
 
@@ -162,7 +188,13 @@ export function useBattementAudience(
     // Le retour sur l'onglet recompte tout de suite, plutot que d'attendre le
     // prochain battement : quelqu'un qui revient veut etre compte tout de suite.
     const surRetour = () => {
-      if (!document.hidden) battre();
+      if (document.hidden) {
+        cacheDepuis = Date.now();
+        return;
+      }
+
+      cacheDepuis = 0;
+      battre();
     };
     document.addEventListener("visibilitychange", surRetour);
 
@@ -175,7 +207,7 @@ export function useBattementAudience(
       // Fermer le lecteur ou mettre en pause, c'est aussi partir. Un onglet
       // simplement passe a l'arriere-plan, lui, expire tout seul : l'annoncer
       // ferait danser le compteur a chaque coup d'oeil ailleurs.
-      annoncerLeDepart();
+      partirEtPrevenir();
     };
   }, [matchId, etat.enLecture]);
 }

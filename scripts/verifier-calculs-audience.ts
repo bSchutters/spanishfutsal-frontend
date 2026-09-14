@@ -97,8 +97,8 @@ const rapport = resumer([trace(0, 60, true), trace(10, 40, true), trace(30, 35, 
 verifie('resume, spectateurs differents', rapport?.uniques, 3)
 verifie('resume, pointe', rapport?.pointe, 3)
 // Soixante, trente et cinq minutes regardees, plus un battement chacune, pour
-// trois personnes.
-verifie('resume, duree moyenne par personne', rapport?.dureeMoyenneMinutes, 32.4)
+// trois personnes : 60,5 + 30,5 + 5,5 sur trois.
+verifie('resume, duree moyenne par personne', rapport?.dureeMoyenneMinutes, 32.2)
 verifie('resume, part de telephones', rapport?.partMobile, 67)
 verifie('resume, premiere arrivee', rapport?.debut, new Date(DEPART).toISOString())
 verifie('resume, dernier depart', rapport?.fin, new Date(DEPART + 60 * MINUTE).toISOString())
@@ -107,7 +107,7 @@ verifie('resume, longueur de la courbe', rapport?.courbe.length, 61)
 // Un spectateur qui n'a envoye qu'un seul signe ne dure pas zero minute : il
 // est credite d'un battement, sinon la moyenne serait tiree vers le bas par
 // tous ceux qui ouvrent et referment.
-verifie('resume, un seul battement credite un battement', resumer([trace(0, 0)])?.dureeMoyenneMinutes, 0.8)
+verifie('resume, un seul battement credite un battement', resumer([trace(0, 0)])?.dureeMoyenneMinutes, 0.5)
 
 // --- Le spectateur qui part et revient ---
 
@@ -118,8 +118,8 @@ const allerRetour = [trace(0, 5, false, 'meme'), trace(20, 25, false, 'meme')]
 verifie('aller-retour, une seule personne', resumer(allerRetour)?.uniques, 1)
 verifie('aller-retour, jamais deux en meme temps', pointeSimultanee(allerRetour), 1)
 verifie('aller-retour, absent pendant son absence', courbeParMinute(allerRetour, DEPART, DEPART + 25 * MINUTE)[10], 0)
-// Deux fois cinq minutes plus deux battements : la pause n'est pas comptee.
-verifie('aller-retour, seul le temps regarde compte', resumer(allerRetour)?.dureeMoyenneMinutes, 11.5)
+// Deux fois cinq minutes et demie : la pause entre les deux n'est pas comptee.
+verifie('aller-retour, seul le temps regarde compte', resumer(allerRetour)?.dureeMoyenneMinutes, 11)
 
 // --- Les presences en double ---
 
@@ -130,8 +130,8 @@ const doublon = [trace(0, 5, false, 'meme'), trace(0, 6, false, 'meme')]
 
 verifie('doublon, une seule personne', resumer(doublon)?.uniques, 1)
 verifie('doublon, jamais deux en meme temps', resumer(doublon)?.pointe, 1)
-// Une seule presence de six minutes, plus un battement.
-verifie('doublon, duree non doublee', resumer(doublon)?.dureeMoyenneMinutes, 6.8)
+// Une seule presence de six minutes, plus un battement de trente secondes.
+verifie('doublon, duree non doublee', resumer(doublon)?.dureeMoyenneMinutes, 6.5)
 
 // --- Une soiree complete, toutes mesures ---
 
@@ -167,7 +167,7 @@ verifie('soiree, trois personnes', bilan?.uniques, 3)
 verifie('soiree, heures visionnees', bilan?.heuresVisionnees, 1.6)
 // La mediane est la valeur du milieu, pas la moyenne : trente minutes et non
 // trente-deux, la personne restee une heure ne la tire pas vers le haut.
-verifie('soiree, duree mediane', bilan?.dureeMedianeMinutes, 30.8)
+verifie('soiree, duree mediane', bilan?.dureeMedianeMinutes, 30.5)
 verifie('soiree, minute de la pointe', bilan?.minutePointe, 30)
 verifie('soiree, part de son active', bilan?.partSon, 67)
 verifie('soiree, part de plein ecran', bilan?.partPleinEcran, 33)

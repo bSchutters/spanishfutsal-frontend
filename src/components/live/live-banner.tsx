@@ -9,6 +9,16 @@ import { useLiveStore } from "@/store/useLiveStore";
 const RAPPEL_DEFAUT = 900;
 
 /**
+ * Rythme pendant qu'un lecteur est ouvert.
+ *
+ * Celui qui regarde le match a le compteur sous les yeux et voit chaque
+ * changement ; celui qui lit le classement n'en a que faire. On accelere donc
+ * seulement pour lui, et le cache du CDN fait que cette impatience ne coute
+ * presque rien.
+ */
+const RAPPEL_LECTEUR = 10;
+
+/**
  * Le bandeau du direct, monte dans la navigation, donc present sur toutes les
  * pages. Le direct est un etat du club et non d'une page : quelqu'un qui arrive
  * sur le classement doit voir que le match est en cours.
@@ -23,6 +33,7 @@ export default function LiveBanner() {
   const setHauteurBandeau = useLiveStore((s) => s.setHauteurBandeau);
   const ouvrir = useLiveStore((s) => s.ouvrir);
   const reveil = useLiveStore((s) => s.reveil);
+  const lecteurOuvert = useLiveStore((s) => s.lecture !== null);
   const bandeau = useRef<HTMLDivElement>(null);
 
   // Le bandeau est monte sur toutes les pages : c'est le seul endroit qui voie
@@ -46,6 +57,7 @@ export default function LiveBanner() {
         if (res.ok) {
           const data = await res.json();
           rappel = data.nextCheckIn ?? RAPPEL_DEFAUT;
+          if (lecteurOuvert) rappel = Math.min(rappel, RAPPEL_LECTEUR);
 
           if (!arrete) {
             setLive(
@@ -86,7 +98,7 @@ export default function LiveBanner() {
     // l'incremente, l'effet est rejoue, le minuteur en cours est annule et la
     // route interrogee tout de suite. Il recoit ainsi une adresse fraiche en
     // une seconde au lieu d'attendre le prochain rendez-vous.
-  }, [setLive, reveil]);
+  }, [setLive, reveil, lecteurOuvert]);
 
   useEffect(() => {
     const element = bandeau.current;

@@ -23,11 +23,13 @@ const RECHERCHE_APRES_MS = 15 * 60 * 1000
  * rythme, pas le cache du navigateur.
  *
  * Le CDN, lui, garde toujours quelque chose : c'est lui qui fait que la
- * consommation ne depend pas de l'affluence. Quinze secondes pendant la
- * rencontre, pour que le compteur reste vivant, une minute le reste du temps.
+ * consommation ne depend pas de l'affluence. Cinq secondes pendant la
+ * rencontre, pour que le compteur soit vivant, une minute le reste du temps.
+ * Cinq secondes veut dire au pire douze passages par minute chez nous, quel que
+ * soit le nombre de spectateurs.
  */
 const CACHE_DIRECT = {
-  'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=30',
+  'Cache-Control': 'public, max-age=0, s-maxage=5, stale-while-revalidate=15',
 }
 
 const CACHE_REPOS = {
