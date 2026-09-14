@@ -15,10 +15,13 @@ import {
  * bandeaux de publicite : il n'y a ni regie, ni revente, ni profil. Il annonce
  * une mesure d'audience et laisse la refermer.
  *
- * Le texte est court a dessein, mais il dit ce qu'il fait. La formule habituelle
- * des bandeaux, « necessaire au bon fonctionnement du site », designe justement
- * la seule categorie qui n'a pas besoin d'etre annoncee : l'employer pour une
- * mesure d'audience est l'erreur que les regulateurs sanctionnent.
+ * Le texte affiche est la formule generique des bandeaux, choisie par le club.
+ * A savoir, si la question revient un jour : elle annonce du « bon
+ * fonctionnement », c'est-a-dire la categorie qui n'a pas besoin d'etre
+ * annoncee, alors que ce bouton declenche bel et bien une mesure d'audience.
+ * Ce que le bandeau fait reellement est decrit dans `identiteDurable.ts`, et
+ * reste volontairement sobre : un numero tire au hasard, aucune donnee
+ * personnelle, aucune revente, et rien d'ecrit avant le clic.
  *
  * Ce qui compte est l'ordre : tant qu'il n'est pas ferme, rien de persistant
  * n'est ecrit et le comptage reste anonyme, le temps d'un onglet. Le fermer
@@ -44,17 +47,14 @@ export default function BandeauMesure() {
       aria-label="Mesure d'audience"
       className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-spanish-accent-2 bg-spanish-bg-dark/95 px-4 py-2.5 backdrop-blur-sm sm:px-6"
     >
-      {/* Le texte prend la place qui reste, ce qui pousse le bouton contre le
-          bord droit quelle que soit la longueur de la phrase. Un bandeau
-          d'information se lit en passant : il reste sur une ligne et ne pese
-          pas plus que la barre de navigation. */}
-      <div className="mx-auto flex max-w-5xl items-center gap-4 sm:gap-6">
+      {/* Pleine largeur, sans colonne centrale : le texte se cale contre le
+          bord gauche et le bouton contre le bord droit. Le texte prend la place
+          qui reste, donc le bouton ne bouge pas si la phrase change. Un bandeau
+          d'information se lit en passant, il ne pese pas plus que la barre de
+          navigation. */}
+      <div className="flex items-center gap-4 sm:gap-6">
         <p className="min-w-0 flex-1 text-xs leading-snug text-white/90">
-          <span className="font-bold uppercase tracking-wide">
-            Mesure d&apos;audience.
-          </span>{" "}
-          Pendant les matchs en direct, ce site compte ses spectateurs de façon
-          anonyme.
+          Ce site utilise des cookies pour assurer son bon fonctionnement.
         </p>
 
         <button
