@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { noterLaProvenance } from "@/lib/provenance";
-import { useLiveStore } from "@/store/useLiveStore";
+import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 
 // Si la route ne dit rien, on repasse dans un quart d'heure.
 const RAPPEL_DEFAUT = 900;
@@ -166,17 +166,15 @@ export default function LiveBanner() {
         <button
           type="button"
           onClick={() =>
-            ouvrir({
-              mode: live.hlsUrl ? "hls" : "direct",
-              videoId: (live.videoId ?? "") as string,
-              hlsUrl: live.hlsUrl,
-              url: live.url,
-              affiche,
-              contexte: live.match
-                ? `${live.match.competition} · ${live.match.time}`
-                : null,
-              viewers: live.viewers,
-            })
+            ouvrir(
+              lectureDuDirect(
+                live,
+                affiche,
+                live.match
+                  ? `${live.match.competition} · ${live.match.time}`
+                  : null,
+              ),
+            )
           }
           className={habillageAction}
         >

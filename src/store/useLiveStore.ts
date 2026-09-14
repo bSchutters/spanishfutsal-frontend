@@ -41,6 +41,30 @@ export type Lecture = {
   viewers: number | null;
 };
 
+/**
+ * Compose la lecture a partir du direct en cours.
+ *
+ * Existe parce que deux endroits ouvrent le lecteur, le bandeau et la carte du
+ * match, et que l'un des deux avait ete oublie lors de l'ajout du flux du club :
+ * il ouvrait le lecteur YouTube sur un identifiant vide, qui tournait
+ * indefiniment. Une seule fonction, donc, et l'oubli n'est plus possible.
+ */
+export function lectureDuDirect(
+  live: Live,
+  affiche: string,
+  contexte: string | null,
+): Lecture {
+  return {
+    mode: live.hlsUrl ? "hls" : "direct",
+    videoId: live.videoId ?? "",
+    hlsUrl: live.hlsUrl,
+    url: live.url,
+    affiche,
+    contexte,
+    viewers: live.viewers,
+  };
+}
+
 type State = {
   live: Live | null;
   lecture: Lecture | null;
