@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Metadata } from "next";
-
+
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "À Propos | UD Asturiana - Notre Histoire",
@@ -31,7 +31,11 @@ export default function Apropos() {
     <div className="flex flex-col items-center ">
       <div className="lg:h-[650px] h-96 w-full relative ">
         <div className="absolute w-full h-full bg-spanish-bg/80 z-10" />
-        <div className="w-full h-full mask-b-from-100%">
+        {/* `relative` : une image `fill` se cale sur son parent direct, qui
+            doit etre positionne. Sans cela elle se calait sur le bloc du
+            dessus, de meme taille, ce qui passait inapercu mais que Next
+            signale en developpement. */}
+        <div className="relative w-full h-full mask-b-from-100%">
           <Image
             src="/assets/images/webp/comiteSpanish.webp"
             alt="Comité directeur d'UD Asturiana - Dirigeants du club de futsal"
@@ -65,8 +69,11 @@ export default function Apropos() {
             <Image
               src="/assets/images/webp/oldPic.webp"
               alt="Ancienne photo des fondateurs du club - Génération précédente d'UD Asturiana"
-              width={0}
-              height={0}
+              // Dimensions reelles du fichier : le navigateur reserve la hauteur
+              // avant que la photo n arrive. En 0 x 0, elle poussait tout le
+              // texte en dessous a son chargement (0,08 de CLS sur la page).
+              width={960}
+              height={748}
               className="w-full h-auto rounded-2xl my-6"
               // Colonne de texte bornee a max-w-4xl, soit 896 px : l image ne fait
               // jamais la largeur de la fenetre.
@@ -109,8 +116,8 @@ export default function Apropos() {
             <Image
               src="/assets/images/webp/team.webp"
               alt="Équipe actuelle d'UD Asturiana - Joueurs et staff réunis"
-              width={0}
-              height={0}
+              width={1920}
+              height={1080}
               className="w-full h-auto rounded-2xl mt-6"
               // Colonne de texte bornee a max-w-4xl, soit 896 px : l image ne fait
               // jamais la largeur de la fenetre.

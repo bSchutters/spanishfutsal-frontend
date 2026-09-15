@@ -52,7 +52,11 @@ async function fetchMatchs(seasonId?: number | null): Promise<Match[]> {
     ...(season && { where: { season: { equals: season.id } } }),
   });
 
-  return result.docs.map((m) => {
+  // Le match d'essai (voir essaiDuDirect.ts) ne sort jamais d'ici : ni page,
+  // ni API, ni sitemap. Filtre ici et non dans la requete : la colonne est
+  // vide pour tous les matchs anterieurs a sa creation, et une clause
+  // `not_equals` en base les exclurait avec lui.
+  return result.docs.filter((m) => !m.essai).map((m) => {
     const home = resolveTeam(teams, m.home_team);
     const away = resolveTeam(teams, m.away_team);
 

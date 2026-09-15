@@ -97,6 +97,17 @@ export const Matches: CollectionConfig = {
       label: 'Saison',
     },
     {
+      name: 'essai',
+      type: 'checkbox',
+      defaultValue: false,
+      label: "Match d'essai",
+      admin: {
+        position: 'sidebar',
+        description:
+          "Sert a eprouver le direct sans rencontre, depuis /api/salle-essai en developpement. Jamais affiche sur le site ni dans les API publiques ; ses traces d'audience et son rapport restent a part des vrais. Un seul suffit, le site le cree lui-meme.",
+      },
+    },
+    {
       name: 'field_players_stats',
       type: 'array',
       label: 'Stats joueurs de champ',

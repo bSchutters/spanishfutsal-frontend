@@ -19,12 +19,13 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { send } from "@/lib/email";
-import { formSchema } from "@/lib/schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formSchema, type FormValues } from "@/lib/schemas";
+// Le schema vient de `zod/mini`, sans methode `parse` : le resolver zod de
+// react-hook-form ne sait pas s'en servir, celui de Standard Schema si.
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 const topics = [
   "Sponsoring",
@@ -41,8 +42,8 @@ const topics = [
  * rend son export `metadata`.
  */
 export default function ContactForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormValues>({
+    resolver: standardSchemaResolver(formSchema),
     defaultValues: {
       topic: "",
       firstName: "",
@@ -53,7 +54,7 @@ export default function ContactForm() {
   });
   const router = useRouter();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: FormValues) {
     send(values);
     form.reset();
 

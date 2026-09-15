@@ -1,4 +1,5 @@
-import ContactForm from "@/components/contact/contact-form";
+// Pas le formulaire lui-meme : voir `contact-form-differe.tsx`.
+import ContactForm from "@/components/contact/contact-form-differe";
 import { Separator } from "@/components/ui/separator";
 import { contactMetadata } from "./metadata";
 

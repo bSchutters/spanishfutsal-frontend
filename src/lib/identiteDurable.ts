@@ -15,7 +15,11 @@
  * personne ne peut remonter de lui a quelqu'un.
  */
 
-const CLE_ACCORD = "uda-mesure-lue";
+/**
+ * Exportee : le gabarit pose un script qui lit cette cle avant le premier
+ * rendu, pour masquer le bandeau chez ceux qui l'ont deja ferme.
+ */
+export const CLE_ACCORD = "uda-mesure-lue";
 const CLE_IDENTITE = "uda-visiteur-durable";
 
 /** Deux mots de base 36, assez larges pour ne jamais se rencontrer. */

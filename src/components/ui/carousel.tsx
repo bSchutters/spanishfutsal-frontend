@@ -95,6 +95,9 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return;
+    // Synchro initiale d'Embla : lire l'etat courant une fois au montage est
+    // voulu, ce n'est pas un rendu en cascade. react-hooks 7 le signale.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api);
     api.on("reInit", onSelect);
     api.on("select", onSelect);

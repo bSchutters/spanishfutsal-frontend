@@ -1,19 +1,11 @@
-import {
-  Facebook,
-  Globe,
-  Instagram,
-  Linkedin,
-  Mail,
-  Music2,
-  Twitter,
-  Youtube,
-} from "lucide-react";
+import { Globe, Mail, Music2 } from "lucide-react";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "@/components/icons/marques";
+import { cn } from "@/lib/utils";
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
 import {
   getSponsors,
@@ -199,7 +191,12 @@ export default async function Sponsors() {
       <div className="my-30 container relative mx-auto px-6 md:px-0">
         {/* `div` et non `header` : un `header` de premier niveau creerait un
             second landmark `banner` a cote de celui de la navigation. */}
-        <div className="reveal-up flex max-w-3xl flex-col gap-5">
+        {/* Pas d'animation d'entree sur ce bloc : il est dans le premier ecran
+            et son paragraphe porte le LCP de la page. Parti d'une opacite
+            nulle, il ne comptait comme affiche qu'a la fin de l'animation, un
+            demi-seconde perdue sur la mesure a chaque visite. Les cartes plus
+            bas gardent la leur. */}
+        <div className="flex max-w-3xl flex-col gap-5">
           {/* Pas de surtitre : les autres pages du site n'ont qu'un titre. */}
           <h1 className="font-marjorie text-4xl font-bold italic leading-tight text-balance lg:text-5xl">
             Ils nous soutiennent

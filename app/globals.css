@@ -3,150 +3,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* Les polices Nugros et Marjorie sont declarees par next/font/local dans
+   app/(app)/layout.tsx : memes fichiers, memes graisses, et une police de
+   repli aux metriques ajustees pour que le texte ne bouge pas quand la
+   vraie police arrive. Les variables --font-nugros-nf et --font-marjorie-nf
+   viennent de la. */
 
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+/* Le bandeau de mesure d'audience est dans le HTML de chaque page. Chez ceux
+   qui l'ont deja ferme, le script du gabarit pose `mesure-lue` sur <html>
+   avant le premier rendu : le bandeau reste invisible jusqu'a ce que React
+   le retire. */
+.mesure-lue [data-bandeau-mesure] {
+  display: none;
 }
-
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-SemiBold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-ExtraBold.woff2") format("woff2");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Nugros";
-  src: url("/assets/fonts/nugros/Nugros-Black.woff2") format("woff2");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie2/MarjorieVariableItalic-Italic.woff2")
-    format("woff2");
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie2/MarjorieVariable-Regular.woff2")
-    format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* 
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-Italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-SemiBold.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-SemiBoldItalic.woff2")
-    format("woff2");
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-BoldItalic.woff2") format("woff2");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-ExtraBold.woff2") format("woff2");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-ExtraBoldItalic.woff2")
-    format("woff2");
-  font-weight: 800;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-Black.woff2") format("woff2");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Marjorie";
-  src: url("/assets/fonts/marjorie/Marjorie-BlackItalic.woff2") format("woff2");
-  font-weight: 900;
-  font-style: italic;
-  font-display: swap;
-} */
 
 @theme inline {
-  --font-marjorie: "Marjorie", sans-serif;
-  --font-nugros: "Nugros", sans-serif;
+  --font-marjorie: var(--font-marjorie-nf), sans-serif;
+  --font-nugros: var(--font-nugros-nf), sans-serif;
   --color-spanish-bg: var(--spanish-bg);
   --color-spanish-nav: var(--spanish-nav);
   --color-spanish-bg-light: var(--spanish-bg-light);

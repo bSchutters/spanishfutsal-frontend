@@ -2,12 +2,11 @@
 
 import { EmailTemplate } from "@/components/ui/email-template";
 import { Resend } from "resend";
-import { z } from "zod";
-import { formSchema } from "./schemas";
+import type { FormValues } from "./schemas";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const send = async (emailFormData: z.infer<typeof formSchema>) => {
+export const send = async (emailFormData: FormValues) => {
   try {
     const { error } = await resend.emails.send({
       from: `Formulaire de contact UD Asturiana <${process.env.RESEND_FROM_EMAIL}>`,

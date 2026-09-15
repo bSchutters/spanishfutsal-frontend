@@ -1,6 +1,5 @@
 "use client";
 
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -26,6 +25,10 @@ interface PlayerProps {
   active: boolean;
   className?: string;
   poste?: "Joueur" | "Gardien" | "Staff";
+  /** Les premieres cartes de la page : leur photo part tout de suite. */
+  priority?: boolean;
+  /** La toute premiere : sa photo porte le LCP, elle passe devant tout. */
+  fetchPriority?: "high" | "low" | "auto";
 }
 
 export default function Player({
@@ -37,9 +40,10 @@ export default function Player({
   active,
   className,
   poste,
+  priority,
+  fetchPriority,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const { breakpoint } = useBreakpoint();
 
   function shortenName(name: string): string {
     if (!name) return "";
@@ -187,7 +191,10 @@ export default function Player({
       </div>
       <BoxModule className="absolute bottom-3 w-11/12 md:p-2 p-1 -mb-1 md:mb-0 flex items-center justify-center rounded-lg z-10">
         <p className="uppercase">
-          {breakpoint === "xs" ? shortenName(lastname) : lastname}{" "}
+          {/* Les deux formes sont dans le HTML, le CSS choisit : decider
+              d'apres la fenetre apres l'hydratation faisait bouger la carte. */}
+          <span className="sm:hidden">{shortenName(lastname)}</span>
+          <span className="max-sm:hidden">{lastname}</span>{" "}
           <span className="font-bold">{firstname}</span>
         </p>
       </BoxModule>
@@ -195,13 +202,18 @@ export default function Player({
         <Image
           src={photo}
           alt={`${firstname} ${lastname}`}
-          height={0}
-          width={0}
+          // Le ratio des photos (635 x 1080) : le navigateur reserve la place
+          // avant qu'elles n'arrivent. En 0 x 0, les premieres cartes portaient
+          // le LCP de la page tout en etant chargees en differe.
+          width={635}
+          height={1080}
           // L'emplacement ne depend pas de la fenetre : `h-80 w-auto` le fige a
           // 320 px de haut, soit 188 px de large pour un ratio 635x1080. Les
           // pourcentages de fenetre precedents faisaient telecharger la variante
           // 640 px la ou 376 px suffisent sur un ecran haute densite.
           sizes="188px"
+          priority={priority}
+          fetchPriority={fetchPriority}
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
         />
       </div>

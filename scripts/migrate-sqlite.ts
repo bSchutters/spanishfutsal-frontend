@@ -16,6 +16,8 @@
  *   3. Creates all records in Payload
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any -- migration ponctuelle : les lignes brutes de SQLite ne sont pas typees */
+
 import 'dotenv/config'
 import path from 'path'
 

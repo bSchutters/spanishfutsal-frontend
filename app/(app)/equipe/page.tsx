@@ -49,7 +49,7 @@ export default async function Equipe() {
               if (b.poste === "Gardien" && a.poste !== "Gardien") return 1;
               return (a.numero || 0) - (b.numero || 0);
             })
-            .map((player) => (
+            .map((player, index) => (
               <Player
                 key={player.id}
                 firstname={player.prenom}
@@ -59,6 +59,11 @@ export default async function Equipe() {
                 stats={player.stats}
                 active={player.actif}
                 poste={player.poste}
+                // Les quatre premieres cartes sont dans le premier ecran a
+                // toutes les largeurs : chargees en differe, la premiere photo
+                // portait le LCP de la page a plus de quatre secondes.
+                priority={index < 4}
+                fetchPriority={index === 0 ? "high" : undefined}
               />
             ))}
         </div>

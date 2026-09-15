@@ -8,8 +8,56 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 
+import { CLE_ACCORD } from "@/lib/identiteDurable";
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
+
+/**
+ * Execute avant le premier rendu, comme le script du theme : si le bandeau de
+ * mesure d'audience a deja ete ferme sur cet appareil, <html> recoit la classe
+ * `mesure-lue` et le bandeau, present dans le HTML, reste invisible jusqu'a ce
+ * que React le retire. Sans cela il clignoterait chez tout le monde a chaque
+ * page. Le stockage peut etre refuse (navigation privee stricte) : on ne fait
+ * alors rien, et le bandeau s'affiche, ce qui est le comportement honnete.
+ */
+const SCRIPT_BANDEAU = `try{if(localStorage.getItem(${JSON.stringify(CLE_ACCORD)})==="oui")document.documentElement.classList.add("mesure-lue")}catch(e){}`;
+
+/**
+ * Les polices du site, servies par next/font : memes fichiers qu'avant, mais
+ * Next calcule pour chacune une police de repli aux metriques ajustees
+ * (size-adjust, ascent, descent). Le texte se dessine d'abord dans ce repli,
+ * puis la vraie police le remplace sans que les lignes ne se recomposent :
+ * c'etait 0,08 de CLS sur la page A propos, et un peu partout ailleurs.
+ *
+ * Pas de prechargement : les faces partaient en meme temps que l'image du LCP
+ * et a la meme priorite sur mobile, et lui prenaient sa bande passante.
+ */
+const nugros = localFont({
+  src: [
+    { path: "../../public/assets/fonts/nugros/Nugros-Regular.woff2", weight: "400" },
+    { path: "../../public/assets/fonts/nugros/Nugros-Medium.woff2", weight: "500" },
+    { path: "../../public/assets/fonts/nugros/Nugros-SemiBold.woff2", weight: "600" },
+    { path: "../../public/assets/fonts/nugros/Nugros-Bold.woff2", weight: "700" },
+    { path: "../../public/assets/fonts/nugros/Nugros-ExtraBold.woff2", weight: "800" },
+    { path: "../../public/assets/fonts/nugros/Nugros-Black.woff2", weight: "900" },
+  ],
+  variable: "--font-nugros-nf",
+  display: "swap",
+  preload: false,
+});
+
+// Deux faces variables, declarees sans graisse comme avant : le gras des
+// titres reste celui que le navigateur synthetise, l'aspect ne change pas.
+const marjorie = localFont({
+  src: [
+    { path: "../../public/assets/fonts/marjorie2/MarjorieVariable-Regular.woff2", style: "normal" },
+    { path: "../../public/assets/fonts/marjorie2/MarjorieVariableItalic-Italic.woff2", style: "italic" },
+  ],
+  variable: "--font-marjorie-nf",
+  display: "swap",
+  preload: false,
+});
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -59,7 +107,11 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="h-full" suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={cn("h-full", nugros.variable, marjorie.variable)}
+      suppressHydrationWarning
+    >
       <head>
         {/*
           Pas de prechargement de polices ici. Il avait ete ajoute pour
@@ -72,6 +124,7 @@ export default function AppLayout({
           immediatement dans la police de repli.
         */}
         <SchemaMarkup />
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_BANDEAU }} />
       </head>
       <body
         className={cn(
@@ -87,7 +140,17 @@ export default function AppLayout({
         >
           <Nav />
           <LiveSpacer />
-          <main>{children}</main>
+          {/*
+            `flow-root` : chaque page pose sa marge haute (`my-30`) sur son
+            premier bloc pour passer sous la barre fixe. Sans contexte de
+            formatage sur `main`, cette marge fusionne a travers `main` et
+            `body`, et c'est `body` qui descend de 120 px. Chrome dessine une
+            premiere fois avant d'avoir lu `main` (body en haut), puis le
+            deplace : 0,146 de CLS sur chaque page, mesure en production, sans
+            qu'aucun element visible ne bouge. Avec `flow-root`, la marge reste
+            dans `main` et `body` ne bouge plus. Rien ne change a l'ecran.
+          */}
+          <main className="flow-root">{children}</main>
           <Toaster />
           <Footer />
           <LiveDialog />

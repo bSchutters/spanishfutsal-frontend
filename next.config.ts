@@ -16,6 +16,14 @@ import { withPayload } from "@payloadcms/next/withPayload";
 // La production, elle, ne compile aucun `eval`.
 const EN_DEV = process.env.NODE_ENV !== "production";
 
+// Le flux public qui tient lieu de diffusion pendant un essai du direct
+// (`/api/salle-essai?flux=1`). La meme valeur par defaut que src/lib/fluxDEssai.ts,
+// recopiee ici : ce fichier se charge avant tout le reste et n'importe rien du
+// site. En developpement seulement, comme l'essai lui-meme.
+const ORIGINE_FLUX_ESSAI = new URL(
+  process.env.FLUX_ESSAI || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+).origin;
+
 const CSP_PUBLIC = [
   "default-src 'self'",
   // youtube.com sert le script de l'API IFrame, qui permet de masquer les
@@ -38,8 +46,8 @@ const CSP_PUBLIC = [
   // basculement de leur cote refuserait le flux sans aucun message. Le
   // caractere generique ne couvre qu'un niveau, les sous-domaines de
   // sous-domaines resteraient refuses.
-  "connect-src 'self' https://*.xbotgo.net",
-  "media-src 'self' blob: https://*.xbotgo.net",
+  `connect-src 'self' https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
+  `media-src 'self' blob: https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
   // hls.js decode les segments dans un worker pour laisser le fil principal
   // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,
   // et le decodage retombe sur le fil principal : tenable sur un ordinateur,
@@ -109,6 +117,14 @@ const nextConfig: NextConfig = {
     // et se voyait servir la variante 3840. Les deux bannieres plein ecran
     // (accueil et /a-propos) sont concernees, elles pesaient 291 Ko.
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3072, 3840],
+    // Depuis Next 16, toute image locale doit correspondre a un motif declare
+    // ici, et une query string est refusee sauf mention explicite. Les medias
+    // Payload en ont une : `/api/media/file/x.webp?prefix=media` quand ils sont
+    // heberges sur Vercel Blob. Les fichiers de public/ n'en ont jamais.
+    localPatterns: [
+      { pathname: "/assets/**", search: "" },
+      { pathname: "/api/media/file/**" },
+    ],
     remotePatterns: [
       {
         protocol: "http",
@@ -133,4 +149,28 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPayload(nextConfig);
+const configAvecPayload = withPayload(nextConfig);
+
+/**
+ * `withPayload` ajoute sur toutes les routes `Accept-CH`, `Critical-CH` et
+ * `Vary: Sec-CH-Prefers-Color-Scheme`, pour que l'admin connaisse le theme du
+ * navigateur des la premiere requete. `Critical-CH` a un prix : quand l'indice
+ * manque, Chrome annule la requete et la refait avec, ce qui apparait comme une
+ * redirection 307 vers la meme page et coute un aller-retour a chaque premiere
+ * visite, sur toutes les pages, mesure a 600 a 770 ms par Lighthouse. Les pages
+ * publiques sont statiques : elles ne peuvent rien faire de cet indice, et le
+ * `Vary` fragmente en plus leur cache CDN par theme. On garde ces en-tetes
+ * pour l'admin seul.
+ */
+const entetesDePayload = configAvecPayload.headers;
+
+configAvecPayload.headers = async () => {
+  const regles = entetesDePayload ? await entetesDePayload() : [];
+  return regles.map((regle) =>
+    regle.headers.some((entete) => entete.key === "Critical-CH")
+      ? { ...regle, source: "/admin/:chemin*" }
+      : regle,
+  );
+};
+
+export default configAvecPayload;
