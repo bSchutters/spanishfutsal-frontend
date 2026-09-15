@@ -1,6 +1,5 @@
 "use client";
 
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/getMatchs";
 import type { Ranking } from "@/lib/getRankings";
@@ -20,11 +19,6 @@ export default function ResultAndStanding({
   matchs: Match[];
   rankings: Ranking[];
 }) {
-
-  const { breakpoint } = useBreakpoint();
-
-
-
   const lastFinishedMatch = useMemo(() => {
     const now = new Date();
 
@@ -106,7 +100,7 @@ export default function ResultAndStanding({
               logo={lastFinishedMatch.awayTeamLogo}
               teamName={lastFinishedMatch.awayTeam}
               isClub={lastFinishedMatch.awayIsClub}
-              {...(breakpoint === "xs" && { logoFirst: true })}
+              logoFirst={{ base: true, sm: false }}
               className="w-1/3"
             />
           </div>

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 import { cn } from "@/lib/utils";
 import BoxModule from "../layout/boxModule";
@@ -33,7 +32,6 @@ function formatCountdown(ms: number) {
 }
 
 export default function NextMatch({ matchs }: { matchs: Match[] }) {
-  const { breakpoint, isMobile } = useBreakpoint();
   const [timeLeft, setTimeLeft] = useState<string>("");
   const live = useLiveStore((s) => s.live);
   const ouvrir = useLiveStore((s) => s.ouvrir);
@@ -161,18 +159,13 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
         </Link>
       </div> */}
 
-      <div
-        className={cn(
-          "flex items-center gap-6",
-          isMobile ? "w-full justify-between" : "",
-        )}
-      >
+      <div className="flex items-center gap-6 max-md:w-full max-md:justify-between">
         <Team
           logo={homeTeamLogo}
           teamName={homeTeam}
           isClub={homeIsClub}
           isNextMatch
-          {...(isMobile && { logoFirst: true })}
+          logoFirst={{ base: true, md: false }}
         />
         <p className="font-marjorie text-xl sm:text-2xl italic font-bold">vs</p>
         <Team
@@ -180,7 +173,7 @@ export default function NextMatch({ matchs }: { matchs: Match[] }) {
           teamName={awayTeam}
           isClub={awayIsClub}
           isNextMatch
-          {...((!isMobile || breakpoint === "xs") && { logoFirst: true })}
+          logoFirst={{ base: true, sm: false, md: true }}
         />
       </div>
 

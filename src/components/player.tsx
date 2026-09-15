@@ -1,6 +1,5 @@
 "use client";
 
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -39,7 +38,6 @@ export default function Player({
   poste,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const { breakpoint } = useBreakpoint();
 
   function shortenName(name: string): string {
     if (!name) return "";
@@ -187,7 +185,10 @@ export default function Player({
       </div>
       <BoxModule className="absolute bottom-3 w-11/12 md:p-2 p-1 -mb-1 md:mb-0 flex items-center justify-center rounded-lg z-10">
         <p className="uppercase">
-          {breakpoint === "xs" ? shortenName(lastname) : lastname}{" "}
+          {/* Les deux formes sont dans le HTML, le CSS choisit : decider
+              d'apres la fenetre apres l'hydratation faisait bouger la carte. */}
+          <span className="sm:hidden">{shortenName(lastname)}</span>
+          <span className="max-sm:hidden">{lastname}</span>{" "}
           <span className="font-bold">{firstname}</span>
         </p>
       </BoxModule>

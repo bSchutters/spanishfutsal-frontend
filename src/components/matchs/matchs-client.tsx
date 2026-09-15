@@ -43,7 +43,6 @@ export default function MatchsClient({
   const live = useLiveStore((s) => s.live);
   const ouvrir = useLiveStore((s) => s.ouvrir);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
-  const { breakpoint } = useBreakpoint();
   const { setSelectedSeason } = useSeasonStore();
   const isArchived = useSeasonStore((s) => s.isArchivedSeason());
 
@@ -287,8 +286,7 @@ export default function MatchsClient({
                   teamName={match.homeTeam}
                   isClub={match.homeIsClub}
                   isMatchPage
-                  {...(isMobile && { logoFirst: true })}
-                  isMobile={isMobile}
+                  logoFirst={{ base: true, md: false }}
                 />
                 <p className="text-2xl font-marjorie font-bold italic items-center justify-center flex ">
                   {status === "finished" && !isWaitingScore
@@ -301,17 +299,15 @@ export default function MatchsClient({
                   isClub={match.awayIsClub}
                   isMatchPage
                   logoFirst
-                  isMobile={isMobile}
                 />
               </div>
 
               <div
                 className={cn(
                   "w-full lg:w-1/6 flex items-center lg:justify-end justify-center",
-                  breakpoint === "xs" &&
-                    !match.replayLink &&
-                    status === "finished" &&
-                    "hidden",
+                  // Sous 640 px, un match termine sans replay n'a rien a
+                  // proposer : le bloc disparait, en CSS et non apres coup.
+                  !match.replayLink && status === "finished" && "max-sm:hidden",
                 )}
               >
                 <div
