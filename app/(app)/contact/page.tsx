@@ -1,6 +1,19 @@
-import ContactForm from "@/components/contact/contact-form";
+import dynamic from "next/dynamic";
+
 import { Separator } from "@/components/ui/separator";
 import { contactMetadata } from "./metadata";
+
+/**
+ * Charge a part : le menu precharge chaque page, et Next telecharge avec
+ * elle les modules clients qu'elle reference. Importe directement, le
+ * formulaire (react-hook-form, zod et ses traductions, sonner : 106 Ko
+ * compresses depuis zod 4) partait donc sur toutes les pages du site. Avec
+ * `dynamic`, seule la page contact le demande, au moment de l'afficher. Il
+ * reste rendu cote serveur.
+ */
+const ContactForm = dynamic(
+  () => import("@/components/contact/contact-form"),
+);
 
 // Export natif de Next, desormais possible : `MetadataHead` s'appuyait sur
 // `next/head`, une API du Pages Router sans effet ici. La page servait donc le
