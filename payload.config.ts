@@ -90,6 +90,14 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET ?? (() => { throw new Error('PAYLOAD_SECRET env var is required') })(),
   typescript: {
     outputFile: path.resolve(dirname, 'src/payload/payload-types.ts'),
+    /**
+     * Depuis le passage du paquet en ESM, Payload sait generer ses types au
+     * demarrage de `pnpm dev`. Le projet a ete ecrit sans eux : le fichier
+     * genere fait echouer la compilation en huit endroits du code existant
+     * (import LFFS, chargeurs du site, audience). On le laisse desactive tant
+     * que ces endroits n'ont pas ete relus avec les types.
+     */
+    autoGenerate: false,
   },
   db: postgresAdapter({
     /**
