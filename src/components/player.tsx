@@ -27,6 +27,8 @@ interface PlayerProps {
   poste?: "Joueur" | "Gardien" | "Staff";
   /** Les premieres cartes de la page : leur photo part tout de suite. */
   priority?: boolean;
+  /** La toute premiere : sa photo porte le LCP, elle passe devant tout. */
+  fetchPriority?: "high" | "low" | "auto";
 }
 
 export default function Player({
@@ -39,6 +41,7 @@ export default function Player({
   className,
   poste,
   priority,
+  fetchPriority,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
 
@@ -210,6 +213,7 @@ export default function Player({
           // 640 px la ou 376 px suffisent sur un ecran haute densite.
           sizes="188px"
           priority={priority}
+          fetchPriority={fetchPriority}
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
         />
       </div>

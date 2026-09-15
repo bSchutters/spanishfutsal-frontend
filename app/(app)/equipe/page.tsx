@@ -63,6 +63,7 @@ export default async function Equipe() {
                 // toutes les largeurs : chargees en differe, la premiere photo
                 // portait le LCP de la page a plus de quatre secondes.
                 priority={index < 4}
+                fetchPriority={index === 0 ? "high" : undefined}
               />
             ))}
         </div>
