@@ -141,4 +141,28 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPayload(nextConfig);
+const configAvecPayload = withPayload(nextConfig);
+
+/**
+ * `withPayload` ajoute sur toutes les routes `Accept-CH`, `Critical-CH` et
+ * `Vary: Sec-CH-Prefers-Color-Scheme`, pour que l'admin connaisse le theme du
+ * navigateur des la premiere requete. `Critical-CH` a un prix : quand l'indice
+ * manque, Chrome annule la requete et la refait avec, ce qui apparait comme une
+ * redirection 307 vers la meme page et coute un aller-retour a chaque premiere
+ * visite, sur toutes les pages, mesure a 600 a 770 ms par Lighthouse. Les pages
+ * publiques sont statiques : elles ne peuvent rien faire de cet indice, et le
+ * `Vary` fragmente en plus leur cache CDN par theme. On garde ces en-tetes
+ * pour l'admin seul.
+ */
+const entetesDePayload = configAvecPayload.headers;
+
+configAvecPayload.headers = async () => {
+  const regles = entetesDePayload ? await entetesDePayload() : [];
+  return regles.map((regle) =>
+    regle.headers.some((entete) => entete.key === "Critical-CH")
+      ? { ...regle, source: "/admin/:chemin*" }
+      : regle,
+  );
+};
+
+export default configAvecPayload;
