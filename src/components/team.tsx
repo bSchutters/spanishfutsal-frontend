@@ -124,15 +124,19 @@ export default function Team({
       </p>
       <div className="relative">
         {/*
-          Dimensions reelles plutot que 0 x 0 : le navigateur reserve la place
-          du blason avant qu'il n'arrive, au lieu de pousser la ligne a son
-          chargement. La taille affichee reste celle des classes.
+          Des dimensions plutot que 0 x 0 : le navigateur reserve la place du
+          blason avant qu'il n'arrive, au lieu de pousser la ligne a son
+          chargement. La taille affichee reste celle des classes. 96 et non
+          une des hauteurs affichees (40, 48, 64, 80 px) : en developpement,
+          Next compare la taille rendue aux attributs et avertit des qu'une
+          seule des deux coincide, ce qui arrivait pour tout blason non carre
+          affiche a 80 px de haut.
         */}
         <Image
           src={logo}
           alt=""
-          width={80}
-          height={80}
+          width={96}
+          height={96}
           className={cn(
             "w-auto",
             isNextMatch ? "md:h-16 sm:h-12 h-10" : "h-16",

@@ -31,7 +31,11 @@ export default function Apropos() {
     <div className="flex flex-col items-center ">
       <div className="lg:h-[650px] h-96 w-full relative ">
         <div className="absolute w-full h-full bg-spanish-bg/80 z-10" />
-        <div className="w-full h-full mask-b-from-100%">
+        {/* `relative` : une image `fill` se cale sur son parent direct, qui
+            doit etre positionne. Sans cela elle se calait sur le bloc du
+            dessus, de meme taille, ce qui passait inapercu mais que Next
+            signale en developpement. */}
+        <div className="relative w-full h-full mask-b-from-100%">
           <Image
             src="/assets/images/webp/comiteSpanish.webp"
             alt="Comité directeur d'UD Asturiana - Dirigeants du club de futsal"
