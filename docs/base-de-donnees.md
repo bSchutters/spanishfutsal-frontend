@@ -9,37 +9,59 @@ consequences.
 `DATABASE_URI` dans `.env.local` pointe sur la base de production. En local comme en
 ligne, c est la meme.
 
-**Ce que ca simplifie.** Payload synchronise automatiquement le schema au demarrage de
-`pnpm dev` (mode "push"). Comme le dev est branche sur la prod, toute modification de
-collection y est appliquee immediatement : il n y a rien a faire avant de deployer, et
-les donnees affichees en local sont les vraies.
+Depuis le 15 septembre 2026, le schema **ne se synchronise plus tout seul** :
+`push: false` dans `payload.config.ts`. Chaque changement de collection passe par une
+migration versionnee dans `src/migrations/`, relue avec le code et rejouee au
+deploiement. Un `pnpm dev` ne touche plus jamais au schema.
 
-**Ce que ca coute.** Un `pnpm dev` lance apres avoir touche a une collection modifie le
-schema de la base live, sans confirmation ni trace. Tant qu on **ajoute** des champs,
-l operation est additive et le code en ligne ignore ce qu il ne connait pas. En
-revanche, **renommer ou supprimer un champ est destructif** : la colonne correspondante
-part avec ses donnees. A faire en connaissance de cause, et de preference apres une
-sauvegarde.
+**Ce que ca simplifie.** Les donnees affichees en local sont les vraies, et une branche
+qui n a pas ete migree ne peut plus deformer la base de l autre.
 
-Il n y a pas non plus de filet en cas de fausse manoeuvre dans l admin : ce qui est
+**Ce que ca coute.** Apres avoir touche a une collection, il faut generer puis
+appliquer la migration soi-meme (section 3). Sans cela, les colonnes n existent pas et
+la premiere ecriture echoue.
+
+Il n y a toujours pas de filet en cas de fausse manoeuvre dans l admin : ce qui est
 supprime l est en production.
 
 ## 2. Publier en production
 
-Vercel construit en mode production, ou Payload ne synchronise plus rien : les colonnes
-doivent exister en base avant que le nouveau code arrive. Avec la configuration
-actuelle, c est deja le cas — un `pnpm dev` lance pendant le developpement s en est
-charge.
+Vercel lance `pnpm build`, soit `payload migrate && next build` : les migrations en
+attente sont appliquees avant la construction. En pratique elles le sont deja, puisque
+`pnpm migrate` a ete lance en local pendant le developpement ; la commande de build ne
+fait alors rien.
 
-La procedure se resume donc a pousser la branche. Verifier simplement, avant de merger,
-qu un `pnpm dev` a bien tourne depuis la derniere modification de collection.
+Une migration ne s applique qu une fois : la table `payload_migrations` retient celles
+qui l ont ete.
 
-Un manquement ne casse pas le deploiement : les lectures Payload tolerent une colonne
-absente, le site se construit et s affiche normalement. C est l **import LFFS** qui
-echoue ensuite, au premier passage du cron, en tentant d ecrire dans une colonne qui n
-existe pas.
+## 3. Modifier le schema
 
-## 3. Alternative : separer le developpement de la production
+1. Modifier la collection dans `src/payload/collections/`.
+2. `pnpm migrate:create nom-parlant` : Payload compare les collections au dernier
+   instantane JSON de `src/migrations/` et ecrit un fichier `.ts` avec le SQL de
+   montee et de descente, plus un nouvel instantane.
+3. Relire le SQL. Une suppression de colonne est definitive.
+4. `pnpm migrate` : applique les migrations en attente sur la base de `DATABASE_URI`.
+5. Commiter le fichier `.ts`, le `.json` et `index.ts`.
+
+`pnpm migrate:status` liste ce qui est applique et ce qui attend.
+
+Les migrations peuvent aussi porter des donnees initiales : la fonction `up` recoit
+`payload` et `req`, et peut appeler l API locale dans la meme transaction que le SQL.
+
+## 4. Comment on en est arrive la
+
+Le CLI Payload ne demarrait pas sur ce projet : son binaire chargeait
+`payload.config.ts` en `require`, et `@payloadcms/richtext-lexical` est un module ESM
+avec un `await` de premier niveau. Declarer `"type": "module"` dans `package.json` a
+suffi : le config est charge en `import`, et `payload migrate:*` repond.
+
+La migration de reference `20260915_214144_initial` decrit le schema tel qu il etait a
+ce moment. Elle n a jamais ete executee : ses tables existaient deja, elle a ete marquee
+comme appliquee dans `payload_migrations` (batch 1) et l entree `dev` du mode push a
+ete retiree. Les migrations suivantes partent de son instantane.
+
+## 5. Alternative : separer le developpement de la production
 
 Si le partage de base devient genant, tout est en place pour revenir en arriere.
 
@@ -66,38 +88,13 @@ Creer la base, puis faire pointer `DATABASE_URI` dessus :
 createdb -U postgres spanishfutsal
 ```
 
-Deux commandes accompagnent ce mode :
+`pnpm db:refresh --yes` remplit la base locale avec un instantane de la production.
+Renseigner `SOURCE_DATABASE_URI` (le **session pooler** Supabase, meme hote que le
+pooler transactionnel mais en port 5432 ; le port 6543 ne supporte pas `pg_dump`) et
+`TARGET_DATABASE_URI` (la base locale). Le script localise `pg_dump` tout seul, refuse
+de tourner si les deux URL designent la meme base, et exige `--yes`. Les migrations
+s appliquent ensuite avec `pnpm migrate`, comme sur la production.
 
-- `pnpm db:refresh --yes` remplit la base locale avec un instantane de la production.
-  Renseigner `SOURCE_DATABASE_URI` (le **session pooler** Supabase, meme hote que le
-  pooler transactionnel mais en port 5432 ; le port 6543 ne supporte pas `pg_dump`, et
-  l ancienne connexion directe `db.<ref>.supabase.co` ne resout plus) et
-  `TARGET_DATABASE_URI` (la base locale). Le script localise `pg_dump` tout seul, refuse
-  de tourner si les deux URL designent la meme base, et exige `--yes`.
-- `pnpm schema:push:prod --yes` applique le schema a la production sans y brancher le
-  developpement : un serveur ephemere est demarre sur le port 3999 en pointant sur
-  `PROD_DATABASE_URI`, une requete declenche la synchronisation, puis il est coupe.
-
-Les medias ne sont concernes par aucune des deux : ils vivent sur Vercel Blob, en dehors
-de Postgres.
-
-## 4. Reprise du schema : passer du mode push aux migrations
-
-Des migrations versionnees remplaceraient le push implicite : chaque changement de
-schema deviendrait un fichier SQL commite, relu en revue et rejoue au deploiement.
-
-**Prealable non resolu.** Le CLI Payload ne demarre pas sur ce projet. Son binaire
-appelle `tsImport('./dist/bin/index.js', url)` avec une `url` situee dans
-`node_modules/payload/` : tsx cherche donc le tsconfig depuis ce dossier et n applique
-jamais celui du projet, si bien que les alias `@/` du config ne sont pas resolus. Ni
-`TSX_TSCONFIG_PATH`, ni `--use-swc`, ni le passage aux imports relatifs n y changent
-quelque chose — la correction est a faire en amont, chez Payload. Aucune commande
-`payload migrate:*` ni `payload generate:types` n est donc utilisable.
-
-Une fois le CLI debloque, la procedure serait : sauvegarder, passer `push: false` dans
-`postgresAdapter`, generer la migration de reference avec `payload migrate:create`, la
-marquer comme deja appliquee dans la table `payload_migrations` au lieu de l executer,
-verifier avec `payload migrate:status`, puis declarer `payload migrate && next build`
-comme commande de build sur Vercel.
+Les medias ne sont pas concernes : ils vivent sur Vercel Blob, en dehors de Postgres.
 
 Source : https://payloadcms.com/docs/database/migrations

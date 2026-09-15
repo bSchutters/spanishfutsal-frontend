@@ -19,22 +19,21 @@ import { Teams } from '@/payload/collections/Teams'
 import { Sponsors } from '@/payload/collections/Sponsors'
 import { LiveAudience } from '@/payload/collections/LiveAudience'
 import { LiveReports } from '@/payload/collections/LiveReports'
+import { Comments } from '@/payload/collections/hub/Comments'
+import { Events } from '@/payload/collections/hub/Events'
+import { EventTypes } from '@/payload/collections/hub/EventTypes'
+import { Feeds } from '@/payload/collections/hub/Feeds'
+import { Formats } from '@/payload/collections/hub/Formats'
+import { Ideas } from '@/payload/collections/hub/Ideas'
+import { Networks } from '@/payload/collections/hub/Networks'
+import { NotificationLog } from '@/payload/collections/hub/NotificationLog'
+import { PostTemplates } from '@/payload/collections/hub/PostTemplates'
+import { PushSubscriptions } from '@/payload/collections/hub/PushSubscriptions'
+import { HubSettings } from '@/payload/globals/HubSettings'
 import { Settings } from '@/payload/globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
-const schemaPush = process.env.PAYLOAD_DB_PUSH !== 'false'
-
-if (!schemaPush) {
-  // Bruyant volontairement : oublier ce drapeau en place, c'est developper des
-  // collections dont les colonnes n'arriveront jamais en base, et ne s'en
-  // apercevoir qu'au premier import qui echoue.
-  console.warn(
-    '\n  PAYLOAD_DB_PUSH=false : le schema ne sera PAS synchronise avec la base.',
-    '\n  Aucune colonne ne sera creee. A retirer de .env.local des que possible.\n',
-  )
-}
 
 export default buildConfig({
   admin: {
@@ -70,8 +69,19 @@ export default buildConfig({
     Sponsors,
     LiveAudience,
     LiveReports,
+    // Le Hub, l'espace prive du club.
+    Feeds,
+    EventTypes,
+    Networks,
+    Formats,
+    Events,
+    PostTemplates,
+    Ideas,
+    Comments,
+    PushSubscriptions,
+    NotificationLog,
   ],
-  globals: [Settings],
+  globals: [Settings, HubSettings],
   i18n: {
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',
@@ -83,16 +93,13 @@ export default buildConfig({
   },
   db: postgresAdapter({
     /**
-     * Le developpement tape dans la base de production, ou Payload aligne le
-     * schema au demarrage. Travailler sur une branche dont les collections
-     * different de ce qui est en base revient alors a proposer de supprimer les
-     * colonnes de l'autre branche.
-     *
-     * `PAYLOAD_DB_PUSH=false` demarre sans y toucher. A n'utiliser que pour
-     * lire ou tester : les colonnes manquantes ne seront pas creees. Voir
+     * Le schema ne se synchronise plus tout seul : chaque changement de
+     * collection passe par une migration versionnee (pnpm migrate:create, puis
+     * pnpm migrate). Le dev et la prod partagent la meme base, un push
+     * silencieux au demarrage y appliquait n importe quelle branche. Voir
      * docs/base-de-donnees.md.
      */
-    push: schemaPush,
+    push: false,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },

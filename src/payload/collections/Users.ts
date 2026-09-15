@@ -1,6 +1,8 @@
 import type { BasePayload, CollectionConfig, Field } from 'payload'
 import { APIError } from 'payload'
 
+import { LIBELLES_NIVEAUX, MODULES, NIVEAUX } from '@/hub/modules'
+import { champAdmin, champSoiOuAdmin } from '@/hub/droits'
 import { fieldsGroupName, isAdmin, isAdminField, PERMISSION_OPTIONS } from '../access'
 import { MANAGED } from '../managed'
 
@@ -54,13 +56,24 @@ const permissionBlocks: Field[] = MANAGED.map(({ slug, label, fields }) => ({
   ],
 }))
 
+/** Sept jours : la session du Hub se prolonge a chaque visite, voir src/hub/session.ts. */
+const SEPT_JOURS_EN_SECONDES = 7 * 24 * 60 * 60
+
 export const Users: CollectionConfig = {
   slug: 'users',
   labels: { singular: 'Utilisateur', plural: 'Utilisateurs' },
-  auth: true,
+  auth: {
+    tokenExpiration: SEPT_JOURS_EN_SECONDES,
+    cookies: {
+      // En production le site est en https : le cookie de session ne doit
+      // jamais partir en clair. En local, http://localhost ne le poserait pas.
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+    },
+  },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email', 'role'],
+    defaultColumns: ['email', 'first_name', 'role'],
     hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
@@ -131,6 +144,26 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
+      type: 'row',
+      fields: [
+        {
+          name: 'first_name',
+          type: 'text',
+          label: 'Prenom',
+          admin: {
+            width: '50%',
+            description: "Affiche dans le Hub et dans les flux, a la place de l'adresse e-mail.",
+          },
+        },
+        {
+          name: 'last_name',
+          type: 'text',
+          label: 'Nom',
+          admin: { width: '50%' },
+        },
+      ],
+    },
+    {
       name: 'role',
       type: 'select',
       required: true,
@@ -164,6 +197,102 @@ export const Users: CollectionConfig = {
         update: isAdminField,
       },
       fields: permissionBlocks,
+    },
+    /**
+     * Le Hub, l'espace prive du club. Un administrateur y a tout sans rien
+     * regler ; pour les autres, l'acces, les modules et les flux se donnent
+     * ici. Les deux derniers champs sont les seuls que la personne regle
+     * elle-meme, depuis son profil dans le Hub.
+     */
+    {
+      name: 'hub',
+      type: 'group',
+      label: 'Hub',
+      admin: {
+        description:
+          "L'espace prive du club sur /hub. Un administrateur y a acces a tout, cette section ne concerne que les autres comptes.",
+        condition: (data) => data?.role !== 'admin',
+      },
+      fields: [
+        {
+          name: 'access',
+          type: 'checkbox',
+          label: 'Acces au Hub',
+          defaultValue: false,
+          access: { update: champAdmin },
+        },
+        {
+          name: 'modules',
+          type: 'array',
+          label: 'Modules',
+          labels: { singular: 'Module', plural: 'Modules' },
+          admin: {
+            description: 'Lecture : consulter, voter et commenter. Edition : creer, modifier et supprimer.',
+            condition: (data) => data?.hub?.access === true,
+          },
+          access: { update: champAdmin },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'module',
+                  type: 'select',
+                  label: 'Module',
+                  required: true,
+                  options: MODULES.map((module) => ({ label: module.nom, value: module.key })),
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'level',
+                  type: 'select',
+                  label: 'Niveau',
+                  required: true,
+                  defaultValue: 'read',
+                  options: NIVEAUX.map((niveau) => ({ label: LIBELLES_NIVEAUX[niveau], value: niveau })),
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'feeds',
+          type: 'relationship',
+          relationTo: 'feeds',
+          hasMany: true,
+          label: 'Flux autorises',
+          admin: {
+            description: 'Cette personne ne voit que les evenements rattaches a au moins un de ces flux.',
+            condition: (data) => data?.hub?.access === true,
+          },
+          access: { update: champAdmin },
+        },
+        {
+          name: 'push_enabled',
+          type: 'checkbox',
+          label: 'Notifications push',
+          defaultValue: false,
+          admin: {
+            description: 'Se regle depuis le profil dans le Hub.',
+            condition: (data) => data?.hub?.access === true,
+          },
+          access: { update: champSoiOuAdmin },
+        },
+        {
+          name: 'notified_feeds',
+          type: 'relationship',
+          relationTo: 'feeds',
+          hasMany: true,
+          label: 'Flux notifies',
+          admin: {
+            description:
+              'Parmi les flux autorises, ceux dont les rappels lui sont envoyes. Se regle depuis le profil dans le Hub.',
+            condition: (data) => data?.hub?.access === true,
+          },
+          access: { update: champSoiOuAdmin },
+        },
+      ],
     },
   ],
 }
