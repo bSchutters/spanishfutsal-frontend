@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// Zod 4 teste au chargement s'il peut compiler ses validateurs avec
+// `Function("")`. La politique de securite du site interdit eval : l'essai
+// echoue en silence, mais Chrome enregistre une violation CSP a chaque visite
+// de la page contact. Sans JIT, rien ne change pour un formulaire de cinq
+// champs, et la violation disparait.
+z.config({ jitless: true });
+
 export const formSchema = z.object({
   firstName: z
     .string()
