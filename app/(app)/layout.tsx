@@ -10,7 +10,18 @@ import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
+import { CLE_ACCORD } from "@/lib/identiteDurable";
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
+
+/**
+ * Execute avant le premier rendu, comme le script du theme : si le bandeau de
+ * mesure d'audience a deja ete ferme sur cet appareil, <html> recoit la classe
+ * `mesure-lue` et le bandeau, present dans le HTML, reste invisible jusqu'a ce
+ * que React le retire. Sans cela il clignoterait chez tout le monde a chaque
+ * page. Le stockage peut etre refuse (navigation privee stricte) : on ne fait
+ * alors rien, et le bandeau s'affiche, ce qui est le comportement honnete.
+ */
+const SCRIPT_BANDEAU = `try{if(localStorage.getItem(${JSON.stringify(CLE_ACCORD)})==="oui")document.documentElement.classList.add("mesure-lue")}catch(e){}`;
 
 /**
  * Les polices du site, servies par next/font : memes fichiers qu'avant, mais
@@ -113,6 +124,7 @@ export default function AppLayout({
           immediatement dans la police de repli.
         */}
         <SchemaMarkup />
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_BANDEAU }} />
       </head>
       <body
         className={cn(

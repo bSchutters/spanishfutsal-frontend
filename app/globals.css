@@ -9,6 +9,14 @@
    vraie police arrive. Les variables --font-nugros-nf et --font-marjorie-nf
    viennent de la. */
 
+/* Le bandeau de mesure d'audience est dans le HTML de chaque page. Chez ceux
+   qui l'ont deja ferme, le script du gabarit pose `mesure-lue` sur <html>
+   avant le premier rendu : le bandeau reste invisible jusqu'a ce que React
+   le retire. */
+.mesure-lue [data-bandeau-mesure] {
+  display: none;
+}
+
 @theme inline {
   --font-marjorie: var(--font-marjorie-nf), sans-serif;
   --font-nugros: var(--font-nugros-nf), sans-serif;

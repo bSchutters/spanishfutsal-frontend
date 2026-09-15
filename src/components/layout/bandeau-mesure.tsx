@@ -30,19 +30,25 @@ import {
  */
 export default function BandeauMesure() {
   // La reponse est dans le navigateur, donc dans une source exterieure a React.
-  // Le rendu du serveur repond « deja ferme » : rien n'apparait dans le HTML,
-  // et le bandeau ne se montre qu'une fois le vrai etat connu. L'inverse le
-  // ferait clignoter chez tous ceux qui l'ont deja ferme.
+  // Le rendu du serveur repond « pas encore ferme » : le bandeau est dans le
+  // HTML et s'affiche des le premier rendu, sans attendre le JavaScript. Chez
+  // ceux qui l'ont deja ferme, un script du gabarit, execute avant le premier
+  // rendu, pose la classe `mesure-lue` sur <html> et le bandeau reste masque
+  // (voir globals.css) jusqu'a ce que React le retire ici. Le rendu inverse
+  // (rien dans le HTML, bandeau monte apres l'hydratation) faisait de ce
+  // bandeau l'element le plus grand a apparaitre en dernier : c'etait lui qui
+  // portait le LCP de la plupart des pages, a trois ou quatre secondes.
   const accepte = useSyncExternalStore(
     souscrireALAccord,
     accordDonne,
-    () => true,
+    () => false,
   );
 
   if (accepte) return null;
 
   return (
     <div
+      data-bandeau-mesure
       role="region"
       aria-label="Mesure d'audience"
       className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-spanish-accent-2 bg-spanish-bg-dark/95 px-4 py-2.5 backdrop-blur-sm sm:px-6"
