@@ -1,40 +1,24 @@
 import "./hub.css";
 
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Geist } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import ToasterHub from "@/components/hub/toaster";
 import { cn } from "@/lib/utils";
 
 /**
  * Le gabarit racine du Hub : son propre <html>, sans le menu, le pied de
- * page ni le bandeau du direct du site public. Memes polices que le site,
- * declarees une seconde fois parce que next/font les attache au gabarit qui
- * les appelle.
+ * page ni le bandeau du direct du site public. Le Hub est un outil, pas une
+ * vitrine : une seule police de travail, servie par next/font, qui remplit la
+ * variable --font-geist-sans que le theme du site declare deja.
+ *
+ * Pas de fournisseur de theme ici : le Hub est sombre, point. La classe est
+ * posee en dur sur <html>, sans script d'initialisation.
  */
-const nugros = localFont({
-  src: [
-    { path: "../../public/assets/fonts/nugros/Nugros-Regular.woff2", weight: "400" },
-    { path: "../../public/assets/fonts/nugros/Nugros-Medium.woff2", weight: "500" },
-    { path: "../../public/assets/fonts/nugros/Nugros-SemiBold.woff2", weight: "600" },
-    { path: "../../public/assets/fonts/nugros/Nugros-Bold.woff2", weight: "700" },
-    { path: "../../public/assets/fonts/nugros/Nugros-ExtraBold.woff2", weight: "800" },
-    { path: "../../public/assets/fonts/nugros/Nugros-Black.woff2", weight: "900" },
-  ],
-  variable: "--font-nugros-nf",
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
   display: "swap",
-  preload: false,
-});
-
-const marjorie = localFont({
-  src: [
-    { path: "../../public/assets/fonts/marjorie2/MarjorieVariable-Regular.woff2", style: "normal" },
-    { path: "../../public/assets/fonts/marjorie2/MarjorieVariableItalic-Italic.woff2", style: "italic" },
-  ],
-  variable: "--font-marjorie-nf",
-  display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -50,17 +34,15 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#122642",
+  themeColor: "#0d1c2e",
 };
 
 export default function HubLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={cn("hub h-full", nugros.variable, marjorie.variable)} suppressHydrationWarning>
-      <body className="min-h-full bg-background font-nugros text-foreground antialiased">
-        <ThemeProvider attribute="class" forcedTheme="dark" enableSystem={false} disableTransitionOnChange>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+    <html lang="fr" className={cn("hub dark h-full", geist.variable)}>
+      <body className="min-h-full bg-background font-sans text-sm text-foreground antialiased">
+        {children}
+        <ToasterHub />
       </body>
     </html>
   );

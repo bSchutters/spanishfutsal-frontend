@@ -13,8 +13,8 @@ export default function FormulaireConnexion() {
   const [etat, action, enCours] = useActionState(seConnecter, ETAT_INITIAL);
 
   return (
-    <form action={action} className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6">
-      <div className="flex flex-col gap-2">
+    <form action={action} className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Adresse e-mail</Label>
         <Input
           id="email"
@@ -25,13 +25,13 @@ export default function FormulaireConnexion() {
           spellCheck={false}
           required
           defaultValue={etat.email ?? ""}
-          placeholder="prenom@exemple.be"
+          className="h-10"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">Mot de passe</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <Input id="password" name="password" type="password" autoComplete="current-password" required className="h-10" />
       </div>
 
       {etat.erreur ? (
@@ -40,7 +40,7 @@ export default function FormulaireConnexion() {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={enCours} className="w-full">
+      <Button type="submit" variant="hub" disabled={enCours} className="mt-1 h-10 w-full">
         {enCours ? "Connexion…" : "Se connecter"}
       </Button>
     </form>

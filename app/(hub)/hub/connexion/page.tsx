@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { aAccesHub } from "@/hub/droits";
 import { lireSession, nomAffiche } from "@/hub/session";
 import FormulaireConnexion from "./formulaire";
-import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 
 export const metadata: Metadata = { title: "Connexion" };
 
@@ -19,35 +19,40 @@ export default async function PageConnexion() {
   if (session && aAccesHub(session.user)) redirect("/hub");
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <Image
-            src="/assets/images/svg/logo-asturiana.svg"
-            alt=""
-            width={72}
-            height={72}
-            className="h-18 w-18"
-            priority
-          />
-          <h1 className="font-marjorie text-3xl font-black uppercase italic text-spanish-accent-2">Hub UDA</h1>
-          <p className="text-sm text-muted-foreground">L&apos;espace privé du club.</p>
-        </div>
-
-        {session ? (
-          <div className="rounded-xl border border-border bg-card p-6 text-center">
-            <p className="text-balance">
-              Bonjour {nomAffiche(session.user)}. Votre compte n&apos;a pas encore accès au Hub. Demandez à un
-              administrateur de l&apos;ouvrir.
-            </p>
-            <div className="mt-5">
-              <BoutonDeconnexion libelle="Changer de compte" />
+    <main className="flex min-h-dvh flex-col">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-[22.5rem]">
+          <div className="mb-6 flex items-center gap-3">
+            <Image
+              src="/assets/images/svg/logo-asturiana.svg"
+              alt=""
+              width={36}
+              height={36}
+              className="size-9"
+              priority
+            />
+            <div className="leading-tight">
+              <p className="text-base font-semibold">Hub UDA</p>
+              <p className="text-xs text-muted-foreground">Espace privé du club</p>
             </div>
           </div>
-        ) : (
-          <FormulaireConnexion />
-        )}
+
+          {session ? (
+            <div className="rounded-lg border border-border bg-card p-5">
+              <p className="text-sm">
+                {nomAffiche(session.user)}, ce compte n&apos;a pas accès au Hub. Demandez à un administrateur de
+                l&apos;ouvrir.
+              </p>
+              <div className="mt-4">
+                <BoutonDeconnexion libelle="Changer de compte" />
+              </div>
+            </div>
+          ) : (
+            <FormulaireConnexion />
+          )}
+        </div>
       </div>
+      <p className="pb-6 text-center text-xs text-muted-foreground">UD Asturiana</p>
     </main>
   );
 }

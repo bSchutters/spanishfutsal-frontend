@@ -21,6 +21,11 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         ghostSpanish: "text-white text-3xl font-black",
+        // Les deux boutons du Hub : sobres, sans majuscules, sur les jetons
+        // du Hub (primary y vaut le cyan du club).
+        hub: "bg-primary text-primary-foreground font-semibold hover:bg-primary/90",
+        hubSecondary:
+          "border border-border bg-secondary text-secondary-foreground hover:bg-accent",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

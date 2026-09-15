@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { EnTetePage, Vide } from "@/components/hub/mise-en-page";
 import { exigerModule } from "@/hub/session";
 
 export const metadata: Metadata = { title: "Idées" };
@@ -9,11 +10,9 @@ export default async function PageIdees() {
   await exigerModule("calendar");
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="font-marjorie text-3xl font-black uppercase italic text-spanish-accent-2">Idées</h1>
-      <p className="rounded-xl border border-dashed border-border px-6 py-10 text-center text-muted-foreground">
-        Le tableau des idées arrive avec le lot 5.
-      </p>
-    </div>
+    <>
+      <EnTetePage titre="Idées" description="Les idées de contenu, en tickets à voter et à planifier." />
+      <Vide>Le tableau des idées arrive avec le lot 5.</Vide>
+    </>
   );
 }

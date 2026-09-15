@@ -7,7 +7,7 @@ import { seDeconnecter } from "@/hub/actions/session";
 export default function BoutonDeconnexion({ libelle = "Se déconnecter" }: { libelle?: string }) {
   return (
     <form action={seDeconnecter}>
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="hubSecondary">
         <LogOut aria-hidden="true" />
         {libelle}
       </Button>
