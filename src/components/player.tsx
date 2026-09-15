@@ -25,6 +25,8 @@ interface PlayerProps {
   active: boolean;
   className?: string;
   poste?: "Joueur" | "Gardien" | "Staff";
+  /** Les premieres cartes de la page : leur photo part tout de suite. */
+  priority?: boolean;
 }
 
 export default function Player({
@@ -36,6 +38,7 @@ export default function Player({
   active,
   className,
   poste,
+  priority,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
 
@@ -196,13 +199,17 @@ export default function Player({
         <Image
           src={photo}
           alt={`${firstname} ${lastname}`}
-          height={0}
-          width={0}
+          // Le ratio des photos (635 x 1080) : le navigateur reserve la place
+          // avant qu'elles n'arrivent. En 0 x 0, les premieres cartes portaient
+          // le LCP de la page tout en etant chargees en differe.
+          width={635}
+          height={1080}
           // L'emplacement ne depend pas de la fenetre : `h-80 w-auto` le fige a
           // 320 px de haut, soit 188 px de large pour un ratio 635x1080. Les
           // pourcentages de fenetre precedents faisaient telecharger la variante
           // 640 px la ou 376 px suffisent sur un ecran haute densite.
           sizes="188px"
+          priority={priority}
           className={cn("h-80 w-auto object-cover", active ? "" : "grayscale")}
         />
       </div>
