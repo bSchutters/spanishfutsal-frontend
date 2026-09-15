@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
+import { canWrite, canDelete, isAuthenticated, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
 
 export const Sponsors: CollectionConfig = {
@@ -33,7 +33,7 @@ export const Sponsors: CollectionConfig = {
     hidden: isHidden('sponsors'),
   },
   access: {
-    read: () => true,
+    read: isAuthenticated,
     create: canWrite('sponsors'),
     update: canWrite('sponsors'),
     delete: canDelete('sponsors'),

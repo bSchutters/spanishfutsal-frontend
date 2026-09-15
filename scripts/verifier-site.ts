@@ -23,7 +23,11 @@ const BASE = `http://127.0.0.1:${PORT}`
 const DELAI_REQUETE = MODE_DEV ? 90_000 : 20_000
 const DELAI_DEMARRAGE = 120_000
 
-const PAGES = ['/', '/a-propos', '/classement', '/contact', '/equipe', '/matchs', '/sponsors']
+const PAGES = ['/', '/a-propos', '/classement', '/contact', '/equipe', '/matchs', '/sponsors', '/hub/connexion']
+
+// L'API REST de Payload ne livre plus les donnees du site a qui n'est pas
+// connecte : sans cookie, ces adresses doivent refuser, jamais repondre 200.
+const APIS_FERMEES = ['/api/matches', '/api/players', '/api/feeds', '/api/events', '/api/globals/hub-settings']
 
 const FICHIERS: Array<[string, string]> = [
   ['/robots.txt', 'text/plain'],
@@ -97,6 +101,19 @@ async function verifierFichier(chemin: string, typeAttendu: string) {
     if (reponse.status !== 200) return rate(nom, `statut ${reponse.status}`)
     if (!type.includes(typeAttendu)) return rate(nom, `content-type ${type}, attendu ${typeAttendu}`)
     if (corps.byteLength === 0) return rate(nom, 'reponse vide')
+    ok(nom)
+  } catch (erreur) {
+    rate(nom, String(erreur))
+  }
+}
+
+/** Une adresse qui doit refuser sans session : 401 ou 403, et surtout pas de donnees. */
+async function verifierRefus(chemin: string) {
+  const nom = `api ${chemin} sans session`
+  try {
+    const reponse = await demander(chemin)
+    await reponse.arrayBuffer()
+    if (reponse.status !== 401 && reponse.status !== 403) return rate(nom, `statut ${reponse.status}, attendu 401 ou 403`)
     ok(nom)
   } catch (erreur) {
     rate(nom, String(erreur))
@@ -277,6 +294,7 @@ async function main() {
 
     const reponses: Record<string, unknown> = {}
     for (const chemin of APIS) reponses[chemin] = await verifierApi(chemin)
+    for (const chemin of APIS_FERMEES) await verifierRefus(chemin)
 
     // Les routes a segment dynamique, avec un vrai identifiant de saison.
     const saison = premierId(reponses['/api/public/seasons'])

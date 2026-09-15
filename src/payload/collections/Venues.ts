@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { canWrite, canDelete, isHidden, withFieldPermissions } from '../access'
+import { canWrite, canDelete, isAuthenticated, isHidden, withFieldPermissions } from '../access'
 
 export const Venues: CollectionConfig = {
   slug: 'venues',
@@ -10,7 +10,7 @@ export const Venues: CollectionConfig = {
     hidden: isHidden('venues'),
   },
   access: {
-    read: () => true,
+    read: isAuthenticated,
     create: canWrite('venues'),
     update: canWrite('venues'),
     delete: canDelete('venues'),

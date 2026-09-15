@@ -117,9 +117,8 @@ export const canDelete =
     levelFor(user, slug) === 'full'
 
 /**
- * Retire l'entree du menu quand la personne n'a aucun droit dessus. La lecture
- * reste publique par ailleurs, c'est le site qui en depend ; ce reglage range
- * le menu, il ne remplace pas les regles d'ecriture ci-dessus.
+ * Retire l'entree du menu quand la personne n'a aucun droit dessus. Ce reglage
+ * range le menu, il ne remplace pas les regles d'ecriture ci-dessus.
  */
 export const isHidden =
   (slug: ManagedSlug) =>
@@ -155,9 +154,9 @@ export const canEditField =
  * par defaut ce qui n'est pas declare. Une case decochee veut dire "cette
  * personne ne renseigne pas ce champ", a la creation comme a la modification.
  *
- * `read` reste volontairement ouvert : le site publie deja ces donnees, masquer
- * dans l'administration ce que le premier visiteur venu lit sur la page
- * d'accueil n'apporterait rien.
+ * `read` n'est pas restreint champ par champ : une personne admise dans une
+ * section y lit tout, c'est la collection entiere qui se reserve aux comptes
+ * connectes, voir `isAuthenticated`.
  */
 export const withFieldPermissions = (slug: ManagedSlug, fields: Field[]): Field[] =>
   fields.map((field) => {
@@ -173,6 +172,18 @@ export const withFieldPermissions = (slug: ManagedSlug, fields: Field[]): Field[
 export const isAdmin: Access = ({ req: { user } }) => {
   return asAccount(user)?.role === 'admin'
 }
+
+/**
+ * Lecture reservee aux comptes connectes, quel que soit leur role.
+ *
+ * Le site public n'appelle jamais l'API REST de Payload : ses pages lisent par
+ * l'API locale, qui ignore ces regles, et son navigateur par les routes
+ * /api/public, qui ne renvoient que ce que le site affiche. Sans ce verrou,
+ * /api/players livrait a tout le monde les dates de naissance des joueurs, et
+ * /api/matches les statistiques et les liens des directs. Les medias restent
+ * publics : ce sont les images du site.
+ */
+export const isAuthenticated: Access = ({ req: { user } }) => Boolean(user)
 
 export const isAdminField: FieldAccess = ({ req: { user } }) => {
   return asAccount(user)?.role === 'admin'
