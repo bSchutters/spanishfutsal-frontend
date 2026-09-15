@@ -87,7 +87,17 @@ export default function AppLayout({
         >
           <Nav />
           <LiveSpacer />
-          <main>{children}</main>
+          {/*
+            `flow-root` : chaque page pose sa marge haute (`my-30`) sur son
+            premier bloc pour passer sous la barre fixe. Sans contexte de
+            formatage sur `main`, cette marge fusionne a travers `main` et
+            `body`, et c'est `body` qui descend de 120 px. Chrome dessine une
+            premiere fois avant d'avoir lu `main` (body en haut), puis le
+            deplace : 0,146 de CLS sur chaque page, mesure en production, sans
+            qu'aucun element visible ne bouge. Avec `flow-root`, la marge reste
+            dans `main` et `body` ne bouge plus. Rien ne change a l'ecran.
+          */}
+          <main className="flow-root">{children}</main>
           <Toaster />
           <Footer />
           <LiveDialog />
