@@ -134,15 +134,37 @@ la touche refermerait la surimpression entiere.
 
 ## Eprouver le direct sans rencontre
 
-Un direct ne se presente pas sur commande. En developpement seulement, un lien
-impose n'importe quelle salle en cours au site entier, bandeau et compteur
-compris :
+Un direct ne se presente pas sur commande. En developpement seulement, des liens
+jouent une diffusion sur le site entier, bandeau, lecteur, plein ecran, compteur,
+traces d'audience et rapport compris :
 
-    /api/salle-essai?lien=<adresse de la salle>
-    /api/salle-essai?lien=                        pour l'enlever
+    /api/salle-essai?flux=1                       le flux public d'essai
+    /api/salle-essai?lien=<adresse de la salle>   une salle XbotGo en cours
+    /api/salle-essai?fin=1                        fin de l'essai : le rapport
+                                                  est ecrit, le cookie retire
+    /api/salle-essai?lien=                        retirer le cookie sans rapport
 
-Il pose un cookie que la route lit, et il repond 404 en production : ce detour ne
-peut rien y faire, quoi qu'on mette dans le cookie.
+Le flux public (une video de dix minutes chez Mux, `FLUX_ESSAI` dans `.env.local`
+pour en mettre un autre) suffit a tout ce qui ne depend pas du bord du direct.
+Une salle allumee, celle d'un autre club fait l'affaire, est le vrai chemin :
+meme API, memes adresses signees, memes caprices du lecteur. C'est elle qu'il
+faut prendre pour eprouver la fenetre glissante et la reprise apres une pause.
+
+Un essai se deroule comme un soir de match : ouvrir le premier lien, regarder
+le bandeau apparaitre, ouvrir le lecteur dans deux ou trois onglets ou
+appareils pour voir le compteur bouger, fermer un onglet pour voir la place se
+liberer, puis ouvrir le lien de fin. Il mene droit sur la fiche ecrite dans
+Rapports de diffusion.
+
+Les traces et le rapport vont a un **match d'essai**, un document Matchs coche
+« essai » que le site cree au premier essai, date de l'instant a chacun, et
+n'affiche jamais : ni page, ni API publique. Ses traces d'audience se relisent
+dans l'administration et s'effacent quand on veut. Le rapport d'un essai reste
+dans l'administration, rien ne part vers le webhook : celui-ci s'eprouve a part,
+voir plus bas.
+
+Tout passe par un cookie que les routes lisent, et elles repondent 404 en
+production : ce detour ne peut rien y faire, quoi qu'on mette dans le cookie.
 
 ## Le replay
 

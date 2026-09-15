@@ -29,7 +29,8 @@ async function getMatchesBySeason(seasonId: number) {
     where: { season: { equals: seasonId } },
   })
 
-  return result.docs.map((m) => {
+  // Le match d'essai du direct reste hors des API publiques (voir getMatchs).
+  return result.docs.filter((m) => !m.essai).map((m) => {
     const home = resolveTeam(teams, m.home_team)
     const away = resolveTeam(teams, m.away_team)
 

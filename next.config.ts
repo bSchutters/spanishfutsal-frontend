@@ -16,6 +16,14 @@ import { withPayload } from "@payloadcms/next/withPayload";
 // La production, elle, ne compile aucun `eval`.
 const EN_DEV = process.env.NODE_ENV !== "production";
 
+// Le flux public qui tient lieu de diffusion pendant un essai du direct
+// (`/api/salle-essai?flux=1`). La meme valeur par defaut que src/lib/fluxDEssai.ts,
+// recopiee ici : ce fichier se charge avant tout le reste et n'importe rien du
+// site. En developpement seulement, comme l'essai lui-meme.
+const ORIGINE_FLUX_ESSAI = new URL(
+  process.env.FLUX_ESSAI || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+).origin;
+
 const CSP_PUBLIC = [
   "default-src 'self'",
   // youtube.com sert le script de l'API IFrame, qui permet de masquer les
@@ -38,8 +46,8 @@ const CSP_PUBLIC = [
   // basculement de leur cote refuserait le flux sans aucun message. Le
   // caractere generique ne couvre qu'un niveau, les sous-domaines de
   // sous-domaines resteraient refuses.
-  "connect-src 'self' https://*.xbotgo.net",
-  "media-src 'self' blob: https://*.xbotgo.net",
+  `connect-src 'self' https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
+  `media-src 'self' blob: https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
   // hls.js decode les segments dans un worker pour laisser le fil principal
   // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,
   // et le decodage retombe sur le fil principal : tenable sur un ordinateur,

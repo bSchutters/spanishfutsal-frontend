@@ -1,8 +1,9 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { AFFICHE_ESSAI, essaiDuDirect, matchDEssai } from '@/lib/essaiDuDirect'
+import { fluxDEssai } from '@/lib/fluxDEssai'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
-import { extraireSalle, getXbotgoLive, salleDepuisTexte, type SalleXbotgo } from '@/lib/getXbotgoLive'
+import { extraireSalle, getXbotgoLive } from '@/lib/getXbotgoLive'
 import { coupDEnvoi as kickoff, dansLaFenetre } from '@/lib/fenetreDuMatch'
 import { compterLesSpectateurs } from '@/lib/audience'
 import { cloturerLaDiffusion } from '@/lib/rapportDeDiffusion'
@@ -57,23 +58,6 @@ const APPROCHE_MS = 6 * 60 * 60 * 1000
 const CLOTURE_APRES_MS = 45 * 60 * 1000
 
 export const dynamic = 'force-dynamic'
-
-/**
- * Une salle imposee par le cookie `salle-essai`, en developpement seulement.
- *
- * Eprouver le direct demande un direct, et il ne s'en presente pas sur commande.
- * Ce detour joue n'importe quelle salle en cours sur le site lui-meme, bandeau
- * et lecteur compris, sans attendre une rencontre et sans ecrire dans les
- * parametres, qui sont partages avec la production.
- *
- * Le garde sur l'environnement est ce qui compte : en production, ce cookie ne
- * peut rien, quoi qu'on y mette.
- */
-async function salleDEssai(): Promise<SalleXbotgo | null> {
-  if (process.env.NODE_ENV === 'production') return null
-
-  return salleDepuisTexte((await cookies()).get('salle-essai')?.value ?? '')
-}
 
 /** Dans combien de secondes le navigateur a interet a redemander. */
 function rappel(coupsDEnvoi: number[], now: number, enCours: boolean): number {
@@ -171,9 +155,18 @@ export async function GET() {
       .map((match) => kickoff(match.date, match.time))
       .filter((t) => !Number.isNaN(t))
 
-    const essai = await salleDEssai()
+    // L'essai du direct (voir essaiDuDirect.ts) : une salle imposee ou le flux
+    // public, en developpement seulement. En production, il n'y a jamais rien.
+    const essai = await essaiDuDirect()
 
     let current = matchs.find((match) => dansLaFenetre(match, now))
+
+    // Pendant un essai, c'est le match d'essai qui joue : ses traces et son
+    // rapport ne se melangent pas a ceux d'une vraie rencontre. S'il manque,
+    // la rencontre la plus proche prend le relais, comme avant.
+    if (essai) {
+      current = (await matchDEssai()) ?? current
+    }
 
     // Hors fenetre, une salle d'essai designe la rencontre la plus proche, pour
     // que l'affiche et le compteur aient de quoi s'accrocher.
@@ -214,17 +207,31 @@ export async function GET() {
     //
     // Le champ Lien Live du match l emporte sur la salle des parametres, pour
     // la rencontre exceptionnelle diffusee ailleurs.
-    const salleXbotgo = essai ?? (current.liveLink ? extraireSalle(current.liveLink) : salleDuClub)
+    const salleXbotgo =
+      essai?.type === 'salle'
+        ? essai.salle
+        : current.liveLink
+          ? extraireSalle(current.liveLink)
+          : salleDuClub
 
-    if (salleXbotgo) {
-      const diffusion = await getXbotgoLive(salleXbotgo)
+    if (salleXbotgo || essai?.type === 'flux') {
+      // Le flux public d'essai tient lieu de salle : meme reponse, meme lecteur.
+      const diffusion =
+        essai?.type === 'flux'
+          ? { hlsUrl: fluxDEssai(), title: AFFICHE_ESSAI, viewers: null }
+          : salleXbotgo
+            ? await getXbotgoLive(salleXbotgo)
+            : null
 
       if (!diffusion) {
         // Salle eteinte alors que la rencontre est bien avancee : c'est une fin
         // de diffusion, pas un essai avant le coup d envoi. Le rapport
         // d audience est ecrit ici, une seule fois, et le rattrapage du matin
         // sert de filet si personne n a constate cette fin.
-        if (now > coupDEnvoi + CLOTURE_APRES_MS) {
+        //
+        // Jamais pendant un essai : sa fin est explicite (`/api/salle-essai?fin=1`)
+        // et son rapport ne doit pas partir vers le webhook.
+        if (!essai && now > coupDEnvoi + CLOTURE_APRES_MS) {
           await cloturerLaDiffusion(current.id, `${current.homeTeam} - ${current.awayTeam}`)
         }
 

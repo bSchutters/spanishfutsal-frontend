@@ -1,9 +1,8 @@
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { enregistrerBattement, enregistrerDepart } from '@/lib/audience'
+import { essaiDuDirect, matchDEssaiActif } from '@/lib/essaiDuDirect'
 import { dansLaFenetre } from '@/lib/fenetreDuMatch'
-import { salleDepuisTexte } from '@/lib/getXbotgoLive'
 import { getMatchs } from '@/lib/getMatchs'
 import { getPayloadClient } from '@/lib/payload'
 
@@ -65,7 +64,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Requete invalide' }, { status: 400 })
     }
 
-    const match = (await getMatchs()).find((m) => m.id === matchId)
+    // Le match d'essai n'est pas dans la liste publique : pendant un essai, et
+    // seulement alors, il est accepte par ici.
+    const match =
+      (await getMatchs()).find((m) => m.id === matchId) ??
+      ((await matchDEssaiActif())?.id === matchId ? await matchDEssaiActif() : undefined)
     if (!match) {
       return NextResponse.json({ error: 'Rencontre inconnue' }, { status: 404 })
     }
@@ -93,16 +96,10 @@ export async function POST(request: NextRequest) {
  * des parametres a chaque battement de chaque spectateur.
  */
 async function horsFenetreAutorise(): Promise<boolean> {
-  // La meme salle d'essai que la route du direct, en developpement seulement :
-  // sans elle, le compteur resterait a zero pendant qu'on eprouve le lecteur.
-  if (process.env.NODE_ENV !== 'production') {
-    // Le cookie porte `identifiant:REGION` depuis que la region voyage avec la
-    // salle : le lire comme un simple nombre le rendait invalide, et le
-    // compteur restait a zero pendant les essais.
-    if (salleDepuisTexte((await cookies()).get('salle-essai')?.value ?? '')) {
-      return true
-    }
-  }
+  // Le meme essai du direct que la route du direct, salle ou flux public, en
+  // developpement seulement : sans lui, le compteur resterait a zero pendant
+  // qu'on eprouve le lecteur.
+  if (await essaiDuDirect()) return true
 
   return verificationForcee()
 }

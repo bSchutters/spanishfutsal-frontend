@@ -144,7 +144,13 @@ async function pousser(
 export async function cloturerLaDiffusion(
   matchId: number,
   affiche: string,
+  // `webhook: false` : la fiche est ecrite mais rien ne part. C'est le cas de
+  // l'essai du direct, dont le rapport n'a rien a faire sur Discord ; le
+  // webhook s'eprouve a part, par `/api/live-report-test`.
+  options: { webhook?: boolean } = {},
 ): Promise<void> {
+  const sansWebhook = options.webhook === false;
+
   try {
     const payload = await getPayloadClient();
 
@@ -161,12 +167,13 @@ export async function cloturerLaDiffusion(
     if (existant?.envoye) return;
 
     const parametres = await payload.findGlobal({ slug: "settings" });
-    const webhook = parametres?.report_webhook;
+    const webhook = sansWebhook ? null : parametres?.report_webhook;
 
     // Une fiche existe deja et il n'y a nulle part ou l'envoyer : il n'y a plus
     // rien a faire. Sans cette sortie, chaque interrogation de la route
     // recalculerait le meme rapport jusqu'a la fermeture de la fenetre.
-    if (existant && !webhook) return;
+    // L'essai fait exception : sa fiche est recalculee a chaque fin d'essai.
+    if (existant && !webhook && !sansWebhook) return;
 
     const rapport = await calculerLeRapport(matchId);
     if (!rapport) return;
