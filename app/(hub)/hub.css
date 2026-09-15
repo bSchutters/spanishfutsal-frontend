@@ -1,0 +1,41 @@
+/*
+ * Le theme du Hub : les variables shadcn reglees en navy, cyan et or, dans le
+ * seul perimetre du Hub. Le site public garde sa palette claire par defaut,
+ * d'ou la classe sur <html> plutot qu'un bloc .dark global, qui s'appliquerait
+ * a tout visiteur dont le systeme est en mode sombre.
+ */
+html.hub {
+  color-scheme: dark;
+
+  --background: var(--spanish-bg-dark);
+  --foreground: #e8f0f8;
+  --card: var(--spanish-bg);
+  --card-foreground: #e8f0f8;
+  --popover: var(--spanish-bg);
+  --popover-foreground: #e8f0f8;
+  --primary: var(--spanish-accent-2);
+  --primary-foreground: var(--spanish-bg-dark);
+  --secondary: var(--spanish-bg-light);
+  --secondary-foreground: #e8f0f8;
+  --muted: var(--spanish-bg-light);
+  --muted-foreground: #a9bdd3;
+  --accent: var(--spanish-bg-lighter);
+  --accent-foreground: #ffffff;
+  --destructive: #ff6b6b;
+  --border: rgb(255 255 255 / 0.12);
+  --input: rgb(255 255 255 / 0.16);
+  --ring: var(--spanish-accent);
+  --sidebar: var(--spanish-bg-dark-minus);
+  --sidebar-foreground: #e8f0f8;
+  --sidebar-primary: var(--spanish-accent-2);
+  --sidebar-primary-foreground: var(--spanish-bg-dark);
+  --sidebar-accent: var(--spanish-bg);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.12);
+  --sidebar-ring: var(--spanish-accent);
+}
+
+/* La barre basse du mobile passe sous l'encoche des iPhone recents. */
+html.hub .zone-sure-basse {
+  padding-bottom: env(safe-area-inset-bottom);
+}

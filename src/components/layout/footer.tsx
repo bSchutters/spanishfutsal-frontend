@@ -104,6 +104,14 @@ export default async function Footer() {
           >
             Youtube
           </Link>
+          {/* L'entree de l'espace prive du club, discrete : elle ne concerne
+              que les membres, qui savent qu'elle est la. */}
+          <Link
+            href="/hub/connexion"
+            className="text-white/40 hover:text-spanish-accent-dark transition-colors"
+          >
+            Connexion
+          </Link>
         </div>
       </div>
     </footer>
