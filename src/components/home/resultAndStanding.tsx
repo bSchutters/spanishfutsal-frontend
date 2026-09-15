@@ -66,7 +66,10 @@ export default function ResultAndStanding({
       <div className=" lg:w-4/5 w-full flex flex-col lg:gap-6 gap-4">
         <div className="flex justify-between items-center w-full">
           <p className="font-marjorie italic font-bold">Dernier résultat</p>
-          <Button>
+          {/* `asChild` : le lien devient le bouton lui-meme. Un lien dans un
+              bouton, c'est deux cibles imbriquees, et la vraie cible cliquable
+              (le lien) ne faisait que 16 px de haut. */}
+          <Button asChild>
             <Link href="/matchs">voir tous les résultats</Link>
           </Button>
         </div>
@@ -122,12 +125,14 @@ export default function ResultAndStanding({
       <div className=" lg:w-1/2 w-full flex flex-col lg:gap-6 gap-4">
         <div className="flex justify-between items-center w-full">
           <p className="font-marjorie italic font-bold">Classement</p>
-          <Button>
+          <Button asChild>
             <Link href="/classement">voir le classement complet</Link>
           </Button>
         </div>
         <BoxModule className="flex flex-col h-full">
-          <div className="flex justify-between items-center w-full font-bold uppercase text-spanish-bg-lighter-plus">
+          {/* Meme gris que l'en-tete de la page classement : l'ancien bleu
+              (#364a68 sur #122642) faisait un contraste de 1,7 pour 4,5 exige. */}
+          <div className="flex justify-between items-center w-full font-bold uppercase text-white/70">
             <div className="flex gap-4 p-2">
               <p>#</p>
               <p>équipes</p>
