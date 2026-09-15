@@ -91,34 +91,49 @@ export default function Navigation({
                 </p>
               ) : null}
               <ul className="flex flex-col gap-0.5">
-                {section.entrees.map((entree) => {
-                  const Icone = ICONES[entree.icone];
-                  const estActive = entree.route === active;
-                  const enfant = estEnfant(entree, section.entrees);
-                  return (
-                    <li key={entree.route} className={cn(enfant && "relative pl-6")}>
-                      {enfant ? (
-                        <span
-                          className="absolute inset-y-0 left-[15px] w-px bg-sidebar-border"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <Link
-                        href={entree.route}
-                        aria-current={estActive ? "page" : undefined}
-                        className={cn(
-                          "flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
-                          estActive
-                            ? "bg-sidebar-accent font-medium text-sidebar-primary"
-                            : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                        )}
-                      >
-                        <Icone className="size-4 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{entree.nom}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
+                {section.entrees
+                  .filter((entree) => !estEnfant(entree, section.entrees))
+                  .map((parent) => {
+                    const Icone = ICONES[parent.icone];
+                    const enfants = section.entrees.filter((entree) => entree.route.startsWith(`${parent.route}/`));
+                    return (
+                      <li key={parent.route}>
+                        <Link
+                          href={parent.route}
+                          aria-current={parent.route === active ? "page" : undefined}
+                          className={cn(
+                            "flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
+                            parent.route === active
+                              ? "bg-sidebar-accent font-medium text-sidebar-primary"
+                              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                          )}
+                        >
+                          <Icone className="size-4 shrink-0" aria-hidden="true" />
+                          <span className="truncate">{parent.nom}</span>
+                        </Link>
+                        {enfants.length > 0 ? (
+                          <ul className="mb-1 ml-4 flex flex-col border-l border-sidebar-border pl-3">
+                            {enfants.map((enfant) => (
+                              <li key={enfant.route}>
+                                <Link
+                                  href={enfant.route}
+                                  aria-current={enfant.route === active ? "page" : undefined}
+                                  className={cn(
+                                    "flex h-8 items-center rounded-md px-2 text-[13px] transition-colors",
+                                    enfant.route === active
+                                      ? "font-medium text-sidebar-primary"
+                                      : "text-sidebar-foreground/65 hover:text-sidebar-foreground",
+                                  )}
+                                >
+                                  <span className="truncate">{enfant.nom}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </li>
+                    );
+                  })}
               </ul>
             </div>
           ))}
