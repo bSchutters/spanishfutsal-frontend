@@ -30,8 +30,23 @@ const ICONES: Record<IconeNavigation, typeof House> = {
   user: UserRound,
 };
 
-function estActive(pathname: string, route: string) {
+function couvre(pathname: string, route: string) {
   return route === "/hub" ? pathname === route : pathname === route || pathname.startsWith(`${route}/`);
+}
+
+/**
+ * L'entree active est la plus precise qui couvre la page : sur la vue
+ * « A faire », seule « A faire » s'allume, pas « Calendrier » au-dessus.
+ */
+function routeActive(pathname: string, entrees: EntreeNavigation[]): string | undefined {
+  return entrees
+    .filter((entree) => couvre(pathname, entree.route))
+    .sort((a, b) => b.route.length - a.route.length)[0]?.route;
+}
+
+/** Une entree est enfant d'une autre de sa section quand sa route la prolonge. */
+function estEnfant(entree: EntreeNavigation, section: EntreeNavigation[]) {
+  return section.some((autre) => autre !== entree && entree.route.startsWith(`${autre.route}/`));
 }
 
 /**
@@ -51,10 +66,10 @@ export default function Navigation({
 }) {
   const pathname = usePathname();
   const toutes = sections.flatMap((section) => section.entrees);
-  // L'entree la plus precise qui couvre la page courante donne son titre a l'en-tete mobile.
-  const courante = [...toutes]
-    .filter((entree) => estActive(pathname, entree.route))
-    .sort((a, b) => b.route.length - a.route.length)[0];
+  const active = routeActive(pathname, toutes);
+  // La meme entree donne son titre a l'en-tete mobile.
+  const courante = toutes.find((entree) => entree.route === active);
+  const ongletActif = routeActive(pathname, onglets);
 
   return (
     <>
@@ -78,15 +93,22 @@ export default function Navigation({
               <ul className="flex flex-col gap-0.5">
                 {section.entrees.map((entree) => {
                   const Icone = ICONES[entree.icone];
-                  const active = estActive(pathname, entree.route);
+                  const estActive = entree.route === active;
+                  const enfant = estEnfant(entree, section.entrees);
                   return (
-                    <li key={entree.route}>
+                    <li key={entree.route} className={cn(enfant && "relative pl-6")}>
+                      {enfant ? (
+                        <span
+                          className="absolute inset-y-0 left-[15px] w-px bg-sidebar-border"
+                          aria-hidden="true"
+                        />
+                      ) : null}
                       <Link
                         href={entree.route}
-                        aria-current={active ? "page" : undefined}
+                        aria-current={estActive ? "page" : undefined}
                         className={cn(
                           "flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
-                          active
+                          estActive
                             ? "bg-sidebar-accent font-medium text-sidebar-primary"
                             : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                         )}
@@ -126,15 +148,15 @@ export default function Navigation({
         <ul className="grid" style={{ gridTemplateColumns: `repeat(${onglets.length}, minmax(0, 1fr))` }}>
           {onglets.map((entree) => {
             const Icone = ICONES[entree.icone];
-            const active = estActive(pathname, entree.route);
+            const estActive = entree.route === ongletActif;
             return (
               <li key={entree.route} className="min-w-0">
                 <Link
                   href={entree.route}
-                  aria-current={active ? "page" : undefined}
+                  aria-current={estActive ? "page" : undefined}
                   className={cn(
                     "flex h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium transition-colors",
-                    active ? "text-sidebar-primary" : "text-sidebar-foreground/65",
+                    estActive ? "text-sidebar-primary" : "text-sidebar-foreground/65",
                   )}
                 >
                   <Icone className="size-5" aria-hidden="true" />
