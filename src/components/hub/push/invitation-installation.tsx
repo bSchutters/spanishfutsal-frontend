@@ -50,7 +50,7 @@ export default function InvitationInstallation() {
     return arreter;
   }, []);
 
-  const visible = etat.pret && !etat.installe && (etat.ios || etat.installable);
+  const visible = etat.pret && !etat.installe && etat.mobile && (etat.ios || etat.installable);
   if (range || !visible) return null;
   return (
     <div className="overflow-hidden rounded-lg border border-border">

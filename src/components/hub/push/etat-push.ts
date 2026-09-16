@@ -15,6 +15,8 @@ export type EtatPush = {
   installe: boolean;
   /** iPhone ou iPad : le push n'existe qu'une fois installe. */
   ios: boolean;
+  /** Un telephone ou une tablette : le seul cas ou proposer l'installation a un sens. */
+  mobile: boolean;
   /** Un navigateur propose l'installation native. */
   installable: boolean;
 };
@@ -27,6 +29,7 @@ const INCONNU: EtatPush = {
   endpoint: null,
   installe: false,
   ios: false,
+  mobile: false,
   installable: false,
 };
 
@@ -57,6 +60,10 @@ export function abonnerEtatPush(callback: () => void): () => void {
 function estIos(): boolean {
   const ua = navigator.userAgent;
   return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function estMobile(): boolean {
+  return estIos() || /Android|Mobile|Tablet/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
 }
 
 function estInstalle(): boolean {
@@ -90,6 +97,7 @@ export async function rafraichirEtatPush(): Promise<void> {
     endpoint,
     installe: estInstalle(),
     ios: estIos(),
+    mobile: estMobile(),
     installable: invite !== null,
   };
   notifier();

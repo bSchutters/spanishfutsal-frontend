@@ -13,7 +13,8 @@ import { proposerInstallation, type EtatPush } from "./etat-push";
  */
 export default function EncartInstallation({ etat, onFermer }: { etat: EtatPush; onFermer?: () => void }) {
   const [enCours, lancer] = useTransition();
-  if (!etat.pret || etat.installe) return null;
+  // Sur un ordinateur, l'installation n'a pas d'interet : rien a proposer.
+  if (!etat.pret || etat.installe || !etat.mobile) return null;
   if (!etat.ios && !etat.installable) return null;
 
   return (
