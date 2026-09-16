@@ -15,7 +15,7 @@ export default async function PageEffectif() {
 
   return (
     <>
-      <EnTetePage titre="Effectif" description="Gardiens, joueurs et staff, avec leurs fiches et leurs numéros de feuille de match." />
+      <EnTetePage titre="Effectif" description="Gardiens, joueurs et staff, leurs fiches et leurs numéros." />
       <Effectif joueurs={joueurs} peutEditer={peutEditer(user, "players")} />
     </>
   );

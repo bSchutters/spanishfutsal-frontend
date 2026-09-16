@@ -103,6 +103,9 @@ function Groupe({
 export default function Effectif({ joueurs: initiaux, peutEditer }: { joueurs: JoueurFiche[]; peutEditer: boolean }) {
   const [joueurs, setJoueurs] = useState(initiaux);
   const [formulaire, setFormulaire] = useState<EtatFormulaireJoueur | null>(null);
+  // Le panneau garde sa derniere fiche le temps de se refermer ; le compteur
+  // fait repartir le formulaire des valeurs a jour a chaque ouverture.
+  const [ouverture, setOuverture] = useState({ ouvert: false, cle: 0 });
 
   // Les inactifs en fin de chaque categorie.
   const parCategorie = useMemo(() => {
@@ -116,13 +119,18 @@ export default function Effectif({ joueurs: initiaux, peutEditer }: { joueurs: J
 
   const enregistre = (fiche: JoueurFiche) => {
     setJoueurs((liste) => trierJoueurs(liste.some((j) => j.id === fiche.id) ? liste.map((j) => (j.id === fiche.id ? fiche : j)) : [...liste, fiche]));
-    setFormulaire(null);
+    setOuverture((o) => ({ ...o, ouvert: false }));
+  };
+
+  const ouvrirPanneau = (etat: EtatFormulaireJoueur) => {
+    setFormulaire(etat);
+    setOuverture((o) => ({ ouvert: true, cle: o.cle + 1 }));
   };
 
   // Les doublons se jugent sur les seules personnes de l'effectif actuel.
   const doublons = useMemo(() => numerosEnDoublon(joueurs.filter((j) => j.actif)), [joueurs]);
 
-  const ouvrir = (joueur: JoueurFiche) => setFormulaire({ mode: "modifier", joueur });
+  const ouvrir = (joueur: JoueurFiche) => ouvrirPanneau({ mode: "modifier", joueur });
   const commun = { doublons, peutEditer, onOuvrir: ouvrir };
 
   return (
@@ -135,7 +143,7 @@ export default function Effectif({ joueurs: initiaux, peutEditer }: { joueurs: J
               ? ` En rouge, un numéro porté par plusieurs personnes : ${[...doublons].sort((a, b) => a - b).join(", ")}.`
               : ""}
           </p>
-          <Button type="button" variant="hub" size="sm" onClick={() => setFormulaire({ mode: "creer" })}>
+          <Button type="button" variant="hub" size="sm" onClick={() => ouvrirPanneau({ mode: "creer" })}>
             <Plus aria-hidden="true" />
             Ajouter
           </Button>
@@ -146,7 +154,13 @@ export default function Effectif({ joueurs: initiaux, peutEditer }: { joueurs: J
       <Groupe titre="Joueurs" liste={parCategorie.champ} avecNumeros {...commun} />
       <Groupe titre="Staff" liste={parCategorie.staff} avecNumeros={false} {...commun} />
 
-      <FormulaireJoueur etat={formulaire} onFermer={() => setFormulaire(null)} onEnregistre={enregistre} />
+      <FormulaireJoueur
+        etat={formulaire}
+        ouvert={ouverture.ouvert}
+        cle={ouverture.cle}
+        onFermer={() => setOuverture((o) => ({ ...o, ouvert: false }))}
+        onEnregistre={enregistre}
+      />
     </>
   );
 }

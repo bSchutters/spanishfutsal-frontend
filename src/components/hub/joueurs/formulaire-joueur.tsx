@@ -205,18 +205,21 @@ function saisieDe(j: JoueurFiche): SaisieJoueur {
  */
 export default function FormulaireJoueur({
   etat,
+  ouvert,
+  cle,
   onFermer,
   onEnregistre,
 }: {
+  /** La derniere fiche ouverte. Elle reste montee pendant la fermeture, sans quoi le panneau s'anime sur du vide et reste a l'ecran. */
   etat: EtatFormulaireJoueur | null;
+  ouvert: boolean;
+  /** Change a chaque ouverture : le formulaire repart des valeurs de la fiche. */
+  cle: number;
   onFermer: () => void;
   onEnregistre: (joueur: JoueurFiche) => void;
 }) {
   return (
-    <Sheet
-      open={etat !== null}
-      onOpenChange={(ouvert) => !ouvert && onFermer()}
-    >
+    <Sheet open={ouvert} onOpenChange={(o) => !o && onFermer()}>
       <SheetContent
         side="right"
         className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
@@ -235,7 +238,7 @@ export default function FormulaireJoueur({
         </SheetHeader>
         {etat ? (
           <Fiche
-            key={etat.mode === "modifier" ? etat.joueur.id : "creer"}
+            key={cle}
             etat={etat}
             onFermer={onFermer}
             onEnregistre={onEnregistre}
