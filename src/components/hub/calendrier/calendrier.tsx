@@ -79,7 +79,8 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
   // Sur un telephone, la liste d'abord, et le calendrier prend la hauteur de
   // son contenu : c'est la page qui defile. Sur grand ecran, il remplit
   // l'espace restant et defile lui-meme.
-  const vueInitiale = mobile ? "listWeek" : "dayGridMonth";
+  // La vue mois partout : Bryan la prefere aussi sur telephone.
+  const vueInitiale = "dayGridMonth";
 
   const charger = useCallback(async () => {
     if (!plage.current) return;

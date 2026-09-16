@@ -749,7 +749,7 @@ export default function FormulaireEvenement({
 
             </div>
 
-            <div className="zone-sure-basse flex shrink-0 justify-end gap-2 border-t border-border bg-background px-5 py-3">
+            <div className="flex shrink-0 justify-end gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
               <Button type="button" variant="hubSecondary" onClick={onFermer} disabled={enCours}>
                 Annuler
               </Button>

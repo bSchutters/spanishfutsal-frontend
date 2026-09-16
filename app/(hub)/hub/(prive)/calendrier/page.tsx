@@ -9,7 +9,7 @@ import { exigerModule } from "@/hub/session";
 
 export const metadata: Metadata = { title: "Calendrier" };
 
-/** Un telephone ou une tablette en main : la liste d'abord, decide ici, avant tout rendu. */
+/** Un telephone ou une tablette en main, decide ici, avant tout rendu : hauteur automatique, en-tete non collant, titres courts. */
 function estMobile(userAgent: string): boolean {
   return /iPhone|iPad|iPod|Android|Mobile/i.test(userAgent);
 }
