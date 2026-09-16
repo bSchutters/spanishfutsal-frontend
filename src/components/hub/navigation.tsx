@@ -67,9 +67,10 @@ export default function Navigation({
   const pathname = usePathname();
   const toutes = sections.flatMap((section) => section.entrees);
   const active = routeActive(pathname, toutes);
-  // La meme entree donne son titre a l'en-tete mobile.
-  const courante = toutes.find((entree) => entree.route === active);
   const ongletActif = routeActive(pathname, onglets);
+  // L'en-tete mobile nomme la page d'apres l'entree active, qu'elle vienne
+  // des sections ou des seuls onglets, comme le profil.
+  const courante = toutes.find((entree) => entree.route === active) ?? onglets.find((entree) => entree.route === ongletActif);
 
   return (
     <>

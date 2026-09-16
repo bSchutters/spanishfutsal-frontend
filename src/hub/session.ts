@@ -67,6 +67,19 @@ export async function exigerModule(module: ModuleKey, niveau: Niveau = "read"): 
 }
 
 /** Prenom et nom, sinon le debut de l'adresse e-mail, jamais l'adresse entiere. */
+/** Les initiales d'une personne, ou les deux premieres lettres de son adresse. */
+export function initiales({
+  first_name,
+  last_name,
+  email,
+}: Pick<UtilisateurSession, "email" | "first_name" | "last_name">): string {
+  const prenom = first_name?.trim();
+  const nom = last_name?.trim();
+  if (prenom && nom) return `${prenom[0]}${nom[0]}`.toUpperCase();
+  if (prenom) return prenom.slice(0, 2).toUpperCase();
+  return email.slice(0, 2).toUpperCase();
+}
+
 export function nomAffiche(user: Pick<UtilisateurSession, "email" | "first_name" | "last_name">): string {
   const nom = [user.first_name, user.last_name]
     .map((v) => v?.trim())

@@ -1,9 +1,9 @@
-import BlocUtilisateur, { initiales } from "@/components/hub/bloc-utilisateur";
+import BlocUtilisateur from "@/components/hub/bloc-utilisateur";
 import Navigation, { type EntreeNavigation, type SectionNavigation } from "@/components/hub/navigation";
 import RafraichirSession from "@/components/hub/rafraichir-session";
 import { modulesAccessibles } from "@/hub/droits";
 import { MODULES } from "@/hub/modules";
-import { exigerAccesHub, nomAffiche } from "@/hub/session";
+import { exigerAccesHub, initiales, nomAffiche } from "@/hub/session";
 
 /**
  * Tout ce qui est sous /hub, sauf la connexion. La session est exigee ici,
@@ -21,10 +21,11 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
 
   const profil: EntreeNavigation = { nom: "Profil", route: "/hub/profil", icone: "user" };
 
+  // Sur grand ecran, le profil se rejoint par le menu du bloc utilisateur,
+  // en bas de la barre laterale : il n'a pas de section a lui.
   const sections: SectionNavigation[] = [
     { entrees: [{ nom: "Accueil", route: "/hub", icone: "house" }] },
     ...modules.map((module) => ({ titre: module.nom, entrees: [...module.navigation] })),
-    { titre: "Compte", entrees: [profil] },
   ];
 
   // Sur mobile, l'accueil se rejoint par la marque en haut : les onglets vont
