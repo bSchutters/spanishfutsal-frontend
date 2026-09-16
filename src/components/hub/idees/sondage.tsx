@@ -72,7 +72,9 @@ export default function Sondage({
           </Button>
         </span>
       </div>
-      <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-secondary" role="presentation">
+      {/* Le pour part de la gauche, le contre de la droite : quand une voix
+          change de camp, chaque segment bouge de son cote sans pousser l'autre. */}
+      <div className="flex h-1.5 w-full justify-between overflow-hidden rounded-full bg-secondary" role="presentation">
         <div className="h-full bg-primary transition-[width]" style={{ width: `${partPour}%` }} />
         <div className="h-full bg-destructive transition-[width]" style={{ width: `${partContre}%` }} />
       </div>
