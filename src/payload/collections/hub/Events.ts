@@ -48,9 +48,18 @@ export const Events: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      ({ data, req, operation }) => {
+      ({ data, req, operation, originalDoc }) => {
         if (operation === 'create' && req.user && !data.created_by) {
           data.created_by = req.user.id
+        }
+        // Le flux principal est toujours l'un des flux de l'evenement : le
+        // premier quand il manque ou qu'il a ete decoche.
+        const flux: unknown[] = Array.isArray(data.feeds) ? data.feeds : Array.isArray(originalDoc?.feeds) ? originalDoc.feeds : []
+        const ids = flux.map((f) => String(typeof f === 'object' && f !== null ? (f as { id: unknown }).id : f))
+        const principal = data.primary_feed ?? originalDoc?.primary_feed
+        const idPrincipal = principal === null || principal === undefined ? null : String(typeof principal === 'object' ? (principal as { id: unknown }).id : principal)
+        if (ids.length > 0 && (idPrincipal === null || !ids.includes(idPrincipal))) {
+          data.primary_feed = Number(ids[0])
         }
         return data
       },
@@ -128,6 +137,15 @@ export const Events: CollectionConfig = {
               required: true,
               label: 'Flux',
               admin: { description: 'Au moins un. Determine qui voit cet evenement.' },
+            },
+            {
+              name: 'primary_feed',
+              type: 'relationship',
+              relationTo: 'feeds',
+              label: 'Flux principal',
+              admin: {
+                description: "Donne sa couleur a l'evenement dans le calendrier. L'un des flux ci-dessus, le premier par defaut.",
+              },
             },
             {
               name: 'responsibles',

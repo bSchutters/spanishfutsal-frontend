@@ -75,6 +75,7 @@ export type EvenementDetail = {
   lieuNom: string | null;
   lieuAdresse: string | null;
   fluxIds: number[];
+  fluxPrincipalId: number | null;
   responsablesIds: number[];
   description: string;
   notesInternes: string;
@@ -185,7 +186,10 @@ const couleurTypeDe = (doc: DocEvenement): string | null => {
   return typeof type === "object" && type ? (type.color ?? null) : null;
 };
 
+/** La couleur du flux principal, sinon celle du premier flux. */
 const couleurFluxDe = (doc: DocEvenement): string | null => {
+  const principal = doc.primary_feed as { color?: string | null } | number | null | undefined;
+  if (typeof principal === "object" && principal?.color) return principal.color;
   const flux = doc.feeds as Array<{ color?: string | null } | number> | undefined;
   const premier = flux?.[0];
   return typeof premier === "object" && premier ? (premier.color ?? null) : null;
@@ -298,6 +302,7 @@ export async function chargerEvenement(user: Utilisateur, id: number): Promise<E
     lieuNom: (doc.location_name as string | null) ?? null,
     lieuAdresse: (doc.location_address as string | null) ?? null,
     fluxIds: ids(doc.feeds),
+    fluxPrincipalId: doc.primary_feed ? Number(idDe(doc.primary_feed as never)) : null,
     responsablesIds: ids(doc.responsibles),
     description: lexicalVersTexte(doc.description),
     notesInternes: lexicalVersTexte(doc.internal_notes),

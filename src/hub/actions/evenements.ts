@@ -81,6 +81,8 @@ export async function enregistrerEvenement(saisie: unknown): Promise<Resultat<Ev
     location_name: s.lieuNom || null,
     location_address: s.lieuAdresse || null,
     feeds: s.fluxIds,
+    // Le crochet de la collection ramene sur le premier flux si celui-ci n'en fait pas partie.
+    primary_feed: s.fluxPrincipalId && s.fluxIds.includes(s.fluxPrincipalId) ? s.fluxPrincipalId : s.fluxIds[0],
     responsibles: s.responsablesIds,
     description: texteVersLexical(s.description),
     internal_notes: texteVersLexical(s.notesInternes),

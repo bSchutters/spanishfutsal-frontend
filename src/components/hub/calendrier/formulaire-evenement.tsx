@@ -45,6 +45,7 @@ function depuisDetail(detail: EvenementDetail): SaisieEvenement {
     lieuNom: detail.lieuNom ?? "",
     lieuAdresse: detail.lieuAdresse ?? "",
     fluxIds: detail.fluxIds,
+    fluxPrincipalId: detail.fluxPrincipalId,
     responsablesIds: detail.responsablesIds,
     description: detail.description,
     notesInternes: detail.notesInternes,
@@ -148,6 +149,7 @@ export default function FormulaireEvenement({
   }, [etat, form, references.types]);
 
   const typeId = useWatch({ control: form.control, name: "typeId" });
+  const fluxChoisis = useWatch({ control: form.control, name: "fluxIds" });
   const journeeEntiere = useWatch({ control: form.control, name: "journeeEntiere" });
   const frequence = useWatch({ control: form.control, name: "recurrence.frequence" });
   const type = references.types.find((t) => t.id === typeId);
@@ -393,6 +395,41 @@ export default function FormulaireEvenement({
                 </FormItem>
               )}
             />
+
+            {fluxChoisis.length > 1 ? (
+              <FormField
+                control={form.control}
+                name="fluxPrincipalId"
+                render={({ field }) => {
+                  const principal = field.value && fluxChoisis.includes(field.value) ? field.value : fluxChoisis[0];
+                  return (
+                    <FormItem>
+                      <FormLabel>Flux principal</FormLabel>
+                      <Select value={String(principal)} onValueChange={(v) => field.onChange(Number(v))}>
+                        <FormControl>
+                          <SelectTrigger className="w-full sm:w-64">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {references.flux
+                            .filter((f) => fluxChoisis.includes(f.id))
+                            .map((f) => (
+                              <SelectItem key={f.id} value={String(f.id)}>
+                                <span className="flex items-center gap-2">
+                                  <Pastille couleur={f.couleur} />
+                                  {f.nom}
+                                </span>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">Donne sa couleur à l&apos;événement dans le calendrier.</p>
+                    </FormItem>
+                  );
+                }}
+              />
+            ) : null}
 
             <FormField
               control={form.control}

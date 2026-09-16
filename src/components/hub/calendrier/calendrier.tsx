@@ -150,6 +150,9 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
           availableViews={VUES}
           height="100%"
           events={entrees}
+          // Un bloc colore pour tous, meme a heure fixe dans la vue mois :
+          // sans cela FullCalendar les montre en simple point.
+          eventDisplay="block"
           editable={peutEditer}
           nowIndicator
           dayMaxEvents={4}

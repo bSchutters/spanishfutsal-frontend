@@ -40,6 +40,38 @@ html.hub {
   --radius: 0.5rem;
 }
 
+/*
+ * Barres de defilement fines et aux couleurs du Hub, partout dans le Hub :
+ * la zone de contenu, le calendrier, les panneaux. Firefox lit les deux
+ * proprietes standard, Chrome et Safari les pseudo-elements.
+ */
+html.hub,
+html.hub * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+}
+
+html.hub ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.hub ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html.hub ::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.18);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+html.hub ::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.3);
+  background-clip: padding-box;
+}
+
 /* Les barres du mobile passent sous l'encoche et la barre d'accueil des iPhone. */
 html.hub .zone-sure-basse {
   padding-bottom: env(safe-area-inset-bottom);
