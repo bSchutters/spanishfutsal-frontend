@@ -14,14 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatut, lireEvenement, supprimerEvenement } from "@/hub/actions/evenements";
 import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
-import { COULEURS_STATUT, LIBELLES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
+import { COULEURS_STATUT, LIBELLES_STATUT, type Statut } from "@/hub/calendrier/schema";
 import { formaterDate, formaterDateHeure, formaterHeure } from "@/hub/dates";
 import Commentaires from "./commentaires";
+import SelecteurStatut from "./selecteur-statut";
 
 const LIBELLES_CATEGORIE = { post: "Post", match: "Match", training: "Entraînement", other: "Autre" } as const;
 
@@ -196,18 +196,7 @@ export default function DetailEvenement({
                 <>
                   <Bloc titre="Statut">
                     {peutEditer ? (
-                      <Select value={detail.post.statut} onValueChange={(v) => changerLeStatut(v as Statut)}>
-                        <SelectTrigger className="h-8 w-44" disabled={enCours}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUTS.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              <PastilleStatut couleur={COULEURS_STATUT[s]} libelle={LIBELLES_STATUT[s]} />
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SelecteurStatut valeur={detail.post.statut} disabled={enCours} onChange={changerLeStatut} />
                     ) : (
                       <PastilleStatut
                         couleur={COULEURS_STATUT[detail.post.statut]}

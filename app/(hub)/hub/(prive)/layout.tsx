@@ -32,7 +32,9 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
   const onglets: EntreeNavigation[] = [...modules.flatMap((module) => [...module.navigation]), profil];
 
   return (
-    <>
+    <div className="flex h-dvh flex-col md:pl-60">
+      {/* L'en-tete mobile est un enfant de cette colonne : sa hauteur compte
+          dans les 100 dvh, et la page elle-meme n'a jamais rien a faire defiler. */}
       <Navigation
         sections={sections}
         onglets={onglets}
@@ -45,11 +47,9 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
         }
       />
       <RafraichirSession exp={session.exp} />
-      <div className="flex h-dvh flex-col md:pl-60">
-        <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] pt-5 sm:px-6 md:px-8 md:py-6">
-          {children}
-        </main>
-      </div>
-    </>
+      <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] pt-5 sm:px-6 md:px-8 md:py-6">
+        {children}
+      </main>
+    </div>
   );
 }

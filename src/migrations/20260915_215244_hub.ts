@@ -520,7 +520,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       'feeds',
       { slug: { equals: 'joueurs' } },
       {
-        name: 'Joueurs',
+        name: 'Matchs',
         slug: 'joueurs',
         description: "Les matchs et les entraînements de l'équipe.",
         color: '#a2d6f8',

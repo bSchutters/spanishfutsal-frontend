@@ -76,7 +76,11 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
   });
   const [formulaire, setFormulaire] = useState<EtatFormulaire | null>(null);
   const plage = useRef<{ debut: string; fin: string } | null>(null);
-  const vueInitiale = monte && window.innerWidth < 768 ? "listWeek" : "dayGridMonth";
+  // Sur un telephone, la liste d'abord, et le calendrier prend la hauteur de
+  // son contenu : c'est la page qui defile. Sur grand ecran, il remplit
+  // l'espace restant et defile lui-meme.
+  const mobile = monte && window.innerWidth < 768;
+  const vueInitiale = mobile ? "listWeek" : "dayGridMonth";
 
   const charger = useCallback(async () => {
     if (!plage.current) return;
@@ -136,7 +140,7 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className={mobile ? "flex flex-col gap-4" : "flex min-h-0 flex-1 flex-col gap-4"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <BarreFiltres references={references} filtres={filtres} onChange={changerFiltres} />
         {peutEditer ? (
@@ -149,12 +153,12 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
 
       {monte ? (
         <EventCalendar
-          className="min-h-[28rem] flex-1 text-sm"
+          className={mobile ? "text-sm" : "min-h-[28rem] flex-1 text-sm"}
           locale={frLocale}
           firstDay={1}
           initialView={vueInitiale}
           availableViews={VUES}
-          height="100%"
+          height={mobile ? "auto" : "100%"}
           events={entrees}
           // Un bloc colore pour tous, meme a heure fixe dans la vue mois :
           // sans cela FullCalendar les montre en simple point.

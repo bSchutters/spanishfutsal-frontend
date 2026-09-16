@@ -122,7 +122,7 @@ describe("alertes", () => {
 describe("fichier ics", () => {
   it("porte le nom du calendrier, l uid, la sequence et le fuseau", () => {
     const ics = deplier(construireIcs({ flux: flux(), evenements: [post()], reglages, baseUrl: base }));
-    expect(ics).toContain("X-WR-CALNAME:UDA · Social");
+    expect(ics).toContain("X-WR-CALNAME:Social UDA");
     expect(ics).toContain("UID:42-social@udasturiana.be");
     expect(ics).toContain("SEQUENCE:86400");
     expect(ics).toContain("DTSTART;TZID=Europe/Brussels:20260916T180000");

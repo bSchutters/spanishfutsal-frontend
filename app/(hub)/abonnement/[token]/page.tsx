@@ -30,8 +30,14 @@ export default async function PageAbonnement({ params }: { params: Promise<{ tok
   const flux = await chargerFluxParJeton(decodeURIComponent(token));
   if (!flux) notFound();
 
-  const appareil = detecterAppareil((await headers()).get("user-agent") ?? "");
-  const lienIcs = urlFlux(flux.token);
+  const entetes = await headers();
+  const appareil = detecterAppareil(entetes.get("user-agent") ?? "");
+  // Le lien pointe sur l'adresse par laquelle le telephone est arrive : sur
+  // le site en ligne c'est la meme que HUB_BASE_URL, en test c'est celle du
+  // poste de developpement, la seule que le telephone puisse atteindre.
+  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host");
+  const protocole = entetes.get("x-forwarded-proto") ?? (hote?.startsWith("localhost") || /^\d/.test(hote ?? "") ? "http" : "https");
+  const lienIcs = hote ? urlFlux(flux.token, `${protocole}://${hote}`) : urlFlux(flux.token);
   const lienApple = enWebcal(lienIcs);
   const lienGoogle = lienGoogleAgenda(lienIcs);
 

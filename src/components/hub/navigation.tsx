@@ -142,7 +142,7 @@ export default function Navigation({
         <div className="border-t border-sidebar-border p-2">{blocUtilisateur}</div>
       </aside>
 
-      <header className="zone-sure-haute sticky top-0 z-40 border-b border-sidebar-border bg-sidebar md:hidden">
+      <header className="zone-sure-haute shrink-0 border-b border-sidebar-border bg-sidebar md:hidden">
         <div className="flex h-14 items-center gap-3 px-4">
           <Link href="/hub" className="flex shrink-0 items-center gap-2" aria-label="Accueil du Hub">
             <Image src="/assets/images/svg/logo-asturiana.svg" alt="" width={28} height={28} className="size-7" />

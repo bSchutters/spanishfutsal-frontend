@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { changerStatut } from "@/hub/actions/evenements";
 import { PastilleStatut } from "@/components/hub/mise-en-page";
-import { COULEURS_STATUT, LIBELLES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
+import { Button } from "@/components/ui/button";
+import { changerStatut } from "@/hub/actions/evenements";
+import { COULEURS_STATUT, LIBELLES_STATUT, type Statut } from "@/hub/calendrier/schema";
+import SelecteurStatut from "./selecteur-statut";
 
 /** Les actions rapides d'un post a faire : statut, legende, visuels. */
 export default function ActionsPost({
@@ -40,27 +40,17 @@ export default function ActionsPost({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {peutEditer ? (
-        <Select
-          value={statut}
-          onValueChange={(v) =>
+        <SelecteurStatut
+          valeur={statut}
+          disabled={enCours}
+          onChange={(nouveau) =>
             lancer(async () => {
-              const r = await changerStatut({ id, statut: v as Statut });
+              const r = await changerStatut({ id, statut: nouveau });
               if (!r.ok) return void toast.error(r.erreur);
               router.refresh();
             })
           }
-        >
-          <SelectTrigger className="h-8 w-40" disabled={enCours} aria-label="Statut">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUTS.map((s) => (
-              <SelectItem key={s} value={s}>
-                <PastilleStatut couleur={COULEURS_STATUT[s]} libelle={LIBELLES_STATUT[s]} />
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       ) : (
         <span className="text-sm">
           <PastilleStatut couleur={COULEURS_STATUT[statut]} libelle={LIBELLES_STATUT[statut]} />

@@ -83,6 +83,11 @@ export function uidDe(evenementId: number, slugFlux: string): string {
   return `${evenementId}-${slugFlux}@${DOMAINE_UID}`;
 }
 
+/** « Matchs UDA », « Social UDA » : le nom que le telephone affiche. */
+export function nomCalendrier(flux: FluxIcal): string {
+  return `${flux.name} UDA`;
+}
+
 export function titreDe(ev: EvenementIcal, flux: FluxIcal): string {
   const morceaux: string[] = [];
   if (flux.emoji?.trim()) morceaux.push(flux.emoji.trim());
@@ -179,7 +184,7 @@ export function construireIcs({
   baseUrl: string;
 }): string {
   const calendrier = ical({
-    name: `UDA · ${flux.name}`,
+    name: nomCalendrier(flux),
     prodId: { company: "UD Asturiana", product: "Hub", language: "FR" },
     timezone: FUSEAU,
     ttl: 300,
