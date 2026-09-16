@@ -80,10 +80,7 @@ export function initiales({
   return email.slice(0, 2).toUpperCase();
 }
 
+/** Le prenom seul, sinon le debut de l'adresse : entre six ou sept personnes, Bryan ne veut que ca. */
 export function nomAffiche(user: Pick<UtilisateurSession, "email" | "first_name" | "last_name">): string {
-  const nom = [user.first_name, user.last_name]
-    .map((v) => v?.trim())
-    .filter(Boolean)
-    .join(" ");
-  return nom || user.email.split("@")[0];
+  return user.first_name?.trim() || user.email.split("@")[0];
 }

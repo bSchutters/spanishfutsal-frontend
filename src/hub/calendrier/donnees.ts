@@ -112,14 +112,9 @@ export type EvenementDetail = {
 
 type Utilisateur = UtilisateurSession;
 
+/** Le prenom seul, sinon la partie de l'adresse avant l'arobase, comme partout dans le Hub. */
 const nomDe = (u: { first_name?: string | null; last_name?: string | null; email?: string | null }) =>
-  [u.first_name, u.last_name]
-    .map((v) => v?.trim())
-    .filter(Boolean)
-    .join(" ") ||
-  // Sans nom renseigne, la partie de l adresse avant l arobase, comme dans le profil.
-  u.email?.split("@")[0] ||
-  "";
+  u.first_name?.trim() || u.email?.split("@")[0] || "";
 
 /** Liste d'identifiants depuis une relation, peuplee ou non. */
 const ids = (relations: unknown): number[] =>
