@@ -4,13 +4,13 @@ import type { Metadata } from "next";
 
 import { EnTetePage, Etiquette, Panneau, PastilleStatut, Vide } from "@/components/hub/mise-en-page";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
-import { listerMatchsSaison, type MatchStats } from "@/hub/joueurs/donnees";
+import { listerMatchsSaison, type MatchDate } from "@/hub/joueurs/donnees";
 import { COULEURS_ETAT_SAISIE, LIBELLES_ETAT_SAISIE, type EtatSaisie } from "@/hub/joueurs/schema";
 import { exigerModule } from "@/hub/session";
 
 export const metadata: Metadata = { title: "Stats" };
 
-function ListeMatchs({ matchs }: { matchs: MatchStats[] }) {
+function ListeMatchs({ matchs }: { matchs: MatchDate[] }) {
   return (
     <ul className="divide-y divide-border">
       {matchs.map((m) => (
@@ -20,14 +20,8 @@ function ListeMatchs({ matchs }: { matchs: MatchStats[] }) {
             className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
           >
             <span className="w-24 shrink-0 text-xs text-muted-foreground">
-              {m.debut ? (
-                <>
-                  <span className="block">{formaterDateCourte(m.debut)}</span>
-                  {m.sansHeure ? null : <span className="block">{formaterHeure(m.debut)}</span>}
-                </>
-              ) : (
-                "Sans date"
-              )}
+              <span className="block">{formaterDateCourte(m.debut)}</span>
+              {m.sansHeure ? null : <span className="block">{formaterHeure(m.debut)}</span>}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">

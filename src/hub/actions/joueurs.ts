@@ -52,14 +52,13 @@ export async function enregistrerFeuilleStats(saisie: unknown): Promise<Resultat
     return { ok: false, erreur: messageDe(erreur) };
   }
 
-  revalidatePath("/hub/joueurs");
   revalidatePath("/hub/joueurs/stats");
   revalidatePath(`/hub/joueurs/stats/${matchId}`);
   const relue = await chargerFeuilleStats(matchId);
   return relue ? { ok: true, donnees: relue } : { ok: false, erreur: "Enregistré, mais impossible à relire." };
 }
 
-/** Les deux numeros d'un joueur. Vide efface. */
+/** Les deux numeros de feuille de match d'un joueur. Vide efface. Le numero du site n'est pas touche. */
 export async function enregistrerNumeros(saisie: unknown): Promise<Resultat<JoueurFeuille>> {
   await exigerModule("players", "edit");
   const lecture = schemaNumeros.safeParse(saisie);
@@ -71,11 +70,10 @@ export async function enregistrerNumeros(saisie: unknown): Promise<Resultat<Joue
     const doc = await payload.update({
       collection: "players",
       id: joueurId,
-      data: { numero, numero_2: numero2 },
+      data: { numero_feuille_1: numero, numero_feuille_2: numero2 },
       depth: 0,
     });
     revalidatePath("/hub/joueurs/numeros");
-    revalidatePath("/hub/joueurs");
     const poste = (doc.poste as JoueurFeuille["poste"] | null | undefined) ?? null;
     return {
       ok: true,
@@ -83,8 +81,8 @@ export async function enregistrerNumeros(saisie: unknown): Promise<Resultat<Joue
         id: Number(doc.id),
         prenom: String(doc.prenom ?? ""),
         nom: String(doc.nom ?? ""),
-        numero: typeof doc.numero === "number" ? doc.numero : null,
-        numero2: typeof doc.numero_2 === "number" ? doc.numero_2 : null,
+        numeroFeuille1: typeof doc.numero_feuille_1 === "number" ? doc.numero_feuille_1 : null,
+        numeroFeuille2: typeof doc.numero_feuille_2 === "number" ? doc.numero_feuille_2 : null,
         poste,
         gardien: poste === "Gardien",
         capitaine: doc.capitaine === true,

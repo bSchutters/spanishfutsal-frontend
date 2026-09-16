@@ -27,8 +27,9 @@ export type JoueurFeuille = {
   id: number;
   prenom: string;
   nom: string;
-  numero: number | null;
-  numero2: number | null;
+  /** Les deux numeros de feuille de match, sans rapport avec le numero du site. */
+  numeroFeuille1: number | null;
+  numeroFeuille2: number | null;
   poste: Poste | null;
   gardien: boolean;
   capitaine: boolean;
@@ -51,6 +52,9 @@ export type MatchStats = {
   etat: EtatSaisie;
 };
 
+/** Un match de la liste : toujours date. */
+export type MatchDate = MatchStats & { debut: string };
+
 export type FeuilleStats = {
   match: MatchStats;
   joueurs: JoueurFeuille[];
@@ -69,8 +73,8 @@ function joueurDe(doc: Doc): JoueurFeuille {
     id: Number(doc.id),
     prenom: String(doc.prenom ?? "").trim(),
     nom: String(doc.nom ?? "").trim(),
-    numero: numeroOuNull(doc.numero),
-    numero2: numeroOuNull(doc.numero_2),
+    numeroFeuille1: numeroOuNull(doc.numero_feuille_1),
+    numeroFeuille2: numeroOuNull(doc.numero_feuille_2),
     poste,
     gardien: poste === "Gardien",
     capitaine: doc.capitaine === true,
@@ -80,7 +84,7 @@ function joueurDe(doc: Doc): JoueurFeuille {
 /**
  * L'effectif de la feuille de match : les joueurs actifs, gardiens et joueurs
  * de champ, un joueur sans poste comptant comme joueur de champ. Le staff
- * n'a ni numero ni statistiques. Tries par numero puis par nom.
+ * n'a ni numero ni statistiques. Tries par nom.
  */
 export async function listerJoueurs(payload?: Payload): Promise<JoueurFeuille[]> {
   const client = payload ?? (await getPayloadClient());
@@ -142,11 +146,12 @@ function matchDe(doc: Doc, contexte: ContexteMatchs): MatchStats {
 }
 
 /**
- * Les matchs de la saison active, les plus recents en tete, le match d'essai
- * exclu. Sans saison active, rien : c'est elle qui delimite les statistiques
- * du site.
+ * Les matchs dates de la saison active, les plus recents en tete, le match
+ * d'essai exclu. Un match sans date, une finale de coupe a jouer, n'a rien a
+ * faire ici tant que la LFFS ne l'a pas fixe. Sans saison active, rien :
+ * c'est elle qui delimite les statistiques du site.
  */
-export async function listerMatchsSaison(): Promise<{ matchs: MatchStats[]; saisonActive: boolean }> {
+export async function listerMatchsSaison(): Promise<{ matchs: MatchDate[]; saisonActive: boolean }> {
   const payload = await getPayloadClient();
   const contexte = await chargerContexteMatchs(payload);
   if (contexte.saisonActiveId === null) return { matchs: [], saisonActive: false };
@@ -157,14 +162,10 @@ export async function listerMatchsSaison(): Promise<{ matchs: MatchStats[]; sais
     limit: 200,
     depth: 0,
   });
-  const matchs = (docs as Doc[]).map((doc) => matchDe(doc, contexte));
-  // Les matchs sans date en queue, les autres du plus recent au plus ancien.
-  matchs.sort((a, b) => {
-    if (a.debut === b.debut) return 0;
-    if (a.debut === null) return 1;
-    if (b.debut === null) return -1;
-    return b.debut.localeCompare(a.debut);
-  });
+  const matchs = (docs as Doc[])
+    .map((doc) => matchDe(doc, contexte))
+    .filter((m): m is MatchDate => m.debut !== null)
+    .sort((a, b) => b.debut.localeCompare(a.debut));
   return { matchs, saisonActive: true };
 }
 

@@ -6,7 +6,7 @@ import {
   depuisTableauxMatch,
   ecartAvecLeScore,
   etatSaisie,
-  numerosEnDoublon,
+  joueursParNumero,
   schemaFeuilleStats,
   schemaNumeros,
   trierJoueurs,
@@ -103,22 +103,25 @@ describe("score et etat", () => {
   });
 });
 
-describe("numeros", () => {
+describe("numeros de feuille de match", () => {
   const joueurs = [
-    { id: 1, prenom: "Ana", nom: "Diaz", numero: 1, numero2: 12 },
-    { id: 2, prenom: "Bo", nom: "Alvarez", numero: 7, numero2: 12 },
-    { id: 3, prenom: "Cy", nom: "Perez", numero: 7, numero2: 7 },
-    { id: 4, prenom: "Di", nom: "Ruiz", numero: null, numero2: null },
+    { id: 1, prenom: "Ana", nom: "Diaz", numeroFeuille1: 1, numeroFeuille2: 12 },
+    { id: 2, prenom: "Bo", nom: "Alvarez", numeroFeuille1: 7, numeroFeuille2: 12 },
+    { id: 3, prenom: "Cy", nom: "Perez", numeroFeuille1: 7, numeroFeuille2: 7 },
+    { id: 4, prenom: "Di", nom: "Ruiz", numeroFeuille1: null, numeroFeuille2: null },
   ];
 
-  it("trouve les numeros portes par plusieurs joueurs, premier ou second", () => {
-    expect([...numerosEnDoublon(joueurs)].sort()).toEqual([12, 7]);
-    expect(numerosEnDoublon([joueurs[0], joueurs[3]]).size).toBe(0);
+  it("dit qui peut porter chaque numero, un numero partage n etant pas une faute", () => {
+    expect(joueursParNumero(joueurs).map((n) => [n.numero, n.joueurs.map((j) => j.id)])).toEqual([
+      [1, [1]],
+      [7, [2, 3]],
+      [12, [1, 2]],
+    ]);
+    expect(joueursParNumero([joueurs[3]])).toEqual([]);
   });
 
-  it("trie par numero, les sans numero en queue, puis par nom", () => {
-    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([1, 2, 3, 4]);
-    expect(trierJoueurs([joueurs[2], joueurs[1]]).map((j) => j.id)).toEqual([2, 3]);
+  it("trie par nom puis prenom", () => {
+    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([2, 1, 3, 4]);
   });
 
   it("accepte de 1 a 99 ou rien", () => {

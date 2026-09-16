@@ -49,15 +49,26 @@ export const Players: CollectionConfig = {
       name: 'numero',
       type: 'number',
       label: 'Numero',
-      admin: { description: 'Le numero habituel, celui du site.' },
+      admin: { description: "Le numero affiche sur le site. Rien a voir avec la feuille de match." },
+    },
+    // Deux champs a plat, pas une ligne : la matrice des droits de la fiche
+    // utilisateur ne lit que les champs nommes au premier niveau.
+    {
+      name: 'numero_feuille_1',
+      type: 'number',
+      label: 'Feuille de match, numero 1',
+      min: 1,
+      max: 99,
     },
     {
-      name: 'numero_2',
+      name: 'numero_feuille_2',
       type: 'number',
-      label: 'Second numero',
+      label: 'Feuille de match, numero 2',
+      min: 1,
+      max: 99,
       admin: {
         description:
-          "Un second maillot, pour la feuille de match quand le premier numero n'est pas disponible. Se regle aussi depuis le Hub, page Numeros.",
+          "Les deux maillots que ce joueur peut porter : le club n'a que treize numeros, plusieurs joueurs se les partagent. Rien a voir avec le numero du site. Se regle aussi depuis le Hub, page Numeros.",
       },
     },
     {

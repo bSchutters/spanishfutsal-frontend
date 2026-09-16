@@ -74,10 +74,12 @@ function Compteur({
   );
 }
 
-function Numero({ numero }: { numero: number | null }) {
+/** Les numeros de feuille de match du joueur, ceux de la feuille officielle qu'on recopie. */
+function Numero({ joueur }: { joueur: JoueurFeuille }) {
+  const numeros = [joueur.numeroFeuille1, joueur.numeroFeuille2].filter((n): n is number => n !== null);
   return (
-    <span className="w-7 shrink-0 text-center font-mono text-sm tabular-nums text-muted-foreground">
-      {numero ?? "·"}
+    <span className="w-12 shrink-0 text-center font-mono text-xs tabular-nums text-muted-foreground">
+      {numeros.length > 0 ? numeros.join(" · ") : "·"}
     </span>
   );
 }
@@ -125,7 +127,7 @@ function LigneJoueur({ joueur, lignes, enCours, onBasculer, onChanger }: Commun 
           disabled={enCours}
           aria-label={`${joueur.prenom} ${joueur.nom} a joué`}
         />
-        <Numero numero={joueur.numero} />
+        <Numero joueur={joueur} />
         <NomJoueur joueur={joueur} />
       </label>
       {ligne ? (
@@ -289,7 +291,7 @@ export default function FeuilleStatsMatch({ feuille: initiale, peutEditer }: { f
                 if (!joueur) return null;
                 return (
                   <li key={ligne.joueurId} className="flex items-center gap-3 px-4 py-3">
-                    <Numero numero={joueur.numero} />
+                    <Numero joueur={joueur} />
                     <NomJoueur joueur={joueur} />
                     <span className="shrink-0 text-xs text-muted-foreground">{resumeLigne(ligne)}</span>
                   </li>
@@ -321,7 +323,8 @@ export default function FeuilleStatsMatch({ feuille: initiale, peutEditer }: { f
       <Groupe titre="Gardiens" liste={gardiens} {...commun} />
       <Groupe titre="Joueurs de champ" liste={champ} {...commun} />
 
-      <div className="sticky bottom-0 -mx-4 -mb-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] mt-auto border-t border-border bg-background/95 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] pt-3 backdrop-blur sm:-mx-6 sm:px-6 md:-mx-8 md:-mb-6 md:px-8 md:pb-4">
+      {/* Collee au bas de la zone qui defile, au-dessus de la barre d'onglets du telephone. */}
+      <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] -mx-4 mt-auto border-t border-border bg-background px-4 py-3 sm:-mx-6 sm:px-6 md:bottom-0 md:-mx-8 md:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 text-sm">
             <span className="font-medium">

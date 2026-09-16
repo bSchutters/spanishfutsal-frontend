@@ -7,6 +7,7 @@ import * as migration_20260916_154312_visuels_hub from './20260916_154312_visuel
 import * as migration_20260916_154335_visuels_hub_ancien_lien from './20260916_154335_visuels_hub_ancien_lien';
 import * as migration_20260916_154751_dossiers_medias from './20260916_154751_dossiers_medias';
 import * as migration_20260916_171602_joueurs_second_numero from './20260916_171602_joueurs_second_numero';
+import * as migration_20260916_173118_numeros_feuille_de_match from './20260916_173118_numeros_feuille_de_match';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260916_171602_joueurs_second_numero.up,
     down: migration_20260916_171602_joueurs_second_numero.down,
     name: '20260916_171602_joueurs_second_numero'
+  },
+  {
+    up: migration_20260916_173118_numeros_feuille_de_match.up,
+    down: migration_20260916_173118_numeros_feuille_de_match.down,
+    name: '20260916_173118_numeros_feuille_de_match'
   },
 ];

@@ -17,7 +17,7 @@ export default async function PageNumeros() {
     <>
       <EnTetePage
         titre="Numéros"
-        description="Le numéro habituel de chaque joueur et son second maillot, pour la feuille de match."
+        description="Les deux maillots que chaque joueur peut porter, pour remplir la feuille de match. Rien à voir avec les numéros du site."
       />
       <TableauNumeros joueurs={joueurs} peutEditer={peutEditer(user, "players")} />
     </>

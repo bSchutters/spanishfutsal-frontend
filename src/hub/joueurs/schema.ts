@@ -40,7 +40,7 @@ export const schemaFeuilleStats = z.object({
 
 export type SaisieFeuilleStats = z.infer<typeof schemaFeuilleStats>;
 
-/** Un numero de maillot : de 1 a 99, ou rien. */
+/** Un numero de feuille de match : de 1 a 99, ou rien. */
 const numero = z.nullable(z.number().check(z.int("Un numéro entier."), z.gte(1, "Un numéro de 1 à 99."), z.lte(99, "Un numéro de 1 à 99.")));
 
 export const schemaNumeros = z.object({
@@ -183,31 +183,26 @@ export function butsDuClub(score: string | null, domicile: boolean): number | nu
   return Number(domicile ? lu[1] : lu[2]);
 }
 
-export type JoueurNumeros = { id: number; prenom: string; nom: string; numero: number | null; numero2: number | null };
+export type JoueurNumeros = { id: number; prenom: string; nom: string; numeroFeuille1: number | null; numeroFeuille2: number | null };
 
 /**
- * Les numeros portes par plusieurs joueurs actifs, premier ou second numero
- * confondus : deux joueurs avec le meme numero sur la feuille de match, c'est
- * ce que la page doit faire voir avant le match, pas apres.
+ * Qui peut porter quel numero. Le club n'a que treize maillots pour tout
+ * l'effectif : un numero se partage entre plusieurs joueurs, ce n'est pas
+ * une faute, c'est la regle. La vue par numero sert a composer la feuille
+ * sans donner deux fois le meme maillot le meme soir. Numeros croissants,
+ * joueurs dans l'ordre recu.
  */
-export function numerosEnDoublon(joueurs: readonly JoueurNumeros[]): Set<number> {
-  const compte = new Map<number, number>();
+export function joueursParNumero<T extends JoueurNumeros>(joueurs: readonly T[]): Array<{ numero: number; joueurs: T[] }> {
+  const parNumero = new Map<number, T[]>();
   for (const joueur of joueurs) {
-    // Un joueur qui a deux fois le meme numero ne compte qu'une fois.
-    const siens = new Set([joueur.numero, joueur.numero2].filter((n): n is number => n !== null));
-    for (const n of siens) compte.set(n, (compte.get(n) ?? 0) + 1);
+    // Un joueur qui a deux fois le meme numero n'y figure qu'une fois.
+    const siens = new Set([joueur.numeroFeuille1, joueur.numeroFeuille2].filter((n): n is number => n !== null));
+    for (const n of siens) parNumero.set(n, [...(parNumero.get(n) ?? []), joueur]);
   }
-  return new Set([...compte].filter(([, fois]) => fois > 1).map(([n]) => n));
+  return [...parNumero].sort(([a], [b]) => a - b).map(([numero, liste]) => ({ numero, joueurs: liste }));
 }
 
-/** Par numero, puis par nom : l'ordre de la feuille de match. */
-export function trierJoueurs<T extends { numero: number | null; nom: string; prenom: string }>(joueurs: readonly T[]): T[] {
-  return [...joueurs].sort((a, b) => {
-    if (a.numero !== b.numero) {
-      if (a.numero === null) return 1;
-      if (b.numero === null) return -1;
-      return a.numero - b.numero;
-    }
-    return `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr");
-  });
+/** Par nom puis prenom : les numeros se partagent, ils ne classent pas. */
+export function trierJoueurs<T extends { nom: string; prenom: string }>(joueurs: readonly T[]): T[] {
+  return [...joueurs].sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr"));
 }

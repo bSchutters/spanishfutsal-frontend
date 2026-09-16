@@ -10,6 +10,7 @@ Dans l'admin Payload, collection **Utilisateurs**.
 2. Un **administrateur** a accès à tout, sans rien régler. Pour un **manager**, ouvrir le bloc **Hub** :
    - cocher **Accès au Hub** ;
    - ajouter le module **Calendrier** en **Lecture** (consulter, voter, commenter) ou en **Édition** (créer, modifier, supprimer, planifier, regénérer les posts) ;
+   - ajouter le module **Joueurs** en **Lecture** (consulter les numéros et les stats) ou en **Édition** (les saisir) ;
    - choisir ses **Flux autorisés** : la personne ne voit que les événements rattachés à au moins un de ces flux.
 3. Les deux derniers champs du bloc, notifications et flux notifiés, se règlent par la personne elle-même depuis son profil dans le Hub.
 
@@ -41,6 +42,14 @@ Un post « À créer » qui reçoit une légende et au moins un visuel passe tou
 Quand un match bouge, ses posts suivent, sauf ceux dont la date a été déplacée à la main, publiés ou annulés. Quand le score arrive ou la salle change, les textes sont refaits, sauf légende retouchée à la main. Un match supprimé dans l'admin est annulé dans le Hub, jamais effacé, avec ses posts non publiés. Un vrai match ne se supprime pas pour un essai : la base est celle du site.
 
 Quinze jours après la date d'un post publié, ses visuels sont effacés du stockage par le job quotidien : ils vivent alors sur les réseaux. Le post garde sa légende et son lien de publication. Un visuel partagé par plusieurs posts attend que tous soient publiés depuis quinze jours.
+
+## Numéros et stats des joueurs
+
+Module **Joueurs**, deux pages.
+
+**Numéros** : l'effectif actif, gardiens puis joueurs de champ, avec les deux numéros de feuille de match que chaque joueur peut porter. Rien à voir avec les numéros affichés sur le site : le club n'a que treize maillots, un numéro se partage entre plusieurs joueurs. En édition, toucher un numéro pour le changer, vider la case pour l'effacer, Entrée ou un clic ailleurs enregistre. Le bloc « Par numéro » dit qui peut porter quel maillot, pour ne pas le donner deux fois le même soir. Le staff (coach, kiné) n'y figure pas.
+
+**Stats** : les matchs de la saison active, en trois groupes. **À saisir** : le score est arrivé par l'import, la feuille est vide. **Saisie** : au moins une ligne. **À venir** : pas encore de score. Un match sans date n'apparaît pas tant que la LFFS ne l'a pas fixé. Ouvrir un match donne sa feuille : cocher qui a joué (un joueur coché sans rien compte un match joué), puis compter buts, assists, cartons et, pour le gardien, la clean sheet. Le bas de page compare les buts saisis au score du club et prévient d'un écart, sans empêcher d'enregistrer. Tout s'enregistre d'un coup. Les stats vont dans la collection Matchs, celle que la page Équipe du site lit : l'admin reste utilisable pour les mêmes données.
 
 ## Réglages du Hub
 
