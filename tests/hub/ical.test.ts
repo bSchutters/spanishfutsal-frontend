@@ -51,7 +51,9 @@ describe("uid", () => {
 
 describe("titre", () => {
   it("prefixe le statut et le format quand le flux les montre", () => {
-    expect(titreDe(post(), flux({ show_status: true, show_networks_format: true }))).toBe("🔴 Reel · Annonce vs POH ACTION");
+    expect(titreDe(post(), flux({ show_status: true, show_networks_format: true }))).toBe(
+      "À créer · Reel · Annonce vs POH ACTION",
+    );
     expect(titreDe(post(), flux())).toBe("Annonce vs POH ACTION");
   });
 

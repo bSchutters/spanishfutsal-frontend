@@ -42,9 +42,9 @@ export default function HubLayout({ children }: Readonly<{ children: React.React
   return (
     <html lang="fr" className={cn("hub dark h-full", geist.variable)}>
       <body className="min-h-full bg-background font-sans text-sm text-foreground antialiased">
+        {process.env.NODE_ENV !== "production" ? <RapporteurErreurs /> : null}
         {children}
         <ToasterHub />
-        {process.env.NODE_ENV !== "production" ? <RapporteurErreurs /> : null}
       </body>
     </html>
   );

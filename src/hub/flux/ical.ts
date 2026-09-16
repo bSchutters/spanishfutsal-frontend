@@ -8,7 +8,7 @@ import ical, {
 } from "ical-generator";
 import { endOfDay } from "date-fns";
 
-import { LIBELLES_STATUT, REPERES_STATUT, type Statut } from "@/hub/calendrier/schema";
+import { LIBELLES_STATUT, type Statut } from "@/hub/calendrier/schema";
 import { enLocal, formaterHeure, FUSEAU } from "@/hub/dates";
 import { estRecurrent, type Recurrence } from "@/hub/recurrence";
 
@@ -92,13 +92,11 @@ export function titreDe(ev: EvenementIcal, flux: FluxIcal): string {
   const morceaux: string[] = [];
   if (flux.emoji?.trim()) morceaux.push(flux.emoji.trim());
   if (ev.annule) morceaux.push("❌ ANNULÉ");
+  // Pour un post, le statut et le format en toutes lettres devant le titre :
+  // « À créer · Reel · Annonce vs POH ». Bryan a prefere le texte aux emoji.
   if (ev.categorie === "post") {
-    const prefixe: string[] = [];
-    if (flux.options.show_status && ev.statut) prefixe.push(REPERES_STATUT[ev.statut]);
-    if (flux.options.show_networks_format && ev.format) prefixe.push(ev.format);
-    if (prefixe.length > 0) {
-      morceaux.push(`${prefixe.join(" ")} ·`);
-    }
+    if (flux.options.show_status && ev.statut) morceaux.push(`${LIBELLES_STATUT[ev.statut]} ·`);
+    if (flux.options.show_networks_format && ev.format) morceaux.push(`${ev.format} ·`);
   }
   morceaux.push(ev.titre);
   return morceaux.join(" ");
