@@ -1,18 +1,26 @@
 import type { Metadata } from "next";
 
-import { EnTetePage, Vide } from "@/components/hub/mise-en-page";
+import Calendrier from "@/components/hub/calendrier/calendrier";
+import { EnTetePage } from "@/components/hub/mise-en-page";
+import { chargerReferences } from "@/hub/calendrier/donnees";
+import { estAdmin, peutEditer } from "@/hub/droits";
 import { exigerModule } from "@/hub/session";
 
 export const metadata: Metadata = { title: "Calendrier" };
 
-/** Emplacement du module Calendrier, livre au lot suivant. */
 export default async function PageCalendrier() {
-  await exigerModule("calendar");
+  const { user } = await exigerModule("calendar");
+  const references = await chargerReferences(user);
 
   return (
     <>
       <EnTetePage titre="Calendrier" description="Événements du club, posts à publier, matchs et entraînements." />
-      <Vide>Le calendrier arrive au prochain lot.</Vide>
+      <Calendrier
+        references={references}
+        peutEditer={peutEditer(user, "calendar")}
+        utilisateurId={Number(user.id)}
+        estAdmin={estAdmin(user)}
+      />
     </>
   );
 }

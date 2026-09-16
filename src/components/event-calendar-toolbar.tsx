@@ -29,7 +29,7 @@ export function EventCalendarToolbar({
       <div className='flex items-center shrink-0 gap-3'>
         {addButton && (
           <Button
-            onClick={addButton.click as any}
+            onClick={(ev) => addButton.click?.(ev.nativeEvent)}
             aria-label={addButton.hint}
           >{addButton.text}</Button>
         )}
