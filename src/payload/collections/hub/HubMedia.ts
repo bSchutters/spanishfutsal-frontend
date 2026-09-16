@@ -33,6 +33,7 @@ export const HubMedia: CollectionConfig = {
     ],
     adminThumbnail: 'vignette',
   },
+  folders: true,
   admin: {
     ...adminHub,
     defaultColumns: ['filename', 'uploaded_by', 'createdAt'],

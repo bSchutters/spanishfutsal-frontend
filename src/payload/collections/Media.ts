@@ -28,6 +28,8 @@ export const Media: CollectionConfig = {
       withoutEnlargement: true,
     },
   },
+  // Des dossiers dans l'admin, pour ranger les images du site au lieu d'une liste a plat.
+  folders: true,
   admin: {
     hidden: isHidden('media'),
   },

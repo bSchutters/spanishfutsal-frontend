@@ -7,6 +7,7 @@ import sharp from 'sharp'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { isAuthenticated } from '@/payload/access'
 import { Users } from '@/payload/collections/Users'
 import { Players } from '@/payload/collections/Players'
 import { Media } from '@/payload/collections/Media'
@@ -114,6 +115,15 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
   }),
+  // Les dossiers de l'admin (medias du site, visuels du Hub) : reserves aux personnes connectees, comme le reste de l'API.
+  folders: {
+    collectionOverrides: [
+      ({ collection }) => ({
+        ...collection,
+        access: { read: isAuthenticated, create: isAuthenticated, update: isAuthenticated, delete: isAuthenticated },
+      }),
+    ],
+  },
   sharp,
   plugins: [
     vercelBlobStorage({
