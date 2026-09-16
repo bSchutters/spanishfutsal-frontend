@@ -28,6 +28,11 @@ export function formaterDateSansAnnee(date: DateEntree, fuseau = FUSEAU): string
   return format(enLocal(date, fuseau), "EEEE d MMMM", { locale: fr });
 }
 
+/** « 16/09/2026 », la forme des legendes d'annonce. */
+export function formaterDateNumerique(date: DateEntree, fuseau = FUSEAU): string {
+  return format(enLocal(date, fuseau), "dd/MM/yyyy", { locale: fr });
+}
+
 /** « mer. 16 sept. » */
 export function formaterDateCourte(date: DateEntree, fuseau = FUSEAU): string {
   return format(enLocal(date, fuseau), "EEE d MMM", { locale: fr });

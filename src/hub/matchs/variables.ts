@@ -1,4 +1,4 @@
-import { formaterDateSansAnnee, formaterHeure } from "@/hub/dates";
+import { formaterDateNumerique, formaterDateSansAnnee, formaterHeure } from "@/hub/dates";
 import type { ChampsMatch } from "./construction";
 
 /**
@@ -12,6 +12,7 @@ export type Variables = Record<string, string>;
 export const NOMS_VARIABLES = [
   "adversaire",
   "date",
+  "date_courte",
   "heure",
   "heure_rdv",
   "salle",
@@ -30,6 +31,7 @@ export function variablesDe(
   return {
     adversaire: champs.opponent,
     date: formaterDateSansAnnee(champs.starts_at),
+    date_courte: formaterDateNumerique(champs.starts_at),
     heure: champs.all_day ? "" : formaterHeure(champs.starts_at),
     heure_rdv: extras.heureRdv ? formaterHeure(extras.heureRdv) : "",
     salle: champs.location_name ?? "",

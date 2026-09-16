@@ -283,7 +283,7 @@ Pour un match `lffs`, les champs `titre`, `debut`, `fin`, `lieuNom`, `lieuAdress
 | `instructions` | texte enrichi avec variables | copié dans `description` |
 | `legendeModele` | texte long avec variables | |
 
-**Variables disponibles** : `{adversaire}`, `{date}` (ex. « mercredi 16 septembre »), `{heure}` (format **22h00**), `{heure_rdv}`, `{salle}`, `{adresse}`, `{domicile_exterieur}` (« à domicile » / « à l'extérieur »), `{competition}`, `{score}` (vide tant que non disponible), `{lien_live}`, `{lien_replay}`.
+**Variables disponibles** : `{adversaire}`, `{date}` (ex. « mercredi 16 septembre »), `{date_courte}` (ex. « 16/09/2026 »), `{heure}` (format **22h00**), `{heure_rdv}`, `{salle}`, `{adresse}`, `{domicile_exterieur}` (« à domicile » / « à l'extérieur »), `{competition}`, `{score}` (vide tant que non disponible), `{lien_live}`, `{lien_replay}`.
 
 Convention du club pour les légendes de match : heure au format `22h00` et emoji `📍` devant le lieu.
 
@@ -683,6 +683,7 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Synchronisation des matchs (16/09/2026) | Une fonction unique, `synchroniserMatch`, appelee par les crochets de la collection Matchs dans la transaction du match (sinon le lien vers un match pas encore valide serait refuse) et par la route `/api/hub/synchro-matchs` protegee par `CRON_SECRET`, a appeler une fois par jour apres l import. Un echec de crochet est consigne sans faire echouer l import LFFS, la reconciliation rattrape. Seuls les matchs dates de la saison active comptent ; un match sans heure tient la journee entiere ; le match d essai est ignore |
 | Match supprime puis recree (16/09/2026) | L import LFFS ne supprime jamais, il met a jour par `lffs_id` : seule une suppression dans l admin annule l evenement et ses posts non publies. Si l import recree le match, l evenement revient et les posts que la synchro avait annules aussi |
 | Posts generes (16/09/2026) | Un post par modele actif et par match, rattache par `linked_match` et `template`, jamais en double. Le flux du modele, sinon Social. La synchro ne reecrit que ce qui change, pour ne pas bouger la version des calendriers abonnes. « Regenerer » sans option cree les manquants sans rien toucher ; avec l option, les posts non publies repartent du modele, statut compris |
+| Legendes des modeles (16/09/2026) | Textes de Bryan : Annonce « PROCHAIN MATCH 💛💙 » avec date numerique, heure, adresse et adversaire ; Jour J « MATCHDAY ⚔️ » avec adversaire, adresse et heure. Le modele Resultat reste actif comme rappel a J+1, sans legende : Bryan la genere a part apres chaque match. Variable `{date_courte}` ajoutee pour la date en 16/09/2026 |
 
 ---
 

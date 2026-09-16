@@ -614,8 +614,9 @@ async function semer({ payload, req }: Contexte): Promise<void> {
   })
   const reseauxParDefaut = reseaux.docs.map((doc) => doc.id)
 
-  // Convention du club pour les legendes : heure en 22h00, emoji de lieu
-  // devant la salle. {heure} et {salle} sortent deja dans ce format.
+  // Les legendes de Bryan : heure en 22h00, emoji de lieu devant l'adresse,
+  // date numerique dans l'annonce. {heure}, {adresse} et {date_courte}
+  // sortent deja dans ce format.
   const modeles = [
     {
       name: 'Annonce',
@@ -623,8 +624,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       fixed_time: '18:00',
       title_template: 'Annonce vs {adversaire}',
       format: formats.Post,
-      caption_template:
-        '🔥 {competition} : {domicile_exterieur} face à {adversaire} !\n📅 {date} à {heure}\n📍 {salle}\n\nOn compte sur vous ! 💛💙',
+      caption_template: 'PROCHAIN MATCH 💛💙\n\n📅 {date_courte}\n🕒 {heure}\n📍 {adresse}\n🆚 {adversaire}',
     },
     {
       name: 'Jour J',
@@ -632,8 +632,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       fixed_time: '10:00',
       title_template: 'Jour de match vs {adversaire}',
       format: formats.Story,
-      caption_template:
-        "⚽ C'est aujourd'hui ! {domicile_exterieur} face à {adversaire}\n🕙 {heure}\n📍 {salle}, {adresse}\n\nVenez nombreux ! 💛💙",
+      caption_template: 'MATCHDAY ⚔️\n\n🆚 {adversaire}\n📍 {adresse}\n🕒 {heure}',
     },
     {
       name: 'Résultat',
@@ -641,7 +640,8 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       fixed_time: '12:00',
       title_template: 'Résultat vs {adversaire}',
       format: formats.Post,
-      caption_template: '🏁 Résultat : {score} face à {adversaire} ({competition})\n\nMerci à tous pour le soutien ! 💛💙',
+      // Pas de legende : Bryan la genere a part apres chaque match, le post sert de rappel.
+      caption_template: null,
     },
   ]
   for (const modele of modeles) {

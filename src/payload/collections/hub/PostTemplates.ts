@@ -16,7 +16,7 @@ export const PostTemplates: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'active', 'apply_to', 'day_offset'],
     description:
-      'Variables disponibles : {adversaire}, {date}, {heure}, {heure_rdv}, {salle}, {adresse}, {domicile_exterieur}, {competition}, {score}, {lien_live}, {lien_replay}.',
+      'Variables disponibles : {adversaire}, {date} (mercredi 16 septembre), {date_courte} (16/09/2026), {heure} (22h00), {heure_rdv}, {salle}, {adresse}, {domicile_exterieur}, {competition}, {score}, {lien_live}, {lien_replay}.',
   },
   access: {
     read: accesHub,

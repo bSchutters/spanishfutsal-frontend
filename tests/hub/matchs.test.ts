@@ -148,6 +148,7 @@ describe("variables", () => {
     expect(variables).toEqual({
       adversaire: "POH Action",
       date: "mercredi 2 septembre",
+      date_courte: "02/09/2026",
       heure: "22h00",
       heure_rdv: "21h15",
       salle: "St-Pierre",
