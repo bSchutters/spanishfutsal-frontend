@@ -66,7 +66,11 @@ export async function exigerModule(module: ModuleKey, niveau: Niveau = "read"): 
   return session;
 }
 
-/** Le prenom, sinon l'adresse e-mail. */
-export function nomAffiche(user: Pick<UtilisateurSession, "email" | "first_name">): string {
-  return user.first_name?.trim() || user.email;
+/** Prenom et nom, sinon le debut de l'adresse e-mail, jamais l'adresse entiere. */
+export function nomAffiche(user: Pick<UtilisateurSession, "email" | "first_name" | "last_name">): string {
+  const nom = [user.first_name, user.last_name]
+    .map((v) => v?.trim())
+    .filter(Boolean)
+    .join(" ");
+  return nom || user.email.split("@")[0];
 }

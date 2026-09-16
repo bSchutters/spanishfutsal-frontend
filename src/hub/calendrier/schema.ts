@@ -23,7 +23,15 @@ export const LIBELLES_STATUT: Record<Statut, string> = {
   cancelled: "Annulé",
 };
 
-/** Le repere du statut dans le calendrier et les flux, tel que le cahier le fixe. */
+/** La couleur du statut, pour les pastilles du Hub. */
+export const COULEURS_STATUT: Record<Statut, string> = {
+  to_create: "#ff6b6b",
+  ready: "#f4a261",
+  published: "#7bd389",
+  cancelled: "#9fb3c9",
+};
+
+/** Le repere du statut en texte, pour les flux iCal, tel que le cahier le fixe. */
 export const REPERES_STATUT: Record<Statut, string> = {
   to_create: "🔴",
   ready: "🟠",

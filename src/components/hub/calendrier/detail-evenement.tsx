@@ -4,7 +4,7 @@ import { Copy, ExternalLink, Lock, MapPin, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { Etiquette, Pastille } from "@/components/hub/mise-en-page";
+import { Etiquette, Pastille, PastilleStatut } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatut, lireEvenement, supprimerEvenement } from "@/hub/actions/evenements";
 import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
-import { LIBELLES_STATUT, REPERES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
+import { COULEURS_STATUT, LIBELLES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
 import { formaterDate, formaterDateHeure, formaterHeure } from "@/hub/dates";
 import Commentaires from "./commentaires";
 
@@ -203,15 +203,16 @@ export default function DetailEvenement({
                         <SelectContent>
                           {STATUTS.map((s) => (
                             <SelectItem key={s} value={s}>
-                              {REPERES_STATUT[s]} {LIBELLES_STATUT[s]}
+                              <PastilleStatut couleur={COULEURS_STATUT[s]} libelle={LIBELLES_STATUT[s]} />
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span>
-                        {REPERES_STATUT[detail.post.statut]} {LIBELLES_STATUT[detail.post.statut]}
-                      </span>
+                      <PastilleStatut
+                        couleur={COULEURS_STATUT[detail.post.statut]}
+                        libelle={LIBELLES_STATUT[detail.post.statut]}
+                      />
                     )}
                   </Bloc>
                   {reseaux.length > 0 || format ? (

@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { seDeconnecter } from "@/hub/actions/session";
 
-/** Les initiales d'une personne, ou la premiere lettre de son adresse. */
+/** Les initiales d'une personne, ou les deux premieres lettres de son adresse. */
 export function initiales({
   first_name,
   last_name,
@@ -22,7 +22,8 @@ export function initiales({
 
 /**
  * Le pied de la barre laterale : qui est connecte, et la sortie. La
- * deconnexion est une action serveur, d'ou le formulaire.
+ * deconnexion est une action serveur, d'ou le formulaire. L'adresse n'est
+ * montree que si elle apporte quelque chose de plus que le nom.
  */
 export default function BlocUtilisateur({
   nom,
@@ -33,6 +34,7 @@ export default function BlocUtilisateur({
   email: string;
   lettres: string;
 }) {
+  const montrerEmail = !email.startsWith(`${nom}@`);
   return (
     <div className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
       <span
@@ -43,7 +45,7 @@ export default function BlocUtilisateur({
       </span>
       <span className="flex min-w-0 flex-1 flex-col leading-tight">
         <span className="truncate text-sm font-medium">{nom}</span>
-        <span className="truncate text-[11px] text-muted-foreground">{email}</span>
+        {montrerEmail ? <span className="truncate text-[11px] text-muted-foreground">{email}</span> : null}
       </span>
       <form action={seDeconnecter}>
         <Button type="submit" variant="ghost" size="icon" className="size-8" aria-label="Se déconnecter">

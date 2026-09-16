@@ -42,10 +42,12 @@ export type EvenementCalendrier = {
   annule: boolean;
   categorie: Categorie;
   typeId: number;
+  /** La couleur du premier flux, sinon celle du type. */
   couleur: string | null;
+  couleurType: string | null;
   fluxIds: number[];
-  couleurFlux: string | null;
   responsablesIds: number[];
+  creeParId: number | null;
   statut: StatutPost | null;
   source: "lffs" | "manual" | null;
   recurrent: boolean;
@@ -240,10 +242,11 @@ export async function listerEvenements(
       annule: Boolean(doc.cancelled),
       categorie: categorieDe(doc),
       typeId: Number(idDe(doc.type as never)),
-      couleur: couleurTypeDe(doc),
+      couleur: couleurFluxDe(doc) ?? couleurTypeDe(doc),
+      couleurType: couleurTypeDe(doc),
       fluxIds: ids(doc.feeds),
-      couleurFlux: couleurFluxDe(doc),
       responsablesIds: ids(doc.responsibles),
+      creeParId: doc.created_by ? Number(idDe(doc.created_by as never)) : null,
       statut: (doc.status as StatutPost | null) ?? null,
       source: (doc.source as "lffs" | "manual" | null) ?? null,
       recurrent: estRecurrent(recurrence),
@@ -389,7 +392,7 @@ export async function listerPostsAFaire(user: Utilisateur, seulementLesMiens: bo
       // En retard : la date est passee sans que le post soit publie ni annule.
       enRetard: new Date(String(doc.starts_at)).getTime() < maintenant,
       statut: (doc.status as StatutPost | null) ?? "to_create",
-      couleur: couleurTypeDe(doc),
+      couleur: couleurFluxDe(doc) ?? couleurTypeDe(doc),
       reseaux: (Array.isArray(doc.networks) ? doc.networks : [])
         .map((r) => (typeof r === "object" && r ? String((r as { name?: string }).name ?? "") : ""))
         .filter(Boolean),

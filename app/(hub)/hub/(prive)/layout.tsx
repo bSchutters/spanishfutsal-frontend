@@ -9,6 +9,10 @@ import { exigerAccesHub, nomAffiche } from "@/hub/session";
  * Tout ce qui est sous /hub, sauf la connexion. La session est exigee ici,
  * et chaque page ou action verifie ensuite son propre droit : ce gabarit ne
  * suffit pas a proteger une action serveur appelee directement.
+ *
+ * La zone de contenu tient dans la hauteur de l'ecran et defile elle-meme :
+ * une page peut ainsi occuper toute la hauteur, le calendrier par exemple,
+ * sans que la fenetre n'ait a defiler.
  */
 export default async function LayoutPrive({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await exigerAccesHub();
@@ -41,8 +45,8 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
         }
       />
       <RafraichirSession exp={session.exp} />
-      <div className="min-h-dvh pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-60">
-        <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+      <div className="flex h-dvh flex-col md:pl-60">
+        <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom)+1rem)] pt-5 sm:px-6 md:px-8 md:py-6">
           {children}
         </main>
       </div>

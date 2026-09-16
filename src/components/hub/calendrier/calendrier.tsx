@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deplacerEvenement } from "@/hub/actions/evenements";
 import type { EvenementCalendrier, EvenementDetail, References } from "@/hub/calendrier/donnees";
-import { REPERES_STATUT } from "@/hub/calendrier/schema";
+import { COULEURS_STATUT } from "@/hub/calendrier/schema";
 import BarreFiltres from "./barre-filtres";
 import DetailEvenement from "./detail-evenement";
 import {
@@ -40,17 +40,21 @@ type Props = {
 };
 
 function versEntree(ev: EvenementCalendrier, peutEditer: boolean): EventInput {
-  const repere = ev.categorie === "post" && ev.statut ? `${REPERES_STATUT[ev.statut]} ` : "";
   const deplacable = peutEditer && !ev.recurrent && ev.source !== "lffs";
   return {
     id: ev.cle,
-    title: `${repere}${ev.titre}`,
+    title: ev.titre,
     start: ev.debut,
     end: ev.fin ?? undefined,
     allDay: ev.journeeEntiere,
     color: ev.couleur ?? undefined,
     editable: deplacable,
-    extendedProps: { evenementId: ev.id, annule: ev.annule, deplacable },
+    extendedProps: {
+      evenementId: ev.id,
+      annule: ev.annule,
+      deplacable,
+      couleurStatut: ev.categorie === "post" && ev.statut ? COULEURS_STATUT[ev.statut] : null,
+    },
   };
 }
 
@@ -126,7 +130,7 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <BarreFiltres references={references} filtres={filtres} onChange={changerFiltres} />
         {peutEditer ? (
@@ -139,12 +143,12 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
 
       {monte ? (
         <EventCalendar
-          className="text-sm"
+          className="min-h-[28rem] flex-1 text-sm"
           locale={frLocale}
           firstDay={1}
           initialView={vueInitiale}
           availableViews={VUES}
-          height="auto"
+          height="100%"
           events={entrees}
           editable={peutEditer}
           nowIndicator
@@ -169,12 +173,28 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
           eventAllow={(_span, evenement) => Boolean(evenement?.extendedProps.deplacable)}
           eventDrop={apresDeplacement}
           eventResize={apresDeplacement}
+          eventContent={(info) => {
+            const couleurStatut = info.event.extendedProps.couleurStatut as string | null;
+            return (
+              <span className="flex min-w-0 items-center gap-1 px-1 py-px">
+                {couleurStatut ? (
+                  <span
+                    className="size-1.5 shrink-0 rounded-full ring-1 ring-black/20"
+                    style={{ backgroundColor: couleurStatut }}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                {info.timeText ? <span className="shrink-0 tabular-nums opacity-80">{info.timeText}</span> : null}
+                <span className="truncate font-medium">{info.event.title}</span>
+              </span>
+            );
+          }}
           eventDidMount={(info) => {
             if (info.event.extendedProps.annule) info.el.classList.add("line-through", "opacity-60");
           }}
         />
       ) : (
-        <Skeleton className="h-[32rem] w-full rounded-lg" />
+        <Skeleton className="min-h-[28rem] w-full flex-1 rounded-lg" />
       )}
 
       <DetailEvenement

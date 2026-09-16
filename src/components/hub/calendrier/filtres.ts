@@ -78,6 +78,9 @@ export function passeLesFiltres(evenement: EvenementCalendrier, filtres: Filtres
   if (filtres.typeIds.length > 0 && !filtres.typeIds.includes(evenement.typeId)) return false;
   if (filtres.fluxIds.length > 0 && !evenement.fluxIds.some((id) => filtres.fluxIds.includes(id))) return false;
   if (filtres.responsableId !== null && !evenement.responsablesIds.includes(filtres.responsableId)) return false;
-  if (filtres.lesMiens && !evenement.responsablesIds.includes(utilisateurId)) return false;
+  // Les miens : ceux dont je suis responsable, ou que j'ai crees.
+  if (filtres.lesMiens && !evenement.responsablesIds.includes(utilisateurId) && evenement.creeParId !== utilisateurId) {
+    return false;
+  }
   return true;
 }

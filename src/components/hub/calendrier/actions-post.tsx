@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { changerStatut } from "@/hub/actions/evenements";
-import { LIBELLES_STATUT, REPERES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
+import { PastilleStatut } from "@/components/hub/mise-en-page";
+import { COULEURS_STATUT, LIBELLES_STATUT, STATUTS, type Statut } from "@/hub/calendrier/schema";
 
 /** Les actions rapides d'un post a faire : statut, legende, visuels. */
 export default function ActionsPost({
@@ -55,14 +56,14 @@ export default function ActionsPost({
           <SelectContent>
             {STATUTS.map((s) => (
               <SelectItem key={s} value={s}>
-                {REPERES_STATUT[s]} {LIBELLES_STATUT[s]}
+                <PastilleStatut couleur={COULEURS_STATUT[s]} libelle={LIBELLES_STATUT[s]} />
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       ) : (
         <span className="text-sm">
-          {REPERES_STATUT[statut]} {LIBELLES_STATUT[statut]}
+          <PastilleStatut couleur={COULEURS_STATUT[statut]} libelle={LIBELLES_STATUT[statut]} />
         </span>
       )}
       {legende ? (
