@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { EnTetePage, Etiquette, Ligne, Panneau, Pastille } from "@/components/hub/mise-en-page";
+import NotificationsProfil from "@/components/hub/push/notifications-profil";
 import { estAdmin, idDe, modulesAccessibles, niveauModule } from "@/hub/droits";
 import { LIBELLES_NIVEAUX, MODULES } from "@/hub/modules";
 import { exigerAccesHub, nomAffiche } from "@/hub/session";
@@ -10,8 +11,8 @@ import { getPayloadClient } from "@/lib/payload";
 export const metadata: Metadata = { title: "Profil" };
 
 /**
- * Le compte de la personne dans le Hub : ses modules, ses flux, et la sortie.
- * Les notifications et l'installation sur l'ecran d'accueil viendront ici.
+ * Le compte de la personne dans le Hub : ses modules, ses flux, ses
+ * notifications avec l'installation sur l'ecran d'accueil, et la sortie.
  */
 export default async function PageProfil() {
   const session = await exigerAccesHub();
@@ -30,6 +31,10 @@ export default async function PageProfil() {
   });
   const notifies = new Set((user.hub?.notified_feeds ?? []).map((f) => String(idDe(f))));
   const modules = MODULES.filter((module) => modulesAccessibles(user).includes(module.key));
+  const { totalDocs: appareils } = await payload.count({
+    collection: "push-subscriptions",
+    where: { user: { equals: user.id } },
+  });
 
   const nomComplet = [user.first_name, user.last_name]
     .map((v) => v?.trim())
@@ -82,10 +87,15 @@ export default async function PageProfil() {
             ))}
           </ul>
         )}
-        <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
-          Les notifications et le choix des flux notifiés se régleront ici, avec l&apos;installation sur l&apos;écran
-          d&apos;accueil.
-        </p>
+      </Panneau>
+
+      <Panneau titre="Notifications" description="Les rappels du matin et d'avant l'événement, sur cet appareil.">
+        <NotificationsProfil
+          flux={flux.map((f) => ({ id: Number(f.id), nom: String(f.name), couleur: typeof f.color === "string" ? f.color : null }))}
+          fluxNotifiesIds={[...notifies].map(Number)}
+          pushActif={user.hub?.push_enabled === true}
+          appareils={appareils}
+        />
       </Panneau>
 
       <Panneau titre="Session">

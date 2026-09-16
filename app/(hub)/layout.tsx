@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   // de l'en-tete X-Robots-Tag poses dans next.config.ts.
   robots: { index: false, follow: false, nocache: true },
   appleWebApp: { title: "Hub UDA", statusBarStyle: "black-translucent" },
+  // Le manifeste propre au Hub : « Sur l'ecran d'accueil » installe le Hub, pas le site.
+  manifest: "/hub/manifest.webmanifest",
+  icons: { apple: "/hub/icone/180?fond=1" },
 };
 
 export const viewport: Viewport = {

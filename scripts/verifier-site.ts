@@ -34,6 +34,7 @@ const APIS_FERMEES = [
   '/api/events',
   '/api/globals/hub-settings',
   '/api/hub/synchro-matchs',
+  '/api/hub/rappels',
 ]
 
 const FICHIERS: Array<[string, string]> = [

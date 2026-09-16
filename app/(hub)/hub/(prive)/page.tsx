@@ -2,6 +2,7 @@ import { CalendarDays, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { Avis, EnTetePage, Etiquette, Ligne, Panneau, Pastille, Vide } from "@/components/hub/mise-en-page";
+import InvitationInstallation from "@/components/hub/push/invitation-installation";
 import { estAdmin, modulesAccessibles, niveauModule } from "@/hub/droits";
 import { LIBELLES_NIVEAUX, MODULES } from "@/hub/modules";
 import { exigerAccesHub } from "@/hub/session";
@@ -32,6 +33,8 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
       <EnTetePage titre="Accueil" description="Vos modules et votre périmètre dans le Hub." />
 
       {refus ? <Avis>Vous n&apos;avez pas le droit nécessaire sur ce module. Demandez à un administrateur.</Avis> : null}
+
+      <InvitationInstallation />
 
       <Panneau titre="Modules">
         {modules.length === 0 ? (
