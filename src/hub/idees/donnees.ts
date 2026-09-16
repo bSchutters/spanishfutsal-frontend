@@ -52,17 +52,11 @@ const noms = (relations: unknown): string[] =>
     ? relations.map((r) => (typeof r === "object" && r ? String((r as { name?: string }).name ?? "") : "")).filter(Boolean)
     : [];
 
+/** Le prenom seul, sinon le debut de l'adresse : sur une carte, le nom entier prend trop de place. */
 const nomPersonne = (u: unknown): string => {
   if (!u || typeof u !== "object") return "";
-  const doc = u as { first_name?: string | null; last_name?: string | null; email?: string | null };
-  return (
-    [doc.first_name, doc.last_name]
-      .map((v) => v?.trim())
-      .filter(Boolean)
-      .join(" ") ||
-    doc.email?.split("@")[0] ||
-    ""
-  );
+  const doc = u as { first_name?: string | null; email?: string | null };
+  return doc.first_name?.trim() || doc.email?.split("@")[0] || "";
 };
 
 const evenementLie = (relation: unknown): { id: number; titre: string } | null => {

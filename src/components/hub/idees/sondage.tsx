@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { SensVote } from "@/hub/idees/schema";
 import { cn } from "@/lib/utils";
 
-export type Membre = { id: number; nom: string };
+export type Membre = { id: number; nom: string; prenom: string };
 
 /**
  * Le vote d'une idee, presente comme un sondage : combien de membres sont
@@ -33,7 +33,8 @@ export default function Sondage({
   compact?: boolean;
 }) {
   const total = Math.max(membres.length, pourIds.length + contreIds.length, 1);
-  const nomsDe = (liste: number[]) => liste.map((id) => membres.find((m) => m.id === id)?.nom ?? "Membre");
+  // Les prenoms seulement : entre six ou sept personnes, cela suffit.
+  const nomsDe = (liste: number[]) => liste.map((id) => membres.find((m) => m.id === id)?.prenom ?? "Membre");
   const partPour = (pourIds.length / total) * 100;
   const partContre = (contreIds.length / total) * 100;
 

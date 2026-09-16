@@ -24,7 +24,7 @@ export type References = {
   flux: Array<Reference & { slug: string; couleur: string | null }>;
   reseaux: Reference[];
   formats: Reference[];
-  responsables: Array<Reference & { email: string }>;
+  responsables: Array<Reference & { email: string; prenom: string }>;
   reglages: {
     dureeMatchMinutes: number;
     dureeEntrainementMinutes: number;
@@ -167,6 +167,7 @@ export async function chargerReferences(user: Utilisateur): Promise<References> 
     responsables: responsables.docs.map((u) => ({
       id: Number(u.id),
       nom: nomDe(u as { first_name?: string | null; last_name?: string | null; email?: string | null }),
+      prenom: String(u.first_name ?? "").trim() || String(u.email ?? "").split("@")[0],
       email: String(u.email ?? ""),
     })),
     reglages: {
