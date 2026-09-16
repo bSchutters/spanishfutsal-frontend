@@ -80,3 +80,23 @@ html.hub .zone-sure-basse {
 html.hub .zone-sure-haute {
   padding-top: env(safe-area-inset-top);
 }
+
+/* Sur iPhone, un champ de date garde sa largeur naturelle et deborde de sa
+   colonne : on lui impose celle de son conteneur, et son texte a gauche
+   plutot que centre. */
+html.hub input[type="date"],
+html.hub input[type="datetime-local"],
+html.hub input[type="time"] {
+  min-width: 0;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+html.hub input::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+html.hub [data-slot="form-item"] {
+  min-width: 0;
+}

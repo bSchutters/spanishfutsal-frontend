@@ -114,7 +114,8 @@ const nomDe = (u: { first_name?: string | null; last_name?: string | null; email
     .map((v) => v?.trim())
     .filter(Boolean)
     .join(" ") ||
-  u.email ||
+  // Sans nom renseigne, la partie de l adresse avant l arobase, comme dans le profil.
+  u.email?.split("@")[0] ||
   "";
 
 /** Liste d'identifiants depuis une relation, peuplee ou non. */
