@@ -259,7 +259,19 @@ export function refusNumero(
   return null;
 }
 
-/** Par nom puis prenom : les numeros se partagent, ils ne classent pas. */
-export function trierJoueurs<T extends { nom: string; prenom: string }>(joueurs: readonly T[]): T[] {
-  return [...joueurs].sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr"));
+/**
+ * Par numero principal, puis secondaire, les sans numero en fin, et a
+ * egalite par nom : l'ordre de la feuille de match, celui que Bryan a
+ * demande. Ne modifie pas la liste recue.
+ */
+export function trierJoueurs<T extends { nom: string; prenom: string; numeroFeuille1: number | null; numeroFeuille2: number | null }>(
+  joueurs: readonly T[],
+): T[] {
+  const rang = (n: number | null) => n ?? Number.MAX_SAFE_INTEGER;
+  return [...joueurs].sort(
+    (a, b) =>
+      rang(a.numeroFeuille1) - rang(b.numeroFeuille1) ||
+      rang(a.numeroFeuille2) - rang(b.numeroFeuille2) ||
+      `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr"),
+  );
 }

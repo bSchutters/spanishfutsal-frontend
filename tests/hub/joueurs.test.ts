@@ -137,8 +137,10 @@ describe("numeros de feuille de match", () => {
     expect(refusNumero(joueurs, 1, "numeroFeuille2", 2)).toBe("Ce joueur a déjà le 2.");
   });
 
-  it("trie par nom puis prenom", () => {
-    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([2, 1, 3, 4, 5]);
+  it("trie par numero principal, les sans numero en fin, puis par nom", () => {
+    // A egalite sur le principal (Bo et Cy ont le 7), le secondaire departage : 7 avant 12.
+    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([1, 3, 2, 5, 4]);
+    expect(trierJoueurs([joueurs[3], { ...joueurs[3], id: 6, nom: "Aa" }]).map((j) => j.id)).toEqual([6, 4]);
   });
 
   it("accepte du 2 au 14 ou rien", () => {

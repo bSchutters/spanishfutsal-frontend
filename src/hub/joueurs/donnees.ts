@@ -84,7 +84,7 @@ function joueurDe(doc: Doc): JoueurFeuille {
 /**
  * L'effectif de la feuille de match : les joueurs actifs, gardiens et joueurs
  * de champ, un joueur sans poste comptant comme joueur de champ. Le staff
- * n'a ni numero ni statistiques. Tries par nom.
+ * n'a ni numero ni statistiques. Tries par numero de feuille, puis par nom.
  */
 export async function listerJoueurs(payload?: Payload): Promise<JoueurFeuille[]> {
   const client = payload ?? (await getPayloadClient());

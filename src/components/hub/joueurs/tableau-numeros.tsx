@@ -8,7 +8,7 @@ import { Etiquette, Panneau, Vide } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import { enregistrerNumeros } from "@/hub/actions/joueurs";
 import type { JoueurFeuille } from "@/hub/joueurs/donnees";
-import { joueursParNumero, MESSAGE_PLAGE, numeroDeMaillot, refusNumero, type ChampNumero } from "@/hub/joueurs/schema";
+import { joueursParNumero, MESSAGE_PLAGE, numeroDeMaillot, refusNumero, trierJoueurs, type ChampNumero } from "@/hub/joueurs/schema";
 import { cn } from "@/lib/utils";
 
 const NUMERO_CLASSE = "font-mono text-xl font-semibold tabular-nums";
@@ -202,7 +202,11 @@ export default function TableauNumeros({ joueurs: initiaux, peutEditer }: { joue
             type="button"
             variant={edition ? "hub" : "hubSecondary"}
             size="sm"
-            onClick={() => setEdition((e) => !e)}
+            // En edition les lignes restent en place ; le classement par numero se refait a la fermeture.
+            onClick={() => {
+              if (edition) setJoueurs((liste) => trierJoueurs(liste));
+              setEdition((e) => !e);
+            }}
             disabled={enCours.size > 0}
             aria-pressed={edition}
           >
