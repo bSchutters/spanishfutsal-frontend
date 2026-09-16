@@ -2,7 +2,7 @@ import type { Payload, PayloadRequest } from "payload";
 
 import type { Statut } from "@/hub/calendrier/schema";
 import { idDe } from "@/hub/droits";
-import { texteVersLexical } from "@/hub/texte";
+import { lexicalVersTexte, texteVersLexical } from "@/hub/texte";
 import { getTeamsIndex } from "@/lib/getTeamsIndex";
 import {
   construireChampsMatch,
@@ -249,9 +249,11 @@ export async function synchroniserMatch(
     });
     if (rdv !== ancienRdv) data.meeting_at = rdv;
   }
-  const descriptionActuelle = JSON.stringify(existant.description ?? null);
+  // Payload normalise le JSON Lexical qu'il stocke, et le texte relu separe
+  // les paragraphes d'une ligne vide : la comparaison passe par le meme
+  // aller-retour des deux cotes, sinon chaque passage reecrirait la description.
   const descriptionVoulue = texteVersLexical(description);
-  if (descriptionActuelle !== JSON.stringify(descriptionVoulue)) data.description = descriptionVoulue;
+  if (lexicalVersTexte(existant.description) !== lexicalVersTexte(descriptionVoulue)) data.description = descriptionVoulue;
   // Un match supprime puis recree par l'import n'est pas une annulation :
   // l'evenement revient, et ses posts annules par la synchro avec lui.
   const revient = Boolean(existant.cancelled);

@@ -1,5 +1,6 @@
 import type { Statut } from "@/hub/calendrier/schema";
 import { ajouterJoursLocaux, composerDateHeure, versChampDate } from "@/hub/dates";
+import { lexicalVersTexte } from "@/hub/texte";
 import type { ChampsMatch } from "./construction";
 import { rendreLexical, rendreTexte, type Variables } from "./variables";
 
@@ -176,7 +177,8 @@ export function planifierPosts(args: {
     if (!existant.legendeModifieeManuellement) {
       if (existant.titre !== textes.title) data.title = textes.title;
       if ((existant.legende || null) !== textes.caption) data.caption = textes.caption;
-      if (JSON.stringify(existant.description ?? null) !== JSON.stringify(textes.description ?? null)) {
+      // Compare en texte : Payload normalise le JSON Lexical qu'il stocke.
+      if (lexicalVersTexte(existant.description) !== lexicalVersTexte(textes.description)) {
         data.description = textes.description;
       }
     }
