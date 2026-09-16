@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerEvenement } from "@/hub/actions/evenements";
-import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
+import type { EvenementDetail, References, Visuel } from "@/hub/calendrier/donnees";
 import {
   JOURS,
   LIBELLES_STATUT,
@@ -28,6 +28,7 @@ import {
   type SaisieEvenement,
 } from "@/hub/calendrier/schema";
 import { depuisChampDateHeure, versChampDate, versChampDateHeure } from "@/hub/dates";
+import VisuelsUpload from "./visuels-upload";
 
 export type EtatFormulaire =
   | {
@@ -69,6 +70,7 @@ function depuisDetail(detail: EvenementDetail): SaisieEvenement {
       formatIds: detail.post.formatIds,
       legende: detail.post.legende,
       lienVisuels: detail.post.lienVisuels,
+      visuelIds: detail.post.visuels.map((v) => v.id),
       lienPublication: detail.post.lienPublication,
       vues: detail.post.vues,
       matchLieId: detail.post.matchLieId,
@@ -125,6 +127,17 @@ export default function FormulaireEvenement({
   onEnregistre: (detail: EvenementDetail) => void;
 }) {
   const [enCours, setEnCours] = useState(false);
+  // Les visuels deposes pendant cette ouverture du formulaire, pour leurs
+  // vignettes ; ceux du detail viennent de l'etat lui-meme. La liste repart a
+  // vide a chaque nouvelle ouverture : etat derive, mis a jour pendant le rendu.
+  const [visuelsDeposes, setVisuelsDeposes] = useState<Visuel[]>([]);
+  const [etatPrecedent, setEtatPrecedent] = useState(etat);
+  if (etat !== etatPrecedent) {
+    setEtatPrecedent(etat);
+    setVisuelsDeposes([]);
+  }
+  const visuelsInitiaux = etat?.mode === "modifier" ? etat.detail.post.visuels : [];
+  const visuelsConnus = [...visuelsInitiaux, ...visuelsDeposes];
   const fluxTouches = useRef(false);
   const form = useForm<SaisieEvenement>({
     resolver: standardSchemaResolver(schemaEvenement),
@@ -554,6 +567,23 @@ export default function FormulaireEvenement({
                           <Textarea {...field} rows={5} placeholder="Le texte à copier-coller au moment de publier…" />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="post.visuelIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Visuels</FormLabel>
+                        <VisuelsUpload
+                          valeurs={field.value}
+                          visuels={visuelsConnus}
+                          onChange={(ids, visuels) => {
+                            setVisuelsDeposes(visuels.filter((v) => !visuelsInitiaux.some((i) => i.id === v.id)));
+                            field.onChange(ids);
+                          }}
+                        />
                       </FormItem>
                     )}
                   />

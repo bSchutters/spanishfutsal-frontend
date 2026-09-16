@@ -55,6 +55,15 @@ export type EvenementCalendrier = {
   lieuNom: string | null;
 };
 
+export type Visuel = {
+  id: number;
+  nom: string;
+  type: string;
+  taille: number;
+  url: string;
+  urlVignette: string | null;
+};
+
 export type Commentaire = {
   id: number;
   auteurId: number | null;
@@ -89,6 +98,8 @@ export type EvenementDetail = {
     formatIds: number[];
     legende: string;
     lienVisuels: string;
+    /** Les fichiers deposes : l'original tel quel, et une vignette pour les images. */
+    visuels: Visuel[];
     lienPublication: string;
     vues: number | null;
     matchLieId: number | null;
@@ -196,6 +207,25 @@ const couleurFluxDe = (doc: DocEvenement): string | null => {
 };
 
 const recurrenceDe = (doc: DocEvenement): Recurrence | null => (doc.recurrence as Recurrence | null) ?? null;
+
+/** Les visuels d'un post, tels que la collection hub-media les rend a profondeur 1. */
+const visuelsDe = (relations: unknown): Visuel[] =>
+  Array.isArray(relations)
+    ? relations
+        .filter((v): v is Record<string, unknown> => typeof v === "object" && v !== null)
+        .map((v) => {
+          const tailles = (v.sizes as { vignette?: { url?: string | null } } | undefined)?.vignette;
+          return {
+            id: Number(v.id),
+            nom: String(v.filename ?? ""),
+            type: String(v.mimeType ?? ""),
+            taille: Number(v.filesize ?? 0),
+            url: String(v.url ?? ""),
+            urlVignette: tailles?.url ?? null,
+          };
+        })
+        .filter((v) => v.url)
+    : [];
 
 /**
  * Les evenements d'une plage, occurrences des recurrences comprises. La
@@ -328,6 +358,7 @@ export async function chargerEvenement(user: Utilisateur, id: number): Promise<E
       formatIds: ids(doc.format),
       legende: String(doc.caption ?? ""),
       lienVisuels: String(doc.visuals_link ?? ""),
+      visuels: visuelsDe(doc.visuals),
       lienPublication: String(doc.publication_link ?? ""),
       vues: doc.views === null || doc.views === undefined ? null : Number(doc.views),
       matchLieId: doc.linked_match ? Number(idDe(doc.linked_match as never)) : null,

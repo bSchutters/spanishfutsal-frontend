@@ -23,6 +23,7 @@ import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
 import { COULEURS_STATUT, LIBELLES_STATUT, type Statut } from "@/hub/calendrier/schema";
 import { formaterDate, formaterDateCourte, formaterDateHeure, formaterHeure } from "@/hub/dates";
 import Commentaires from "./commentaires";
+import GalerieVisuels from "./galerie-visuels";
 import SelecteurStatut from "./selecteur-statut";
 
 const LIBELLES_CATEGORIE = { post: "Post", match: "Match", training: "Entraînement", other: "Autre" } as const;
@@ -268,6 +269,11 @@ export default function DetailEvenement({
                         <Copy aria-hidden="true" />
                         Copier la légende
                       </Button>
+                    </Bloc>
+                  ) : null}
+                  {detail.post.visuels.length > 0 ? (
+                    <Bloc titre="Visuels">
+                      <GalerieVisuels visuels={detail.post.visuels} />
                     </Bloc>
                   ) : null}
                   {detail.post.lienVisuels || detail.post.lienPublication ? (

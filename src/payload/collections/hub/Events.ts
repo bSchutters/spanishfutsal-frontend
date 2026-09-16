@@ -263,9 +263,10 @@ export const Events: CollectionConfig = {
             {
               name: 'visuals',
               type: 'upload',
-              relationTo: 'media',
+              relationTo: 'hub-media',
               hasMany: true,
               label: 'Visuels',
+              admin: { description: 'Deposes depuis le Hub, gardes tels quels.' },
             },
             {
               type: 'row',

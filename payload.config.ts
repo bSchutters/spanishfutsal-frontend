@@ -24,6 +24,7 @@ import { Events } from '@/payload/collections/hub/Events'
 import { EventTypes } from '@/payload/collections/hub/EventTypes'
 import { Feeds } from '@/payload/collections/hub/Feeds'
 import { Formats } from '@/payload/collections/hub/Formats'
+import { HubMedia } from '@/payload/collections/hub/HubMedia'
 import { Ideas } from '@/payload/collections/hub/Ideas'
 import { Networks } from '@/payload/collections/hub/Networks'
 import { NotificationLog } from '@/payload/collections/hub/NotificationLog'
@@ -80,6 +81,7 @@ export default buildConfig({
     Comments,
     PushSubscriptions,
     NotificationLog,
+    HubMedia,
   ],
   globals: [Settings, HubSettings],
   i18n: {
@@ -118,6 +120,10 @@ export default buildConfig({
       collections: {
         media: {
           prefix: 'media',
+        },
+        // Les visuels du Hub, gardes tels quels : un prefixe a part dans le meme stockage.
+        'hub-media': {
+          prefix: 'hub',
         },
       },
       token: process.env.BLOB_READ_WRITE_TOKEN || '',

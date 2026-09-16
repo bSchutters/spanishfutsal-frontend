@@ -104,6 +104,7 @@ export async function enregistrerEvenement(saisie: unknown): Promise<Resultat<Ev
       format: s.post.formatIds,
       caption: s.post.legende || null,
       visuals_link: s.post.lienVisuels || null,
+      visuals: s.post.visuelIds,
       publication_link: s.post.lienPublication || null,
       views: s.post.vues,
       linked_match: s.post.matchLieId,
