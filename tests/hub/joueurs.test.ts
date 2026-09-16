@@ -106,40 +106,46 @@ describe("score et etat", () => {
 
 describe("numeros de feuille de match", () => {
   const joueurs = [
-    { id: 1, prenom: "Ana", nom: "Diaz", numeroFeuille1: 1, numeroFeuille2: 12 },
+    { id: 1, prenom: "Ana", nom: "Diaz", numeroFeuille1: 2, numeroFeuille2: 12 },
     { id: 2, prenom: "Bo", nom: "Alvarez", numeroFeuille1: 7, numeroFeuille2: 12 },
     { id: 3, prenom: "Cy", nom: "Perez", numeroFeuille1: 7, numeroFeuille2: 7 },
     { id: 4, prenom: "Di", nom: "Ruiz", numeroFeuille1: null, numeroFeuille2: null },
+    { id: 5, prenom: "Ed", nom: "Sola", numeroFeuille1: 21, numeroFeuille2: null },
   ];
 
-  it("dit qui peut porter chaque numero, un numero partage n etant pas une faute", () => {
-    expect(joueursParNumero(joueurs).map((n) => [n.numero, n.joueurs.map((j) => j.id)])).toEqual([
-      [1, [1]],
-      [7, [2, 3]],
-      [12, [1, 2]],
-    ]);
-    expect(joueursParNumero([joueurs[3]])).toEqual([]);
+  it("liste les treize maillots avec leurs porteurs et leurs places, plus les numeros hors maillots", () => {
+    const places = joueursParNumero(joueurs);
+    expect(places.map((p) => p.numero)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21]);
+    const par = Object.fromEntries(places.map((p) => [p.numero, [p.joueurs.map((j) => j.id), p.placesLibres, p.maillot]]));
+    expect(par[2]).toEqual([[1], 1, true]);
+    expect(par[7]).toEqual([[2, 3], 0, true]);
+    expect(par[12]).toEqual([[1, 2], 0, true]);
+    expect(par[9]).toEqual([[], 2, true]);
+    expect(par[21]).toEqual([[5], 1, false]);
   });
 
-  it("refuse un troisieme porteur et un doublon chez le meme joueur", () => {
+  it("refuse un troisieme porteur, un doublon chez le meme joueur et un numero hors maillots", () => {
     expect(refusNumero(joueurs, 4, "numeroFeuille1", 12)).toBe("Le 12 est déjà porté par deux joueurs, Ana Diaz et Bo Alvarez.");
     expect(refusNumero(joueurs, 4, "numeroFeuille1", 7)).toBe("Le 7 est déjà porté par deux joueurs, Bo Alvarez et Cy Perez.");
-    expect(refusNumero(joueurs, 4, "numeroFeuille2", 1)).toBeNull();
+    expect(refusNumero(joueurs, 4, "numeroFeuille2", 2)).toBeNull();
     expect(refusNumero(joueurs, 4, "numeroFeuille1", 5)).toBeNull();
     expect(refusNumero(joueurs, 4, "numeroFeuille1", null)).toBeNull();
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 1)).toBe("Un numéro de 2 à 14, ceux des maillots.");
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 15)).toBe("Un numéro de 2 à 14, ceux des maillots.");
     // Le joueur qui porte deja le numero peut le garder dans la meme case.
     expect(refusNumero(joueurs, 1, "numeroFeuille2", 12)).toBeNull();
-    expect(refusNumero(joueurs, 1, "numeroFeuille2", 1)).toBe("Ce joueur a déjà le 1.");
+    expect(refusNumero(joueurs, 1, "numeroFeuille2", 2)).toBe("Ce joueur a déjà le 2.");
   });
 
   it("trie par nom puis prenom", () => {
-    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([2, 1, 3, 4]);
+    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([2, 1, 3, 4, 5]);
   });
 
-  it("accepte de 1 a 99 ou rien", () => {
+  it("accepte du 2 au 14 ou rien", () => {
     expect(schemaNumeros.safeParse({ joueurId: 1, numero: 10, numero2: null }).success).toBe(true);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 0, numero2: null }).success).toBe(false);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 100, numero2: null }).success).toBe(false);
+    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 2, numero2: 14 }).success).toBe(true);
+    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 1, numero2: null }).success).toBe(false);
+    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 15, numero2: null }).success).toBe(false);
     expect(schemaNumeros.safeParse({ joueurId: 1, numero: 7.5, numero2: null }).success).toBe(false);
   });
 });

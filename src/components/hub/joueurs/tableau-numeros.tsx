@@ -8,7 +8,7 @@ import { Etiquette, Panneau, Vide } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import { enregistrerNumeros } from "@/hub/actions/joueurs";
 import type { JoueurFeuille } from "@/hub/joueurs/donnees";
-import { joueursParNumero, refusNumero, type ChampNumero } from "@/hub/joueurs/schema";
+import { joueursParNumero, MESSAGE_PLAGE, numeroDeMaillot, refusNumero, type ChampNumero } from "@/hub/joueurs/schema";
 import { cn } from "@/lib/utils";
 
 const NUMERO_CLASSE = "font-mono text-xl font-semibold tabular-nums";
@@ -38,8 +38,8 @@ function CelluleNumero({
     setBrouillon(null);
     const nouveau = texte === "" ? null : Number(texte);
     if (nouveau === valeur) return;
-    if (nouveau !== null && (!Number.isInteger(nouveau) || nouveau < 1 || nouveau > 99)) {
-      toast.error("Un numéro de 1 à 99.");
+    if (nouveau !== null && !numeroDeMaillot(nouveau)) {
+      toast.error(MESSAGE_PLAGE);
       return;
     }
     onCommit(nouveau);
@@ -75,9 +75,16 @@ function CelluleNumero({
   );
 }
 
-/** Une case de numero en affichage : grande, lisible de loin. */
+/** Une case de numero en affichage : grande, lisible de loin. Un numero hors des maillots ressort en rouge. */
 function NumeroAffiche({ valeur }: { valeur: number | null }) {
-  return <span className={cn(NUMERO_CLASSE, valeur === null && "text-muted-foreground/40")}>{valeur ?? "·"}</span>;
+  return (
+    <span
+      className={cn(NUMERO_CLASSE, valeur === null && "text-muted-foreground/40", valeur !== null && !numeroDeMaillot(valeur) && "text-destructive")}
+      title={valeur !== null && !numeroDeMaillot(valeur) ? "Hors des maillots, du 2 au 14" : undefined}
+    >
+      {valeur ?? "·"}
+    </span>
+  );
 }
 
 /** Un groupe de l'effectif, gardiens ou joueurs de champ, en trois colonnes : les deux numeros, puis le nom. */
@@ -147,6 +154,7 @@ export default function TableauNumeros({ joueurs: initiaux, peutEditer }: { joue
   const [edition, setEdition] = useState(false);
   const [enCours, setEnCours] = useState<Set<number>>(new Set());
   const parNumero = useMemo(() => joueursParNumero(joueurs), [joueurs]);
+  const placesLibres = parNumero.filter((p) => p.maillot).reduce((total, p) => total + p.placesLibres, 0);
 
   if (joueurs.length === 0) return <Vide>Aucun joueur actif. L&apos;effectif se gère dans l&apos;admin, collection Joueurs.</Vide>;
 
@@ -187,8 +195,8 @@ export default function TableauNumeros({ joueurs: initiaux, peutEditer }: { joue
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {edition
-              ? "Touchez un numéro pour le changer, videz la case pour l'effacer. Un numéro se donne à deux joueurs au plus."
-              : "Un numéro se donne à deux joueurs au plus, l'un en principal, l'autre en secondaire."}
+              ? "Touchez un numéro pour le changer, videz la case pour l'effacer. Du 2 au 14, deux joueurs au plus par numéro."
+              : "Treize maillots, du 2 au 14. Un numéro se donne à deux joueurs au plus, l'un en principal, l'autre en secondaire."}
           </p>
           <Button
             type="button"
@@ -207,26 +215,34 @@ export default function TableauNumeros({ joueurs: initiaux, peutEditer }: { joue
       <Groupe titre="Gardiens" liste={gardiens} {...commun} />
       <Groupe titre="Joueurs de champ" liste={champ} {...commun} />
 
-      <Panneau titre="Par numéro" description="Qui peut porter quel maillot. Un numéro se partage à deux, mais pas le même soir.">
-        {parNumero.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-muted-foreground">Aucun numéro renseigné.</p>
-        ) : (
-          <ul className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-3">
-            {parNumero.map(({ numero, joueurs: porteurs }) => (
-              <li key={numero} className="flex items-baseline gap-3 px-4 py-2.5 sm:border-b sm:border-border">
-                <span className={cn(NUMERO_CLASSE, "w-8 shrink-0 text-right text-primary")}>{numero}</span>
-                <span className="min-w-0 text-sm">
-                  {porteurs.map((j, i) => (
-                    <span key={j.id}>
-                      {i > 0 ? ", " : ""}
-                      <span className="font-medium">{j.nom.toUpperCase()}</span> {j.prenom}
-                    </span>
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+      <Panneau
+        titre="Par numéro"
+        description={`Qui peut porter quel maillot, et les places qui restent : ${placesLibres} sur ${parNumero.filter((p) => p.maillot).length * 2}.`}
+      >
+        <ul className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-3">
+          {parNumero.map(({ numero, joueurs: porteurs, placesLibres: libres, maillot }) => (
+            <li key={numero} className="flex items-baseline gap-3 px-4 py-2.5 sm:border-b sm:border-border">
+              <span className={cn(NUMERO_CLASSE, "w-8 shrink-0 text-right", maillot ? "text-primary" : "text-destructive")}>{numero}</span>
+              <span className="min-w-0 text-sm">
+                {porteurs.map((j, i) => (
+                  <span key={j.id}>
+                    {i > 0 ? ", " : ""}
+                    <span className="font-medium">{j.nom.toUpperCase()}</span> {j.prenom}
+                  </span>
+                ))}
+                {!maillot ? (
+                  <span className="text-destructive"> · hors des maillots</span>
+                ) : libres === 2 ? (
+                  <span className="text-muted-foreground">libre</span>
+                ) : libres === 1 ? (
+                  <span className="text-muted-foreground"> · une place</span>
+                ) : (
+                  <span className="text-muted-foreground"> · complet</span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
       </Panneau>
     </>
   );

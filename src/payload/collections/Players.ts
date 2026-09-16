@@ -57,18 +57,18 @@ export const Players: CollectionConfig = {
       name: 'numero_feuille_1',
       type: 'number',
       label: 'Feuille de match, numero 1',
-      min: 1,
-      max: 99,
+      min: 2,
+      max: 14,
     },
     {
       name: 'numero_feuille_2',
       type: 'number',
       label: 'Feuille de match, numero 2',
-      min: 1,
-      max: 99,
+      min: 2,
+      max: 14,
       admin: {
         description:
-          "Les deux maillots que ce joueur peut porter : le club n'a que treize numeros, plusieurs joueurs se les partagent. Rien a voir avec le numero du site. Se regle aussi depuis le Hub, page Numeros.",
+          "Les deux maillots que ce joueur peut porter, du 2 au 14 : treize numeros pour tout l'effectif, deux porteurs au plus par numero. Rien a voir avec le numero du site. Se regle aussi depuis le Hub, page Numeros.",
       },
     },
     {
