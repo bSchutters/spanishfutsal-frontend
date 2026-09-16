@@ -30,7 +30,13 @@ import {
 import { depuisChampDateHeure, versChampDate, versChampDateHeure } from "@/hub/dates";
 
 export type EtatFormulaire =
-  | { mode: "creer"; debut?: Date; journeeEntiere?: boolean }
+  | {
+      mode: "creer";
+      debut?: Date;
+      journeeEntiere?: boolean;
+      /** Des valeurs deja remplies, par exemple depuis une idee a planifier. */
+      valeurs?: Partial<Omit<SaisieEvenement, "post">> & { post?: Partial<SaisieEvenement["post"]> };
+    }
   | { mode: "modifier"; detail: EvenementDetail };
 
 function depuisDetail(detail: EvenementDetail): SaisieEvenement {
@@ -135,9 +141,11 @@ export default function FormulaireEvenement({
       form.reset(depuisDetail(etat.detail));
       return;
     }
-    const premierType = references.types[0];
+    const typeVoulu = references.types.find((t) => t.id === etat.valeurs?.typeId);
+    const premierType = typeVoulu ?? references.types[0];
     const debut = etat.debut ?? new Date();
     if (!etat.debut) debut.setMinutes(0, 0, 0);
+    const { post: postPrerempli, ...prerempli } = etat.valeurs ?? {};
     form.reset({
       ...SAISIE_VIDE,
       typeId: premierType?.id ?? 0,
@@ -145,6 +153,8 @@ export default function FormulaireEvenement({
       debut: versChampDateHeure(debut),
       fin: etat.journeeEntiere ? "" : versChampDateHeure(addMinutes(debut, 60)),
       journeeEntiere: etat.journeeEntiere ?? false,
+      ...prerempli,
+      post: { ...SAISIE_VIDE.post, ...postPrerempli },
     });
   }, [etat, form, references.types]);
 
