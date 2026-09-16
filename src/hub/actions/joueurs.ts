@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod/mini";
 
 import type { Resultat } from "@/hub/actions/evenements";
-import { chargerFeuilleStats, chargerFiche, listerEffectif, postesDe, type FeuilleStats, type JoueurFiche } from "@/hub/joueurs/donnees";
+import { chargerFeuilleStats, chargerFiche, postesDe, type FeuilleStats, type JoueurFiche } from "@/hub/joueurs/donnees";
 import { nettoyerSelonPoste, schemaJoueur } from "@/hub/joueurs/fiche";
-import { refusNumero, schemaFeuilleStats, surLaFeuille, versTableauxMatch } from "@/hub/joueurs/schema";
+import { schemaFeuilleStats, versTableauxMatch } from "@/hub/joueurs/schema";
 import { exigerModule } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
 
@@ -60,10 +60,8 @@ export async function enregistrerFeuilleStats(saisie: unknown): Promise<Resultat
 }
 
 /**
- * Une fiche de la collection Joueurs, creee ou modifiee depuis le Hub. La
- * regle des maillots, deux porteurs par numero et les numeros du poste, se
- * juge sur l'effectif actif tel qu'il est en base, la fiche elle-meme mise
- * a part. Le staff n'a ni numero de feuille ni brassard.
+ * Une fiche de la collection Joueurs, creee ou modifiee depuis le Hub. Le
+ * staff n'a ni numero ni brassard.
  */
 export async function enregistrerJoueur(saisie: unknown): Promise<Resultat<JoueurFiche>> {
   await exigerModule("players", "edit");
@@ -73,23 +71,11 @@ export async function enregistrerJoueur(saisie: unknown): Promise<Resultat<Joueu
 
   if (s.id && !(await chargerFiche(s.id))) return { ok: false, erreur: "Cette fiche n'existe pas." };
 
-  if (s.actif && (s.poste === null || surLaFeuille(s.poste))) {
-    const effectif = await listerEffectif();
-    const moi = { id: s.id ?? 0, prenom: s.prenom, nom: s.nom, gardien: s.poste === "Gardien", numeroFeuille1: s.numeroFeuille1, numeroFeuille2: s.numeroFeuille2 };
-    const autres = effectif.filter((j) => j.actif && j.surFeuille && j.id !== moi.id);
-    const refus =
-      refusNumero([...autres, moi], moi.id, "numeroFeuille1", s.numeroFeuille1) ??
-      refusNumero([...autres, moi], moi.id, "numeroFeuille2", s.numeroFeuille2);
-    if (refus) return { ok: false, erreur: refus };
-  }
-
   const donnees = {
     prenom: s.prenom,
     nom: s.nom,
     poste: s.poste,
     numero: s.numero,
-    numero_feuille_1: s.numeroFeuille1,
-    numero_feuille_2: s.numeroFeuille2,
     // Midi UTC : le meme jour partout, quel que soit le fuseau qui relit.
     date_naissance: s.dateNaissance ? `${s.dateNaissance}T12:00:00.000Z` : null,
     capitaine: s.capitaine,

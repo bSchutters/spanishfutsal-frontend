@@ -74,14 +74,9 @@ function Compteur({
   );
 }
 
-/** Les numeros de feuille de match du joueur, ceux de la feuille officielle qu'on recopie. */
+/** Le numero du joueur, celui du site et de la feuille officielle qu'on recopie. */
 function Numero({ joueur }: { joueur: JoueurFeuille }) {
-  const numeros = [joueur.numeroFeuille1, joueur.numeroFeuille2].filter((n): n is number => n !== null);
-  return (
-    <span className="w-12 shrink-0 text-center font-mono text-xs tabular-nums text-muted-foreground">
-      {numeros.length > 0 ? numeros.join(" · ") : "·"}
-    </span>
-  );
+  return <span className="w-7 shrink-0 text-center font-mono text-sm tabular-nums text-muted-foreground">{joueur.numero ?? "·"}</span>;
 }
 
 function NomJoueur({ joueur }: { joueur: JoueurFeuille }) {

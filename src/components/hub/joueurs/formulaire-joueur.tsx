@@ -41,12 +41,7 @@ import {
   schemaJoueur,
   type SaisieJoueur,
 } from "@/hub/joueurs/fiche";
-import {
-  MESSAGE_PLAGE,
-  MESSAGE_PLAGE_GARDIEN,
-  refusNumero,
-  surLaFeuille,
-} from "@/hub/joueurs/schema";
+import { surLaFeuille } from "@/hub/joueurs/schema";
 
 export type EtatFormulaireJoueur =
   { mode: "creer" } | { mode: "modifier"; joueur: JoueurFiche };
@@ -195,8 +190,6 @@ function saisieDe(j: JoueurFiche): SaisieJoueur {
     nom: j.nom,
     poste: j.poste,
     numero: j.numero,
-    numeroFeuille1: j.numeroFeuille1,
-    numeroFeuille2: j.numeroFeuille2,
     dateNaissance: j.dateNaissance ?? "",
     capitaine: j.capitaine,
     actif: j.actif,
@@ -206,20 +199,16 @@ function saisieDe(j: JoueurFiche): SaisieJoueur {
 
 /**
  * La fiche d'un joueur, en panneau lateral : identite, poste, photo, date
- * de naissance, numero du site, numeros de feuille de match, capitaine,
- * actif. La regle des maillots repond tout de suite, le serveur la
- * verifie a nouveau. Le panneau reste, le formulaire se recree pour chaque
- * fiche ouverte : ses valeurs de depart viennent de la fiche, sans effet.
+ * de naissance, numero, capitaine, actif. Le panneau reste, le formulaire
+ * se recree pour chaque fiche ouverte : ses valeurs de depart viennent de
+ * la fiche, sans effet.
  */
 export default function FormulaireJoueur({
   etat,
-  effectif,
   onFermer,
   onEnregistre,
 }: {
   etat: EtatFormulaireJoueur | null;
-  /** Tout l'effectif, pour la regle des deux porteurs par numero. */
-  effectif: JoueurFiche[];
   onFermer: () => void;
   onEnregistre: (joueur: JoueurFiche) => void;
 }) {
@@ -248,7 +237,6 @@ export default function FormulaireJoueur({
           <Fiche
             key={etat.mode === "modifier" ? etat.joueur.id : "creer"}
             etat={etat}
-            effectif={effectif}
             onFermer={onFermer}
             onEnregistre={onEnregistre}
           />
@@ -260,12 +248,10 @@ export default function FormulaireJoueur({
 
 function Fiche({
   etat,
-  effectif,
   onFermer,
   onEnregistre,
 }: {
   etat: EtatFormulaireJoueur;
-  effectif: JoueurFiche[];
   onFermer: () => void;
   onEnregistre: (joueur: JoueurFiche) => void;
 }) {
@@ -283,37 +269,10 @@ function Fiche({
     control: form.control,
     name: ["poste", "prenom", "nom", "dateNaissance"],
   });
-  const gardien = poste === "Gardien";
   const surFeuille = poste === null || surLaFeuille(poste);
   const age = ageAu(dateNaissance || null, new Date());
 
   const envoyer = async (valeurs: SaisieJoueur) => {
-    // La regle des maillots, jugee sur l'effectif actif, en excluant sa propre fiche.
-    const moi = {
-      id: valeurs.id ?? 0,
-      prenom: valeurs.prenom,
-      nom: valeurs.nom,
-      gardien,
-      numeroFeuille1: valeurs.numeroFeuille1,
-      numeroFeuille2: valeurs.numeroFeuille2,
-    };
-    const autres = effectif.filter((j) => j.actif && j.id !== moi.id);
-    if (surFeuille && valeurs.actif) {
-      const refus =
-        refusNumero(
-          [...autres, moi],
-          moi.id,
-          "numeroFeuille1",
-          valeurs.numeroFeuille1,
-        ) ??
-        refusNumero(
-          [...autres, moi],
-          moi.id,
-          "numeroFeuille2",
-          valeurs.numeroFeuille2,
-        );
-      if (refus) return void toast.error(refus);
-    }
     setEnCours(true);
     const r = await enregistrerJoueur({
       ...valeurs,
@@ -422,62 +381,31 @@ function Fiche({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="numero"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Numéro sur le site</FormLabel>
-                <FormControl>
-                  <ChampNombre
-                    valeur={field.value}
-                    onChange={field.onChange}
-                    maxLength={2}
-                    className="w-24"
-                  />
-                </FormControl>
-                <p className="text-xs text-muted-foreground">
-                  Celui de la page Équipe. Rien à voir avec la feuille de match.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {surFeuille ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {(["numeroFeuille1", "numeroFeuille2"] as const).map(
-                (champ, index) => (
-                  <FormField
-                    key={champ}
-                    control={form.control}
-                    name={champ}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Feuille de match, n° {index + 1}</FormLabel>
-                        <FormControl>
-                          <ChampNombre
-                            valeur={field.value}
-                            onChange={field.onChange}
-                            maxLength={2}
-                            className="w-24"
-                          />
-                        </FormControl>
-                        {index === 1 ? (
-                          <p className="text-xs text-muted-foreground sm:col-span-2">
-                            {gardien ? MESSAGE_PLAGE_GARDIEN : MESSAGE_PLAGE}
-                          </p>
-                        ) : null}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ),
+            <FormField
+              control={form.control}
+              name="numero"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Numéro</FormLabel>
+                  <FormControl>
+                    <ChampNombre
+                      valeur={field.value}
+                      onChange={field.onChange}
+                      maxLength={2}
+                      className="w-24"
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Celui du site et de la feuille de match.
+                  </p>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
           ) : (
             <p className="text-xs text-muted-foreground">
-              Le staff n&apos;a pas de numéro de feuille de match.
+              Le staff n&apos;a pas de numéro.
             </p>
           )}
 

@@ -32,11 +32,8 @@ export type JoueurFiche = {
   gardien: boolean;
   /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non. */
   surFeuille: boolean;
-  /** Le numero affiche sur le site, rien a voir avec la feuille. */
+  /** Le numero du joueur, celui du site. Le staff n'en a pas. */
   numero: number | null;
-  /** Les deux numeros de feuille de match. */
-  numeroFeuille1: number | null;
-  numeroFeuille2: number | null;
   /** « 2001-06-30 », ou null. */
   dateNaissance: string | null;
   capitaine: boolean;
@@ -47,7 +44,7 @@ export type JoueurFiche = {
 /** Ce que la feuille de stats a besoin de savoir d'un joueur. */
 export type JoueurFeuille = Pick<
   JoueurFiche,
-  "id" | "prenom" | "nom" | "poste" | "gardien" | "numeroFeuille1" | "numeroFeuille2" | "capitaine"
+  "id" | "prenom" | "nom" | "poste" | "gardien" | "numero" | "capitaine"
 >;
 
 export type MatchStats = {
@@ -93,8 +90,6 @@ export function ficheDe(doc: Doc): JoueurFiche {
     gardien: poste === "Gardien",
     surFeuille: poste === null || surLaFeuille(poste),
     numero: numeroOuNull(doc.numero),
-    numeroFeuille1: numeroOuNull(doc.numero_feuille_1),
-    numeroFeuille2: numeroOuNull(doc.numero_feuille_2),
     dateNaissance: typeof doc.date_naissance === "string" ? versChampDate(doc.date_naissance) || null : null,
     capitaine: doc.capitaine === true,
     actif: doc.actif !== false,
@@ -105,7 +100,7 @@ export function ficheDe(doc: Doc): JoueurFiche {
   };
 }
 
-/** Toute la collection Joueurs, actifs ou non, staff compris, tries par numero de feuille puis par nom. */
+/** Toute la collection Joueurs, actifs ou non, staff compris, tries par numero puis par nom. */
 export async function listerEffectif(payload?: Payload): Promise<JoueurFiche[]> {
   const client = payload ?? (await getPayloadClient());
   const { docs } = await client.find({ collection: "players", limit: 500, depth: 1 });
@@ -123,7 +118,7 @@ export async function chargerFiche(id: number, payload?: Payload): Promise<Joueu
 /**
  * L'effectif de la feuille de match : les joueurs actifs, gardiens et joueurs
  * de champ, un joueur sans poste comptant comme joueur de champ. Le staff
- * n'a ni numero ni statistiques. Tries par numero de feuille, puis par nom.
+ * n'a ni numero ni statistiques. Tries par numero, puis par nom.
  */
 export async function listerJoueurs(payload?: Payload): Promise<JoueurFeuille[]> {
   const client = payload ?? (await getPayloadClient());
