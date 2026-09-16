@@ -1,12 +1,13 @@
 "use client";
 
-import { CalendarDays, House, Lightbulb, ListTodo, UserRound } from "lucide-react";
+import { CalendarDays, ChevronDown, House, Lightbulb, ListTodo, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { abonnerReplis, basculerRepli, lireReplisMemorises, replisServeur } from "./replis";
 
 export type IconeNavigation = "house" | "calendar-days" | "list-todo" | "lightbulb" | "user";
 
@@ -76,6 +77,8 @@ export default function Navigation({
   blocUtilisateur: ReactNode;
 }) {
   const pathname = usePathname();
+  // Les entrees repliees par la personne : leurs sous-entrees se cachent.
+  const replies = useSyncExternalStore(abonnerReplis, lireReplisMemorises, replisServeur);
   const toutes = sections.flatMap((section) => section.entrees);
   const active = routeActive(pathname, toutes);
   const ongletActif = routeActive(pathname, onglets);
@@ -108,23 +111,42 @@ export default function Navigation({
                   .map((parent) => {
                     const Icone = ICONES[parent.icone];
                     const enfants = section.entrees.filter((entree) => entree.route.startsWith(`${parent.route}/`));
+                    const replie = enfants.length > 0 && replies.has(parent.route);
                     return (
                       <li key={parent.route}>
-                        <Link
-                          href={parent.route}
-                          aria-current={parent.route === active ? "page" : undefined}
+                        <div
                           className={cn(
-                            "flex h-9 items-center gap-2.5 rounded-md px-2 text-sm transition-colors",
+                            "flex h-9 items-center rounded-md pr-1 text-sm transition-colors",
                             parent.route === active
                               ? "bg-sidebar-accent font-medium text-sidebar-primary"
                               : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                           )}
                         >
-                          <Icone className="size-4 shrink-0" aria-hidden="true" />
-                          <span className="truncate">{parent.nom}</span>
-                          <Badge nombre={parent.badge} />
-                        </Link>
-                        {enfants.length > 0 ? (
+                          <Link
+                            href={parent.route}
+                            aria-current={parent.route === active ? "page" : undefined}
+                            className="flex h-full min-w-0 flex-1 items-center gap-2.5 px-2"
+                          >
+                            <Icone className="size-4 shrink-0" aria-hidden="true" />
+                            <span className="truncate">{parent.nom}</span>
+                            <Badge nombre={parent.badge} />
+                          </Link>
+                          {enfants.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => basculerRepli(parent.route)}
+                              aria-expanded={!replie}
+                              aria-label={replie ? `Déplier ${parent.nom}` : `Replier ${parent.nom}`}
+                              className="flex size-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 hover:bg-sidebar-border hover:text-sidebar-foreground"
+                            >
+                              <ChevronDown
+                                className={cn("size-4 transition-transform", replie && "-rotate-90")}
+                                aria-hidden="true"
+                              />
+                            </button>
+                          ) : null}
+                        </div>
+                        {enfants.length > 0 && !replie ? (
                           <ul className="mb-1 ml-4 flex flex-col border-l border-sidebar-border pl-3">
                             {enfants.map((enfant) => (
                               <li key={enfant.route}>
