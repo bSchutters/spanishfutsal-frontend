@@ -1,6 +1,7 @@
 import type { Where } from "payload";
 
 import { idDe } from "@/hub/droits";
+import { chargerDurees, finOuParDefaut } from "@/hub/calendrier/duree";
 import { lexicalVersTexte } from "@/hub/texte";
 import { getPayloadClient } from "@/lib/payload";
 import type { EvenementIcal, FluxIcal, ReglagesIcal } from "./ical";
@@ -92,13 +93,16 @@ export async function chargerEvenementsDuFlux(
       },
     ],
   };
-  const { docs } = await payload.find({
-    collection: "events",
-    where,
-    sort: "starts_at",
-    limit: 1000,
-    depth: 1,
-  });
+  const [{ docs }, durees] = await Promise.all([
+    payload.find({
+      collection: "events",
+      where,
+      sort: "starts_at",
+      limit: 1000,
+      depth: 1,
+    }),
+    chargerDurees(payload),
+  ]);
 
   return docs.map((brut) => {
     const doc = brut as Doc;
@@ -110,7 +114,14 @@ export async function chargerEvenementsDuFlux(
       id: Number(doc.id),
       titre: String(doc.title ?? ""),
       debut: String(doc.starts_at),
-      fin: (doc.ends_at as string | null) ?? null,
+      fin:
+        finOuParDefaut(
+          new Date(String(doc.starts_at)),
+          doc.ends_at ? new Date(String(doc.ends_at)) : null,
+          Boolean(doc.all_day),
+          categorie,
+          durees,
+        )?.toISOString() ?? null,
       journeeEntiere: Boolean(doc.all_day),
       annule: Boolean(doc.cancelled),
       pasDeRappel: Boolean(doc.no_reminder),

@@ -1,3 +1,4 @@
+import { DUREE_POST_MINUTES } from "@/hub/calendrier/duree";
 import type { Statut } from "@/hub/calendrier/schema";
 import { ajouterJoursLocaux, composerDateHeure, versChampDate } from "@/hub/dates";
 import { lexicalVersTexte } from "@/hub/texte";
@@ -57,9 +58,6 @@ export type ContextePosts = {
  * - `reinitialiser` : le bouton avec l'option, remet aussi les posts non publies a neuf.
  */
 export type ModePlan = "synchro" | "completer" | "reinitialiser";
-
-/** Un post genere tient une demi-heure dans le calendrier, le temps de le publier. */
-export const DUREE_POST_MINUTES = 30;
 
 export function finDuPost(debut: string): string {
   return new Date(new Date(debut).getTime() + DUREE_POST_MINUTES * 60_000).toISOString();
@@ -172,6 +170,9 @@ export function planifierPosts(args: {
       data.cancelled = false;
       data.date_edited_manually = false;
       data.caption_edited_manually = false;
+      // La diffusion aussi repart du modele : formats, reseaux, flux, responsables.
+      const neuf = champsDuPost(modele, champs, variables, contexte);
+      for (const cle of ["format", "networks", "feeds", "primary_feed", "responsibles"] as const) data[cle] = neuf[cle];
       plan.aModifier.push({ id: existant.id, data });
       continue;
     }

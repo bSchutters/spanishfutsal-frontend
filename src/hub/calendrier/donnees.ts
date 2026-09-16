@@ -5,6 +5,7 @@ import { estRecurrent, occurrences, type Recurrence } from "@/hub/recurrence";
 import type { UtilisateurSession } from "@/hub/session";
 import { lexicalVersTexte } from "@/hub/texte";
 import { getPayloadClient } from "@/lib/payload";
+import { chargerDurees, finOuParDefaut } from "./duree";
 
 /**
  * La lecture des donnees du calendrier, toujours avec les droits de la
@@ -228,15 +229,18 @@ export async function listerEvenements(
     ],
   };
 
-  const { docs } = await payload.find({
-    collection: "events",
-    where,
-    sort: "starts_at",
-    limit: 500,
-    depth: 1,
-    overrideAccess: false,
-    user,
-  });
+  const [{ docs }, durees] = await Promise.all([
+    payload.find({
+      collection: "events",
+      where,
+      sort: "starts_at",
+      limit: 500,
+      depth: 1,
+      overrideAccess: false,
+      user,
+    }),
+    chargerDurees(payload),
+  ]);
 
   const resultat: EvenementCalendrier[] = [];
   for (const brut of docs) {
@@ -264,11 +268,13 @@ export async function listerEvenements(
       plage,
     )) {
       const debut = occ.debut.toISOString();
+      // Sans fin, la duree de la categorie : le calendrier et les flux montrent la meme chose.
+      const fin = finOuParDefaut(occ.debut, occ.fin, base.journeeEntiere, base.categorie, durees);
       resultat.push({
         ...base,
         cle: base.recurrent ? `${base.id}@${debut}` : String(base.id),
         debut,
-        fin: occ.fin ? occ.fin.toISOString() : null,
+        fin: fin ? fin.toISOString() : null,
       });
     }
   }

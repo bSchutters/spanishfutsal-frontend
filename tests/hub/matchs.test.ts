@@ -332,6 +332,11 @@ describe("plan des posts", () => {
           cancelled: false,
           date_edited_manually: false,
           caption_edited_manually: false,
+          format: [4],
+          networks: [1, 2],
+          feeds: [3],
+          primary_feed: 3,
+          responsibles: [],
         },
       },
     ]);

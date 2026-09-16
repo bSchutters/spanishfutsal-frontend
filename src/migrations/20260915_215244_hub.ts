@@ -596,7 +596,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
   }
 
   const formats: Record<string, number | string> = {}
-  for (const [index, name] of ['Post', 'Carrousel', 'Reel', 'Story', 'Live'].entries()) {
+  for (const [index, name] of ['Post', 'Carrousel', 'Reel', 'Story', 'Live', 'Repost en story'].entries()) {
     formats[name] = await trouverOuCreer(
       { payload, req },
       'formats',
@@ -623,7 +623,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       day_offset: -2,
       fixed_time: '18:00',
       title_template: 'Annonce vs {adversaire}',
-      format: [formats.Post],
+      format: [formats.Post, formats['Repost en story']],
       caption_template: 'PROCHAIN MATCH 💛💙\n\n📅 {date_courte}\n🕒 {heure}\n📍 {adresse}\n🆚 {adversaire}',
     },
     {
@@ -631,7 +631,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       day_offset: 0,
       fixed_time: '10:00',
       title_template: 'Jour de match vs {adversaire}',
-      format: [formats.Story],
+      format: [formats.Post, formats['Repost en story']],
       caption_template: 'MATCHDAY ⚔️\n\n🆚 {adversaire}\n📍 {adresse}\n🕒 {heure}',
     },
     {
@@ -639,7 +639,7 @@ async function semer({ payload, req }: Contexte): Promise<void> {
       day_offset: 1,
       fixed_time: '12:00',
       title_template: 'Résultat vs {adversaire}',
-      format: [formats.Post],
+      format: [formats.Post, formats['Repost en story']],
       // Pas de legende : Bryan la genere a part apres chaque match, le post sert de rappel.
       caption_template: null,
     },
