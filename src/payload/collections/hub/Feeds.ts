@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import type { CollectionConfig } from 'payload'
 
 import { adminSeulement, champAdmin, lectureDesFlux } from '@/hub/droits'
+import { baseUrlHub } from '@/hub/flux/base-url'
 import { adminHub, validerCouleur, validerSlug } from './partage'
 
 /** Trente-deux octets aleatoires, en base64 sans caractere a encoder dans une URL. */
@@ -92,6 +93,19 @@ export const Feeds: CollectionConfig = {
         readOnly: true,
         position: 'sidebar',
         description: 'Le secret du lien du flux. Regenerer le jeton coupe immediatement les anciens abonnements.',
+      },
+    },
+    {
+      name: 'subscription',
+      type: 'ui',
+      label: 'Abonnement',
+      admin: {
+        components: {
+          Field: {
+            path: '@/payload/components/FluxAbonnement',
+            clientProps: { baseUrl: baseUrlHub() },
+          },
+        },
       },
     },
     {

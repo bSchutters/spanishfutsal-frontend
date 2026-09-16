@@ -3,6 +3,7 @@
 import type { EventChangeInfo, EventInput } from "@fullcalendar/react";
 import frLocale from "@fullcalendar/react/locales/fr";
 import { Plus } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
@@ -66,8 +67,13 @@ function versEntree(ev: EvenementCalendrier, peutEditer: boolean): EventInput {
 export default function Calendrier({ references, peutEditer, utilisateurId, estAdmin }: Props) {
   const monte = useSyncExternalStore(rienAEcouter, coteNavigateur, coteServeur);
   const filtres = useSyncExternalStore(abonnerFiltres, lireFiltresMemorises, filtresServeur);
+  const parametres = useSearchParams();
   const [evenements, setEvenements] = useState<EvenementCalendrier[]>([]);
-  const [detailId, setDetailId] = useState<number | null>(null);
+  // Un lien vers un evenement (flux, notification) ouvre son panneau d'emblee.
+  const [detailId, setDetailId] = useState<number | null>(() => {
+    const demande = Number(parametres.get("evenement"));
+    return Number.isInteger(demande) && demande > 0 ? demande : null;
+  });
   const [formulaire, setFormulaire] = useState<EtatFormulaire | null>(null);
   const plage = useRef<{ debut: string; fin: string } | null>(null);
   const vueInitiale = monte && window.innerWidth < 768 ? "listWeek" : "dayGridMonth";

@@ -677,6 +677,8 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Branche (15/09/2026) | `feat/hub`, créée depuis `feat/payload-migration`, la branche déployée en production |
 | Saisie du texte enrichi (16/09/2026) | Le Hub saisit description, notes et instructions en texte simple, stocke en paragraphes Lexical, et relit tout Lexical en texte brut. La mise en forme riche reste possible depuis l admin |
 | Calendrier (16/09/2026) | FullCalendar 7.1 en place via le registre shadcn, vues mois, semaine et liste, fuseau du navigateur. Couleur du type sur l evenement, la couleur du flux est dans le panneau de detail |
+| Flux iCal (16/09/2026) | Route `/api/hub/flux/[token].ics` par ical-generator. Dates en TZID Europe/Brussels sans bloc VTIMEZONE, ce que Calendrier et Google Agenda lisent. Alertes exprimees par rapport au debut, pour valoir sur chaque occurrence d une recurrence. UID `{id}-{slug}@udasturiana.be` |
+| Adresse publique (16/09/2026) | `HUB_BASE_URL`, sinon l adresse du site, pour les liens des flux, les pages d abonnement et les QR codes. Un lien vers un evenement ouvre le calendrier sur son panneau |
 
 ---
 
