@@ -1,6 +1,14 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, NumberFieldSingleValidation } from 'payload'
 import { canWrite, canDelete, isAuthenticated, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
+import { messagePlage, numeroDeMaillot } from '@/hub/joueurs/schema'
+
+/** Un numero de feuille de match reste dans les maillots du poste : le 1 ou le 21 pour un gardien, du 2 au 14 sinon. */
+const validerNumeroFeuille: NumberFieldSingleValidation = (value, { siblingData }) => {
+  if (value === null || value === undefined) return true
+  const gardien = (siblingData as { poste?: string } | undefined)?.poste === 'Gardien'
+  return numeroDeMaillot(value, gardien) || messagePlage(gardien)
+}
 
 export const Players: CollectionConfig = {
   slug: 'players',
@@ -57,18 +65,16 @@ export const Players: CollectionConfig = {
       name: 'numero_feuille_1',
       type: 'number',
       label: 'Feuille de match, numero 1',
-      min: 2,
-      max: 14,
+      validate: validerNumeroFeuille,
     },
     {
       name: 'numero_feuille_2',
       type: 'number',
       label: 'Feuille de match, numero 2',
-      min: 2,
-      max: 14,
+      validate: validerNumeroFeuille,
       admin: {
         description:
-          "Les deux maillots que ce joueur peut porter, du 2 au 14 : treize numeros pour tout l'effectif, deux porteurs au plus par numero. Rien a voir avec le numero du site. Se regle aussi depuis le Hub, page Numeros.",
+          "Les deux maillots que ce joueur peut porter : du 2 au 14 pour un joueur de champ, le 1 ou le 21 pour un gardien, deux porteurs au plus par numero. Rien a voir avec le numero du site. Se regle depuis le Hub, page Numeros, qui verifie aussi les porteurs.",
       },
     },
     {

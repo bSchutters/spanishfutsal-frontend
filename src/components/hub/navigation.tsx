@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChartColumn, ChevronDown, Hash, House, Lightbulb, ListTodo, UserRound, Users } from "lucide-react";
+import { CalendarDays, ChartColumn, ChevronDown, House, Lightbulb, ListTodo, UserRound, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,7 +42,6 @@ const ICONES: Record<IconeNavigation, typeof House> = {
   lightbulb: Lightbulb,
   users: Users,
   "chart-column": ChartColumn,
-  hash: Hash,
   user: UserRound,
 };
 

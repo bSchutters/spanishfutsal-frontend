@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { modulesAccessibles, niveauModule, type UtilisateurHub } from "@/hub/droits";
+import { ageAu, nettoyerSelonPoste, schemaJoueur, SAISIE_JOUEUR_VIDE } from "@/hub/joueurs/fiche";
 import {
   butsDuClub,
   depuisTableauxMatch,
@@ -9,7 +10,6 @@ import {
   joueursParNumero,
   refusNumero,
   schemaFeuilleStats,
-  schemaNumeros,
   trierJoueurs,
   versTableauxMatch,
   type Poste,
@@ -106,22 +106,26 @@ describe("score et etat", () => {
 
 describe("numeros de feuille de match", () => {
   const joueurs = [
-    { id: 1, prenom: "Ana", nom: "Diaz", numeroFeuille1: 2, numeroFeuille2: 12 },
-    { id: 2, prenom: "Bo", nom: "Alvarez", numeroFeuille1: 7, numeroFeuille2: 12 },
-    { id: 3, prenom: "Cy", nom: "Perez", numeroFeuille1: 7, numeroFeuille2: 7 },
-    { id: 4, prenom: "Di", nom: "Ruiz", numeroFeuille1: null, numeroFeuille2: null },
-    { id: 5, prenom: "Ed", nom: "Sola", numeroFeuille1: 21, numeroFeuille2: null },
+    { id: 1, prenom: "Ana", nom: "Diaz", gardien: false, numeroFeuille1: 2, numeroFeuille2: 12 },
+    { id: 2, prenom: "Bo", nom: "Alvarez", gardien: false, numeroFeuille1: 7, numeroFeuille2: 12 },
+    { id: 3, prenom: "Cy", nom: "Perez", gardien: false, numeroFeuille1: 7, numeroFeuille2: 7 },
+    { id: 4, prenom: "Di", nom: "Ruiz", gardien: false, numeroFeuille1: null, numeroFeuille2: null },
+    { id: 5, prenom: "Ed", nom: "Sola", gardien: true, numeroFeuille1: 21, numeroFeuille2: null },
+    { id: 6, prenom: "Fa", nom: "Toro", gardien: true, numeroFeuille1: 1, numeroFeuille2: null },
+    { id: 7, prenom: "Gi", nom: "Uzo", gardien: false, numeroFeuille1: 30, numeroFeuille2: null },
   ];
 
-  it("liste les treize maillots avec leurs porteurs et leurs places, plus les numeros hors maillots", () => {
+  it("liste les maillots, gardiens d abord, avec leurs porteurs et leurs places, plus les numeros inconnus", () => {
     const places = joueursParNumero(joueurs);
-    expect(places.map((p) => p.numero)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21]);
-    const par = Object.fromEntries(places.map((p) => [p.numero, [p.joueurs.map((j) => j.id), p.placesLibres, p.maillot]]));
-    expect(par[2]).toEqual([[1], 1, true]);
-    expect(par[7]).toEqual([[2, 3], 0, true]);
-    expect(par[12]).toEqual([[1, 2], 0, true]);
-    expect(par[9]).toEqual([[], 2, true]);
-    expect(par[21]).toEqual([[5], 1, false]);
+    expect(places.map((p) => p.numero)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 30]);
+    const par = Object.fromEntries(places.map((p) => [p.numero, [p.joueurs.map((j) => j.id), p.placesLibres, p.maillot, p.gardien]]));
+    expect(par[1]).toEqual([[6], 1, true, true]);
+    expect(par[2]).toEqual([[1], 1, true, false]);
+    expect(par[7]).toEqual([[2, 3], 0, true, false]);
+    expect(par[12]).toEqual([[1, 2], 0, true, false]);
+    expect(par[9]).toEqual([[], 2, true, false]);
+    expect(par[21]).toEqual([[5], 1, true, true]);
+    expect(par[30]).toEqual([[7], 1, false, false]);
   });
 
   it("refuse un troisieme porteur, un doublon chez le meme joueur et un numero hors maillots", () => {
@@ -132,6 +136,10 @@ describe("numeros de feuille de match", () => {
     expect(refusNumero(joueurs, 4, "numeroFeuille1", null)).toBeNull();
     expect(refusNumero(joueurs, 4, "numeroFeuille1", 1)).toBe("Un numéro de 2 à 14, ceux des maillots.");
     expect(refusNumero(joueurs, 4, "numeroFeuille1", 15)).toBe("Un numéro de 2 à 14, ceux des maillots.");
+    // Un gardien reste sur le 1 ou le 21, et un joueur de champ n y touche pas.
+    expect(refusNumero(joueurs, 5, "numeroFeuille2", 1)).toBeNull();
+    expect(refusNumero(joueurs, 5, "numeroFeuille2", 5)).toBe("Un gardien porte le 1 ou le 21.");
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 21)).toBe("Un numéro de 2 à 14, ceux des maillots.");
     // Le joueur qui porte deja le numero peut le garder dans la meme case.
     expect(refusNumero(joueurs, 1, "numeroFeuille2", 12)).toBeNull();
     expect(refusNumero(joueurs, 1, "numeroFeuille2", 2)).toBe("Ce joueur a déjà le 2.");
@@ -139,16 +147,37 @@ describe("numeros de feuille de match", () => {
 
   it("trie par numero principal, les sans numero en fin, puis par nom", () => {
     // A egalite sur le principal (Bo et Cy ont le 7), le secondaire departage : 7 avant 12.
-    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([1, 3, 2, 5, 4]);
-    expect(trierJoueurs([joueurs[3], { ...joueurs[3], id: 6, nom: "Aa" }]).map((j) => j.id)).toEqual([6, 4]);
+    expect(trierJoueurs(joueurs).map((j) => j.id)).toEqual([6, 1, 3, 2, 5, 7, 4]);
+    expect(trierJoueurs([joueurs[3], { ...joueurs[3], id: 8, nom: "Aa" }]).map((j) => j.id)).toEqual([8, 4]);
   });
 
-  it("accepte du 2 au 14 ou rien", () => {
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 10, numero2: null }).success).toBe(true);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 2, numero2: 14 }).success).toBe(true);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 1, numero2: null }).success).toBe(false);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 15, numero2: null }).success).toBe(false);
-    expect(schemaNumeros.safeParse({ joueurId: 1, numero: 7.5, numero2: null }).success).toBe(false);
+});
+
+describe("fiche d un joueur", () => {
+  it("exige un prenom et un nom, et n accepte que des maillots connus", () => {
+    const base = { ...SAISIE_JOUEUR_VIDE, prenom: "Ana", nom: "Diaz" };
+    expect(schemaJoueur.safeParse(base).success).toBe(true);
+    expect(schemaJoueur.safeParse({ ...base, nom: " " }).success).toBe(false);
+    expect(schemaJoueur.safeParse({ ...base, numeroFeuille1: 2, numeroFeuille2: 14 }).success).toBe(true);
+    expect(schemaJoueur.safeParse({ ...base, numeroFeuille1: 1, numeroFeuille2: 21 }).success).toBe(true);
+    expect(schemaJoueur.safeParse({ ...base, numeroFeuille1: 15 }).success).toBe(false);
+    expect(schemaJoueur.safeParse({ ...base, numero: 100 }).success).toBe(false);
+    expect(schemaJoueur.safeParse({ ...base, dateNaissance: "2001-06-30" }).success).toBe(true);
+    expect(schemaJoueur.safeParse({ ...base, dateNaissance: "30/06/2001" }).success).toBe(false);
+  });
+
+  it("le staff perd numeros de feuille et brassard", () => {
+    const coach = { ...SAISIE_JOUEUR_VIDE, prenom: "Dani", nom: "Correas", poste: "Coach" as const, numeroFeuille1: 7, capitaine: true };
+    expect(nettoyerSelonPoste(coach)).toEqual({ ...coach, numeroFeuille1: null, numeroFeuille2: null, capitaine: false });
+    const joueur = { ...coach, poste: "Joueur" as const };
+    expect(nettoyerSelonPoste(joueur)).toBe(joueur);
+  });
+
+  it("calcule l age au jour pres", () => {
+    expect(ageAu("2000-06-30", new Date("2026-06-29T12:00:00Z"))).toBe(25);
+    expect(ageAu("2000-06-30", new Date("2026-06-30T12:00:00Z"))).toBe(26);
+    expect(ageAu(null, new Date())).toBeNull();
+    expect(ageAu("n importe quoi", new Date())).toBeNull();
   });
 });
 

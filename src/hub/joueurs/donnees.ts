@@ -1,6 +1,6 @@
 import type { Payload } from "payload";
 
-import { composerDateHeure } from "@/hub/dates";
+import { composerDateHeure, versChampDate } from "@/hub/dates";
 import { camp, jourDuMatch, scoreDe, type MatchLffs } from "@/hub/matchs/construction";
 import { getPayloadClient } from "@/lib/payload";
 import { getTeamsIndex } from "@/lib/getTeamsIndex";
@@ -23,17 +23,32 @@ import {
  * ne portant pas de regle par personne dans le Hub.
  */
 
-export type JoueurFeuille = {
+/** Une fiche de la collection Joueurs, telle que le Hub la montre et la modifie. */
+export type JoueurFiche = {
   id: number;
   prenom: string;
   nom: string;
-  /** Les deux numeros de feuille de match, sans rapport avec le numero du site. */
-  numeroFeuille1: number | null;
-  numeroFeuille2: number | null;
   poste: Poste | null;
   gardien: boolean;
+  /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non. */
+  surFeuille: boolean;
+  /** Le numero affiche sur le site, rien a voir avec la feuille. */
+  numero: number | null;
+  /** Les deux numeros de feuille de match. */
+  numeroFeuille1: number | null;
+  numeroFeuille2: number | null;
+  /** « 2001-06-30 », ou null. */
+  dateNaissance: string | null;
   capitaine: boolean;
+  actif: boolean;
+  photo: { id: number; url: string } | null;
 };
+
+/** Ce que la feuille de stats a besoin de savoir d'un joueur. */
+export type JoueurFeuille = Pick<
+  JoueurFiche,
+  "id" | "prenom" | "nom" | "poste" | "gardien" | "numeroFeuille1" | "numeroFeuille2" | "capitaine"
+>;
 
 export type MatchStats = {
   id: number;
@@ -67,18 +82,42 @@ type Doc = Record<string, unknown> & { id: number | string };
 const numeroOuNull = (valeur: unknown): number | null =>
   typeof valeur === "number" && Number.isFinite(valeur) ? Math.trunc(valeur) : null;
 
-function joueurDe(doc: Doc): JoueurFeuille {
+export function ficheDe(doc: Doc): JoueurFiche {
   const poste = (doc.poste as Poste | null | undefined) ?? null;
+  const photo = doc.photo;
   return {
     id: Number(doc.id),
     prenom: String(doc.prenom ?? "").trim(),
     nom: String(doc.nom ?? "").trim(),
-    numeroFeuille1: numeroOuNull(doc.numero_feuille_1),
-    numeroFeuille2: numeroOuNull(doc.numero_feuille_2),
     poste,
     gardien: poste === "Gardien",
+    surFeuille: poste === null || surLaFeuille(poste),
+    numero: numeroOuNull(doc.numero),
+    numeroFeuille1: numeroOuNull(doc.numero_feuille_1),
+    numeroFeuille2: numeroOuNull(doc.numero_feuille_2),
+    dateNaissance: typeof doc.date_naissance === "string" ? versChampDate(doc.date_naissance) || null : null,
     capitaine: doc.capitaine === true,
+    actif: doc.actif !== false,
+    photo:
+      photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string"
+        ? { id: Number((photo as { id: unknown }).id), url: String((photo as { url: string }).url) }
+        : null,
   };
+}
+
+/** Toute la collection Joueurs, actifs ou non, staff compris, tries par numero de feuille puis par nom. */
+export async function listerEffectif(payload?: Payload): Promise<JoueurFiche[]> {
+  const client = payload ?? (await getPayloadClient());
+  const { docs } = await client.find({ collection: "players", limit: 500, depth: 1 });
+  return trierJoueurs((docs as Doc[]).map(ficheDe));
+}
+
+/** Une fiche, relue avec sa photo. Null si elle n'existe pas. */
+export async function chargerFiche(id: number, payload?: Payload): Promise<JoueurFiche | null> {
+  const client = payload ?? (await getPayloadClient());
+  const { docs } = await client.find({ collection: "players", where: { id: { equals: id } }, limit: 1, depth: 1 });
+  const doc = docs[0] as Doc | undefined;
+  return doc ? ficheDe(doc) : null;
 }
 
 /**
@@ -89,7 +128,7 @@ function joueurDe(doc: Doc): JoueurFeuille {
 export async function listerJoueurs(payload?: Payload): Promise<JoueurFeuille[]> {
   const client = payload ?? (await getPayloadClient());
   const { docs } = await client.find({ collection: "players", where: { actif: { equals: true } }, limit: 500, depth: 0 });
-  return trierJoueurs((docs as Doc[]).map(joueurDe).filter((j) => j.poste === null || surLaFeuille(j.poste)));
+  return trierJoueurs((docs as Doc[]).map(ficheDe).filter((j) => j.surFeuille));
 }
 
 /** Les postes par identifiant, pour ranger chaque ligne dans le bon tableau. */
@@ -195,7 +234,7 @@ export async function chargerFeuilleStats(matchId: number): Promise<FeuilleStats
   let tous = joueurs;
   if (manquants.length > 0) {
     const { docs } = await payload.find({ collection: "players", where: { id: { in: manquants } }, limit: 100, depth: 0 });
-    tous = [...joueurs, ...(docs as Doc[]).map(joueurDe)];
+    tous = [...joueurs, ...(docs as Doc[]).map(ficheDe)];
   }
 
   return {

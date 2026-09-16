@@ -20,7 +20,7 @@ export const LIBELLES_NIVEAUX: Record<Niveau, string> = {
 };
 
 export type IconeModule = "calendar-days" | "users";
-export type IconeEntree = IconeModule | "list-todo" | "lightbulb" | "chart-column" | "hash";
+export type IconeEntree = IconeModule | "list-todo" | "lightbulb" | "chart-column";
 
 export type EntreeModule = { nom: string; route: string; icone: IconeEntree };
 
@@ -53,11 +53,11 @@ export const MODULES = [
   {
     key: "players",
     nom: "Joueurs",
-    description: "Statistiques des matchs et numéros de maillot.",
-    route: "/hub/joueurs/numeros",
+    description: "L'effectif, ses fiches et ses maillots, et les statistiques des matchs.",
+    route: "/hub/joueurs/effectif",
     icone: "users",
     navigation: [
-      { nom: "Numéros", route: "/hub/joueurs/numeros", icone: "hash" },
+      { nom: "Effectif", route: "/hub/joueurs/effectif", icone: "users" },
       { nom: "Stats", route: "/hub/joueurs/stats", icone: "chart-column" },
     ],
   },

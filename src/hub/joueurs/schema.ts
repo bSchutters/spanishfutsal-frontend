@@ -40,27 +40,29 @@ export const schemaFeuilleStats = z.object({
 
 export type SaisieFeuilleStats = z.infer<typeof schemaFeuilleStats>;
 
-/** Les maillots du club vont du 2 au 14 : treize numeros, pas un de plus. */
+/**
+ * Les maillots du club : du 2 au 14 pour les joueurs de champ, treize
+ * numeros ; le 1 et le 21 pour les gardiens. Rien d'autre.
+ */
 export const NUMERO_MIN = 2;
 export const NUMERO_MAX = 14;
-export const NUMEROS_MAILLOTS: readonly number[] = Array.from({ length: NUMERO_MAX - NUMERO_MIN + 1 }, (_, i) => NUMERO_MIN + i);
+export const NUMEROS_CHAMP: readonly number[] = Array.from({ length: NUMERO_MAX - NUMERO_MIN + 1 }, (_, i) => NUMERO_MIN + i);
+export const NUMEROS_GARDIENS: readonly number[] = [1, 21];
 export const MESSAGE_PLAGE = `Un numéro de ${NUMERO_MIN} à ${NUMERO_MAX}, ceux des maillots.`;
+export const MESSAGE_PLAGE_GARDIEN = `Un gardien porte le ${NUMEROS_GARDIENS.join(" ou le ")}.`;
 
-/** Vrai si ce numero existe sur un maillot du club. */
-export function numeroDeMaillot(numero: number): boolean {
-  return Number.isInteger(numero) && numero >= NUMERO_MIN && numero <= NUMERO_MAX;
+/** Vrai si ce numero existe sur un maillot du club, pour ce poste. */
+export function numeroDeMaillot(numero: number, gardien: boolean): boolean {
+  if (!Number.isInteger(numero)) return false;
+  return gardien ? NUMEROS_GARDIENS.includes(numero) : numero >= NUMERO_MIN && numero <= NUMERO_MAX;
 }
 
-/** Un numero de feuille de match : un maillot du club, ou rien. */
-const numero = z.nullable(z.number().check(z.int(MESSAGE_PLAGE), z.gte(NUMERO_MIN, MESSAGE_PLAGE), z.lte(NUMERO_MAX, MESSAGE_PLAGE)));
+/** Vrai si ce numero existe sur un maillot du club, gardien ou champ. */
+export function numeroConnu(numero: number): boolean {
+  return numeroDeMaillot(numero, false) || numeroDeMaillot(numero, true);
+}
 
-export const schemaNumeros = z.object({
-  joueurId: identifiant,
-  numero,
-  numero2: numero,
-});
-
-export type SaisieNumeros = z.infer<typeof schemaNumeros>;
+export const messagePlage = (gardien: boolean) => (gardien ? MESSAGE_PLAGE_GARDIEN : MESSAGE_PLAGE);
 
 /** Une ligne telle que la collection Matchs la stocke. */
 export type LigneMatch = {
@@ -194,22 +196,29 @@ export function butsDuClub(score: string | null, domicile: boolean): number | nu
   return Number(domicile ? lu[1] : lu[2]);
 }
 
-export type JoueurNumeros = { id: number; prenom: string; nom: string; numeroFeuille1: number | null; numeroFeuille2: number | null };
+export type JoueurNumeros = {
+  id: number;
+  prenom: string;
+  nom: string;
+  gardien: boolean;
+  numeroFeuille1: number | null;
+  numeroFeuille2: number | null;
+};
 
 /** Deux porteurs par numero : un principal, un secondaire. */
 export const PORTEURS_MAX = 2;
 
-export type PlaceNumero<T> = { numero: number; joueurs: T[]; placesLibres: number; maillot: boolean };
+export type PlaceNumero<T> = { numero: number; joueurs: T[]; placesLibres: number; maillot: boolean; gardien: boolean };
 
 /**
- * Qui peut porter quel numero, sur les treize maillots. Chaque numero se
+ * Qui peut porter quel numero, sur les maillots du club, gardiens compris. Chaque numero se
  * donne a deux joueurs au plus, l'un en principal, l'autre en secondaire :
  * les places libres disent ou caser les suivants. Un numero saisi hors
  * des maillots, un reste d'avant la regle, apparait quand meme, signale,
  * pour etre corrige. Numeros croissants, joueurs dans l'ordre recu.
  */
 export function joueursParNumero<T extends JoueurNumeros>(joueurs: readonly T[]): Array<PlaceNumero<T>> {
-  const parNumero = new Map<number, T[]>(NUMEROS_MAILLOTS.map((n) => [n, []]));
+  const parNumero = new Map<number, T[]>([...NUMEROS_GARDIENS, ...NUMEROS_CHAMP].map((n) => [n, []]));
   for (const joueur of joueurs) {
     // Un joueur qui a deux fois le meme numero n'y figure qu'une fois.
     const siens = new Set([joueur.numeroFeuille1, joueur.numeroFeuille2].filter((n): n is number => n !== null));
@@ -221,7 +230,8 @@ export function joueursParNumero<T extends JoueurNumeros>(joueurs: readonly T[])
       numero,
       joueurs: liste,
       placesLibres: Math.max(0, PORTEURS_MAX - liste.length),
-      maillot: numeroDeMaillot(numero),
+      maillot: numeroConnu(numero),
+      gardien: numeroDeMaillot(numero, true),
     }));
 }
 
@@ -238,8 +248,8 @@ const nomCourt = (j: JoueurNumeros) => `${j.prenom} ${j.nom}`.trim();
  * Pourquoi un numero ne peut pas etre donne a ce joueur, ou null s'il le
  * peut. Un numero se porte au plus par deux joueurs, l'un en principal,
  * l'autre en secondaire, pour tourner sans se retrouver a trois sur le
- * meme maillot ; et un joueur ne le prend pas deux fois. Rien ne se
- * verifie pour une case videe.
+ * meme maillot ; un joueur ne le prend pas deux fois ; et chacun reste
+ * dans les maillots de son poste. Rien ne se verifie pour une case videe.
  */
 export function refusNumero(
   joueurs: readonly JoueurNumeros[],
@@ -251,7 +261,7 @@ export function refusNumero(
   const moi = joueurs.find((j) => j.id === joueurId);
   const autreChamp: ChampNumero = champ === "numeroFeuille1" ? "numeroFeuille2" : "numeroFeuille1";
   if (moi && moi[autreChamp] === numero) return `Ce joueur a déjà le ${numero}.`;
-  if (!numeroDeMaillot(numero)) return MESSAGE_PLAGE;
+  if (!numeroDeMaillot(numero, moi?.gardien ?? false)) return messagePlage(moi?.gardien ?? false);
   const porteurs = porteursDe(joueurs, numero, joueurId);
   if (porteurs.length >= PORTEURS_MAX) {
     return `Le ${numero} est déjà porté par deux joueurs, ${porteurs.map(nomCourt).join(" et ")}.`;
