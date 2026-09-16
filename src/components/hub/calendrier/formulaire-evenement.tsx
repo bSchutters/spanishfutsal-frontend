@@ -376,26 +376,6 @@ export default function FormulaireEvenement({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="fluxIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Flux</FormLabel>
-                  <CasesACocher
-                    options={references.flux}
-                    valeurs={field.value}
-                    couleurs={couleursFlux}
-                    onChange={(v) => {
-                      fluxTouches.current = true;
-                      field.onChange(v);
-                    }}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {fluxChoisis.length > 1 ? (
               <FormField
                 control={form.control}
@@ -430,6 +410,26 @@ export default function FormulaireEvenement({
                 }}
               />
             ) : null}
+
+            <FormField
+              control={form.control}
+              name="fluxIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Flux</FormLabel>
+                  <CasesACocher
+                    options={references.flux}
+                    valeurs={field.value}
+                    couleurs={couleursFlux}
+                    onChange={(v) => {
+                      fluxTouches.current = true;
+                      field.onChange(v);
+                    }}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
