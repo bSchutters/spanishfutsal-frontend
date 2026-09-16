@@ -66,10 +66,10 @@ export const Users: CollectionConfig = {
     tokenExpiration: SEPT_JOURS_EN_SECONDES,
     cookies: {
       // En production le site est en https : le cookie de session ne doit
-      // jamais partir en clair. COOKIE_SANS_HTTPS=1 ne sert qu'a essayer une
+      // jamais partir en clair. ESSAI_HTTP_RESEAU_LOCAL=1 ne sert qu'a essayer une
       // construction de production depuis un telephone, en http sur le
       // reseau local ; a ne jamais poser sur Vercel.
-      secure: process.env.NODE_ENV === 'production' && process.env.COOKIE_SANS_HTTPS !== '1',
+      secure: process.env.NODE_ENV === 'production' && process.env.ESSAI_HTTP_RESEAU_LOCAL !== '1',
       sameSite: 'Lax',
     },
   },

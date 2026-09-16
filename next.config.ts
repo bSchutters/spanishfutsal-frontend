@@ -16,6 +16,13 @@ import { withPayload } from "@payloadcms/next/withPayload";
 // La production, elle, ne compile aucun `eval`.
 const EN_DEV = process.env.NODE_ENV !== "production";
 
+// Une construction de production essayee depuis un telephone, en http sur le
+// reseau local : sans ce reglage, la directive ci-dessous convertirait la
+// feuille de style et les scripts vers un https qui n existe pas, et la page
+// arriverait toute nue. Voir aussi le cookie de session dans Users.ts. A ne
+// jamais poser sur Vercel.
+const ESSAI_HTTP_RESEAU_LOCAL = process.env.ESSAI_HTTP_RESEAU_LOCAL === "1";
+
 // Le flux public qui tient lieu de diffusion pendant un essai du direct
 // (`/api/salle-essai?flux=1`). La meme valeur par defaut que src/lib/fluxDEssai.ts,
 // recopiee ici : ce fichier se charge avant tout le reste et n'importe rien du
@@ -66,7 +73,7 @@ const CSP_PUBLIC = [
   // mais pas une adresse du reseau local. Depuis un telephone branche sur
   // http://192.168.x.x, il convertissait donc la feuille de style et le
   // JavaScript vers un https qui n'existe pas, et le site arrivait tout nu.
-  ...(EN_DEV ? [] : ["upgrade-insecure-requests"]),
+  ...(EN_DEV || ESSAI_HTTP_RESEAU_LOCAL ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 // L'admin Payload embarque son propre editeur et ses propres travailleurs :
