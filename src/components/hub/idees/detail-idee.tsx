@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, ExternalLink, Pencil, ThumbsUp, Trash2 } from "lucide-react";
+import { CalendarPlus, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -16,14 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatutIdee, lireIdee, supprimerIdee, voterIdee } from "@/hub/actions/idees";
 import { formaterDateCourte } from "@/hub/dates";
 import type { IdeeDetail } from "@/hub/idees/donnees";
-import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE, STATUTS_IDEE, type StatutIdee } from "@/hub/idees/schema";
-import { cn } from "@/lib/utils";
+import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE, type StatutIdee } from "@/hub/idees/schema";
+import BoutonsStatut from "./boutons-statut";
+import Sondage, { type Membre } from "./sondage";
 
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
@@ -37,6 +37,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
 /** Le ticket d'une idee : ce qu'elle propose, qui la porte, les votes et les commentaires. */
 export default function DetailIdee({
   id,
+  membres,
   peutEditer,
   utilisateurId,
   estAdmin,
@@ -46,6 +47,7 @@ export default function DetailIdee({
   onChange,
 }: {
   id: number | null;
+  membres: Membre[];
   peutEditer: boolean;
   utilisateurId: number;
   estAdmin: boolean;
@@ -150,25 +152,19 @@ export default function DetailIdee({
             </SheetHeader>
 
             <div className="flex flex-col gap-4 px-5 py-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant={detail.aVote ? "hub" : "hubSecondary"}
-                  size="sm"
-                  disabled={enCours}
-                  onClick={voter}
-                  aria-pressed={detail.aVote}
-                >
-                  <ThumbsUp aria-hidden="true" />
-                  {detail.votes} {detail.votes > 1 ? "votes" : "vote"}
-                </Button>
-                {peutEditer && !detail.postPlanifie ? (
-                  <Button type="button" variant="hub" size="sm" onClick={() => onPlanifier(detail)}>
-                    <CalendarPlus aria-hidden="true" />
-                    Planifier
-                  </Button>
-                ) : null}
-              </div>
+              <Sondage votantsIds={detail.votantsIds} aVote={detail.aVote} membres={membres} enCours={enCours} onVoter={voter} />
+
+              {peutEditer ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <BoutonsStatut statut={detail.statut} enCours={enCours} onChanger={changerLeStatut} />
+                  {!detail.postPlanifie ? (
+                    <Button type="button" variant="hubSecondary" size="sm" onClick={() => onPlanifier(detail)}>
+                      <CalendarPlus aria-hidden="true" />
+                      Planifier
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
 
               {detail.description ? (
                 <Bloc titre="Description">
@@ -206,28 +202,6 @@ export default function DetailIdee({
                   <Link href={`/hub/calendrier?evenement=${detail.postPlanifie.id}`} className="text-primary hover:underline">
                     {detail.postPlanifie.titre || "Voir le post"}
                   </Link>
-                </Bloc>
-              ) : null}
-
-              {peutEditer ? (
-                <Bloc titre="Statut">
-                  <Select value={detail.statut} onValueChange={(v) => changerLeStatut(v as StatutIdee)} disabled={enCours}>
-                    <SelectTrigger size="sm" aria-label="Statut" className={cn("bg-secondary")}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUTS_IDEE.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          <span
-                            className="size-2 shrink-0 rounded-full"
-                            style={{ backgroundColor: COULEURS_STATUT_IDEE[s] }}
-                            aria-hidden="true"
-                          />
-                          {LIBELLES_STATUT_IDEE[s]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </Bloc>
               ) : null}
 

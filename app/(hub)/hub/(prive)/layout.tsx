@@ -2,6 +2,7 @@ import BlocUtilisateur from "@/components/hub/bloc-utilisateur";
 import Navigation, { type EntreeNavigation, type SectionNavigation } from "@/components/hub/navigation";
 import RafraichirSession from "@/components/hub/rafraichir-session";
 import { modulesAccessibles } from "@/hub/droits";
+import { compterIdeesAVoter } from "@/hub/idees/donnees";
 import { MODULES } from "@/hub/modules";
 import { exigerAccesHub, initiales, nomAffiche } from "@/hub/session";
 
@@ -18,6 +19,10 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
   const session = await exigerAccesHub();
   const ouverts = new Set(modulesAccessibles(session.user));
   const modules = MODULES.filter((module) => ouverts.has(module.key));
+  // Les nouvelles idees sans son vote, signalees sur l'entree Idees.
+  const aVoter = ouverts.has("calendar") ? await compterIdeesAVoter(session.user) : 0;
+  const avecBadge = (entree: EntreeNavigation): EntreeNavigation =>
+    entree.route === "/hub/idees" && aVoter > 0 ? { ...entree, badge: aVoter } : entree;
 
   const profil: EntreeNavigation = { nom: "Profil", route: "/hub/profil", icone: "user" };
 
@@ -25,12 +30,12 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
   // en bas de la barre laterale : il n'a pas de section a lui.
   const sections: SectionNavigation[] = [
     { entrees: [{ nom: "Accueil", route: "/hub", icone: "house" }] },
-    ...modules.map((module) => ({ titre: module.nom, entrees: [...module.navigation] })),
+    ...modules.map((module) => ({ titre: module.nom, entrees: module.navigation.map(avecBadge) })),
   ];
 
   // Sur mobile, l'accueil se rejoint par la marque en haut : les onglets vont
   // aux modules et au profil.
-  const onglets: EntreeNavigation[] = [...modules.flatMap((module) => [...module.navigation]), profil];
+  const onglets: EntreeNavigation[] = [...modules.flatMap((module) => module.navigation.map(avecBadge)), profil];
 
   return (
     <div className="flex h-dvh flex-col md:pl-60">

@@ -35,6 +35,7 @@ export default async function PageIdees() {
         idees={idees}
         references={{ reseaux: references.reseaux, formats: references.formats, matchs }}
         referencesCalendrier={references}
+        membres={references.responsables}
         peutEditer={peutEditer(user, "calendar")}
         utilisateurId={Number(user.id)}
         estAdmin={estAdmin(user)}

@@ -14,7 +14,18 @@ export type EntreeNavigation = {
   nom: string;
   route: string;
   icone: IconeNavigation;
+  /** Un compte a signaler, par exemple les idees sans son vote. */
+  badge?: number;
 };
+
+function Badge({ nombre }: { nombre?: number }) {
+  if (!nombre) return null;
+  return (
+    <span className="ml-auto rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-4 text-primary-foreground">
+      {nombre > 99 ? "99+" : nombre}
+    </span>
+  );
+}
 
 export type SectionNavigation = {
   /** Vide pour les entrees sans intitule de section. */
@@ -111,6 +122,7 @@ export default function Navigation({
                         >
                           <Icone className="size-4 shrink-0" aria-hidden="true" />
                           <span className="truncate">{parent.nom}</span>
+                          <Badge nombre={parent.badge} />
                         </Link>
                         {enfants.length > 0 ? (
                           <ul className="mb-1 ml-4 flex flex-col border-l border-sidebar-border pl-3">
@@ -127,6 +139,7 @@ export default function Navigation({
                                   )}
                                 >
                                   <span className="truncate">{enfant.nom}</span>
+                                  <Badge nombre={enfant.badge} />
                                 </Link>
                               </li>
                             ))}
@@ -175,7 +188,14 @@ export default function Navigation({
                     estActive ? "text-sidebar-primary" : "text-sidebar-foreground/65",
                   )}
                 >
-                  <Icone className="size-5" aria-hidden="true" />
+                  <span className="relative">
+                    <Icone className="size-5" aria-hidden="true" />
+                    {entree.badge ? (
+                      <span className="absolute -right-2.5 -top-1.5 rounded-full bg-primary px-1 text-[10px] font-semibold leading-4 text-primary-foreground">
+                        {entree.badge > 99 ? "99+" : entree.badge}
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="max-w-full truncate">{entree.nom}</span>
                 </Link>
               </li>

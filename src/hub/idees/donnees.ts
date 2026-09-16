@@ -135,6 +135,22 @@ export async function listerIdees(user: UtilisateurSession): Promise<IdeeCarte[]
   return docs.map((d) => carteDe(d as Doc, Number(user.id), commentaires.get(Number(d.id)) ?? 0));
 }
 
+/** Les nouvelles idees sur lesquelles la personne ne s'est pas encore prononcee. */
+export async function compterIdeesAVoter(user: UtilisateurSession): Promise<number> {
+  const payload = await getPayloadClient();
+  const { docs } = await payload.find({
+    collection: "ideas",
+    where: { status: { equals: "new" } },
+    limit: 500,
+    depth: 0,
+    select: { votes: true },
+    overrideAccess: false,
+    user,
+  });
+  const moi = Number(user.id);
+  return docs.filter((d) => !ids((d as Doc).votes).includes(moi)).length;
+}
+
 export async function chargerIdee(user: UtilisateurSession, id: number): Promise<IdeeDetail | null> {
   const payload = await getPayloadClient();
   const { docs } = await payload.find({
