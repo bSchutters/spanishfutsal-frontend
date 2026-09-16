@@ -675,6 +675,8 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Nommage (15/09/2026) | Slugs et champs des nouvelles collections en anglais snake_case comme l existant, libellés d interface en français |
 | Calendrier (15/09/2026) | FullCalendar 7.1 via le registre shadcn officiel, thème Monarch, vérifié en début de Lot 2 |
 | Branche (15/09/2026) | `feat/hub`, créée depuis `feat/payload-migration`, la branche déployée en production |
+| Saisie du texte enrichi (16/09/2026) | Le Hub saisit description, notes et instructions en texte simple, stocke en paragraphes Lexical, et relit tout Lexical en texte brut. La mise en forme riche reste possible depuis l admin |
+| Calendrier (16/09/2026) | FullCalendar 7.1 en place via le registre shadcn, vues mois, semaine et liste, fuseau du navigateur. Couleur du type sur l evenement, la couleur du flux est dans le panneau de detail |
 
 ---
 
