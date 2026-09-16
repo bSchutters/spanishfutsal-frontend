@@ -125,7 +125,7 @@ export default function DetailEvenement({
       const { crees, modifies } = r.donnees ?? { crees: 0, modifies: 0 };
       toast.success(
         crees + modifies === 0
-          ? "Rien à faire : les posts sont déjà là."
+          ? "Chaque modèle actif a déjà son post. Cochez l'option pour les remettre à neuf."
           : `${crees} post${crees > 1 ? "s" : ""} créé${crees > 1 ? "s" : ""}, ${modifies} remis à neuf.`,
       );
       setRegeneration({ ouverte: false, reinitialiser: false });
@@ -151,7 +151,37 @@ export default function DetailEvenement({
       <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-lg">
         {detail ? (
           <>
-            <SheetHeader className="border-b border-border px-5 py-4">
+            {/* Les actions sur l'evenement vivent dans l'en-tete, a cote de la
+                croix, comme dans un panneau de tableau de bord. */}
+            {peutEditer ? (
+              <div className="absolute right-11 top-2.5 flex items-center gap-0.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-foreground"
+                  aria-label="Modifier"
+                  title="Modifier"
+                  onClick={() => onModifier(detail)}
+                >
+                  <Pencil aria-hidden="true" />
+                </Button>
+                {!detail.verrouille ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:text-destructive"
+                    aria-label="Supprimer"
+                    title="Supprimer"
+                    onClick={() => setConfirmation(true)}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+            <SheetHeader className="border-b border-border px-5 py-4 pr-28">
               <div className="flex flex-wrap items-center gap-2">
                 <Pastille couleur={type?.couleur} />
                 <span className="text-xs text-muted-foreground">
@@ -227,11 +257,8 @@ export default function DetailEvenement({
                       />
                     )}
                   </Bloc>
-                  {reseaux.length > 0 || format ? (
-                    <Bloc titre="Diffusion">
-                      {[format?.nom, ...reseaux.map((r) => r.nom)].filter(Boolean).join(" · ")}
-                    </Bloc>
-                  ) : null}
+                  {format ? <Bloc titre="Format">{format.nom}</Bloc> : null}
+                  {reseaux.length > 0 ? <Bloc titre="Réseaux">{reseaux.map((r) => r.nom).join(", ")}</Bloc> : null}
                   {detail.post.legende ? (
                     <Bloc titre="Légende">
                       <p className="whitespace-pre-wrap break-words rounded-md bg-secondary/60 px-3 py-2">
@@ -327,21 +354,6 @@ export default function DetailEvenement({
                     {detail.notesInternes}
                   </p>
                 </Bloc>
-              ) : null}
-
-              {peutEditer ? (
-                <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-                  <Button type="button" variant="hub" size="sm" onClick={() => onModifier(detail)}>
-                    <Pencil aria-hidden="true" />
-                    Modifier
-                  </Button>
-                  {!detail.verrouille ? (
-                    <Button type="button" variant="hubSecondary" size="sm" onClick={() => setConfirmation(true)}>
-                      <Trash2 aria-hidden="true" />
-                      Supprimer
-                    </Button>
-                  ) : null}
-                </div>
               ) : null}
 
               <div className="border-t border-border pt-4">

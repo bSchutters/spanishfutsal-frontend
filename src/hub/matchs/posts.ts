@@ -34,6 +34,7 @@ export type PostExistant = {
   id: number;
   modeleId: number;
   debut: string;
+  fin: string | null;
   statut: Statut;
   annule: boolean;
   titre: string;
@@ -56,6 +57,13 @@ export type ContextePosts = {
  * - `reinitialiser` : le bouton avec l'option, remet aussi les posts non publies a neuf.
  */
 export type ModePlan = "synchro" | "completer" | "reinitialiser";
+
+/** Un post genere tient une demi-heure dans le calendrier, le temps de le publier. */
+export const DUREE_POST_MINUTES = 30;
+
+export function finDuPost(debut: string): string {
+  return new Date(new Date(debut).getTime() + DUREE_POST_MINUTES * 60_000).toISOString();
+}
 
 export type PlanPosts = {
   aCreer: Array<{ modeleId: number; data: Record<string, unknown> }>;
@@ -104,7 +112,7 @@ export function champsDuPost(
     ...textesDuPost(modele, variables),
     type: contexte.typePostId,
     starts_at: dateDuPost(champs.starts_at, modele),
-    ends_at: null,
+    ends_at: finDuPost(dateDuPost(champs.starts_at, modele)),
     all_day: false,
     feeds: flux,
     primary_feed: flux[0] ?? null,
@@ -156,6 +164,7 @@ export function planifierPosts(args: {
       // un post annule a la main, puisque c'est ce que l'option annonce.
       if (existant.statut === "published") continue;
       data.starts_at = date;
+      data.ends_at = finDuPost(date);
       data.title = textes.title;
       data.caption = textes.caption;
       data.description = textes.description;
@@ -169,8 +178,10 @@ export function planifierPosts(args: {
 
     // Mode synchro : la date suit le match sauf si elle a ete deplacee a la
     // main, ou si le post est publie ou annule.
-    if (!existant.dateModifieeManuellement && !FIGE.includes(existant.statut) && existant.debut !== date) {
-      data.starts_at = date;
+    if (!existant.dateModifieeManuellement && !FIGE.includes(existant.statut)) {
+      if (existant.debut !== date) data.starts_at = date;
+      // La fin suit la date, et un post sans fin en recoit une.
+      if (existant.fin !== finDuPost(date)) data.ends_at = finDuPost(date);
     }
     // Les textes suivent le match (score connu, salle changee) sauf si la
     // legende a ete retouchee a la main.

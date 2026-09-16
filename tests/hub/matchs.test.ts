@@ -225,6 +225,7 @@ describe("plan des posts", () => {
     id: 100,
     modeleId: 1,
     debut: "2026-08-31T16:00:00.000Z",
+    fin: "2026-08-31T16:30:00.000Z",
     statut: "to_create",
     annule: false,
     titre: "Annonce vs POH Action",
@@ -244,6 +245,7 @@ describe("plan des posts", () => {
       title: "Annonce vs POH Action",
       caption: "🔥 mercredi 2 septembre à 22h00\n📍 St-Pierre",
       starts_at: "2026-08-31T16:00:00.000Z",
+      ends_at: "2026-08-31T16:30:00.000Z",
       type: 9,
       feeds: [3],
       primary_feed: 3,
@@ -261,6 +263,11 @@ describe("plan des posts", () => {
     expect(plan.aModifier).toHaveLength(0);
   });
 
+  it("donne une fin d une demi-heure a un post qui n en a pas", () => {
+    expect(planifier([existant({ fin: null })]).aModifier).toEqual([{ id: 100, data: { ends_at: "2026-08-31T16:30:00.000Z" } }]);
+    expect(planifier([existant({ fin: null, dateModifieeManuellement: true })]).aModifier).toHaveLength(0);
+  });
+
   it("deplace les posts quand le match bouge, sauf ceux regles a la main, publies ou annules", () => {
     const deplace = { ...champs, starts_at: "2026-09-09T19:00:00.000Z" };
     const plan = planifierPosts({
@@ -271,7 +278,9 @@ describe("plan des posts", () => {
       contexte: contextePosts,
       mode: "synchro",
     });
-    expect(plan.aModifier).toEqual([{ id: 100, data: { starts_at: "2026-09-07T16:00:00.000Z" } }]);
+    expect(plan.aModifier).toEqual([
+      { id: 100, data: { starts_at: "2026-09-07T16:00:00.000Z", ends_at: "2026-09-07T16:30:00.000Z" } },
+    ]);
 
     for (const fige of [existant({ dateModifieeManuellement: true }), existant({ statut: "published" }), existant({ statut: "cancelled" })]) {
       const sans = planifierPosts({ modeles: [modele()], existants: [fige], champs: deplace, variables, contexte: contextePosts, mode: "synchro" });
@@ -282,7 +291,14 @@ describe("plan des posts", () => {
   it("re-rend les textes quand le score arrive, sauf legende retouchee a la main", () => {
     const resultat = modele({ id: 2, nom: "Résultat", decalageJours: 1, heureFixe: "12:00", titreModele: "Résultat vs {adversaire}", legendeModele: "🏁 {score}" });
     const avecScore = variablesDe({ ...champs, score: "3 - 1" }, { heureRdv: null, lienLive: null, lienReplay: null });
-    const post = existant({ id: 200, modeleId: 2, debut: "2026-09-03T10:00:00.000Z", titre: "Résultat vs POH Action", legende: "🏁 " });
+    const post = existant({
+      id: 200,
+      modeleId: 2,
+      debut: "2026-09-03T10:00:00.000Z",
+      fin: "2026-09-03T10:30:00.000Z",
+      titre: "Résultat vs POH Action",
+      legende: "🏁 ",
+    });
     const plan = planifierPosts({ modeles: [resultat], existants: [post], champs: { ...champs, score: "3 - 1" }, variables: avecScore, contexte: contextePosts, mode: "synchro" });
     expect(plan.aModifier).toEqual([{ id: 200, data: { caption: "🏁 3 - 1" } }]);
 
@@ -308,6 +324,7 @@ describe("plan des posts", () => {
         id: 100,
         data: {
           starts_at: "2026-08-31T16:00:00.000Z",
+          ends_at: "2026-08-31T16:30:00.000Z",
           title: "Annonce vs POH Action",
           caption: "🔥 mercredi 2 septembre à 22h00\n📍 St-Pierre",
           description: null,

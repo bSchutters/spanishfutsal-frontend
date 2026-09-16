@@ -151,6 +151,7 @@ async function postsDuMatch(payload: Payload, evenementId: number, req: Req): Pr
       id: Number(p.id),
       modeleId: idOuNull(p.template) ?? 0,
       debut: String(p.starts_at ?? ""),
+      fin: typeof p.ends_at === "string" ? p.ends_at : null,
       statut: (p.status as Statut | null) ?? "to_create",
       annule: Boolean(p.cancelled),
       titre: String(p.title ?? ""),
