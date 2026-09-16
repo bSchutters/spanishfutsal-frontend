@@ -27,7 +27,14 @@ const PAGES = ['/', '/a-propos', '/classement', '/contact', '/equipe', '/matchs'
 
 // L'API REST de Payload ne livre plus les donnees du site a qui n'est pas
 // connecte : sans cookie, ces adresses doivent refuser, jamais repondre 200.
-const APIS_FERMEES = ['/api/matches', '/api/players', '/api/feeds', '/api/events', '/api/globals/hub-settings']
+const APIS_FERMEES = [
+  '/api/matches',
+  '/api/players',
+  '/api/feeds',
+  '/api/events',
+  '/api/globals/hub-settings',
+  '/api/hub/synchro-matchs',
+]
 
 const FICHIERS: Array<[string, string]> = [
   ['/robots.txt', 'text/plain'],

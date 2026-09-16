@@ -23,6 +23,11 @@ export function formaterDate(date: DateEntree, fuseau = FUSEAU): string {
   return format(enLocal(date, fuseau), "EEEE d MMMM yyyy", { locale: fr });
 }
 
+/** « mercredi 16 septembre », la forme des legendes generees. */
+export function formaterDateSansAnnee(date: DateEntree, fuseau = FUSEAU): string {
+  return format(enLocal(date, fuseau), "EEEE d MMMM", { locale: fr });
+}
+
 /** « mer. 16 sept. » */
 export function formaterDateCourte(date: DateEntree, fuseau = FUSEAU): string {
   return format(enLocal(date, fuseau), "EEE d MMM", { locale: fr });
@@ -73,6 +78,26 @@ export function composerDateHeure(jour: string, heure: string, fuseau = FUSEAU):
   if (!md || !mh) return null;
   const date = new TZDate(Number(md[1]), Number(md[2]) - 1, Number(md[3]), Number(mh[1]), Number(mh[2]), 0, 0, fuseau);
   return isValid(date) ? new Date(date.getTime()) : null;
+}
+
+/**
+ * Le meme instant decale de N jours civils a Bruxelles, a la meme heure
+ * locale : deux jours avant un match a 22h00 restent a 22h00, meme si le
+ * changement d'heure passe entre les deux.
+ */
+export function ajouterJoursLocaux(date: DateEntree, jours: number, fuseau = FUSEAU): Date {
+  const locale = enLocal(date, fuseau);
+  const decale = new TZDate(
+    locale.getFullYear(),
+    locale.getMonth(),
+    locale.getDate() + jours,
+    locale.getHours(),
+    locale.getMinutes(),
+    locale.getSeconds(),
+    locale.getMilliseconds(),
+    fuseau,
+  );
+  return new Date(decale.getTime());
 }
 
 /** La duree entre deux instants, en minutes, ou null sans fin. */

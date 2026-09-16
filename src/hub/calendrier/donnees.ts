@@ -102,6 +102,8 @@ export type EvenementDetail = {
     lffsId: number | null;
   };
   verrouille: boolean;
+  /** Pour un match : les posts generes ou rattaches a ce match. */
+  postsLies: Array<{ id: number; titre: string; debut: string; statut: StatutPost; annule: boolean }>;
   creeLe: string;
   modifieLe: string;
   commentaires: Commentaire[];
@@ -287,9 +289,12 @@ export async function chargerEvenement(user: Utilisateur, id: number): Promise<E
   const doc = docs[0] as DocEvenement | undefined;
   if (!doc) return null;
 
-  const commentaires = await listerCommentaires(payload, user, "events", id);
   const recurrence = recurrenceDe(doc);
   const source = (doc.source as "lffs" | "manual" | null) ?? null;
+  const [commentaires, postsLies] = await Promise.all([
+    listerCommentaires(payload, user, "events", id),
+    categorieDe(doc) === "match" ? listerPostsLies(payload, user, id) : Promise.resolve([]),
+  ]);
 
   return {
     id: Number(doc.id),
@@ -335,10 +340,31 @@ export async function chargerEvenement(user: Utilisateur, id: number): Promise<E
       lffsId: doc.lffs_id === null || doc.lffs_id === undefined ? null : Number(doc.lffs_id),
     },
     verrouille: source === "lffs",
+    postsLies,
     creeLe: String(doc.createdAt ?? ""),
     modifieLe: String(doc.updatedAt ?? ""),
     commentaires,
   };
+}
+
+/** Les posts rattaches a un match, dans l'ordre du calendrier, avec les droits de la personne. */
+async function listerPostsLies(payload: Payload, user: Utilisateur, matchId: number) {
+  const { docs } = await payload.find({
+    collection: "events",
+    where: { linked_match: { equals: matchId } },
+    sort: "starts_at",
+    limit: 50,
+    depth: 0,
+    overrideAccess: false,
+    user,
+  });
+  return docs.map((p) => ({
+    id: Number(p.id),
+    titre: String(p.title ?? ""),
+    debut: String(p.starts_at ?? ""),
+    statut: ((p as DocEvenement).status as StatutPost | null) ?? "to_create",
+    annule: Boolean(p.cancelled),
+  }));
 }
 
 export async function listerCommentaires(

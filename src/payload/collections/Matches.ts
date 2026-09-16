@@ -1,13 +1,43 @@
 import type { CollectionConfig } from 'payload'
 import { canWrite, canDelete, isAuthenticated, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
+import { annulerMatchSupprime, chargerContexte, synchroniserMatch } from '@/hub/matchs/synchro'
+import type { MatchLffs } from '@/hub/matchs/construction'
 
 export const Matches: CollectionConfig = {
   slug: 'matches',
   labels: { singular: 'Match', plural: 'Matchs' },
   hooks: {
-    afterChange: [revalidateAfterChange(['matches', 'players'])],
-    afterDelete: [revalidateAfterDelete(['matches', 'players'])],
+    afterChange: [
+      revalidateAfterChange(['matches', 'players']),
+      /**
+       * Le calendrier du Hub suit chaque match : creation, deplacement, score.
+       * Dans la transaction du match, pour que l'evenement puisse pointer vers
+       * lui. Un echec est consigne sans faire echouer l'import LFFS, la
+       * reconciliation quotidienne du Hub rattrape ce qui a ete manque.
+       */
+      async ({ doc, req }) => {
+        try {
+          const contexte = await chargerContexte(req.payload, req)
+          await synchroniserMatch(req.payload, doc as MatchLffs, contexte, req)
+        } catch (erreur) {
+          req.payload.logger.error({ err: erreur, msg: `Hub : synchronisation du match ${doc.lffs_id ?? doc.id} echouee` })
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      revalidateAfterDelete(['matches', 'players']),
+      /** Un match supprime ici est annule dans le Hub, jamais efface. */
+      async ({ doc, req }) => {
+        try {
+          if (typeof doc.lffs_id === 'number') await annulerMatchSupprime(req.payload, doc.lffs_id, req)
+        } catch (erreur) {
+          req.payload.logger.error({ err: erreur, msg: `Hub : annulation du match ${doc.lffs_id ?? doc.id} echouee` })
+        }
+        return doc
+      },
+    ],
   },
   admin: {
     useAsTitle: 'home_team',

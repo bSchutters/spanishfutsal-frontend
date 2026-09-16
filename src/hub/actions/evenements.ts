@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import { chargerEvenement, type EvenementDetail } from "@/hub/calendrier/donnees";
 import { schemaEvenement } from "@/hub/calendrier/schema";
 import { depuisChampDateHeure, instant } from "@/hub/dates";
+import { regenererPosts as regenererPostsDuMatch } from "@/hub/matchs/synchro";
 import { estRecurrent } from "@/hub/recurrence";
 import { exigerModule } from "@/hub/session";
 import { texteVersLexical } from "@/hub/texte";
@@ -212,6 +213,33 @@ export async function changerStatut(saisie: unknown): Promise<Resultat> {
     });
     rafraichir();
     return { ok: true };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
+/**
+ * Le bouton « Regenerer les posts » d'un match LFFS : cree les posts
+ * manquants, et avec l'option remet a neuf ceux qui ne sont pas publies.
+ */
+export async function regenererPosts(saisie: unknown): Promise<Resultat<{ crees: number; modifies: number }>> {
+  const { user } = await exigerModule("calendar", "edit");
+  const lecture = z.object({ id: identifiant, reinitialiser: z.boolean() }).safeParse(saisie);
+  if (!lecture.success) return { ok: false, erreur: premiereErreur(lecture.error) };
+
+  // Le match doit exister pour cette personne : la lecture applique le filtre par flux.
+  const existant = await chargerEvenement(user, lecture.data.id);
+  if (!existant) return { ok: false, erreur: "Cet événement n'existe pas, ou ne vous est pas ouvert." };
+  if (existant.categorie !== "match" || !existant.verrouille) {
+    return { ok: false, erreur: "Seul un match synchronisé avec la LFFS a des posts à générer." };
+  }
+
+  const payload = await getPayloadClient();
+  try {
+    const r = await regenererPostsDuMatch(payload, lecture.data.id, lecture.data.reinitialiser);
+    if (!r.ok) return r;
+    rafraichir();
+    return { ok: true, donnees: { crees: r.crees, modifies: r.modifies } };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

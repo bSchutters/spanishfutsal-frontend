@@ -1,11 +1,13 @@
 "use client";
 
-import { Copy, ExternalLink, Lock, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, Lock, MapPin, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Etiquette, Pastille, PastilleStatut } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -16,10 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { changerStatut, lireEvenement, supprimerEvenement } from "@/hub/actions/evenements";
+import { changerStatut, lireEvenement, regenererPosts, supprimerEvenement } from "@/hub/actions/evenements";
 import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
 import { COULEURS_STATUT, LIBELLES_STATUT, type Statut } from "@/hub/calendrier/schema";
-import { formaterDate, formaterDateHeure, formaterHeure } from "@/hub/dates";
+import { formaterDate, formaterDateCourte, formaterDateHeure, formaterHeure } from "@/hub/dates";
 import Commentaires from "./commentaires";
 import SelecteurStatut from "./selecteur-statut";
 
@@ -65,6 +67,10 @@ export default function DetailEvenement({
   const [detail, setDetail] = useState<EvenementDetail | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState(false);
+  const [regeneration, setRegeneration] = useState<{ ouverte: boolean; reinitialiser: boolean }>({
+    ouverte: false,
+    reinitialiser: false,
+  });
   const [enCours, lancer] = useTransition();
 
   const recharger = (cible: number) => {
@@ -106,6 +112,23 @@ export default function DetailEvenement({
     lancer(async () => {
       const r = await changerStatut({ id: detail.id, statut });
       if (!r.ok) return void toast.error(r.erreur);
+      recharger(detail.id);
+      onChange();
+    });
+  };
+
+  const regenerer = () => {
+    if (!detail) return;
+    lancer(async () => {
+      const r = await regenererPosts({ id: detail.id, reinitialiser: regeneration.reinitialiser });
+      if (!r.ok) return void toast.error(r.erreur);
+      const { crees, modifies } = r.donnees ?? { crees: 0, modifies: 0 };
+      toast.success(
+        crees + modifies === 0
+          ? "Rien à faire : les posts sont déjà là."
+          : `${crees} post${crees > 1 ? "s" : ""} créé${crees > 1 ? "s" : ""}, ${modifies} remis à neuf.`,
+      );
+      setRegeneration({ ouverte: false, reinitialiser: false });
       recharger(detail.id);
       onChange();
     });
@@ -261,6 +284,40 @@ export default function DetailEvenement({
                   ) : null}
                   {detail.match.competition ? <Bloc titre="Compétition">{detail.match.competition}</Bloc> : null}
                   {detail.match.score ? <Bloc titre="Score">{detail.match.score}</Bloc> : null}
+                  {detail.postsLies.length > 0 || detail.verrouille ? (
+                    <Bloc titre="Posts">
+                      {detail.postsLies.length > 0 ? (
+                        <ul className="flex flex-col gap-1">
+                          {detail.postsLies.map((post) => (
+                            <li key={post.id} className="flex min-w-0 items-center gap-2">
+                              <PastilleStatut couleur={COULEURS_STATUT[post.statut]} libelle={LIBELLES_STATUT[post.statut]} />
+                              <Link
+                                href={`/hub/calendrier?evenement=${post.id}`}
+                                className={`min-w-0 truncate hover:underline ${post.annule ? "line-through opacity-70" : ""}`}
+                              >
+                                {post.titre}
+                              </Link>
+                              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{formaterDateCourte(post.debut)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-muted-foreground">Aucun post pour ce match.</span>
+                      )}
+                      {peutEditer && detail.verrouille && !detail.annule ? (
+                        <Button
+                          type="button"
+                          variant="hubSecondary"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => setRegeneration({ ouverte: true, reinitialiser: false })}
+                        >
+                          <RefreshCw aria-hidden="true" />
+                          Regénérer les posts
+                        </Button>
+                      ) : null}
+                    </Bloc>
+                  ) : null}
                 </>
               ) : null}
 
@@ -298,6 +355,45 @@ export default function DetailEvenement({
                 />
               </div>
             </div>
+
+            <Dialog
+              open={regeneration.ouverte}
+              onOpenChange={(ouverte) => setRegeneration((r) => ({ ...r, ouverte }))}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Regénérer les posts de ce match ?</DialogTitle>
+                  <DialogDescription>
+                    Crée les posts qui manquent pour les modèles actifs, sans toucher à ceux qui existent.
+                  </DialogDescription>
+                </DialogHeader>
+                <label className="flex cursor-pointer items-start gap-2 text-sm">
+                  <Checkbox
+                    checked={regeneration.reinitialiser}
+                    onCheckedChange={(v) => setRegeneration((r) => ({ ...r, reinitialiser: v === true }))}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    Réinitialiser aussi les posts non publiés
+                    <span className="block text-xs text-muted-foreground">
+                      Leur date et leurs textes repartent du modèle, leur statut revient à « À créer ».
+                    </span>
+                  </span>
+                </label>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="hubSecondary"
+                    onClick={() => setRegeneration({ ouverte: false, reinitialiser: false })}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="button" variant="hub" disabled={enCours} onClick={regenerer}>
+                    {enCours ? "En cours…" : "Regénérer"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <Dialog open={confirmation} onOpenChange={setConfirmation}>
               <DialogContent>
