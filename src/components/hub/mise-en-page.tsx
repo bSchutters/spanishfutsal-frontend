@@ -101,7 +101,7 @@ export function Avis({ children }: { children: ReactNode }) {
 /** Une pastille de statut avec son libelle. */
 export function PastilleStatut({ couleur, libelle }: { couleur: string; libelle: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5">
+    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
       <span className="inline-block size-2 shrink-0 rounded-full" style={{ backgroundColor: couleur }} aria-hidden="true" />
       {libelle}
     </span>
