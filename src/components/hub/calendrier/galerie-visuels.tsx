@@ -46,37 +46,42 @@ export default function GalerieVisuels({ visuels }: { visuels: Visuel[] }) {
   if (visuels.length === 0) return null;
 
   return (
-    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+    <ul className="grid grid-cols-2 gap-3">
       {visuels.map((v) => (
-        <li key={v.id} className="flex flex-col overflow-hidden rounded-md border border-border bg-secondary/40">
-          <a href={v.url} target="_blank" rel="noopener noreferrer" className="block aspect-square" title="Ouvrir l'original">
+        <li key={v.id} className="flex flex-col gap-2">
+          {/* L'image entiere, jamais recadree : une affiche ou une story se lit en un coup d'oeil. */}
+          <a
+            href={v.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex max-h-72 items-center justify-center overflow-hidden rounded-md border border-border bg-secondary/40"
+            title="Ouvrir l'original"
+          >
             {v.type.startsWith("image/") ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={v.urlVignette ?? v.url} alt={v.nom} className="size-full object-cover" />
+              <img src={v.urlVignette ?? v.url} alt={v.nom} className="max-h-72 w-full object-contain" />
             ) : (
-              <span className="flex size-full flex-col items-center justify-center gap-1 px-2 text-center text-xs text-muted-foreground">
+              <span className="flex aspect-square w-full flex-col items-center justify-center gap-1 px-2 text-center text-xs text-muted-foreground">
                 <FileVideo className="size-6" aria-hidden="true" />
                 <span className="line-clamp-2 break-all">{v.nom}</span>
               </span>
             )}
           </a>
-          <div className="flex items-center justify-between gap-1 px-2 py-1.5">
-            <span className="truncate text-[11px] text-muted-foreground" title={v.nom}>
-              {tailleLisible(v.taille)}
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              disabled={enCours === v.id}
-              onClick={() => void partager(v)}
-              aria-label={peutPartager ? `Enregistrer ${v.nom}` : `Télécharger ${v.nom}`}
-            >
-              {peutPartager ? <Share2 aria-hidden="true" /> : <Download aria-hidden="true" />}
-              {peutPartager ? "Enregistrer" : "Télécharger"}
-            </Button>
-          </div>
+          <p className="truncate text-[11px] text-muted-foreground" title={v.nom}>
+            {v.nom} · {tailleLisible(v.taille)}
+          </p>
+          <Button
+            type="button"
+            variant="hubSecondary"
+            size="sm"
+            className="w-full"
+            disabled={enCours === v.id}
+            onClick={() => void partager(v)}
+            aria-label={peutPartager ? `Enregistrer ${v.nom}` : `Télécharger ${v.nom}`}
+          >
+            {peutPartager ? <Share2 aria-hidden="true" /> : <Download aria-hidden="true" />}
+            {peutPartager ? "Enregistrer" : "Télécharger"}
+          </Button>
         </li>
       ))}
     </ul>
