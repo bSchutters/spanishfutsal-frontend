@@ -1,15 +1,16 @@
 "use client";
 
-import { CalendarDays, ChevronDown, House, Lightbulb, ListTodo, UserRound } from "lucide-react";
+import { CalendarDays, ChartColumn, ChevronDown, Hash, House, Lightbulb, ListTodo, UserRound, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore, type ReactNode } from "react";
 
+import type { IconeEntree } from "@/hub/modules";
 import { cn } from "@/lib/utils";
 import { abonnerReplis, basculerRepli, lireReplisMemorises, replisServeur } from "./replis";
 
-export type IconeNavigation = "house" | "calendar-days" | "list-todo" | "lightbulb" | "user";
+export type IconeNavigation = IconeEntree | "house" | "user";
 
 export type EntreeNavigation = {
   nom: string;
@@ -39,6 +40,9 @@ const ICONES: Record<IconeNavigation, typeof House> = {
   "calendar-days": CalendarDays,
   "list-todo": ListTodo,
   lightbulb: Lightbulb,
+  users: Users,
+  "chart-column": ChartColumn,
+  hash: Hash,
   user: UserRound,
 };
 

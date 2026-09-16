@@ -6,6 +6,7 @@ import * as migration_20260916_144023_ideas_formats_multiples from './20260916_1
 import * as migration_20260916_154312_visuels_hub from './20260916_154312_visuels_hub';
 import * as migration_20260916_154335_visuels_hub_ancien_lien from './20260916_154335_visuels_hub_ancien_lien';
 import * as migration_20260916_154751_dossiers_medias from './20260916_154751_dossiers_medias';
+import * as migration_20260916_171602_joueurs_second_numero from './20260916_171602_joueurs_second_numero';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20260916_154751_dossiers_medias.up,
     down: migration_20260916_154751_dossiers_medias.down,
-    name: '20260916_154751_dossiers_medias'
+    name: '20260916_154751_dossiers_medias',
+  },
+  {
+    up: migration_20260916_171602_joueurs_second_numero.up,
+    down: migration_20260916_171602_joueurs_second_numero.down,
+    name: '20260916_171602_joueurs_second_numero'
   },
 ];

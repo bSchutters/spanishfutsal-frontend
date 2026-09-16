@@ -49,6 +49,16 @@ export const Players: CollectionConfig = {
       name: 'numero',
       type: 'number',
       label: 'Numero',
+      admin: { description: 'Le numero habituel, celui du site.' },
+    },
+    {
+      name: 'numero_2',
+      type: 'number',
+      label: 'Second numero',
+      admin: {
+        description:
+          "Un second maillot, pour la feuille de match quand le premier numero n'est pas disponible. Se regle aussi depuis le Hub, page Numeros.",
+      },
     },
     {
       name: 'poste',

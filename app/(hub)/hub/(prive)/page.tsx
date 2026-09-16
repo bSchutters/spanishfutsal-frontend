@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronRight, Users } from "lucide-react";
 import Link from "next/link";
 
 import { Avis, EnTetePage, Etiquette, Ligne, Panneau, Pastille, Vide } from "@/components/hub/mise-en-page";
@@ -8,7 +8,7 @@ import { LIBELLES_NIVEAUX, MODULES } from "@/hub/modules";
 import { exigerAccesHub } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
 
-const ICONES = { "calendar-days": CalendarDays } as const;
+const ICONES = { "calendar-days": CalendarDays, users: Users } as const;
 
 /** L'accueil du Hub : les modules ouverts a la personne, et son perimetre. */
 export default async function AccueilHub({ searchParams }: { searchParams: Promise<{ refus?: string }> }) {
