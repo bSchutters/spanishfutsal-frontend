@@ -122,7 +122,8 @@ function Groupe({
               />
             </div>
             <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate text-sm">
+              {/* Le nom passe a la ligne plutot que d'etre coupe : c'est lui qu'on cherche. */}
+              <span className="text-sm leading-tight">
                 <span className="font-medium">{j.nom.toUpperCase()}</span> {j.prenom}
               </span>
               {j.capitaine ? <Etiquette>C</Etiquette> : null}

@@ -132,7 +132,8 @@ function LigneJoueur({ joueur, lignes, enCours, onBasculer, onChanger }: Commun 
       </label>
       {ligne ? (
         <div className="mt-3 flex flex-col gap-2 sm:pl-11">
-          <div className="grid grid-cols-4 gap-2 sm:flex sm:gap-4">
+          {/* Deux compteurs par ligne sur telephone : quatre ne tiennent pas avec des boutons de la taille d'un pouce. */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4">
             <Compteur libelle="Buts" valeur={ligne.buts} max={30} disabled={enCours} onChange={(v) => onChanger(joueur.id, { buts: v })} />
             <Compteur libelle="Assists" valeur={ligne.assists} max={30} disabled={enCours} onChange={(v) => onChanger(joueur.id, { assists: v })} />
             <Compteur libelle="Jaunes" valeur={ligne.jaunes} max={2} disabled={enCours} onChange={(v) => onChanger(joueur.id, { jaunes: v })} />
