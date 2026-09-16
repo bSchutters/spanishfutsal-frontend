@@ -60,7 +60,7 @@ function depuisDetail(detail: EvenementDetail): SaisieEvenement {
     post: {
       statut: detail.post.statut,
       reseauxIds: detail.post.reseauxIds,
-      formatId: detail.post.formatId,
+      formatIds: detail.post.formatIds,
       legende: detail.post.legende,
       lienVisuels: detail.post.lienVisuels,
       lienPublication: detail.post.lienPublication,
@@ -513,34 +513,17 @@ export default function FormulaireEvenement({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="post.formatId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Format</FormLabel>
-                          <Select
-                            value={field.value ? String(field.value) : "aucun"}
-                            onValueChange={(v) => field.onChange(v === "aucun" ? null : Number(v))}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="aucun">Aucun</SelectItem>
-                              {references.formats.map((f) => (
-                                <SelectItem key={f.id} value={String(f.id)}>
-                                  {f.nom}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="post.formatIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Formats</FormLabel>
+                        <CasesACocher options={references.formats} valeurs={field.value} onChange={field.onChange} />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="post.reseauxIds"

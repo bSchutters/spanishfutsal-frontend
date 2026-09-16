@@ -238,7 +238,7 @@ Données initiales formats : Post, Carrousel, Reel, Story, Live.
 | Champ | Type | Description |
 |---|---|---|
 | `reseaux` | relation multiple → reseaux | |
-| `format` | relation → formats | |
+| `format` | relation multiple → formats | plusieurs formats possibles, ex. Story et Repost en story |
 | `statut` | select | `a-creer` (défaut), `pret`, `publie`, `annule` |
 | `legende` | texte long | texte à copier-coller, bouton « Copier » dans le Hub |
 | `lienVisuels` | URL | lien Drive ou autre |
@@ -277,7 +277,7 @@ Pour un match `lffs`, les champs `titre`, `debut`, `fin`, `lieuNom`, `lieuAdress
 | `decalageMinutes` | nombre | si `relatif-coup-envoi`, ex. -120 |
 | `titreModele` | texte avec variables | ex. `Annonce vs {adversaire}` |
 | `reseaux` | relation multiple | |
-| `format` | relation | |
+| `format` | relation multiple | |
 | `flux` | relation multiple | défaut : Social |
 | `responsables` | relation multiple → Users | facultatif |
 | `instructions` | texte enrichi avec variables | copié dans `description` |
@@ -684,6 +684,7 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Match supprime puis recree (16/09/2026) | L import LFFS ne supprime jamais, il met a jour par `lffs_id` : seule une suppression dans l admin annule l evenement et ses posts non publies. Si l import recree le match, l evenement revient et les posts que la synchro avait annules aussi |
 | Posts generes (16/09/2026) | Un post par modele actif et par match, rattache par `linked_match` et `template`, jamais en double. Le flux du modele, sinon Social. La synchro ne reecrit que ce qui change, pour ne pas bouger la version des calendriers abonnes. « Regenerer » sans option cree les manquants sans rien toucher ; avec l option, les posts non publies repartent du modele, statut compris |
 | Legendes des modeles (16/09/2026) | Textes de Bryan : Annonce « PROCHAIN MATCH 💛💙 » avec date numerique, heure, adresse et adversaire ; Jour J « MATCHDAY ⚔️ » avec adversaire, adresse et heure. Le modele Resultat reste actif comme rappel a J+1, sans legende : Bryan la genere a part apres chaque match. Variable `{date_courte}` ajoutee pour la date en 16/09/2026 |
+| Formats multiples (16/09/2026) | Un post et un modele peuvent avoir plusieurs formats (migration `formats_multiples`, le format deja choisi est recopie). Format « Repost en story » ajoute aux cinq de depart. Les posts generes tiennent 30 minutes dans le calendrier, la fin suit la date |
 
 ---
 

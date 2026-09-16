@@ -95,7 +95,7 @@ export default function DetailEvenement({
   const flux = detail ? references.flux.filter((f) => detail.fluxIds.includes(f.id)) : [];
   const responsables = detail ? references.responsables.filter((r) => detail.responsablesIds.includes(r.id)) : [];
   const reseaux = detail ? references.reseaux.filter((r) => detail.post.reseauxIds.includes(r.id)) : [];
-  const format = detail ? references.formats.find((f) => f.id === detail.post.formatId) : undefined;
+  const formats = detail ? references.formats.filter((f) => detail.post.formatIds.includes(f.id)) : [];
 
   const copierLegende = async () => {
     if (!detail?.post.legende) return;
@@ -257,7 +257,7 @@ export default function DetailEvenement({
                       />
                     )}
                   </Bloc>
-                  {format ? <Bloc titre="Format">{format.nom}</Bloc> : null}
+                  {formats.length > 0 ? <Bloc titre="Formats">{formats.map((f) => f.nom).join(", ")}</Bloc> : null}
                   {reseaux.length > 0 ? <Bloc titre="Réseaux">{reseaux.map((r) => r.nom).join(", ")}</Bloc> : null}
                   {detail.post.legende ? (
                     <Bloc titre="Légende">

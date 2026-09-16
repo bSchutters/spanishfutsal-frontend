@@ -185,7 +185,7 @@ const modele = (extra: Partial<ModelePost> = {}): ModelePost => ({
   legendeModele: "🔥 {date} à {heure}\n📍 {salle}",
   instructions: null,
   reseauxIds: [1, 2],
-  formatId: 4,
+  formatIds: [4],
   fluxIds: [],
   responsablesIds: [],
   ...extra,
@@ -250,7 +250,7 @@ describe("plan des posts", () => {
       feeds: [3],
       primary_feed: 3,
       networks: [1, 2],
-      format: 4,
+      format: [4],
       status: "to_create",
       template: 1,
     });

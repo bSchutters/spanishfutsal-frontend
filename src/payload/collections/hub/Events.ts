@@ -233,7 +233,8 @@ export const Events: CollectionConfig = {
                   name: 'format',
                   type: 'relationship',
                   relationTo: 'formats',
-                  label: 'Format',
+                  hasMany: true,
+                  label: 'Formats',
                   admin: { width: '33%' },
                 },
                 {

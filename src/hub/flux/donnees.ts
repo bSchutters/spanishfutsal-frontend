@@ -117,7 +117,7 @@ export async function chargerEvenementsDuFlux(
       categorie,
       statut: (doc.status as EvenementIcal["statut"]) ?? null,
       reseaux,
-      format: nomDe(doc.format),
+      format: Array.isArray(doc.format) ? doc.format.map(nomDe).filter(Boolean).join(", ") || null : nomDe(doc.format),
       lieuNom: (doc.location_name as string | null) ?? null,
       lieuAdresse: (doc.location_address as string | null) ?? null,
       heureRdv: (doc.meeting_at as string | null) ?? null,

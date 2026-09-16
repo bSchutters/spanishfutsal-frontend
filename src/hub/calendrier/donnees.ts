@@ -85,7 +85,7 @@ export type EvenementDetail = {
   post: {
     statut: StatutPost;
     reseauxIds: number[];
-    formatId: number | null;
+    formatIds: number[];
     legende: string;
     lienVisuels: string;
     lienPublication: string;
@@ -323,7 +323,7 @@ export async function chargerEvenement(user: Utilisateur, id: number): Promise<E
     post: {
       statut: (doc.status as StatutPost | null) ?? "to_create",
       reseauxIds: ids(doc.networks),
-      formatId: doc.format ? Number(idDe(doc.format as never)) : null,
+      formatIds: ids(doc.format),
       legende: String(doc.caption ?? ""),
       lienVisuels: String(doc.visuals_link ?? ""),
       lienPublication: String(doc.publication_link ?? ""),
@@ -428,8 +428,9 @@ export async function listerPostsAFaire(user: Utilisateur, seulementLesMiens: bo
       reseaux: (Array.isArray(doc.networks) ? doc.networks : [])
         .map((r) => (typeof r === "object" && r ? String((r as { name?: string }).name ?? "") : ""))
         .filter(Boolean),
-      format:
-        typeof doc.format === "object" && doc.format ? String((doc.format as { name?: string }).name ?? "") : "",
+      formats: (Array.isArray(doc.format) ? doc.format : [])
+        .map((f) => (typeof f === "object" && f ? String((f as { name?: string }).name ?? "") : ""))
+        .filter(Boolean),
       legende: String(doc.caption ?? ""),
       lienVisuels: String(doc.visuals_link ?? ""),
       responsablesIds: ids(doc.responsibles),

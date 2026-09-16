@@ -101,7 +101,7 @@ export async function enregistrerEvenement(saisie: unknown): Promise<Resultat<Ev
     Object.assign(donnees, {
       status: s.post.statut,
       networks: s.post.reseauxIds,
-      format: s.post.formatId,
+      format: s.post.formatIds,
       caption: s.post.legende || null,
       visuals_link: s.post.lienVisuels || null,
       publication_link: s.post.lienPublication || null,

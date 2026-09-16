@@ -17,7 +17,7 @@ function ListePosts({ posts, retard, edition }: { posts: Post[]; retard: boolean
   return (
     <ul className="divide-y divide-border">
       {posts.map((p) => {
-        const diffusion = [p.format, ...p.reseaux].filter(Boolean).join(", ");
+        const diffusion = [...p.formats, ...p.reseaux].filter(Boolean).join(", ");
         return (
           <li key={p.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">

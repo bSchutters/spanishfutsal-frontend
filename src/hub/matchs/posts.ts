@@ -24,7 +24,7 @@ export type ModelePost = {
   /** L'etat Lexical des instructions, copie rendu dans la description du post. */
   instructions: unknown;
   reseauxIds: number[];
-  formatId: number | null;
+  formatIds: number[];
   fluxIds: number[];
   responsablesIds: number[];
 };
@@ -118,7 +118,7 @@ export function champsDuPost(
     primary_feed: flux[0] ?? null,
     responsibles: modele.responsablesIds,
     networks: modele.reseauxIds,
-    format: modele.formatId,
+    format: modele.formatIds,
     status: "to_create",
     cancelled: false,
     template: modele.id,

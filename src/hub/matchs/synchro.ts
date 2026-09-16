@@ -117,7 +117,7 @@ export async function chargerContexte(payload: Payload, req?: Req): Promise<Cont
       legendeModele: typeof m.caption_template === "string" ? m.caption_template : null,
       instructions: m.instructions ?? null,
       reseauxIds: ids(m.networks),
-      formatId: idOuNull(m.format),
+      formatIds: ids(m.format),
       fluxIds: ids(m.feeds),
       responsablesIds: ids(m.responsibles),
     })),

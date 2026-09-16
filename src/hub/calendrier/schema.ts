@@ -75,7 +75,7 @@ export const schemaEvenement = z.object({
   post: z.object({
     statut: z.enum(STATUTS),
     reseauxIds: identifiants,
-    formatId: z.nullable(identifiant),
+    formatIds: z.array(identifiant),
     legende: z.string().check(z.maxLength(5000)),
     lienVisuels: lienFacultatif,
     lienPublication: lienFacultatif,
@@ -111,7 +111,7 @@ export const SAISIE_VIDE: SaisieEvenement = {
   post: {
     statut: "to_create",
     reseauxIds: [],
-    formatId: null,
+    formatIds: [],
     legende: "",
     lienVisuels: "",
     lienPublication: "",
