@@ -2,7 +2,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /** Les dossiers de l'admin Payload pour les medias du site et les visuels du Hub, a la demande de Bryan. */
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_payload_folders_folder_type" AS ENUM('media', 'hub-media');
   CREATE TABLE "payload_folders_folder_type" (
@@ -39,7 +39,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "payload_locked_documents_rels_payload_folders_id_idx" ON "payload_locked_documents_rels" USING btree ("payload_folders_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "payload_folders_folder_type" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "payload_folders" DISABLE ROW LEVEL SECURITY;

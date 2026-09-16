@@ -7,7 +7,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
  * que l outil n ait pas a deviner s il s agit d un renommage.
  */
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TABLE "hub_media" (
   	"id" serial PRIMARY KEY NOT NULL,
@@ -46,7 +46,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "payload_locked_documents_rels_hub_media_id_idx" ON "payload_locked_documents_rels" USING btree ("hub_media_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "hub_media" DISABLE ROW LEVEL SECURITY;
   DROP TABLE "hub_media" CASCADE;

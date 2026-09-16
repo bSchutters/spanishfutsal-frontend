@@ -2,7 +2,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /** Une idee peut viser plusieurs formats, comme un post : meme passage en table de relations. */
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "ideas" DROP CONSTRAINT "ideas_format_id_formats_id_fk";
   

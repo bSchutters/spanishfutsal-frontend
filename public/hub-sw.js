@@ -15,7 +15,7 @@ self.addEventListener("push", (event) => {
   var donnees = { title: "Hub UDA", body: "", url: "/hub", tag: undefined };
   try {
     if (event.data) donnees = Object.assign(donnees, event.data.json());
-  } catch (e) {
+  } catch {
     if (event.data) donnees.body = event.data.text();
   }
   event.waitUntil(
