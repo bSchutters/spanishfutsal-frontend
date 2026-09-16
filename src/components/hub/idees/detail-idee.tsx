@@ -115,7 +115,7 @@ export default function DetailIdee({
         {detail ? (
           <>
             {peutEditer ? (
-              <div className="absolute right-11 top-2.5 flex items-center gap-0.5">
+              <div className="actions-panneau absolute right-11 top-2.5 flex items-center gap-0.5">
                 <Button
                   type="button"
                   variant="ghost"

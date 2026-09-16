@@ -100,3 +100,18 @@ html.hub input::-webkit-date-and-time-value {
 html.hub [data-slot="form-item"] {
   min-width: 0;
 }
+
+/* L'app installee s'affiche sous la barre d'etat et le Dynamic Island : les
+   panneaux lateraux, qui montent jusqu'en haut de l'ecran, reservent cette
+   zone, et leurs boutons du haut (croix, modifier, supprimer) descendent d'autant. */
+html.hub [data-slot="sheet-content"] {
+  padding-top: env(safe-area-inset-top);
+}
+
+html.hub [data-slot="sheet-content"] > [data-slot="sheet-close"] {
+  top: calc(1rem + env(safe-area-inset-top));
+}
+
+html.hub .actions-panneau {
+  top: calc(0.625rem + env(safe-area-inset-top));
+}

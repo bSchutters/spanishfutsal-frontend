@@ -155,7 +155,7 @@ export default function DetailEvenement({
             {/* Les actions sur l'evenement vivent dans l'en-tete, a cote de la
                 croix, comme dans un panneau de tableau de bord. */}
             {peutEditer ? (
-              <div className="absolute right-11 top-2.5 flex items-center gap-0.5">
+              <div className="actions-panneau absolute right-11 top-2.5 flex items-center gap-0.5">
                 <Button
                   type="button"
                   variant="ghost"
