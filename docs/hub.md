@@ -40,6 +40,8 @@ Un post « À créer » qui reçoit une légende et au moins un visuel passe tou
 
 Quand un match bouge, ses posts suivent, sauf ceux dont la date a été déplacée à la main, publiés ou annulés. Quand le score arrive ou la salle change, les textes sont refaits, sauf légende retouchée à la main. Un match supprimé dans l'admin est annulé dans le Hub, jamais effacé, avec ses posts non publiés. Un vrai match ne se supprime pas pour un essai : la base est celle du site.
 
+Quinze jours après la date d'un post publié, ses visuels sont effacés du stockage par le job quotidien : ils vivent alors sur les réseaux. Le post garde sa légende et son lien de publication. Un visuel partagé par plusieurs posts attend que tous soient publiés depuis quinze jours.
+
 ## Réglages du Hub
 
 Global **Réglages du Hub** : durée d'un match et d'un entraînement, rendez-vous avant le coup d'envoi, heure du rappel du matin, délai du rappel avant l'événement, nom du club affiché et motif de reconnaissance du club dans les noms LFFS. Le nom du club vient d'abord de l'équipe cochée **Équipe du club** dans la collection Équipes.
@@ -64,7 +66,7 @@ Trois appels à programmer dans le cron externe, avec l'en-tête `Authorization:
 | Route | Fréquence | Rôle |
 |---|---|---|
 | `POST /api/import/trigger` | quotidien, plus souvent les soirs de match | L'import LFFS existant. Chaque match importé synchronise son événement et ses posts |
-| `POST /api/hub/synchro-matchs` | une fois par jour, après l'import | Réconciliation : resynchronise tous les matchs de la saison active, annule les événements dont le match a disparu |
+| `POST /api/hub/synchro-matchs` | une fois par jour, après l'import | Réconciliation : resynchronise tous les matchs de la saison active, annule les événements dont le match a disparu. Fait aussi le ménage des visuels des posts publiés depuis quinze jours |
 | `POST /api/hub/rappels` | toutes les 5 minutes | Envoie les rappels push dont l'heure tombe dans les dix dernières minutes, une seule fois chacun |
 
 Le journal des rappels envoyés est dans l'admin, collection **Journal des rappels**.
