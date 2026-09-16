@@ -7,6 +7,7 @@ import {
   ecartAvecLeScore,
   etatSaisie,
   joueursParNumero,
+  refusNumero,
   schemaFeuilleStats,
   schemaNumeros,
   trierJoueurs,
@@ -118,6 +119,17 @@ describe("numeros de feuille de match", () => {
       [12, [1, 2]],
     ]);
     expect(joueursParNumero([joueurs[3]])).toEqual([]);
+  });
+
+  it("refuse un troisieme porteur et un doublon chez le meme joueur", () => {
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 12)).toBe("Le 12 est déjà porté par deux joueurs, Ana Diaz et Bo Alvarez.");
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 7)).toBe("Le 7 est déjà porté par deux joueurs, Bo Alvarez et Cy Perez.");
+    expect(refusNumero(joueurs, 4, "numeroFeuille2", 1)).toBeNull();
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", 5)).toBeNull();
+    expect(refusNumero(joueurs, 4, "numeroFeuille1", null)).toBeNull();
+    // Le joueur qui porte deja le numero peut le garder dans la meme case.
+    expect(refusNumero(joueurs, 1, "numeroFeuille2", 12)).toBeNull();
+    expect(refusNumero(joueurs, 1, "numeroFeuille2", 1)).toBe("Ce joueur a déjà le 1.");
   });
 
   it("trie par nom puis prenom", () => {

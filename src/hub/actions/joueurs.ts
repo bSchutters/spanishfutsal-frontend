@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod/mini";
 
 import type { Resultat } from "@/hub/actions/evenements";
-import { chargerFeuilleStats, postesDe, type FeuilleStats, type JoueurFeuille } from "@/hub/joueurs/donnees";
-import { schemaFeuilleStats, schemaNumeros, versTableauxMatch } from "@/hub/joueurs/schema";
+import { chargerFeuilleStats, listerJoueurs, postesDe, type FeuilleStats, type JoueurFeuille } from "@/hub/joueurs/donnees";
+import { refusNumero, schemaFeuilleStats, schemaNumeros, versTableauxMatch } from "@/hub/joueurs/schema";
 import { exigerModule } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
 
@@ -58,12 +58,25 @@ export async function enregistrerFeuilleStats(saisie: unknown): Promise<Resultat
   return relue ? { ok: true, donnees: relue } : { ok: false, erreur: "Enregistré, mais impossible à relire." };
 }
 
-/** Les deux numeros de feuille de match d'un joueur. Vide efface. Le numero du site n'est pas touche. */
+/**
+ * Les deux numeros de feuille de match d'un joueur. Vide efface. Le numero
+ * du site n'est pas touche. La regle des deux porteurs par numero se
+ * verifie ici, sur l'effectif actif tel qu'il est en base, pas seulement
+ * dans le navigateur.
+ */
 export async function enregistrerNumeros(saisie: unknown): Promise<Resultat<JoueurFeuille>> {
   await exigerModule("players", "edit");
   const lecture = schemaNumeros.safeParse(saisie);
   if (!lecture.success) return { ok: false, erreur: premiereErreur(lecture.error) };
   const { joueurId, numero, numero2 } = lecture.data;
+
+  const effectif = await listerJoueurs();
+  const moi = effectif.find((j) => j.id === joueurId);
+  if (!moi) return { ok: false, erreur: "Ce joueur n'est pas dans l'effectif actif." };
+  // Les deux numeros sont juges ensemble, avec les valeurs demandees.
+  const demande = effectif.map((j) => (j.id === joueurId ? { ...j, numeroFeuille1: numero, numeroFeuille2: numero2 } : j));
+  const refus = refusNumero(demande, joueurId, "numeroFeuille1", numero) ?? refusNumero(demande, joueurId, "numeroFeuille2", numero2);
+  if (refus) return { ok: false, erreur: refus };
 
   const payload = await getPayloadClient();
   try {

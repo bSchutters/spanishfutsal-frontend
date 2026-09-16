@@ -202,6 +202,39 @@ export function joueursParNumero<T extends JoueurNumeros>(joueurs: readonly T[])
   return [...parNumero].sort(([a], [b]) => a - b).map(([numero, liste]) => ({ numero, joueurs: liste }));
 }
 
+export type ChampNumero = "numeroFeuille1" | "numeroFeuille2";
+
+/** Les autres joueurs qui portent ce numero, en premier ou en second. */
+export function porteursDe<T extends JoueurNumeros>(joueurs: readonly T[], numero: number, saufId: number): T[] {
+  return joueurs.filter((j) => j.id !== saufId && (j.numeroFeuille1 === numero || j.numeroFeuille2 === numero));
+}
+
+const nomCourt = (j: JoueurNumeros) => `${j.prenom} ${j.nom}`.trim();
+
+/**
+ * Pourquoi un numero ne peut pas etre donne a ce joueur, ou null s'il le
+ * peut. Un numero se porte au plus par deux joueurs, l'un en principal,
+ * l'autre en secondaire, pour tourner sans se retrouver a trois sur le
+ * meme maillot ; et un joueur ne le prend pas deux fois. Rien ne se
+ * verifie pour une case videe.
+ */
+export function refusNumero(
+  joueurs: readonly JoueurNumeros[],
+  joueurId: number,
+  champ: ChampNumero,
+  numero: number | null,
+): string | null {
+  if (numero === null) return null;
+  const moi = joueurs.find((j) => j.id === joueurId);
+  const autreChamp: ChampNumero = champ === "numeroFeuille1" ? "numeroFeuille2" : "numeroFeuille1";
+  if (moi && moi[autreChamp] === numero) return `Ce joueur a déjà le ${numero}.`;
+  const porteurs = porteursDe(joueurs, numero, joueurId);
+  if (porteurs.length >= 2) {
+    return `Le ${numero} est déjà porté par deux joueurs, ${porteurs.map(nomCourt).join(" et ")}.`;
+  }
+  return null;
+}
+
 /** Par nom puis prenom : les numeros se partagent, ils ne classent pas. */
 export function trierJoueurs<T extends { nom: string; prenom: string }>(joueurs: readonly T[]): T[] {
   return [...joueurs].sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr"));
