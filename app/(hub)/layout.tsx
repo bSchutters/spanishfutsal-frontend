@@ -3,6 +3,7 @@ import "./hub.css";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 
+import RapporteurErreurs from "@/components/hub/rapporteur-erreurs";
 import ToasterHub from "@/components/hub/toaster";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,7 @@ export default function HubLayout({ children }: Readonly<{ children: React.React
       <body className="min-h-full bg-background font-sans text-sm text-foreground antialiased">
         {children}
         <ToasterHub />
+        {process.env.NODE_ENV !== "production" ? <RapporteurErreurs /> : null}
       </body>
     </html>
   );

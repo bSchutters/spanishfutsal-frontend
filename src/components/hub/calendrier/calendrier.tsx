@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 import { EventCalendar } from "@/components/event-calendar";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { deplacerEvenement } from "@/hub/actions/evenements";
 import type { EvenementCalendrier, EvenementDetail, References } from "@/hub/calendrier/donnees";
 import { COULEURS_STATUT } from "@/hub/calendrier/schema";
@@ -27,17 +26,13 @@ import FormulaireEvenement, { type EtatFormulaire } from "./formulaire-evenement
 
 const VUES = ["dayGridMonth", "timeGridWeek", "listWeek"];
 
-// Le calendrier ne se rend que dans le navigateur : la vue de depart depend
-// de la largeur de l'ecran, et les filtres du stockage local.
-const rienAEcouter = () => () => {};
-const coteNavigateur = () => true;
-const coteServeur = () => false;
-
 type Props = {
   references: References;
   peutEditer: boolean;
   utilisateurId: number;
   estAdmin: boolean;
+  /** Decide par le serveur d'apres l'appareil : liste d'abord, page qui defile. */
+  mobile: boolean;
 };
 
 function versEntree(ev: EvenementCalendrier, peutEditer: boolean): EventInput {
@@ -64,8 +59,7 @@ function versEntree(ev: EvenementCalendrier, peutEditer: boolean): EventInput {
  * telephone. Les evenements sont lus par plage affichee, les filtres
  * s'appliquent dans le navigateur et s'y memorisent.
  */
-export default function Calendrier({ references, peutEditer, utilisateurId, estAdmin }: Props) {
-  const monte = useSyncExternalStore(rienAEcouter, coteNavigateur, coteServeur);
+export default function Calendrier({ references, peutEditer, utilisateurId, estAdmin, mobile }: Props) {
   const filtres = useSyncExternalStore(abonnerFiltres, lireFiltresMemorises, filtresServeur);
   const parametres = useSearchParams();
   const [evenements, setEvenements] = useState<EvenementCalendrier[]>([]);
@@ -79,7 +73,6 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
   // Sur un telephone, la liste d'abord, et le calendrier prend la hauteur de
   // son contenu : c'est la page qui defile. Sur grand ecran, il remplit
   // l'espace restant et defile lui-meme.
-  const mobile = monte && window.innerWidth < 768;
   const vueInitiale = mobile ? "listWeek" : "dayGridMonth";
 
   const charger = useCallback(async () => {
@@ -151,8 +144,7 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
         ) : null}
       </div>
 
-      {monte ? (
-        <EventCalendar
+      <EventCalendar
           className={mobile ? "text-sm" : "min-h-[28rem] flex-1 text-sm"}
           locale={frLocale}
           firstDay={1}
@@ -206,9 +198,6 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
             if (info.event.extendedProps.annule) info.el.classList.add("line-through", "opacity-60");
           }}
         />
-      ) : (
-        <Skeleton className="min-h-[28rem] w-full flex-1 rounded-lg" />
-      )}
 
       <DetailEvenement
         key={detailId ?? "aucun"}

@@ -58,7 +58,7 @@ export function EventCalendarToolbar({
             <EventCalendarNextIcon />
           </Button>
         </div>
-        <div className='text-xl'>{controller.view?.title}</div>
+        <div className='min-w-0 truncate text-base sm:text-xl'>{controller.view?.title}</div>
       </div>
       <Tabs value={controller.view?.type ?? availableViews[0]}>
         <TabsList>
