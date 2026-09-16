@@ -324,8 +324,14 @@ export default function FeuilleStatsMatch({ feuille: initiale, peutEditer }: { f
       <Groupe titre="Gardiens" liste={gardiens} {...commun} />
       <Groupe titre="Joueurs de champ" liste={champ} {...commun} />
 
-      {/* Collee au bas de la zone qui defile, au-dessus de la barre d'onglets du telephone. */}
-      <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] -mx-4 mt-auto border-t border-border bg-background px-4 py-3 sm:-mx-6 sm:px-6 md:bottom-0 md:-mx-8 md:px-8">
+      {/*
+        Collee au bas de la zone qui defile. Un element sticky se cale sur la
+        boite de contenu du conteneur, marge interieure exclue : le decalage
+        vers le bas vaut donc la marge basse de <main>, 1 rem au-dessus de la
+        barre d'onglets du telephone, 1,5 rem sur grand ecran, sinon les
+        lignes defilent dans une bande sous la barre.
+      */}
+      <div className="sticky -bottom-4 -mx-4 mt-auto border-t border-border bg-background px-4 py-3 sm:-mx-6 sm:px-6 md:-bottom-6 md:-mx-8 md:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 text-sm">
             <span className="font-medium">
