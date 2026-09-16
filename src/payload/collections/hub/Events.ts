@@ -12,6 +12,20 @@ export const STATUTS_POST = [
 
 export type StatutPost = (typeof STATUTS_POST)[number]['value']
 
+/**
+ * Un post « A creer » qui a sa legende et au moins un visuel est pret : le
+ * statut avance tout seul. Jamais en arriere, et jamais depuis un autre
+ * statut, pour ne pas defaire ce qu'une personne a choisi.
+ */
+export function statutApresRemplissage(
+  statut: string | null | undefined,
+  legende: string | null | undefined,
+  nombreDeVisuels: number,
+): StatutPost | null {
+  if ((statut ?? 'to_create') !== 'to_create') return null
+  return (legende ?? '').trim() && nombreDeVisuels > 0 ? 'ready' : null
+}
+
 export const JOURS_SEMAINE = [
   { label: 'Lundi', value: 'mon' },
   { label: 'Mardi', value: 'tue' },
@@ -61,6 +75,14 @@ export const Events: CollectionConfig = {
         if (ids.length > 0 && (idPrincipal === null || !ids.includes(idPrincipal))) {
           data.primary_feed = Number(ids[0])
         }
+        // Legende et visuel en place : le post passe de « A creer » a « Pret ».
+        const visuels: unknown[] = Array.isArray(data.visuals) ? data.visuals : Array.isArray(originalDoc?.visuals) ? originalDoc.visuals : []
+        const avance = statutApresRemplissage(
+          data.status ?? originalDoc?.status,
+          data.caption ?? originalDoc?.caption,
+          visuels.length,
+        )
+        if (avance) data.status = avance
         return data
       },
     ],

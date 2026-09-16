@@ -36,6 +36,8 @@ Collection **Modèles de post**. Un modèle crée un post pour chaque match LFFS
 - **Formats**, **réseaux**, **flux** (Social par défaut) et **responsables** sont repris sur les posts créés.
 - Modifier un modèle ne touche pas aux posts existants. Sur un match, le bouton **Regénérer les posts** crée ceux qui manquent ; avec l'option **Réinitialiser aussi les posts non publiés**, ils repartent du modèle, diffusion comprise.
 
+Un post « À créer » qui reçoit une légende et au moins un visuel passe tout seul en « Prêt ». Jamais dans l'autre sens.
+
 Quand un match bouge, ses posts suivent, sauf ceux dont la date a été déplacée à la main, publiés ou annulés. Quand le score arrive ou la salle change, les textes sont refaits, sauf légende retouchée à la main. Un match supprimé dans l'admin est annulé dans le Hub, jamais effacé, avec ses posts non publiés. Un vrai match ne se supprime pas pour un essai : la base est celle du site.
 
 ## Réglages du Hub

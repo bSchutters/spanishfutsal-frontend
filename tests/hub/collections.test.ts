@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Comments } from "@/payload/collections/hub/Comments";
-import { Events } from "@/payload/collections/hub/Events";
+import { Events, statutApresRemplissage } from "@/payload/collections/hub/Events";
 import { EventTypes } from "@/payload/collections/hub/EventTypes";
 import { Feeds, genererJeton } from "@/payload/collections/hub/Feeds";
 import { Formats } from "@/payload/collections/hub/Formats";
@@ -114,5 +114,17 @@ describe("jeton de flux", () => {
     const jeton = genererJeton();
     expect(jeton).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(genererJeton()).not.toBe(jeton);
+  });
+});
+
+describe("statut d un post", () => {
+  it("passe a Pret des qu il a une legende et un visuel, seulement depuis A creer", () => {
+    expect(statutApresRemplissage("to_create", "PROCHAIN MATCH", 1)).toBe("ready");
+    expect(statutApresRemplissage(undefined, "PROCHAIN MATCH", 2)).toBe("ready");
+    expect(statutApresRemplissage("to_create", "  ", 1)).toBeNull();
+    expect(statutApresRemplissage("to_create", "PROCHAIN MATCH", 0)).toBeNull();
+    expect(statutApresRemplissage("ready", "PROCHAIN MATCH", 1)).toBeNull();
+    expect(statutApresRemplissage("published", "PROCHAIN MATCH", 1)).toBeNull();
+    expect(statutApresRemplissage("cancelled", "PROCHAIN MATCH", 1)).toBeNull();
   });
 });
