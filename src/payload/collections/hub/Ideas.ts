@@ -100,8 +100,16 @@ export const Ideas: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       hasMany: true,
-      label: 'Votes',
+      label: 'Votes pour',
       admin: { position: 'sidebar', description: 'Un vote par personne, indicatif.' },
+    },
+    {
+      name: 'votes_against',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Votes contre',
+      admin: { position: 'sidebar', description: "Une personne est pour ou contre, jamais les deux." },
     },
   ],
 }

@@ -65,7 +65,21 @@ export function trierIdees<T extends { votes: number; creeLe: string }>(idees: r
   return [...idees].sort(tri === "votes" ? (a, b) => b.votes - a.votes || parDate(a, b) : parDate);
 }
 
+export type SensVote = "pour" | "contre";
+
 /** Le vote bascule : present, il s'enleve ; absent, il s'ajoute. Une seule voix par personne. */
 export function basculerVote(votants: readonly number[], utilisateurId: number): number[] {
   return votants.includes(utilisateurId) ? votants.filter((id) => id !== utilisateurId) : [...votants, utilisateurId];
+}
+
+/** Une personne est pour ou contre, jamais les deux : voter d'un cote retire l'autre. */
+export function appliquerVote(
+  pour: readonly number[],
+  contre: readonly number[],
+  utilisateurId: number,
+  sens: SensVote,
+): { pour: number[]; contre: number[] } {
+  const sans = (liste: readonly number[]) => liste.filter((id) => id !== utilisateurId);
+  if (sens === "pour") return { pour: basculerVote(pour, utilisateurId), contre: sans(contre) };
+  return { pour: sans(pour), contre: basculerVote(contre, utilisateurId) };
 }

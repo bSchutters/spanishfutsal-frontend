@@ -31,6 +31,9 @@ export type IdeeCarte = {
   votes: number;
   votantsIds: number[];
   aVote: boolean;
+  contre: number;
+  contreIds: number[];
+  aVoteContre: boolean;
   nbCommentaires: number;
 };
 
@@ -73,6 +76,7 @@ const evenementLie = (relation: unknown): { id: number; titre: string } | null =
 
 function carteDe(doc: Doc, utilisateurId: number, nbCommentaires: number): IdeeCarte {
   const votants = ids(doc.votes);
+  const contre = ids(doc.votes_against);
   return {
     id: Number(doc.id),
     titre: String(doc.title ?? ""),
@@ -92,6 +96,9 @@ function carteDe(doc: Doc, utilisateurId: number, nbCommentaires: number): IdeeC
     votes: votants.length,
     votantsIds: votants,
     aVote: votants.includes(utilisateurId),
+    contre: contre.length,
+    contreIds: contre,
+    aVoteContre: contre.includes(utilisateurId),
     nbCommentaires,
   };
 }
@@ -143,12 +150,12 @@ export async function compterIdeesAVoter(user: UtilisateurSession): Promise<numb
     where: { status: { equals: "new" } },
     limit: 500,
     depth: 0,
-    select: { votes: true },
+    select: { votes: true, votes_against: true },
     overrideAccess: false,
     user,
   });
   const moi = Number(user.id);
-  return docs.filter((d) => !ids((d as Doc).votes).includes(moi)).length;
+  return docs.filter((d) => !ids((d as Doc).votes).includes(moi) && !ids((d as Doc).votes_against).includes(moi)).length;
 }
 
 export async function chargerIdee(user: UtilisateurSession, id: number): Promise<IdeeDetail | null> {

@@ -5,7 +5,7 @@ import * as z from "zod/mini";
 
 import type { Resultat } from "@/hub/actions/evenements";
 import { chargerIdee, type IdeeDetail } from "@/hub/idees/donnees";
-import { basculerVote, STATUTS_IDEE, schemaIdee } from "@/hub/idees/schema";
+import { appliquerVote, STATUTS_IDEE, schemaIdee } from "@/hub/idees/schema";
 import { exigerModule } from "@/hub/session";
 import { texteVersLexical } from "@/hub/texte";
 import { getPayloadClient } from "@/lib/payload";
@@ -86,21 +86,25 @@ export async function changerStatutIdee(saisie: unknown): Promise<Resultat> {
   }
 }
 
-/** Le vote bascule. Ouvert des la lecture : l'ecriture se fait en systeme, sur une idee que la personne peut lire. */
-export async function voterIdee(id: unknown): Promise<Resultat<{ votes: number; aVote: boolean }>> {
+/**
+ * Le vote, pour ou contre, bascule ; voter d'un cote retire l'autre. Ouvert
+ * des la lecture : l'ecriture se fait en systeme, sur une idee que la
+ * personne peut lire.
+ */
+export async function voterIdee(saisie: unknown): Promise<Resultat<{ pour: number; contre: number }>> {
   const { user } = await exigerModule("calendar");
-  const lecture = identifiant.safeParse(id);
-  if (!lecture.success) return { ok: false, erreur: "Identifiant invalide." };
+  const lecture = z.object({ id: identifiant, sens: z.enum(["pour", "contre"]) }).safeParse(saisie);
+  if (!lecture.success) return { ok: false, erreur: premiereErreur(lecture.error) };
 
-  const existante = await chargerIdee(user, lecture.data);
+  const existante = await chargerIdee(user, lecture.data.id);
   if (!existante) return { ok: false, erreur: INTROUVABLE };
 
-  const votants = basculerVote(existante.votantsIds, Number(user.id));
+  const { pour, contre } = appliquerVote(existante.votantsIds, existante.contreIds, Number(user.id), lecture.data.sens);
   const payload = await getPayloadClient();
   try {
-    await payload.update({ collection: "ideas", id: lecture.data, data: { votes: votants }, depth: 0 });
+    await payload.update({ collection: "ideas", id: lecture.data.id, data: { votes: pour, votes_against: contre }, depth: 0 });
     rafraichir();
-    return { ok: true, donnees: { votes: votants.length, aVote: votants.includes(Number(user.id)) } };
+    return { ok: true, donnees: { pour: pour.length, contre: contre.length } };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

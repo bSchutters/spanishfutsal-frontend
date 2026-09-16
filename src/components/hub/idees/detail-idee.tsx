@@ -21,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatutIdee, lireIdee, supprimerIdee, voterIdee } from "@/hub/actions/idees";
 import { formaterDateCourte } from "@/hub/dates";
 import type { IdeeDetail } from "@/hub/idees/donnees";
-import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE, type StatutIdee } from "@/hub/idees/schema";
+import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE, type SensVote, type StatutIdee } from "@/hub/idees/schema";
 import BoutonsStatut from "./boutons-statut";
 import Sondage, { type Membre } from "./sondage";
 
@@ -77,10 +77,10 @@ export default function DetailIdee({
     if (id !== null) recharger(id);
   }, [id]);
 
-  const voter = () => {
+  const voter = (sens: SensVote) => {
     if (!detail) return;
     lancer(async () => {
-      const r = await voterIdee(detail.id);
+      const r = await voterIdee({ id: detail.id, sens });
       if (!r.ok) return void toast.error(r.erreur);
       recharger(detail.id);
       onChange();
@@ -152,7 +152,15 @@ export default function DetailIdee({
             </SheetHeader>
 
             <div className="flex flex-col gap-4 px-5 py-4">
-              <Sondage votantsIds={detail.votantsIds} aVote={detail.aVote} membres={membres} enCours={enCours} onVoter={voter} />
+              <Sondage
+                pourIds={detail.votantsIds}
+                contreIds={detail.contreIds}
+                aVotePour={detail.aVote}
+                aVoteContre={detail.aVoteContre}
+                membres={membres}
+                enCours={enCours}
+                onVoter={voter}
+              />
 
               {peutEditer ? (
                 <div className="flex flex-wrap items-center gap-2">

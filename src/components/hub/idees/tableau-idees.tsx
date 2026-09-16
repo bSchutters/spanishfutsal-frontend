@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Plus } from "lucide-react";
+import { ExternalLink, MessageSquare, Plus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -13,7 +13,14 @@ import { changerStatutIdee, planifierIdee, voterIdee } from "@/hub/actions/idees
 import type { References } from "@/hub/calendrier/donnees";
 import { formaterDateCourte } from "@/hub/dates";
 import type { IdeeCarte, IdeeDetail } from "@/hub/idees/donnees";
-import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE, STATUTS_IDEE, trierIdees, type StatutIdee } from "@/hub/idees/schema";
+import {
+  COULEURS_STATUT_IDEE,
+  LIBELLES_STATUT_IDEE,
+  STATUTS_IDEE,
+  trierIdees,
+  type SensVote,
+  type StatutIdee,
+} from "@/hub/idees/schema";
 import BoutonsStatut from "./boutons-statut";
 import DetailIdee from "./detail-idee";
 import FormulaireIdee, { type EtatFormulaireIdee, type ReferencesIdees } from "./formulaire-idee";
@@ -59,9 +66,9 @@ export default function TableauIdees({
 
   const rafraichir = () => router.refresh();
 
-  const voter = (id: number) => {
+  const voter = (id: number, sens: SensVote) => {
     lancer(async () => {
-      const r = await voterIdee(id);
+      const r = await voterIdee({ id, sens });
       if (!r.ok) return void toast.error(r.erreur);
       rafraichir();
     });
@@ -128,13 +135,30 @@ export default function TableauIdees({
             ))}
           </div>
         ) : null}
-        <Sondage votantsIds={idee.votantsIds} aVote={idee.aVote} membres={membres} enCours={enCours} onVoter={() => voter(idee.id)} compact />
+        <Sondage
+          pourIds={idee.votantsIds}
+          contreIds={idee.contreIds}
+          aVotePour={idee.aVote}
+          aVoteContre={idee.aVoteContre}
+          membres={membres}
+          enCours={enCours}
+          onVoter={(sens) => voter(idee.id, sens)}
+          compact
+        />
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-          {peutEditer ? (
-            <BoutonsStatut statut={idee.statut} enCours={enCours} onChanger={(statut) => changerStatut(idee.id, statut)} compact />
-          ) : (
-            <span />
-          )}
+          <span className="flex flex-wrap items-center gap-1.5">
+            {peutEditer ? (
+              <BoutonsStatut statut={idee.statut} enCours={enCours} onChanger={(statut) => changerStatut(idee.id, statut)} compact />
+            ) : null}
+            {idee.lienInspiration ? (
+              <Button asChild variant="hubSecondary" size="sm" className="h-7 px-2 text-xs">
+                <a href={idee.lienInspiration} target="_blank" rel="noopener noreferrer" title={idee.lienInspiration}>
+                  <ExternalLink aria-hidden="true" />
+                  Inspi
+                </a>
+              </Button>
+            ) : null}
+          </span>
           <span className="flex items-center gap-2 truncate">
             <span className="flex items-center gap-1">
               <MessageSquare className="size-3.5" aria-hidden="true" />
