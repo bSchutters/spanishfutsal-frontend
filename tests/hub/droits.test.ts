@@ -80,8 +80,9 @@ describe("filtre par flux", () => {
     expect(filtreParFlux(admin)).toBe(true);
   });
 
-  it("vaut faux sans aucun flux : les evenements n'existent pas pour cette personne", () => {
-    expect(filtreParFlux(sansFlux)).toBe(false);
+  it("ne trouve rien sans aucun flux : une liste vide, pas une erreur", () => {
+    expect(filtreParFlux(sansFlux)).toEqual({ feeds: { in: [0] } });
+    expect(filtreParFlux(sansFlux, "id")).toEqual({ id: { in: [0] } });
   });
 
   it("restreint aux flux autorises", () => {

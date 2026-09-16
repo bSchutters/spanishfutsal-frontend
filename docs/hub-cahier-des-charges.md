@@ -694,6 +694,7 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Dossiers de medias (16/09/2026) | Les dossiers de l admin Payload sont actives pour les medias du site et les visuels du Hub (migration `dossiers_medias`), reserves aux personnes connectees. Hors perimetre du Hub, a la demande de Bryan qui n avait aucun moyen de ranger les images |
 | Statut Pret automatique (16/09/2026) | Un post « A creer » qui recoit une legende et au moins un visuel passe en « Pret », par un crochet de la collection, donc depuis le Hub comme depuis l admin. Jamais en arriere, jamais depuis un autre statut |
 | Menage des visuels (16/09/2026) | Quinze jours apres la date d un post publie, ses visuels sont effaces du stockage par le job quotidien de reconciliation. Un visuel partage attend que tous ses posts soient publies depuis quinze jours. Decide par Bryan au vu des compteurs Vercel Blob (1 Go inclus) |
+| Membre sans flux (16/09/2026) | Un compte qui a l acces au Hub mais aucun flux autorise voyait toutes les pages planter : la regle de lecture renvoyait « interdit », que Payload transforme en erreur. Elle renvoie desormais un filtre qui ne trouve rien, donc des listes vides. Trouve par Bryan sur la previsualisation Vercel |
 
 ---
 

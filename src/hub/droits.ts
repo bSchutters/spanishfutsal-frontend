@@ -84,14 +84,20 @@ export function idsFluxAutorises(user: unknown): Array<number | string> | null {
 
 /**
  * Le filtre Payload qui ne laisse passer que les documents rattaches a un
- * flux autorise. `true` pour l'administrateur, `false` sans acces.
+ * flux autorise. `true` pour l'administrateur, `false` sans acces au Hub.
+ * Un membre qui a l'acces mais aucun flux recoit un filtre qui ne trouve
+ * rien : une liste vide, pas une erreur, sinon chaque page lui planterait.
  */
 export function filtreParFlux(user: unknown, champ = "feeds"): boolean | Where {
+  if (!aAccesHub(user)) return false;
   const ids = idsFluxAutorises(user);
   if (ids === null) return true;
-  if (ids.length === 0) return false;
+  if (ids.length === 0) return { [champ]: { in: [RIEN] } };
   return { [champ]: { in: ids } };
 }
+
+/** Un identifiant qu'aucun document ne porte : les identifiants commencent a 1. */
+const RIEN = 0;
 
 // Les regles d'acces Payload, pretes a poser sur les collections.
 
