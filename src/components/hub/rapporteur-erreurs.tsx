@@ -20,6 +20,9 @@ const SCRIPT = `(function(){
     boite.textContent+='\\n- '+texte;
   }
   window.addEventListener('error',function(e){
+    // Un avertissement du navigateur, pas une erreur : FullCalendar mesure ses
+    // cases en boucle et le navigateur coupe court. Rien ne casse.
+    if(e.message&&e.message.indexOf('ResizeObserver loop')===0)return;
     var cible=e.target;
     if(!e.message&&cible&&cible!==window){
       var src=(cible.src||cible.href||'');

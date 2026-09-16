@@ -26,6 +26,12 @@ import FormulaireEvenement, { type EtatFormulaire } from "./formulaire-evenement
 
 const VUES = ["dayGridMonth", "timeGridWeek", "listWeek"];
 
+// Sur mobile, « 14–20 septembre 2026 » ne tient pas a cote des boutons :
+// les vues de la semaine prennent un titre court, « 14–20 sept. ». L annee
+// se lit dans la vue mois.
+const TITRE_COURT = { day: "numeric", month: "short" } as const;
+const VUES_MOBILE = { timeGridWeek: { titleFormat: TITRE_COURT }, listWeek: { titleFormat: TITRE_COURT } };
+
 type Props = {
   references: References;
   peutEditer: boolean;
@@ -139,7 +145,8 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
         {peutEditer ? (
           <Button variant="hub" size="sm" onClick={() => setFormulaire({ mode: "creer" })}>
             <Plus aria-hidden="true" />
-            Nouvel événement
+            {/* Sur mobile, l'icone suffit : filtres, interrupteur et bouton tiennent sur une ligne. */}
+            <span className="max-md:sr-only">Nouvel événement</span>
           </Button>
         ) : null}
       </div>
@@ -151,6 +158,11 @@ export default function Calendrier({ references, peutEditer, utilisateurId, estA
           initialView={vueInitiale}
           availableViews={VUES}
           height={mobile ? "auto" : "100%"}
+          // Sur mobile, c'est la page qui defile : l'en-tete des jours colle
+          // alors au milieu de l'ecran et recouvre les evenements. On le
+          // laisse defiler avec le reste.
+          tableHeaderSticky={!mobile}
+          views={mobile ? VUES_MOBILE : undefined}
           events={entrees}
           // Un bloc colore pour tous, meme a heure fixe dans la vue mois :
           // sans cela FullCalendar les montre en simple point.

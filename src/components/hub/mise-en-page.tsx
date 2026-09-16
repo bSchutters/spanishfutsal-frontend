@@ -13,8 +13,11 @@ export function EnTetePage({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-      <div className="min-w-0">
+    // Sur mobile, la barre du haut affiche deja le nom de la page : le titre
+    // et la description ne restent que pour les lecteurs d'ecran, et les
+    // actions eventuelles prennent leur place dans la colonne.
+    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 max-md:contents">
+      <div className="min-w-0 max-md:sr-only">
         <h1 className="text-xl font-semibold tracking-tight">{titre}</h1>
         {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
       </div>

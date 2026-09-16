@@ -26,7 +26,7 @@ export function EventCalendarToolbar({
 
   return (
     <div className={cn('flex items-center justify-between flex-wrap gap-3', className)}>
-      <div className='flex items-center shrink-0 gap-3'>
+      <div className='flex min-w-0 max-w-full items-center gap-2 sm:gap-3'>
         {addButton && (
           <Button
             onClick={(ev) => addButton.click?.(ev.nativeEvent)}
@@ -37,8 +37,9 @@ export function EventCalendarToolbar({
           onClick={() => controller.today()}
           aria-label={buttons.today.hint}
           variant='outline'
+          className='shrink-0'
         >{buttons.today.text}</Button>
-        <div className='flex items-center'>
+        <div className='flex shrink-0 items-center'>
           <Button
             onClick={() => controller.prev()}
             disabled={buttons.prev.isDisabled}
