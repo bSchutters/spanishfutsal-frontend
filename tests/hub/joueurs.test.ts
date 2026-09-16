@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { modulesAccessibles, niveauModule, type UtilisateurHub } from "@/hub/droits";
-import { ageAu, nettoyerSelonPoste, schemaJoueur, SAISIE_JOUEUR_VIDE } from "@/hub/joueurs/fiche";
+import { ageAu, ficheDe, nettoyerSelonPoste, schemaJoueur, SAISIE_JOUEUR_VIDE } from "@/hub/joueurs/fiche";
 import {
   butsDuClub,
   depuisTableauxMatch,
@@ -142,6 +142,53 @@ describe("fiche d un joueur", () => {
     expect(nettoyerSelonPoste(coach)).toEqual({ ...coach, numero: null, capitaine: false });
     const joueur = { ...coach, poste: "Joueur" as const };
     expect(nettoyerSelonPoste(joueur)).toBe(joueur);
+  });
+
+  it("traduit un document de la collection, photo peuplee ou non", () => {
+    const doc = {
+      id: "12",
+      prenom: "  Valadi ",
+      nom: "Marias",
+      poste: "Gardien",
+      numero: 1,
+      date_naissance: "1995-04-02T12:00:00.000Z",
+      capitaine: true,
+      actif: true,
+      photo: { id: 7, url: "/media/valadi.webp" },
+    };
+    expect(ficheDe(doc)).toEqual({
+      id: 12,
+      prenom: "Valadi",
+      nom: "Marias",
+      poste: "Gardien",
+      gardien: true,
+      surFeuille: true,
+      numero: 1,
+      dateNaissance: "1995-04-02",
+      capitaine: true,
+      actif: true,
+      photo: { id: 7, url: "/media/valadi.webp" },
+    });
+  });
+
+  it("un coach n est pas sur la feuille, un poste absent vaut joueur de champ", () => {
+    const base = { id: 1, prenom: "Dani", nom: "Correas" };
+    expect(ficheDe({ ...base, poste: "Coach" })).toMatchObject({ surFeuille: false, gardien: false });
+    expect(ficheDe({ ...base, poste: "Kine" })).toMatchObject({ surFeuille: false });
+    expect(ficheDe(base)).toMatchObject({ poste: null, surFeuille: true, gardien: false });
+  });
+
+  it("sans valeur, une fiche reste lisible : actif par defaut, ni numero ni photo", () => {
+    expect(ficheDe({ id: 3, prenom: "Ana", nom: "Diaz" })).toMatchObject({
+      numero: null,
+      dateNaissance: null,
+      capitaine: false,
+      actif: true,
+      photo: null,
+    });
+    // Une relation non peuplee ne donne pas d'adresse d'image : pas de photo a montrer.
+    expect(ficheDe({ id: 3, prenom: "Ana", nom: "Diaz", photo: 7 }).photo).toBeNull();
+    expect(ficheDe({ id: 3, prenom: "Ana", nom: "Diaz", actif: false }).actif).toBe(false);
   });
 
   it("calcule l age au jour pres", () => {

@@ -1,19 +1,21 @@
 import type { Payload } from "payload";
 
-import { composerDateHeure, versChampDate } from "@/hub/dates";
+import { composerDateHeure } from "@/hub/dates";
 import { camp, jourDuMatch, scoreDe, type MatchLffs } from "@/hub/matchs/construction";
 import { getPayloadClient } from "@/lib/payload";
 import { getTeamsIndex } from "@/lib/getTeamsIndex";
+import { ficheDe, type JoueurFiche } from "./fiche";
 import {
   butsDuClub,
   depuisTableauxMatch,
   etatSaisie,
-  surLaFeuille,
   trierJoueurs,
   type EtatSaisie,
   type LigneStats,
   type Poste,
 } from "./schema";
+
+export { ficheDe, type JoueurFiche };
 
 /**
  * La lecture du module Joueurs : l'effectif de la collection Joueurs et les
@@ -22,24 +24,6 @@ import {
  * ou l'action ; la lecture elle-meme se fait en systeme, ces deux collections
  * ne portant pas de regle par personne dans le Hub.
  */
-
-/** Une fiche de la collection Joueurs, telle que le Hub la montre et la modifie. */
-export type JoueurFiche = {
-  id: number;
-  prenom: string;
-  nom: string;
-  poste: Poste | null;
-  gardien: boolean;
-  /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non. */
-  surFeuille: boolean;
-  /** Le numero du joueur, celui du site. Le staff n'en a pas. */
-  numero: number | null;
-  /** « 2001-06-30 », ou null. */
-  dateNaissance: string | null;
-  capitaine: boolean;
-  actif: boolean;
-  photo: { id: number; url: string } | null;
-};
 
 /** Ce que la feuille de stats a besoin de savoir d'un joueur. */
 export type JoueurFeuille = Pick<
@@ -75,30 +59,6 @@ export type FeuilleStats = {
 };
 
 type Doc = Record<string, unknown> & { id: number | string };
-
-const numeroOuNull = (valeur: unknown): number | null =>
-  typeof valeur === "number" && Number.isFinite(valeur) ? Math.trunc(valeur) : null;
-
-export function ficheDe(doc: Doc): JoueurFiche {
-  const poste = (doc.poste as Poste | null | undefined) ?? null;
-  const photo = doc.photo;
-  return {
-    id: Number(doc.id),
-    prenom: String(doc.prenom ?? "").trim(),
-    nom: String(doc.nom ?? "").trim(),
-    poste,
-    gardien: poste === "Gardien",
-    surFeuille: poste === null || surLaFeuille(poste),
-    numero: numeroOuNull(doc.numero),
-    dateNaissance: typeof doc.date_naissance === "string" ? versChampDate(doc.date_naissance) || null : null,
-    capitaine: doc.capitaine === true,
-    actif: doc.actif !== false,
-    photo:
-      photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string"
-        ? { id: Number((photo as { id: unknown }).id), url: String((photo as { url: string }).url) }
-        : null,
-  };
-}
 
 /** Toute la collection Joueurs, actifs ou non, staff compris, tries par numero puis par nom. */
 export async function listerEffectif(payload?: Payload): Promise<JoueurFiche[]> {

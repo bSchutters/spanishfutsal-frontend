@@ -1,5 +1,6 @@
 import * as z from "zod/mini";
 
+import { versChampDate } from "@/hub/dates";
 import { surLaFeuille, type Poste } from "./schema";
 
 z.config({ jitless: true });
@@ -8,6 +9,24 @@ z.config({ jitless: true });
  * La saisie d'une fiche joueur depuis le Hub : ce que la collection Joueurs
  * porte, dans les mots du club. Un seul numero, celui du site.
  */
+
+/** Une fiche de la collection Joueurs, telle que le Hub la montre et la modifie. */
+export type JoueurFiche = {
+  id: number;
+  prenom: string;
+  nom: string;
+  poste: Poste | null;
+  gardien: boolean;
+  /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non. */
+  surFeuille: boolean;
+  /** Le numero du joueur, celui du site. Le staff n'en a pas. */
+  numero: number | null;
+  /** « 2001-06-30 », ou null. */
+  dateNaissance: string | null;
+  capitaine: boolean;
+  actif: boolean;
+  photo: { id: number; url: string } | null;
+};
 
 export const POSTES = ["Gardien", "Joueur", "Coach", "Kine"] as const;
 
@@ -70,3 +89,29 @@ export function ageAu(dateNaissance: string | null, aujourdHui: Date): number | 
   if (!anniversairePasse) age -= 1;
   return age >= 0 ? age : null;
 }
+
+const numeroOuNull = (valeur: unknown): number | null =>
+  typeof valeur === "number" && Number.isFinite(valeur) ? Math.trunc(valeur) : null;
+
+/** Un document de la collection Joueurs traduit en fiche, relation photo peuplee ou non. */
+export function ficheDe(doc: Record<string, unknown> & { id: number | string }): JoueurFiche {
+  const poste = (doc.poste as Poste | null | undefined) ?? null;
+  const photo = doc.photo;
+  return {
+    id: Number(doc.id),
+    prenom: String(doc.prenom ?? "").trim(),
+    nom: String(doc.nom ?? "").trim(),
+    poste,
+    gardien: poste === "Gardien",
+    surFeuille: poste === null || surLaFeuille(poste),
+    numero: numeroOuNull(doc.numero),
+    dateNaissance: typeof doc.date_naissance === "string" ? versChampDate(doc.date_naissance) || null : null,
+    capitaine: doc.capitaine === true,
+    actif: doc.actif !== false,
+    photo:
+      photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string"
+        ? { id: Number((photo as { id: unknown }).id), url: String((photo as { url: string }).url) }
+        : null,
+  };
+}
+
