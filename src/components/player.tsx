@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { libellePoste, surLaFeuille, type Poste } from "@/lib/postes";
+import { libelleStaff, surLaFeuille, type Poste } from "@/lib/postes";
 import BoxModule from "./layout/boxModule";
 import { Badge } from "./ui/badge";
 
@@ -176,7 +176,7 @@ export default function Player({
         )}
 
         {active && !surLaFeuille(poste) && (
-          <p className="font-bold font-marjorie italic text-xl">{libellePoste(poste)}</p>
+          <p className="font-bold font-marjorie italic text-xl">{libelleStaff(poste)}</p>
         )}
 
         {stats &&

@@ -7,7 +7,7 @@ import { Etiquette } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import type { JoueurFiche } from "@/hub/joueurs/donnees";
 import { numerosEnDoublon, trierJoueurs } from "@/hub/joueurs/schema";
-import { libellePoste, rangPoste } from "@/lib/postes";
+import { libelleStaff, rangPoste } from "@/lib/postes";
 import { cn } from "@/lib/utils";
 import FormulaireJoueur, { type EtatFormulaireJoueur } from "./formulaire-joueur";
 
@@ -87,7 +87,7 @@ function Groupe({
                 </span>
                 {j.capitaine ? <Etiquette>C</Etiquette> : null}
                 {/* Le staff n'a pas de numero : son role tient la place. */}
-                {!j.surFeuille && j.poste ? <Etiquette>{libellePoste(j.poste)}</Etiquette> : null}
+                {!j.surFeuille ? <Etiquette>{libelleStaff(j.poste)}</Etiquette> : null}
                 {!j.actif ? <Etiquette>Inactif</Etiquette> : null}
               </span>
             </button>

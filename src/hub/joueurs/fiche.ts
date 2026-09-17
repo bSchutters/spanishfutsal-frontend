@@ -19,7 +19,7 @@ export type JoueurFiche = {
   nom: string;
   poste: Poste | null;
   gardien: boolean;
-  /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non. */
+  /** Gardien ou joueur de champ : sur la feuille de match. Le staff, non, et un poste non renseigne non plus. */
   surFeuille: boolean;
   /** Le numero du joueur, celui du site. Le staff n'en a pas. */
   numero: number | null;
@@ -96,7 +96,7 @@ export function ficheDe(doc: Record<string, unknown> & { id: number | string }):
     nom: String(doc.nom ?? "").trim(),
     poste,
     gardien: poste === "Gardien",
-    surFeuille: poste === null || surLaFeuille(poste),
+    surFeuille: surLaFeuille(poste),
     numero: numeroOuNull(doc.numero),
     dateNaissance: typeof doc.date_naissance === "string" ? versChampDate(doc.date_naissance) || null : null,
     capitaine: doc.capitaine === true,

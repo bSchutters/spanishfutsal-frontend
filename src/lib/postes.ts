@@ -44,3 +44,11 @@ export function rangPoste(poste: string | null | undefined): number {
   const rang = POSTES.indexOf(poste as Poste)
   return rang === -1 ? POSTES.length : rang
 }
+
+/**
+ * Le libelle d'un membre du staff. Sans poste renseigne, « Staff » : une
+ * fiche incomplete se montre quand meme, sur le site comme dans le Hub.
+ */
+export function libelleStaff(poste: string | null | undefined): string {
+  return libellePoste(poste) || 'Staff'
+}

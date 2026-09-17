@@ -77,8 +77,8 @@ export async function chargerFiche(id: number, payload?: Payload): Promise<Joueu
 
 /**
  * L'effectif de la feuille de match : les joueurs actifs, gardiens et joueurs
- * de champ, un joueur sans poste comptant comme joueur de champ. Le staff
- * n'a ni numero ni statistiques. Tries par numero, puis par nom.
+ * de champ. Le staff n'y figure pas, ni une fiche dont le poste n'est pas
+ * renseigne. Tries par numero, puis par nom.
  */
 export async function listerJoueurs(payload?: Payload): Promise<JoueurFeuille[]> {
   const client = payload ?? (await getPayloadClient());

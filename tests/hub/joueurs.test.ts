@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { modulesAccessibles, niveauModule, type UtilisateurHub } from "@/hub/droits";
 import { ageAu, ficheDe, nettoyerSelonPoste, schemaJoueur, SAISIE_JOUEUR_VIDE } from "@/hub/joueurs/fiche";
-import { libellePoste, POSTES, rangPoste, surLaFeuille } from "@/lib/postes";
+import { libellePoste, libelleStaff, POSTES, rangPoste, surLaFeuille } from "@/lib/postes";
 import {
   butsDuClub,
   depuisTableauxMatch,
@@ -172,11 +172,13 @@ describe("fiche d un joueur", () => {
     });
   });
 
-  it("un coach n est pas sur la feuille, un poste absent vaut joueur de champ", () => {
+  it("seuls le gardien et le joueur de champ sont sur la feuille, un poste absent non plus", () => {
     const base = { id: 1, prenom: "Dani", nom: "Correas" };
     expect(ficheDe({ ...base, poste: "Coach" })).toMatchObject({ surFeuille: false, gardien: false });
-    expect(ficheDe({ ...base, poste: "Kine" })).toMatchObject({ surFeuille: false });
-    expect(ficheDe(base)).toMatchObject({ poste: null, surFeuille: true, gardien: false });
+    expect(ficheDe({ ...base, poste: "Adjoint" })).toMatchObject({ surFeuille: false });
+    expect(ficheDe({ ...base, poste: "Joueur" })).toMatchObject({ surFeuille: true, gardien: false });
+    // Une fiche sans poste passe dans le staff, comme sur le site.
+    expect(ficheDe(base)).toMatchObject({ poste: null, surFeuille: false });
   });
 
   it("sans valeur, une fiche reste lisible : actif par defaut, ni numero ni photo", () => {
@@ -264,5 +266,11 @@ describe("postes du club", () => {
 
   it("seuls le gardien et le joueur de champ sont sur la feuille", () => {
     expect(POSTES.filter((p) => surLaFeuille(p))).toEqual(["Gardien", "Joueur"]);
+    expect(surLaFeuille(null)).toBe(false);
+  });
+
+  it("un membre du staff sans poste renseigne s affiche quand meme", () => {
+    expect(libelleStaff(null)).toBe("Staff");
+    expect(libelleStaff("Kine")).toBe("Kiné");
   });
 });
