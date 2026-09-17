@@ -241,7 +241,7 @@ describe("droits du module Joueurs", () => {
   it("garde l ordre du registre et son propre niveau", () => {
     expect(modulesAccessibles(deuxModules)).toEqual(["calendar", "players"]);
     expect(niveauModule(deuxModules, "players")).toBe("edit");
-    expect(modulesAccessibles({ id: 1, role: "admin" })).toEqual(["calendar", "players"]);
+    expect(modulesAccessibles({ id: 1, role: "admin" })).toEqual(["calendar", "players", "live"]);
   });
 });
 

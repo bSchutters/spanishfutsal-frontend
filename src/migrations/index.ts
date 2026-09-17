@@ -11,6 +11,7 @@ import * as migration_20260916_173118_numeros_feuille_de_match from './20260916_
 import * as migration_20260916_232426_numero_unique from './20260916_232426_numero_unique';
 import * as migration_20260917_130723_postes_staff from './20260917_130723_postes_staff';
 import * as migration_20260917_131029_poste_adjoint from './20260917_131029_poste_adjoint';
+import * as migration_20260917_161038_module_direct from './20260917_161038_module_direct';
 
 export const migrations = [
   {
@@ -76,6 +77,11 @@ export const migrations = [
   {
     up: migration_20260917_131029_poste_adjoint.up,
     down: migration_20260917_131029_poste_adjoint.down,
-    name: '20260917_131029_poste_adjoint'
+    name: '20260917_131029_poste_adjoint',
+  },
+  {
+    up: migration_20260917_161038_module_direct.up,
+    down: migration_20260917_161038_module_direct.down,
+    name: '20260917_161038_module_direct'
   },
 ];

@@ -4,8 +4,8 @@
  * La navigation, la page d'accueil et les options de droits de la fiche
  * utilisateur se construisent depuis cette liste. Ajouter un module revient
  * a ajouter une entree ici et ses pages sous app/(hub)/hub/(prive)/. Les
- * modules : `calendar` (calendrier, posts, idees) et `players` (statistiques
- * des matchs, numeros de maillot).
+ * modules : `calendar` (calendrier, posts, idees), `players` (effectif et
+ * statistiques des matchs) et `live` (audience des diffusions).
  *
  * Aucun import React ici : ce fichier est lu par la configuration Payload.
  * L'icone est un nom, la navigation le traduit en composant.
@@ -19,8 +19,9 @@ export const LIBELLES_NIVEAUX: Record<Niveau, string> = {
   edit: "Édition",
 };
 
-export type IconeModule = "calendar-days" | "users";
-export type IconeEntree = IconeModule | "list-todo" | "lightbulb" | "chart-column";
+export type IconeModule = "calendar-days" | "users" | "radio";
+export type IconeEntree =
+  IconeModule | "list-todo" | "lightbulb" | "chart-column";
 
 export type EntreeModule = { nom: string; route: string; icone: IconeEntree };
 
@@ -53,13 +54,22 @@ export const MODULES = [
   {
     key: "players",
     nom: "Joueurs",
-    description: "L'effectif, ses fiches et ses maillots, et les statistiques des matchs.",
+    description:
+      "L'effectif, ses fiches et ses maillots, et les statistiques des matchs.",
     route: "/hub/joueurs/effectif",
     icone: "users",
     navigation: [
       { nom: "Effectif", route: "/hub/joueurs/effectif", icone: "users" },
       { nom: "Stats", route: "/hub/joueurs/stats", icone: "chart-column" },
     ],
+  },
+  {
+    key: "live",
+    nom: "Direct",
+    description: "L'audience des diffusions, soirée par soirée.",
+    route: "/hub/direct",
+    icone: "radio",
+    navigation: [{ nom: "Direct", route: "/hub/direct", icone: "radio" }],
   },
 ] as const satisfies ReadonlyArray<ModuleHub>;
 
