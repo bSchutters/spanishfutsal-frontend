@@ -1,4 +1,6 @@
+import { Globe, SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { EnTetePage, Etiquette, Ligne, Panneau, Pastille } from "@/components/hub/mise-en-page";
@@ -96,6 +98,32 @@ export default async function PageProfil() {
           pushActif={user.hub?.push_enabled === true}
           appareils={appareils}
         />
+      </Panneau>
+
+      {/* Les memes sorties que le menu du compte, absent du telephone. */}
+      <Panneau titre="Quitter le Hub">
+        <ul className="divide-y divide-border">
+          <li>
+            <Link
+              href="/"
+              className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
+            >
+              <Globe className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              Revenir au site
+            </Link>
+          </li>
+          {estAdmin(user) ? (
+            <li>
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
+              >
+                <SlidersHorizontal className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                Admin Payload
+              </Link>
+            </li>
+          ) : null}
+        </ul>
       </Panneau>
 
       <Panneau titre="Session">

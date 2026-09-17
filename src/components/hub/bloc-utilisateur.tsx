@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, UserRound } from "lucide-react";
+import { ChevronsUpDown, Globe, LogOut, SlidersHorizontal, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -17,17 +17,21 @@ import { seDeconnecter } from "@/hub/actions/session";
 
 /**
  * Le pied de la barre laterale : qui est connecte, et un menu qui s'ouvre
- * dessus avec ce qui concerne le compte, le profil et la sortie. L'adresse
- * n'est montree que si elle apporte quelque chose de plus que le nom.
+ * dessus avec ce qui concerne le compte, le profil, les sorties et la
+ * deconnexion. L'adresse n'est montree que si elle apporte quelque chose de
+ * plus que le nom. Sur telephone, ce bloc n'existe pas : la page Profil
+ * porte les memes sorties.
  */
 export default function BlocUtilisateur({
   nom,
   email,
   lettres,
+  estAdmin,
 }: {
   nom: string;
   email: string;
   lettres: string;
+  estAdmin: boolean;
 }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
@@ -64,6 +68,20 @@ export default function BlocUtilisateur({
             <UserRound aria-hidden="true" />
             Profil
           </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {/* Quitter le Hub : le site public, et l'administration pour qui y a droit. */}
+          <DropdownMenuItem onSelect={() => router.push("/")}>
+            <Globe aria-hidden="true" />
+            Revenir au site
+          </DropdownMenuItem>
+          {estAdmin ? (
+            <DropdownMenuItem onSelect={() => router.push("/admin")}>
+              <SlidersHorizontal aria-hidden="true" />
+              Admin Payload
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={enCours} onSelect={() => demarrer(() => seDeconnecter())}>

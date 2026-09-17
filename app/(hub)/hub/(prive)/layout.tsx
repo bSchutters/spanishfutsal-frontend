@@ -1,7 +1,7 @@
 import BlocUtilisateur from "@/components/hub/bloc-utilisateur";
 import Navigation, { type EntreeNavigation, type SectionNavigation } from "@/components/hub/navigation";
 import RafraichirSession from "@/components/hub/rafraichir-session";
-import { modulesAccessibles } from "@/hub/droits";
+import { estAdmin, modulesAccessibles } from "@/hub/droits";
 import { compterIdeesAVoter } from "@/hub/idees/donnees";
 import { MODULES } from "@/hub/modules";
 import { exigerAccesHub, initiales, nomAffiche } from "@/hub/session";
@@ -49,6 +49,7 @@ export default async function LayoutPrive({ children }: Readonly<{ children: Rea
             nom={nomAffiche(session.user)}
             email={session.user.email}
             lettres={initiales(session.user)}
+            estAdmin={estAdmin(session.user)}
           />
         }
       />
