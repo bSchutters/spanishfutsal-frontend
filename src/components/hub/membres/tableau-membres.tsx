@@ -1,15 +1,23 @@
 "use client";
 
-import { ShieldCheck, UserRound } from "lucide-react";
+import { KeyRound, Plus, ShieldCheck, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import BoutonCopier from "@/components/hub/bouton-copier";
 import { Etiquette, Pastille, Vide } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { enregistrerDroitsMembre } from "@/hub/actions/membres";
-import { nomDuMembre, type FluxChoix, type Membre, type NiveauxParModule } from "@/hub/membres/schema";
+import { creerMembre, enregistrerDroitsMembre } from "@/hub/actions/membres";
+import {
+  nomDuMembre,
+  SAISIE_NOUVEAU_MEMBRE_VIDE,
+  type FluxChoix,
+  type Membre,
+  type NiveauxParModule,
+} from "@/hub/membres/schema";
 import { LIBELLES_NIVEAUX, MODULES, NIVEAUX, type Niveau } from "@/hub/modules";
 import { cn } from "@/lib/utils";
 
@@ -65,26 +73,45 @@ function Resume({ membre, flux }: { membre: Membre; flux: FluxChoix[] }) {
   );
 }
 
-/** Le panneau d'un compte : l'acces au Hub, le niveau de chaque module, les flux. */
+export type EtatPanneau = { mode: "modifier"; membre: Membre } | { mode: "creer" };
+
+/**
+ * Le panneau d'un compte : son identite quand il se cree, puis l'acces au
+ * Hub, le niveau de chaque module et les flux.
+ */
 function Fiche({
-  membre,
+  etat,
   flux,
   onFermer,
   onEnregistre,
+  onCree,
 }: {
-  membre: Membre;
+  etat: EtatPanneau;
   flux: FluxChoix[];
   onFermer: () => void;
   onEnregistre: (membre: Membre) => void;
+  onCree: (membre: Membre, motDePasse: string) => void;
 }) {
-  const [acces, setAcces] = useState(membre.acces);
-  const [niveaux, setNiveaux] = useState<NiveauxParModule>(membre.niveaux);
-  const [fluxIds, setFluxIds] = useState<number[]>(membre.fluxIds);
+  const creation = etat.mode === "creer";
+  const depart = creation ? SAISIE_NOUVEAU_MEMBRE_VIDE : etat.membre;
+  const [prenom, setPrenom] = useState(creation ? "" : etat.membre.prenom);
+  const [nom, setNom] = useState(creation ? "" : etat.membre.nom);
+  const [email, setEmail] = useState(creation ? "" : etat.membre.email);
+  const [acces, setAcces] = useState(depart.acces);
+  const [niveaux, setNiveaux] = useState<NiveauxParModule>(creation ? {} : etat.membre.niveaux);
+  const [fluxIds, setFluxIds] = useState<number[]>(creation ? [] : etat.membre.fluxIds);
   const [enCours, setEnCours] = useState(false);
 
   const enregistrer = async () => {
     setEnCours(true);
-    const r = await enregistrerDroitsMembre({ id: membre.id, acces, niveaux, fluxIds });
+    if (creation) {
+      const r = await creerMembre({ prenom, nom, email, acces, niveaux, fluxIds });
+      setEnCours(false);
+      if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Créé, mais impossible à relire." : r.erreur);
+      onCree(r.donnees.membre, r.donnees.motDePasse);
+      return;
+    }
+    const r = await enregistrerDroitsMembre({ id: etat.membre.id, acces, niveaux, fluxIds });
     setEnCours(false);
     if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
     toast.success(`Droits de ${nomDuMembre(r.donnees)} enregistrés.`);
@@ -94,6 +121,36 @@ function Fiche({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-4">
+        {creation ? (
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5 text-sm">
+                Prénom
+                <Input value={prenom} onChange={(e) => setPrenom(e.target.value)} disabled={enCours} autoComplete="off" autoFocus />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                Nom
+                <Input value={nom} onChange={(e) => setNom(e.target.value)} disabled={enCours} autoComplete="off" />
+              </label>
+            </div>
+            <label className="flex flex-col gap-1.5 text-sm">
+              Adresse e-mail
+              <Input
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={enCours}
+                autoComplete="off"
+                placeholder="prenom@exemple.be"
+              />
+              <span className="text-xs text-muted-foreground">
+                Elle sert à se connecter. Le mot de passe est tiré au hasard et s&apos;affiche une fois, à lui transmettre.
+              </span>
+            </label>
+          </div>
+        ) : null}
+
         <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm">
           <Checkbox checked={acces} onCheckedChange={(c) => setAcces(c === true)} disabled={enCours} className="mt-0.5" />
           <span>
@@ -180,7 +237,7 @@ function Fiche({
           Annuler
         </Button>
         <Button type="button" variant="hub" onClick={enregistrer} disabled={enCours}>
-          {enCours ? "Enregistrement…" : "Enregistrer"}
+          {enCours ? "Enregistrement…" : creation ? "Créer le compte" : "Enregistrer"}
         </Button>
       </div>
     </div>
@@ -196,69 +253,127 @@ function Fiche({
  */
 export default function TableauMembres({ membres: initiaux, flux }: { membres: Membre[]; flux: FluxChoix[] }) {
   const [membres, setMembres] = useState(initiaux);
-  const [ouvert, setOuvert] = useState<{ membre: Membre | null; visible: boolean; cle: number }>({
-    membre: null,
+  const [ouvert, setOuvert] = useState<{ etat: EtatPanneau | null; visible: boolean; cle: number }>({
+    etat: null,
     visible: false,
     cle: 0,
   });
+  // Le mot de passe d'un compte tout juste cree : il ne se relit jamais.
+  const [nouveau, setNouveau] = useState<{ membre: Membre; motDePasse: string } | null>(null);
 
-  if (membres.length === 0) return <Vide>Aucun compte. Ils se créent dans l&apos;administration Payload.</Vide>;
+  const ouvrir = (etat: EtatPanneau) => setOuvert((o) => ({ etat, visible: true, cle: o.cle + 1 }));
+  const fermer = () => setOuvert((o) => ({ ...o, visible: false }));
 
   const enregistre = (membre: Membre) => {
     setMembres((liste) => liste.map((m) => (m.id === membre.id ? membre : m)));
-    setOuvert((o) => ({ ...o, visible: false }));
+    fermer();
+  };
+
+  const cree = (membre: Membre, motDePasse: string) => {
+    setMembres((liste) => [...liste, membre]);
+    setNouveau({ membre, motDePasse });
+    fermer();
   };
 
   return (
     <>
-      <section className="rounded-lg border border-border bg-card">
-        <ul className="divide-y divide-border">
-          {membres.map((membre) => (
-            <li key={membre.id}>
-              <button
-                type="button"
-                disabled={membre.administrateur}
-                onClick={() => setOuvert((o) => ({ membre, visible: true, cle: o.cle + 1 }))}
-                className={cn(
-                  "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
-                  !membre.administrateur && "hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none",
-                  !membre.acces && "opacity-60",
-                )}
-              >
-                <Avatar administrateur={membre.administrateur} />
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-x-2 text-sm font-medium">
-                    {nomDuMembre(membre)}
-                    {membre.administrateur ? <Etiquette>Admin</Etiquette> : null}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Touchez une personne pour régler ses droits.</p>
+        <Button type="button" variant="hub" size="sm" onClick={() => ouvrir({ mode: "creer" })}>
+          <Plus aria-hidden="true" />
+          Ajouter un membre
+        </Button>
+      </div>
+
+      {nouveau ? (
+        <div className="rounded-lg border border-primary/40 bg-primary/5 px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <KeyRound className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              Compte créé pour {nomDuMembre(nouveau.membre)}
+            </p>
+            <button
+              type="button"
+              onClick={() => setNouveau(null)}
+              aria-label="Masquer le mot de passe"
+              className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ce mot de passe ne se relit pas. Transmettez-le à la personne, elle pourra le changer.
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <code className="rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm">{nouveau.motDePasse}</code>
+            <BoutonCopier
+              valeur={nouveau.motDePasse}
+              libelle="Copier"
+              libelleCopie="Copié"
+              className="h-9 w-auto px-3"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {membres.length === 0 ? (
+        <Vide>Aucun compte pour le moment.</Vide>
+      ) : (
+        <section className="rounded-lg border border-border bg-card">
+          <ul className="divide-y divide-border">
+            {membres.map((membre) => (
+              <li key={membre.id}>
+                <button
+                  type="button"
+                  disabled={membre.administrateur}
+                  onClick={() => ouvrir({ mode: "modifier", membre })}
+                  className={cn(
+                    "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
+                    !membre.administrateur && "hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none",
+                    !membre.acces && "opacity-60",
+                  )}
+                >
+                  <Avatar administrateur={membre.administrateur} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-2 text-sm font-medium">
+                      {nomDuMembre(membre)}
+                      {membre.administrateur ? <Etiquette>Admin</Etiquette> : null}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">{membre.email}</span>
+                    <Resume membre={membre} flux={flux} />
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">{membre.email}</span>
-                  <Resume membre={membre} flux={flux} />
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className="text-xs text-muted-foreground">
-        Les comptes se créent dans l&apos;administration Payload, avec leur mot de passe. Ici se règlent seulement les droits sur
-        le Hub.
+        Un compte créé ici est un membre. Le rôle d&apos;administrateur se donne dans l&apos;administration Payload.
       </p>
 
       {/* Le panneau garde sa derniere fiche le temps de se refermer. */}
-      <Sheet open={ouvert.visible} onOpenChange={(o) => !o && setOuvert((avant) => ({ ...avant, visible: false }))}>
+      <Sheet open={ouvert.visible} onOpenChange={(o) => !o && fermer()}>
         <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
           <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-            <SheetTitle>{ouvert.membre ? nomDuMembre(ouvert.membre) : "Droits"}</SheetTitle>
-            <SheetDescription>{ouvert.membre?.email}</SheetDescription>
+            <SheetTitle>
+              {ouvert.etat?.mode === "modifier" ? nomDuMembre(ouvert.etat.membre) : "Nouveau membre"}
+            </SheetTitle>
+            <SheetDescription>
+              {ouvert.etat?.mode === "modifier"
+                ? ouvert.etat.membre.email
+                : "Son compte, et ce qu'il pourra faire dans le Hub."}
+            </SheetDescription>
           </SheetHeader>
-          {ouvert.membre ? (
+          {ouvert.etat ? (
             <Fiche
               key={ouvert.cle}
-              membre={ouvert.membre}
+              etat={ouvert.etat}
               flux={flux}
-              onFermer={() => setOuvert((avant) => ({ ...avant, visible: false }))}
+              onFermer={fermer}
               onEnregistre={enregistre}
+              onCree={cree}
             />
           ) : null}
         </SheetContent>

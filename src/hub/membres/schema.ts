@@ -23,6 +23,38 @@ export const schemaDroitsMembre = z.object({
 
 export type SaisieDroitsMembre = z.infer<typeof schemaDroitsMembre>;
 
+const texte = (max: number, quoi: string) =>
+  z.string().check(z.trim(), z.minLength(1, `${quoi} : obligatoire.`), z.maxLength(max, `${quoi} : trop long.`));
+
+/**
+ * Un compte a creer. Le mot de passe n'est pas saisi : le serveur en tire un
+ * au hasard et le montre une fois, a transmettre a la personne. Le role ne
+ * se choisit pas non plus, un compte cree ici est un membre, jamais un
+ * administrateur.
+ */
+export const schemaNouveauMembre = z.object({
+  prenom: texte(60, "Le prénom"),
+  nom: z.string().check(z.trim(), z.maxLength(80, "Le nom est trop long.")),
+  email: z
+    .string()
+    .check(z.trim(), z.maxLength(200, "L'adresse est trop longue."))
+    .check(z.refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: "Une adresse e-mail valide." })),
+  acces: z.boolean(),
+  niveaux: z.record(z.string(), z.nullable(z.enum(NIVEAUX))),
+  fluxIds: z.array(identifiant),
+});
+
+export type SaisieNouveauMembre = z.infer<typeof schemaNouveauMembre>;
+
+export const SAISIE_NOUVEAU_MEMBRE_VIDE: SaisieNouveauMembre = {
+  prenom: "",
+  nom: "",
+  email: "",
+  acces: true,
+  niveaux: {},
+  fluxIds: [],
+};
+
 export type NiveauxParModule = Partial<Record<ModuleKey, Niveau | null>>;
 
 /** Une ligne du tableau `hub.modules` de la collection Users. */

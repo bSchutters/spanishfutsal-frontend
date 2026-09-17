@@ -4,15 +4,17 @@ L'espace privé du club, sur `/hub`. Calendrier des posts, matchs et entraîneme
 
 ## Ajouter une personne et ses droits
 
-Le compte lui-même se crée dans l'admin Payload, collection **Utilisateurs** : adresse, mot de passe, **prénom** et nom. Le Hub n'affiche que le prénom.
+Tout se passe dans le Hub, page **Membres**, réservée aux administrateurs et accessible par le menu du compte, en bas de la barre latérale, ou par le profil sur téléphone.
 
-Les droits sur le Hub se règlent ensuite depuis le Hub, page **Membres**, réservée aux administrateurs et accessible par le menu du compte, en bas de la barre latérale, ou par le profil sur téléphone. Toucher une ligne ouvre ses droits :
+**Ajouter un membre** demande son prénom, son nom et son adresse e-mail, puis ses droits. Le mot de passe est tiré au hasard et s'affiche une seule fois, à copier et à lui transmettre ; elle pourra le changer. Un compte créé ici est un membre : le rôle d'administrateur se donne dans l'admin Payload.
+
+Toucher une ligne ouvre les droits d'une personne :
 
 - **Accès au Hub** : sans cette case, aucune page ne s'ouvre.
 - **Modules** : Aucun, Lecture (consulter, voter, commenter) ou Édition (créer, modifier, supprimer) pour chacun. La liste suit le registre : un module ajouté au code apparaît ici tout seul, il n'y a qu'à l'ouvrir aux personnes concernées.
 - **Flux autorisés** : la personne ne voit que les événements rattachés à au moins un de ces flux.
 
-Un administrateur a tout sans réglage, sa ligne ne s'ouvre pas. Le rôle, le mot de passe et les notifications que chacun choisit dans son profil restent hors de cette page.
+Un administrateur a tout sans réglage, sa ligne ne s'ouvre pas. Le rôle, le mot de passe d'un compte existant et les notifications que chacun choisit dans son profil restent hors de cette page.
 
 La connexion se fait sur `/hub/connexion`, aussi par le lien « Connexion » en pied du site. Cinq échecs verrouillent le compte un moment. La session dure sept jours et se prolonge à chaque visite.
 

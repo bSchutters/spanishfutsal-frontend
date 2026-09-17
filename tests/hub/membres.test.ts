@@ -7,6 +7,7 @@ import {
   nettoyerSelonAcces,
   nomDuMembre,
   schemaDroitsMembre,
+  schemaNouveauMembre,
   versLignesModules,
 } from "@/hub/membres/schema";
 
@@ -114,5 +115,26 @@ describe("une fiche de compte", () => {
     expect(nomDuMembre({ prenom: "Bryan", nom: "Schutters", email: "b@x.be" })).toBe("Bryan Schutters");
     expect(nomDuMembre({ prenom: "Bryan", nom: "", email: "b@x.be" })).toBe("Bryan");
     expect(nomDuMembre({ prenom: "", nom: "", email: "comite@x.be" })).toBe("comite");
+  });
+});
+
+describe("un compte a creer", () => {
+  const base = { prenom: "Ana", nom: "Diaz", email: "ana@exemple.be", acces: true, niveaux: {}, fluxIds: [] };
+
+  it("exige un prenom et une adresse qui ressemble a une adresse", () => {
+    expect(schemaNouveauMembre.safeParse(base).success).toBe(true);
+    // Le nom de famille peut manquer, le prenom non : le Hub n affiche que lui.
+    expect(schemaNouveauMembre.safeParse({ ...base, nom: "" }).success).toBe(true);
+    expect(schemaNouveauMembre.safeParse({ ...base, prenom: "  " }).success).toBe(false);
+    expect(schemaNouveauMembre.safeParse({ ...base, email: "ana" }).success).toBe(false);
+    expect(schemaNouveauMembre.safeParse({ ...base, email: "ana@exemple" }).success).toBe(false);
+    expect(schemaNouveauMembre.safeParse({ ...base, email: "ana @exemple.be" }).success).toBe(false);
+  });
+
+  it("ne laisse pas passer un niveau invente ni un flux qui n en est pas un", () => {
+    expect(schemaNouveauMembre.safeParse({ ...base, niveaux: { calendar: "edit" } }).success).toBe(true);
+    expect(schemaNouveauMembre.safeParse({ ...base, niveaux: { calendar: "chef" } }).success).toBe(false);
+    expect(schemaNouveauMembre.safeParse({ ...base, fluxIds: [1, 2] }).success).toBe(true);
+    expect(schemaNouveauMembre.safeParse({ ...base, fluxIds: [0] }).success).toBe(false);
   });
 });
