@@ -1,5 +1,6 @@
-import { Globe, SlidersHorizontal } from "lucide-react";
+import { Globe, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { EnTetePage, Etiquette, Ligne, Panneau, Pastille } from "@/components/hub/mise-en-page";
@@ -102,6 +103,22 @@ export default async function PageProfil() {
       {/* Les memes sorties que le menu du compte, absent du telephone. Des
           liens ordinaires, pas <Link> : le site et l'administration ont chacun
           leur propre <html>, et Next rendrait leur en-tete cote client. */}
+      {estAdmin(user) ? (
+        <Panneau titre="Administration" description="Réservé aux administrateurs.">
+          <ul className="divide-y divide-border">
+            <li>
+              <Link
+                href="/hub/membres"
+                className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
+              >
+                <ShieldCheck className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                Membres et droits
+              </Link>
+            </li>
+          </ul>
+        </Panneau>
+      ) : null}
+
       <Panneau titre="Quitter le Hub">
         <ul className="divide-y divide-border">
           <li>

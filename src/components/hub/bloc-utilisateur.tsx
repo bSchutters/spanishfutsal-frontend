@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, Globe, LogOut, SlidersHorizontal, UserRound } from "lucide-react";
+import { ChevronsUpDown, Globe, LogOut, ShieldCheck, SlidersHorizontal, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -68,6 +68,13 @@ export default function BlocUtilisateur({
             <UserRound aria-hidden="true" />
             Profil
           </DropdownMenuItem>
+          {/* Les droits des autres comptes ne regardent que les administrateurs. */}
+          {estAdmin ? (
+            <DropdownMenuItem onSelect={() => router.push("/hub/membres")}>
+              <ShieldCheck aria-hidden="true" />
+              Membres et droits
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

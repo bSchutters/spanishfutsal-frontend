@@ -4,7 +4,7 @@ import { parseCookies } from "payload";
 import { cache } from "react";
 
 import { getPayloadClient } from "@/lib/payload";
-import { aAccesHub, niveauModule, type UtilisateurHub } from "./droits";
+import { aAccesHub, estAdmin, niveauModule, type UtilisateurHub } from "./droits";
 import type { ModuleKey, Niveau } from "./modules";
 
 /**
@@ -63,6 +63,13 @@ export async function exigerModule(module: ModuleKey, niveau: Niveau = "read"): 
   const actuel = niveauModule(session.user, module);
   const suffisant = actuel === "edit" || (actuel === "read" && niveau === "read");
   if (!suffisant) redirect(`/hub?refus=${module}`);
+  return session;
+}
+
+/** Comme `exigerAccesHub`, puis exige le role d'administrateur. */
+export async function exigerAdmin(): Promise<SessionHub> {
+  const session = await exigerAccesHub();
+  if (!estAdmin(session.user)) redirect("/hub?refus=admin");
   return session;
 }
 

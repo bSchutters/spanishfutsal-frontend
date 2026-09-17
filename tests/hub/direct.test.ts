@@ -69,11 +69,12 @@ describe("l'ecart d'une diffusion a l'autre", () => {
 
 describe("le registre des modules", () => {
   it("connait le module Direct et sa page", () => {
-    const module = trouverModule("live");
+    // Pas `module` : Next interdit d'assigner ce nom, qui lui sert ailleurs.
+    const direct = trouverModule("live");
 
-    expect(module?.nom).toBe("Direct");
-    expect(module?.route).toBe("/hub/direct");
-    expect(module?.navigation).toHaveLength(1);
+    expect(direct?.nom).toBe("Direct");
+    expect(direct?.route).toBe("/hub/direct");
+    expect(direct?.navigation).toHaveLength(1);
   });
 
   it("ne donne jamais deux fois la meme cle", () => {

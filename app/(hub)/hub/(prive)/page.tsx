@@ -32,7 +32,11 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
     <>
       <EnTetePage titre="Accueil" description="Vos modules et votre périmètre dans le Hub." />
 
-      {refus ? <Avis>Vous n&apos;avez pas le droit nécessaire sur ce module. Demandez à un administrateur.</Avis> : null}
+      {refus === "admin" ? (
+        <Avis>Cette page est réservée aux administrateurs.</Avis>
+      ) : refus ? (
+        <Avis>Vous n&apos;avez pas le droit nécessaire sur ce module. Demandez à un administrateur.</Avis>
+      ) : null}
 
       <InvitationInstallation />
 
