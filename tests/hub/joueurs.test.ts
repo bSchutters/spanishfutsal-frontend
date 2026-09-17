@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { modulesAccessibles, niveauModule, type UtilisateurHub } from "@/hub/droits";
 import { ageAu, ficheDe, nettoyerSelonPoste, schemaJoueur, SAISIE_JOUEUR_VIDE } from "@/hub/joueurs/fiche";
+import { libellePoste, POSTES, rangPoste, surLaFeuille } from "@/lib/postes";
 import {
   butsDuClub,
   depuisTableauxMatch,
@@ -239,5 +240,29 @@ describe("droits du module Joueurs", () => {
     expect(modulesAccessibles(deuxModules)).toEqual(["calendar", "players"]);
     expect(niveauModule(deuxModules, "players")).toBe("edit");
     expect(modulesAccessibles({ id: 1, role: "admin" })).toEqual(["calendar", "players"]);
+  });
+});
+
+describe("postes du club", () => {
+  it("garde l ordre d affichage : le terrain, puis le staff du coach au reste", () => {
+    expect([...POSTES]).toEqual(["Gardien", "Joueur", "Coach", "Adjoint", "Delegue", "Kine", "Staff"]);
+    const staff = ["Staff", "Kine", "Adjoint", "Delegue", "Coach"];
+    expect([...staff].sort((a, b) => rangPoste(a) - rangPoste(b))).toEqual(["Coach", "Adjoint", "Delegue", "Kine", "Staff"]);
+    // Un poste absent ou inconnu ferme la marche.
+    expect(rangPoste(null)).toBe(POSTES.length);
+    expect(rangPoste("Intendant")).toBe(POSTES.length);
+  });
+
+  it("affiche les accents que la valeur stockee n a pas", () => {
+    expect(libellePoste("Kine")).toBe("Kiné");
+    expect(libellePoste("Delegue")).toBe("Délégué");
+    expect(libellePoste("Adjoint")).toBe("Adjoint");
+    expect(libellePoste(null)).toBe("");
+    // Un poste inconnu se montre tel quel plutot que de disparaitre.
+    expect(libellePoste("Intendant")).toBe("Intendant");
+  });
+
+  it("seuls le gardien et le joueur de champ sont sur la feuille", () => {
+    expect(POSTES.filter((p) => surLaFeuille(p))).toEqual(["Gardien", "Joueur"]);
   });
 });

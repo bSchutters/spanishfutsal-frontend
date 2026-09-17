@@ -1,5 +1,9 @@
 import * as z from "zod/mini";
 
+import { surLaFeuille, type Poste } from "@/lib/postes";
+
+export { surLaFeuille, type Poste };
+
 z.config({ jitless: true });
 
 /**
@@ -9,13 +13,6 @@ z.config({ jitless: true });
  * que le site public lit tels quels. Partage entre les formulaires, les
  * actions et les tests.
  */
-
-export type Poste = "Gardien" | "Joueur" | "Coach" | "Kine";
-
-/** Seuls les gardiens et les joueurs de champ figurent sur une feuille. */
-export function surLaFeuille(poste: Poste | null | undefined): boolean {
-  return poste === "Gardien" || poste === "Joueur";
-}
 
 const identifiant = z.number().check(z.int(), z.positive());
 const compteur = (max: number, quoi: string) =>

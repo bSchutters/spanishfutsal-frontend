@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { canWrite, canDelete, isAuthenticated, isHidden, withFieldPermissions } from '../access'
 import { revalidateAfterChange, revalidateAfterDelete } from '../hooks/revalidateCache'
+import { OPTIONS_POSTE } from '@/lib/postes'
 export const Players: CollectionConfig = {
   slug: 'players',
   labels: { singular: 'Joueur', plural: 'Joueurs' },
@@ -53,13 +54,9 @@ export const Players: CollectionConfig = {
     {
       name: 'poste',
       type: 'select',
-      options: [
-        { label: 'Gardien', value: 'Gardien' },
-        { label: 'Joueur', value: 'Joueur' },
-        { label: 'Coach', value: 'Coach' },
-        { label: 'Kine', value: 'Kine' },
-      ],
+      options: OPTIONS_POSTE,
       label: 'Poste',
+      admin: { description: "Gardien et Joueur figurent sur la feuille de match, le reste est le staff." },
     },
     {
       name: 'photo',

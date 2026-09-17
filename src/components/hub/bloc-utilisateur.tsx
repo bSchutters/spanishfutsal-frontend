@@ -71,13 +71,19 @@ export default function BlocUtilisateur({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {/* Quitter le Hub : le site public, et l'administration pour qui y a droit. */}
-          <DropdownMenuItem onSelect={() => router.push("/")}>
+          {/* Quitter le Hub : le site public, et l'administration pour qui y a
+              droit. Une vraie navigation du navigateur, pas `router.push` : le
+              site et l'administration ont chacun leur propre <html>, et Next
+              rendrait leur en-tete cote client, ou un <script> ne s'execute
+              jamais. */}
+          {/* eslint-disable-next-line @next/next/no-location-assign-relative-destination -- changement de racine, voir ci-dessus */}
+          <DropdownMenuItem onSelect={() => window.location.assign("/")}>
             <Globe aria-hidden="true" />
             Revenir au site
           </DropdownMenuItem>
           {estAdmin ? (
-            <DropdownMenuItem onSelect={() => router.push("/admin")}>
+            /* eslint-disable-next-line @next/next/no-location-assign-relative-destination -- racine propre a l'administration */
+            <DropdownMenuItem onSelect={() => window.location.assign("/admin")}>
               <SlidersHorizontal aria-hidden="true" />
               Admin Payload
             </DropdownMenuItem>

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { libellePoste, surLaFeuille, type Poste } from "@/lib/postes";
 import BoxModule from "./layout/boxModule";
 import { Badge } from "./ui/badge";
 
@@ -24,7 +25,7 @@ interface PlayerProps {
   stats?: PlayerStats;
   active: boolean;
   className?: string;
-  poste?: "Joueur" | "Gardien" | "Staff";
+  poste?: Poste | null;
   /** Les premieres cartes de la page : leur photo part tout de suite. */
   priority?: boolean;
   /** La toute premiere : sa photo porte le LCP, elle passe devant tout. */
@@ -170,17 +171,17 @@ export default function Player({
           active ? "justify-between" : "justify-end",
         )}
       >
-        {active && (poste === "Joueur" || poste === "Gardien") && (
+        {active && surLaFeuille(poste) && (
           <p className="font-bold font-marjorie italic text-3xl">{number}</p>
         )}
 
-        {active && poste !== "Joueur" && poste !== "Gardien" && (
-          <p className="font-bold font-marjorie italic text-xl">{poste}</p>
+        {active && !surLaFeuille(poste) && (
+          <p className="font-bold font-marjorie italic text-xl">{libellePoste(poste)}</p>
         )}
 
         {stats &&
           stats.matchesPlayed > 0 &&
-          (poste === "Gardien" || poste === "Joueur") && (
+          surLaFeuille(poste) && (
             <Badge
               className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-colors"
               onClick={() => setIsStatsOpen(!isStatsOpen)}

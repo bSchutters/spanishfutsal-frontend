@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Poste } from "@/lib/postes";
 
 type Stat = {
   goals: number;
@@ -17,7 +18,7 @@ type Player = {
   stats: Stat;
   actif: boolean;
   capitaine: boolean;
-  poste: "Joueur" | "Gardien" | "Staff";
+  poste: Poste | null;
   isGoalkeeper: boolean;
 };
 
@@ -32,7 +33,7 @@ type PlayerAPIResponse = {
   nom: string;
   prenom: string;
   numero: number;
-  poste: "Joueur" | "Gardien" | "Staff";
+  poste: Poste | null;
   photo: { url: string } | null;
   stats: {
     matchesPlayed: number;

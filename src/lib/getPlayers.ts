@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from './payload'
+import type { Poste } from './postes'
 
 /**
  * Source unique de l'effectif et de ses statistiques, partagee par la page
@@ -89,7 +90,7 @@ async function getPlayersWithStats() {
       prenom: player.prenom,
       nom: player.nom,
       numero: player.numero,
-      poste: player.poste === 'Coach' || player.poste === 'Kine' ? 'Staff' : player.poste,
+      poste: player.poste,
       photo,
       stats,
       actif: player.actif,
@@ -114,7 +115,7 @@ async function getPlayersWithStats() {
       prenom: player.prenom,
       nom: player.nom,
       numero: player.numero,
-      poste: player.poste === 'Coach' || player.poste === 'Kine' ? 'Staff' : player.poste,
+      poste: player.poste,
       photo,
       stats: null,
       actif: player.actif,
@@ -147,7 +148,7 @@ export type Player = {
   stats: PlayerStats
   actif: boolean
   capitaine: boolean
-  poste: 'Joueur' | 'Gardien' | 'Staff'
+  poste: Poste | null
   isGoalkeeper: boolean
 }
 

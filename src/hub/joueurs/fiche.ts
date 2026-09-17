@@ -1,7 +1,9 @@
 import * as z from "zod/mini";
 
 import { versChampDate } from "@/hub/dates";
-import { surLaFeuille, type Poste } from "./schema";
+import { LIBELLES_POSTE, POSTES, surLaFeuille, type Poste } from "@/lib/postes";
+
+export { LIBELLES_POSTE, POSTES };
 
 z.config({ jitless: true });
 
@@ -26,15 +28,6 @@ export type JoueurFiche = {
   capitaine: boolean;
   actif: boolean;
   photo: { id: number; url: string } | null;
-};
-
-export const POSTES = ["Gardien", "Joueur", "Coach", "Kine"] as const;
-
-export const LIBELLES_POSTE: Record<Poste, string> = {
-  Gardien: "Gardien",
-  Joueur: "Joueur de champ",
-  Coach: "Coach",
-  Kine: "Kiné",
 };
 
 const identifiant = z.number().check(z.int(), z.positive());

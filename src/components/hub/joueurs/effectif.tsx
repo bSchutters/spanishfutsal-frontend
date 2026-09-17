@@ -7,6 +7,7 @@ import { Etiquette } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import type { JoueurFiche } from "@/hub/joueurs/donnees";
 import { numerosEnDoublon, trierJoueurs } from "@/hub/joueurs/schema";
+import { libellePoste, rangPoste } from "@/lib/postes";
 import { cn } from "@/lib/utils";
 import FormulaireJoueur, { type EtatFormulaireJoueur } from "./formulaire-joueur";
 
@@ -85,6 +86,8 @@ function Groupe({
                   <span className="font-medium">{j.nom.toUpperCase()}</span> {j.prenom}
                 </span>
                 {j.capitaine ? <Etiquette>C</Etiquette> : null}
+                {/* Le staff n'a pas de numero : son role tient la place. */}
+                {!j.surFeuille && j.poste ? <Etiquette>{libellePoste(j.poste)}</Etiquette> : null}
                 {!j.actif ? <Etiquette>Inactif</Etiquette> : null}
               </span>
             </button>
@@ -107,13 +110,16 @@ export default function Effectif({ joueurs: initiaux, peutEditer }: { joueurs: J
   // fait repartir le formulaire des valeurs a jour a chaque ouverture.
   const [ouverture, setOuverture] = useState({ ouvert: false, cle: 0 });
 
-  // Les inactifs en fin de chaque categorie.
+  // Les inactifs en fin de chaque categorie. Le staff suit la hierarchie du
+  // club, du coach au reste, les joueurs leur ordre de numeros.
   const parCategorie = useMemo(() => {
     const actifsDAbord = (liste: JoueurFiche[]) => [...liste.filter((j) => j.actif), ...liste.filter((j) => !j.actif)];
+    const parRang = (liste: JoueurFiche[]) =>
+      [...liste].sort((a, b) => rangPoste(a.poste) - rangPoste(b.poste) || `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, "fr"));
     return {
       gardiens: actifsDAbord(joueurs.filter((j) => j.surFeuille && j.gardien)),
       champ: actifsDAbord(joueurs.filter((j) => j.surFeuille && !j.gardien)),
-      staff: actifsDAbord(joueurs.filter((j) => !j.surFeuille)),
+      staff: actifsDAbord(parRang(joueurs.filter((j) => !j.surFeuille))),
     };
   }, [joueurs]);
 

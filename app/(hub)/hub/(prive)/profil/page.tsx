@@ -1,6 +1,5 @@
 import { Globe, SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { EnTetePage, Etiquette, Ligne, Panneau, Pastille } from "@/components/hub/mise-en-page";
@@ -100,27 +99,31 @@ export default async function PageProfil() {
         />
       </Panneau>
 
-      {/* Les memes sorties que le menu du compte, absent du telephone. */}
+      {/* Les memes sorties que le menu du compte, absent du telephone. Des
+          liens ordinaires, pas <Link> : le site et l'administration ont chacun
+          leur propre <html>, et Next rendrait leur en-tete cote client. */}
       <Panneau titre="Quitter le Hub">
         <ul className="divide-y divide-border">
           <li>
-            <Link
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- le site a sa propre racine */}
+            <a
               href="/"
               className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
             >
               <Globe className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               Revenir au site
-            </Link>
+            </a>
           </li>
           {estAdmin(user) ? (
             <li>
-              <Link
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- l'administration Payload a sa propre racine */}
+              <a
                 href="/admin"
                 className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
               >
                 <SlidersHorizontal className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 Admin Payload
-              </Link>
+              </a>
             </li>
           ) : null}
         </ul>

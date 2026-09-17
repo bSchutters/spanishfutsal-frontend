@@ -3,6 +3,7 @@ import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
 import { getPlayersForDisplay } from "@/lib/getPlayers";
 import { equipeMetadata } from "./metadata";
+import { rangPoste } from "@/lib/postes";
 
 export const metadata = equipeMetadata;
 
@@ -112,6 +113,8 @@ export default async function Equipe() {
                   (player) =>
                     player.poste !== "Gardien" && player.poste !== "Joueur"
                 )
+                // Dans l'ordre du club : coach, adjoint, delegue, kine, staff.
+                .sort((a, b) => rangPoste(a.poste) - rangPoste(b.poste))
                 .map((player) => (
                   <Player
                     key={player.id}
