@@ -8,7 +8,7 @@
  * message que personne ne pourra recouper avec quoi que ce soit.
  */
 
-import { courbeParMinute, esquisse, pointeSimultanee, resumer, type Trace } from '../src/lib/audienceCalculs'
+import { courbeParMinute, pointeSimultanee, resumer, type Trace } from '../src/lib/audienceCalculs'
 
 const MINUTE = 60_000
 const DEPART = Date.parse('2026-09-12T20:00:00Z')
@@ -77,16 +77,6 @@ verifie(
 
 // Une diffusion plus courte qu'une minute doit quand meme rendre un point.
 verifie("courbe, moins d'une minute", courbeParMinute([trace(0, 0)], DEPART, DEPART), [1])
-
-// --- L'esquisse ---
-
-verifie('esquisse, courbe vide', esquisse([]), '')
-verifie('esquisse, que des zeros', esquisse([0, 0, 0]), '')
-verifie('esquisse, plateau', esquisse([5, 5, 5]), '███')
-verifie('esquisse, du creux au plein', esquisse([0, 4, 8]), '▁▅█')
-
-// Au-dela de soixante points, la ligne est echantillonnee pour rester lisible.
-verifie('esquisse, cent vingt minutes', esquisse(Array.from({ length: 120 }, () => 3)).length, 60)
 
 // --- Le resume complet ---
 
@@ -214,10 +204,7 @@ verifie('identite, habitues inconnus du calcul pur', melange?.habitues, null)
 
 // L'identite peut arriver en cours de match, si le bandeau est ferme a ce
 // moment-la : elle vaut alors pour toute la personne.
-const tardive = resumer([
-  trace(0, 10, false, 'd'),
-  avec(trace(20, 30, false, 'd'), { durable: 'ddd' }),
-])
+const tardive = resumer([trace(0, 10, false, 'd'), avec(trace(20, 30, false, 'd'), { durable: 'ddd' })])
 
 verifie('identite, acceptee en cours de match', tardive?.avecIdentite, 1)
 

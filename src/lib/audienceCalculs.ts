@@ -20,43 +20,6 @@ import { BATTEMENT_S } from "./battement";
 const dureeDe = (trace: Trace) =>
   Date.parse(trace.fin) - Date.parse(trace.debut) + BATTEMENT_S * 1000;
 
-const BARRES = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-
-/**
- * La courbe de la soiree, ramenee a une ligne lisible dans un message.
- *
- * Les hauteurs sont relatives a la pointe : la ligne montre la forme de
- * l'audience, pas son volume, que les chiffres au-dessus donnent deja.
- */
-export function esquisse(courbe: number[]): string {
-  if (!courbe.length) return "";
-
-  const haut = Math.max(...courbe);
-  if (haut <= 0) return "";
-
-  // Un point sur deux au-dela de soixante : une ligne de cent barres ne se lit
-  // plus sur un telephone.
-  const pas = Math.ceil(courbe.length / 60);
-  const points = courbe.filter((_, index) => index % pas === 0);
-
-  return points
-    .map(
-      (valeur) =>
-        BARRES[
-          Math.min(
-            BARRES.length - 1,
-            Math.round((valeur / haut) * (BARRES.length - 1)),
-          )
-        ],
-    )
-    .join("");
-}
-
-/**
- * Un intervalle de presence, et non une personne : quelqu'un qui met en pause et
- * revient un quart d'heure plus tard laisse deux intervalles. C'est ce qui
- * permet a la courbe et a la pointe de ne pas le compter pendant son absence.
- */
 export type Trace = {
   id: number | string;
   /** Identifiant de session, tire au hasard. Plusieurs traces peuvent le porter. */

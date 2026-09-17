@@ -45,15 +45,6 @@ export const Settings: GlobalConfig = {
       },
     },
     {
-      name: 'report_webhook',
-      type: 'text',
-      label: 'Webhook du rapport de diffusion',
-      admin: {
-        description:
-          "Ou envoyer le compte rendu d'audience a la fin de chaque direct : l'adresse d'un webhook Discord, celle d'un bot Telegram, ou n'importe quel service qui accepte un message. Laisse vide, le rapport reste dans les Rapports de diffusion sans etre envoye. WhatsApp n'est pas possible : leur API reclame un compte professionnel verifie et des modeles approuves.",
-      },
-    },
-    {
       name: 'lffs_token',
       type: 'text',
       label: 'Token LFFS (manuel)',

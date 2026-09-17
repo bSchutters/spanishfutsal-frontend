@@ -9,16 +9,16 @@ import { isAdmin } from '../access'
  * tard parce que les traces brutes ont ete purgees. Elles restent disponibles a
  * cote, pour refaire le calcul si la methode evolue.
  *
- * La case d'envoi evite le doublon : la fin d'une diffusion peut etre constatee
+ * Une fiche par rencontre : la fin d'une diffusion peut etre constatee
  * plusieurs fois, par le dernier visiteur present comme par le rattrapage du
- * matin, et le message ne doit partir qu'une fois.
+ * matin, et l'existence de la fiche suffit a le savoir.
  */
 export const LiveReports: CollectionConfig = {
   slug: 'live-reports',
   labels: { singular: 'Rapport de diffusion', plural: 'Rapports de diffusion' },
   admin: {
     useAsTitle: 'affiche',
-    defaultColumns: ['affiche', 'pointe', 'uniques', 'duree_moyenne', 'envoye'],
+    defaultColumns: ['affiche', 'pointe', 'uniques', 'duree_moyenne'],
     hidden: ({ user }) => user?.role !== 'admin',
     description: "Ce que chaque diffusion a rassemble. Ces fiches s'ecrivent toutes seules a la fin du direct.",
   },
@@ -95,12 +95,6 @@ export const LiveReports: CollectionConfig = {
       name: 'details',
       type: 'json',
       label: 'Detail des mesures',
-    },
-    {
-      name: 'envoye',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'Rapport envoye',
     },
   ],
 }

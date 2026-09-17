@@ -23,10 +23,6 @@ Dans **Parametres** de l'administration :
 - **Verifier le direct XbotGo maintenant** : ouvre la verification en dehors de
   la fenetre du match, le temps d'un essai en arrivant sur place. Sans effet sur
   YouTube. A decocher ensuite.
-- **Webhook du rapport de diffusion** : ou envoyer le compte rendu d'audience a
-  la fin de chaque direct. Une adresse de webhook Discord, de bot Telegram, ou de
-  n'importe quel service qui accepte un message ; la forme du corps envoye
-  s'adapte a la destination. Laisse vide, le rapport reste dans l'administration.
 - **Rattrapage automatique des replays** : en pause, voir plus bas.
 
 Sur un **match** precis, le champ **Lien Live** l'emporte sur la salle des
@@ -160,8 +156,8 @@ Les traces et le rapport vont a un **match d'essai**, un document Matchs coche
 « essai » que le site cree au premier essai, date de l'instant a chacun, et
 n'affiche jamais : ni page, ni API publique. Ses traces d'audience se relisent
 dans l'administration et s'effacent quand on veut. Le rapport d'un essai reste
-dans l'administration, rien ne part vers le webhook : celui-ci s'eprouve a part,
-voir plus bas.
+dans l'administration comme les autres, mais le Hub ne le montre pas : c'est un
+essai, pas une audience.
 
 Tout passe par un cookie que les routes lisent, et elles repondent 404 en
 production : ce detour ne peut rien y faire, quoi qu'on mette dans le cookie.
@@ -204,9 +200,14 @@ aucune adresse IP et a aucun cookie. Deux visites de la meme personne sont deux
 inconnus. C'est suffisant pour compter une audience, et cela evite d'avoir a
 demander un consentement pour la regarder.
 
-A la fin de la diffusion, un rapport est ecrit dans **Rapports de diffusion** et
-pousse vers le webhook des parametres. Il n'apparait nulle part sur le site
-public.
+A la fin de la diffusion, un rapport est ecrit dans **Rapports de diffusion**. Il
+n'apparait nulle part sur le site public : il se lit dans le Hub, module
+**Direct**, ou chaque soiree se compare a la precedente.
+
+Il etait aussi pousse vers un salon Discord. Ce salon a ete supprime le
+17 septembre 2026, le Hub faisant mieux, et tout ce qui redigeait et envoyait le
+message est parti avec lui : le champ des parametres, la commande d'essai et la
+case « rapport envoye » (migration `sans_discord`).
 
 Ce qu'il contient : pointe simultanee et la minute ou elle a eu lieu, spectateurs
 differents, temps regarde en moyenne et en mediane, total d'heures visionnees,
@@ -219,11 +220,6 @@ combien avaient deja regarde une diffusion precedente.
 Les chiffres sont calcules par personne et non par presence : quelqu'un qui met
 en pause et revient reste un spectateur, et sa duree est la somme de ce qu'il a
 regarde. Les cas s'executent par `pnpm test:audience`.
-
-Pour eprouver le webhook sans attendre une rencontre, une commande envoie un
-rapport d'essai aux chiffres fabriques par le meme chemin que le vrai :
-
-    POST /api/live-report-test
 
 Cette fin est constatee par le dernier visiteur encore present. Si tout le monde
 ferme son onglet au coup de sifflet, personne ne la constate : le rattrapage

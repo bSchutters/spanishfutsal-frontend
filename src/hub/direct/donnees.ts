@@ -50,12 +50,19 @@ function convertir(fiche: FicheBrute): Diffusion {
   };
 }
 
-/** Les diffusions, de la plus recente a la plus ancienne. */
+/**
+ * Les diffusions, de la plus recente a la plus ancienne.
+ *
+ * Le match d'essai est ecarte : son rapport existe pour eprouver la chaine de
+ * bout en bout, il n'a rien a faire dans l'audience du club. Un rapport dont la
+ * rencontre a disparu passe, faute de savoir ce qu'il etait.
+ */
 export async function listerLesDiffusions(): Promise<Diffusion[]> {
   const payload = await getPayloadClient();
 
   const { docs } = await payload.find({
     collection: "live-reports",
+    where: { "match.essai": { not_equals: true } },
     sort: "-debut",
     limit: 200,
     pagination: false,
@@ -64,22 +71,4 @@ export async function listerLesDiffusions(): Promise<Diffusion[]> {
   });
 
   return (docs as unknown as FicheBrute[]).map(convertir);
-}
-
-/** Une diffusion precise, ou null si elle n'existe pas. */
-export async function lireLaDiffusion(id: number): Promise<Diffusion | null> {
-  const payload = await getPayloadClient();
-
-  try {
-    const fiche = await payload.findByID({
-      collection: "live-reports",
-      id,
-      depth: 0,
-      overrideAccess: true,
-    });
-
-    return convertir(fiche as unknown as FicheBrute);
-  } catch {
-    return null;
-  }
 }

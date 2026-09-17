@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   if (donne.has('fin')) {
     const match = await matchDEssai()
     if (match) {
-      await cloturerLaDiffusion(match.id, AFFICHE_ESSAI, { webhook: false })
+      await cloturerLaDiffusion(match.id, AFFICHE_ESSAI, { recalculer: true })
     }
 
     // Droit sur la fiche qui vient d'etre ecrite.
