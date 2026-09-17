@@ -93,73 +93,84 @@ function Fiche({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-4">
-        <label className="flex cursor-pointer items-start gap-3 text-sm">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-4">
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm">
           <Checkbox checked={acces} onCheckedChange={(c) => setAcces(c === true)} disabled={enCours} className="mt-0.5" />
           <span>
-            Accès au Hub
+            <span className="font-medium">Accès au Hub</span>
             <span className="block text-xs text-muted-foreground">Sans cette case, aucune page du Hub ne s&apos;ouvre.</span>
           </span>
         </label>
 
         {acces ? (
           <>
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium">Modules</p>
-              {MODULES.map((module) => (
-                <div key={module.key} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                  <span className="min-w-0 text-sm">
-                    {module.nom}
-                    <span className="block text-xs text-muted-foreground">{module.description}</span>
-                  </span>
-                  <div className="flex shrink-0 gap-1 rounded-md border border-border p-0.5">
-                    {CHOIX.map((choix) => {
-                      const actif = (niveaux[module.key] ?? null) === choix.valeur;
-                      return (
-                        <button
-                          key={choix.libelle}
-                          type="button"
-                          disabled={enCours}
-                          aria-pressed={actif}
-                          onClick={() => setNiveaux((avant) => ({ ...avant, [module.key]: choix.valeur }))}
-                          className={cn(
-                            "rounded px-2.5 py-1 text-xs transition-colors disabled:opacity-50",
-                            actif ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-accent",
-                          )}
-                        >
-                          {choix.libelle}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-              <p className="text-xs text-muted-foreground">
+            <section className="rounded-lg border border-border bg-card">
+              <div className="border-b border-border px-4 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Modules
+              </div>
+              <ul className="divide-y divide-border">
+                {MODULES.map((module) => (
+                  <li
+                    key={module.key}
+                    // Le nom a gauche, les trois choix a droite et toujours a
+                    // la meme place : une largeur fixe, sinon chaque ligne se
+                    // casse ou elle veut et la colonne n'existe plus.
+                    className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                  >
+                    <span className="min-w-0 text-sm font-medium">{module.nom}</span>
+                    <div className="grid shrink-0 grid-cols-3 gap-1 rounded-md border border-border p-0.5 sm:w-52">
+                      {CHOIX.map((choix) => {
+                        const actif = (niveaux[module.key] ?? null) === choix.valeur;
+                        return (
+                          <button
+                            key={choix.libelle}
+                            type="button"
+                            disabled={enCours}
+                            aria-pressed={actif}
+                            onClick={() => setNiveaux((avant) => ({ ...avant, [module.key]: choix.valeur }))}
+                            className={cn(
+                              "rounded px-2 py-1 text-center text-xs transition-colors disabled:opacity-50",
+                              actif ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-accent",
+                            )}
+                          >
+                            {choix.libelle}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
                 Lecture : consulter, voter et commenter. Édition : créer, modifier et supprimer.
               </p>
-            </div>
+            </section>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Flux autorisés</p>
-              <p className="text-xs text-muted-foreground">
+            <section className="rounded-lg border border-border bg-card">
+              <div className="border-b border-border px-4 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Flux autorisés
+              </div>
+              <ul className="divide-y divide-border">
+                {flux.map((f) => (
+                  <li key={f.id}>
+                    <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm">
+                      <Checkbox
+                        checked={fluxIds.includes(f.id)}
+                        disabled={enCours}
+                        onCheckedChange={(coche) =>
+                          setFluxIds((avant) => (coche ? [...avant, f.id] : avant.filter((id) => id !== f.id)))
+                        }
+                      />
+                      <Pastille couleur={f.couleur} />
+                      {f.nom}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
                 Cette personne ne voit que les événements rattachés à au moins un de ces flux.
               </p>
-              <div className="flex flex-wrap gap-x-4 gap-y-2">
-                {flux.map((f) => (
-                  <label key={f.id} className="flex cursor-pointer items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={fluxIds.includes(f.id)}
-                      disabled={enCours}
-                      onCheckedChange={(coche) =>
-                        setFluxIds((avant) => (coche ? [...avant, f.id] : avant.filter((id) => id !== f.id)))
-                      }
-                    />
-                    <Pastille couleur={f.couleur} />
-                    {f.nom}
-                  </label>
-                ))}
-              </div>
-            </div>
+            </section>
           </>
         ) : null}
       </div>
