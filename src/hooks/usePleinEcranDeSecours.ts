@@ -28,8 +28,8 @@ export function usePleinEcranDeSecours(
       suivrePleinEcran((actif) => {
         setNatif(actif);
         if (actif) setDejaUtilise(true);
-      }),
-    [],
+      }, video?.current),
+    [video],
   );
 
   const basculer = () => {

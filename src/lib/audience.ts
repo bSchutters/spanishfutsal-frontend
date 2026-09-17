@@ -5,6 +5,12 @@ import {
   type Trace,
 } from "./audienceCalculs";
 import { BATTEMENT_S, TOLERANCE_BATTEMENTS } from "./battement";
+import {
+  coupDEnvoi,
+  FENETRE_APRES_MS,
+  FENETRE_AVANT_MS,
+} from "./fenetreDuMatch";
+import { getMatchs } from "./getMatchs";
 import { getPayloadClient } from "./payload";
 
 export type { Rapport };
@@ -214,15 +220,53 @@ export async function compterLesSpectateurs(matchId: number): Promise<number> {
   }
 }
 
+/**
+ * Les traces a retenir pour une rencontre : celles de sa fenetre, et rien
+ * d'autre.
+ *
+ * Sans cette borne, un essai fait l'apres-midi compte dans le rapport du soir.
+ * C'est arrive au premier vrai match : trois traces vieilles de deux jours
+ * tiraient le debut de la courbe au lundi 13h31, la pointe se retrouvait
+ * annoncee « a la 3450e minute », et l'esquisse de la soiree etait plate parce
+ * que les quatre-vingt-dix minutes du match tenaient dans un point sur soixante.
+ *
+ * La rencontre introuvable ne borne rien : mieux vaut un rapport large qu'un
+ * rapport vide.
+ */
+async function fenetreDeLaRencontre(matchId: number) {
+  const dansLaRencontre = { match: { equals: matchId } };
+
+  try {
+    const match = (await getMatchs()).find((m) => m.id === matchId);
+    if (!match?.date || !match.time) return dansLaRencontre;
+
+    const debut = coupDEnvoi(match.date, match.time);
+    if (Number.isNaN(debut)) return dansLaRencontre;
+
+    return {
+      and: [
+        dansLaRencontre,
+        { debut: { greater_than: new Date(debut - FENETRE_AVANT_MS).toISOString() } },
+        { debut: { less_than: new Date(debut + FENETRE_APRES_MS).toISOString() } },
+      ],
+    };
+  } catch (error) {
+    console.error("Fenetre de la rencontre illisible :", error);
+    return dansLaRencontre;
+  }
+}
+
 /** Les chiffres d'une diffusion, lus en base puis resumes. */
 export async function calculerLeRapport(
   matchId: number,
 ): Promise<Rapport | null> {
   const payload = await getPayloadClient();
 
+  const where = await fenetreDeLaRencontre(matchId);
+
   const { docs } = await payload.find({
     collection: "live-audience",
-    where: { match: { equals: matchId } },
+    where,
     limit: 5000,
     pagination: false,
     depth: 0,

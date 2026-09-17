@@ -6,6 +6,7 @@ import type Hls from "hls.js";
 
 import { usePleinEcranDeSecours } from "@/hooks/usePleinEcranDeSecours";
 import { useBattementAudience } from "@/hooks/useBattementAudience";
+import { useEcranAllume } from "@/hooks/useEcranAllume";
 import { cn } from "@/lib/utils";
 import { useLiveStore } from "@/store/useLiveStore";
 import {
@@ -105,6 +106,10 @@ export default function HlsPlayer({ url }: { url: string }) {
 
   // Tant que la lecture tourne, le site sait qu'une personne de plus regarde.
   // En pause, ferme, ou l'onglet en arriere-plan, le compteur la laisse expirer.
+  // Tant que ca joue, l'ecran ne s'eteint pas : regarder un match, c'est ne pas
+  // toucher son telephone, et il se met en veille pour cette raison exacte.
+  useEcranAllume(enLecture);
+
   useBattementAudience(matchId, {
     enLecture,
     son: sonActive,

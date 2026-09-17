@@ -89,17 +89,39 @@ export function basculerPleinEcran(
 }
 
 /**
- * S'abonne aux changements d'etat, variante prefixee comprise.
+ * S'abonne aux changements d'etat, par tous les chemins possibles.
+ *
+ * Trois sources, parce qu'il y a trois facons d'entrer en plein ecran. Le
+ * document signale les deux premieres, standard et prefixee. La troisieme, celle
+ * d'iOS, ne passe pas par lui : `webkitEnterFullscreen` ouvre le lecteur d'Apple
+ * et previent la balise video elle-meme, par `webkitbeginfullscreen`.
+ *
+ * Sans cette troisieme source, le passage en plein ecran etait invisible sur
+ * iPhone. Le premier vrai match l'a montre sans ambiguite : vingt-deux
+ * telephones sur vingt-sept spectateurs, et « plein ecran : 0 % ».
+ *
  * Rend la fonction de desabonnement.
  */
-export function suivrePleinEcran(rappel: (actif: boolean) => void) {
+export function suivrePleinEcran(
+  rappel: (actif: boolean) => void,
+  video?: HTMLVideoElement | null,
+) {
   const signaler = () => rappel(estEnPleinEcran());
 
   document.addEventListener("fullscreenchange", signaler);
   document.addEventListener("webkitfullscreenchange", signaler);
 
+  const entree = () => rappel(true);
+  const sortie = () => rappel(false);
+
+  video?.addEventListener("webkitbeginfullscreen", entree);
+  video?.addEventListener("webkitendfullscreen", sortie);
+
   return () => {
     document.removeEventListener("fullscreenchange", signaler);
     document.removeEventListener("webkitfullscreenchange", signaler);
+    video?.removeEventListener("webkitbeginfullscreen", entree);
+    video?.removeEventListener("webkitendfullscreen", sortie);
   };
 }
+
