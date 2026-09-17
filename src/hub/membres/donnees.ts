@@ -1,8 +1,8 @@
 import type { UtilisateurSession } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
-import { membreDe, nomDuMembre, type Doc, type Membre } from "./schema";
+import { membreDe, nomDuMembre, type Doc, type FluxChoix, type Membre } from "./schema";
 
-export { membreDe, nomDuMembre, type Membre };
+export { membreDe, nomDuMembre, type FluxChoix, type Membre };
 
 /**
  * La lecture des comptes et de leurs droits sur le Hub, reservee aux
@@ -11,7 +11,6 @@ export { membreDe, nomDuMembre, type Membre };
  * faisant avec les droits de la personne.
  */
 
-export type FluxChoix = { id: number; nom: string; couleur: string | null };
 
 /** Tous les comptes, les administrateurs en tete, puis par nom. */
 export async function listerMembres(user: UtilisateurSession): Promise<Membre[]> {

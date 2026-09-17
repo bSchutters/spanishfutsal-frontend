@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { enregistrerDroitsMembre } from "@/hub/actions/membres";
-import { nomDuMembre, type FluxChoix, type Membre } from "@/hub/membres/donnees";
-import type { NiveauxParModule } from "@/hub/membres/schema";
+import { nomDuMembre, type FluxChoix, type Membre, type NiveauxParModule } from "@/hub/membres/schema";
 import { LIBELLES_NIVEAUX, MODULES, NIVEAUX, type Niveau } from "@/hub/modules";
 import { cn } from "@/lib/utils";
 

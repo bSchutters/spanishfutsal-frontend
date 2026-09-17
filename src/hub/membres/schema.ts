@@ -66,6 +66,9 @@ export function resumeModules(niveaux: NiveauxParModule, nomDuModule: (cle: Modu
   return MODULE_KEYS.filter((cle) => niveaux[cle]).map((cle) => `${nomDuModule(cle)}, ${libelleNiveau(niveaux[cle] as Niveau).toLowerCase()}`);
 }
 
+/** Un flux du club, tel que la page le propose a cocher. */
+export type FluxChoix = { id: number; nom: string; couleur: string | null };
+
 /** Un document de la collection Users, la part qui sert ici. */
 export type Doc = Record<string, unknown> & { id: number | string };
 

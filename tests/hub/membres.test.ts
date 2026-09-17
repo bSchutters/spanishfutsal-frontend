@@ -33,7 +33,8 @@ describe("l ecran vers la collection", () => {
 
   it("un module sans niveau, inconnu ou mal renseigne ne donne aucune ligne", () => {
     expect(versLignesModules({ calendar: null, players: undefined })).toEqual([]);
-    expect(versLignesModules({ tresorerie: "edit" } as Record<string, never>)).toEqual([]);
+    // Une cle qui n'est pas au registre ne donne aucun droit.
+    expect(versLignesModules({ tresorerie: "edit" } as unknown as Record<string, never>)).toEqual([]);
     expect(versLignesModules({})).toEqual([]);
   });
 });
