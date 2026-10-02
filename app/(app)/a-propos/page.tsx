@@ -107,7 +107,7 @@ export default function Apropos() {
               <br />
               Grâce à cette fusion, nos ambitions sont plus grandes que jamais.
               Après une première saison prometteuse conclue par une montée en P4
-              pour nos deux clubs, nous visons désormais ensembles la P1 à
+              pour nos deux clubs, nous visons désormais ensemble la P1 à
               court/moyen terme, avec pour objectif à long terme une accession
               aux divisions nationales. Au-delà des résultats, nous mettons tout
               en œuvre pour structurer le club de manière cohérente et durable,
