@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { send } from "@/lib/email";
-import { formSchema, type FormValues } from "@/lib/schemas";
+import { formSchema, SUJETS, type FormValues } from "@/lib/schemas";
 // Le schema vient de `zod/mini`, sans methode `parse` : le resolver zod de
 // react-hook-form ne sait pas s'en servir, celui de Standard Schema si.
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -27,14 +27,16 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-const topics = [
-  "Sponsoring",
-  "Partenariat",
-  "Sportif",
-  "Nous rejoindre en tant que joueur",
-  "Rejoindre le staff",
-  "Autre",
-];
+const CLASSES_TOAST = {
+  toast: "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
+  title: "title",
+  description: "description",
+  actionButton:
+    "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-colors",
+  cancelButton: "cancel-button",
+  closeButton: "close-button",
+  icon: "!mr-2",
+};
 
 /**
  * Ilot client : react-hook-form, zod et sonner ne sont charges que par ce
@@ -54,10 +56,22 @@ export default function ContactForm() {
   });
   const router = useRouter();
 
-  function onSubmit(values: FormValues) {
-    send(values);
-    form.reset();
+  /**
+   * Le succes ne s'annonce qu'une fois le message parti. En cas d'echec, la
+   * saisie reste en place : le visiteur reessaie sans tout retaper.
+   */
+  async function onSubmit(values: FormValues) {
+    const resultat = await send(values).catch(() => ({
+      ok: false as const,
+      erreur: "Votre message n'est pas parti. Réessayez dans un instant.",
+    }));
 
+    if (!resultat.ok) {
+      toast.error(resultat.erreur, { classNames: CLASSES_TOAST, duration: 6000 });
+      return;
+    }
+
+    form.reset();
     toast.success(
       <div className="flex flex-col">
         <p className="description">
@@ -66,17 +80,7 @@ export default function ContactForm() {
         </p>
       </div>,
       {
-        classNames: {
-          toast: "!bg-spanish-bg-dark !text-white !border-spanish-bg-light",
-          title: "title",
-          description: "description",
-          actionButton:
-            "!bg-spanish-accent  !text-spanish-bg !font-bold hover:!bg-spanish-accent-dark !transition-colors",
-          cancelButton: "cancel-button",
-          closeButton: "close-button",
-          icon: "!mr-2",
-        },
-
+        classNames: CLASSES_TOAST,
         duration: 3000,
       }
     );
@@ -102,8 +106,8 @@ export default function ContactForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {topics.map((topic) => (
-                    <SelectItem key={topic} value={topic.replace(/\s+/g, "-")}>
+                  {SUJETS.map((topic) => (
+                    <SelectItem key={topic} value={topic}>
                       {topic}
                     </SelectItem>
                   ))}
@@ -189,8 +193,12 @@ export default function ContactForm() {
           )}
         />
 
-        <Button type="submit" className="self-end">
-          Envoyer
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          className="self-end"
+        >
+          {form.formState.isSubmitting ? "Envoi…" : "Envoyer"}
         </Button>
       </form>
     </Form>

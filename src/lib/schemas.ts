@@ -10,6 +10,18 @@ import * as z from "zod/mini";
 // Sans JIT, rien ne change pour ce formulaire, et la violation disparait.
 z.config({ jitless: true });
 
+/** Les sujets proposes par le formulaire, seuls acceptes par le serveur. */
+export const SUJETS = [
+  "Sponsoring",
+  "Partenariat",
+  "Sportif",
+  "Nous rejoindre en tant que joueur",
+  "Rejoindre le staff",
+  "Autre",
+] as const;
+
+const estUnSujet = (valeur: string) => (SUJETS as readonly string[]).includes(valeur);
+
 export const formSchema = z.object({
   firstName: z
     .string()
@@ -24,12 +36,12 @@ export const formSchema = z.object({
       z.maxLength(50, "Votre nom ne doit pas dépasser 50 caractères"),
     ),
   email: z.email("Veuillez entrer une adresse email valide"),
-  topic: z.string().check(z.minLength(1, "Veuillez sélectionner un sujet")),
+  topic: z.string().check(z.refine(estUnSujet, "Veuillez sélectionner un sujet")),
   message: z
     .string()
     .check(
       z.minLength(10, "Votre message doit contenir au moins 10 caractères"),
-      z.maxLength(500),
+      z.maxLength(500, "Votre message ne doit pas dépasser 500 caractères"),
     ),
 });
 

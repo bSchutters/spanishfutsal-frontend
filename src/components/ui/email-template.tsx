@@ -30,7 +30,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
     </p>
 
     <p style={{ fontStyle: "italic", marginTop: "20px" }}>
-      <strong>Merci de ne pas répondre à cet email.</strong>
+      <strong>Répondre à cet email écrit directement à {firstName}.</strong>
     </p>
   </div>
 );
