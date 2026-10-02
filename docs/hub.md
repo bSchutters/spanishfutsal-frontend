@@ -6,7 +6,7 @@ L'espace privé du club, sur `/hub`. Calendrier des posts, matchs et entraîneme
 
 Tout se passe dans le Hub, page **Membres**, réservée aux administrateurs et accessible par le menu du compte, en bas de la barre latérale, ou par le profil sur téléphone.
 
-**Ajouter un membre** demande son prénom, son nom et son adresse e-mail, puis ses droits. Le mot de passe est tiré au hasard et s'affiche une seule fois, à copier et à lui transmettre ; elle pourra le changer. Un compte créé ici est un membre : le rôle d'administrateur se donne dans l'admin Payload.
+**Ajouter un membre** demande son prénom, son nom et son adresse e-mail, puis ses droits. Le mot de passe est tiré au hasard et s'affiche une seule fois, à copier et à lui transmettre ; elle le remplace par le sien dans son **Profil**, bloc Mot de passe (huit caractères au moins, l'actuel est demandé). Un compte créé ici est un membre : le rôle d'administrateur se donne dans l'admin Payload.
 
 Toucher une ligne ouvre les droits d'une personne :
 

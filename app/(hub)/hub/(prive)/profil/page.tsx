@@ -4,17 +4,20 @@ import Link from "next/link";
 
 import BoutonDeconnexion from "@/components/hub/bouton-deconnexion";
 import { EnTetePage, Etiquette, Ligne, Panneau, Pastille } from "@/components/hub/mise-en-page";
+import MotDePasseProfil from "@/components/hub/mot-de-passe-profil";
 import NotificationsProfil from "@/components/hub/push/notifications-profil";
 import { estAdmin, idDe, modulesAccessibles, niveauModule } from "@/hub/droits";
 import { LIBELLES_NIVEAUX, MODULES } from "@/hub/modules";
+import { LONGUEUR_MINIMALE } from "@/hub/profil/mot-de-passe";
 import { exigerAccesHub, nomAffiche } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
 
 export const metadata: Metadata = { title: "Profil" };
 
 /**
- * Le compte de la personne dans le Hub : ses modules, ses flux, ses
- * notifications avec l'installation sur l'ecran d'accueil, et la sortie.
+ * Le compte de la personne dans le Hub : son mot de passe, ses modules, ses
+ * flux, ses notifications avec l'installation sur l'ecran d'accueil, et la
+ * sortie.
  */
 export default async function PageProfil() {
   const session = await exigerAccesHub();
@@ -55,6 +58,10 @@ export default async function PageProfil() {
           <Ligne libelle="E-mail">{user.email}</Ligne>
           <Ligne libelle="Rôle">{estAdmin(user) ? "Administrateur" : "Membre"}</Ligne>
         </dl>
+      </Panneau>
+
+      <Panneau titre="Mot de passe" description={`${LONGUEUR_MINIMALE} caractères au moins.`}>
+        <MotDePasseProfil email={user.email} />
       </Panneau>
 
       <Panneau titre="Modules" description="Lecture : consulter, voter, commenter. Édition : créer et modifier.">
