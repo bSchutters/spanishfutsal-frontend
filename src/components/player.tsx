@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { libelleStaff, surLaFeuille, type Poste } from "@/lib/postes";
 import BoxModule from "./layout/boxModule";
 import { Badge } from "./ui/badge";
@@ -45,6 +45,26 @@ export default function Player({
   fetchPriority,
 }: PlayerProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const panneauId = useId();
+  const boutonStats = useRef<HTMLButtonElement>(null);
+  const boutonFermer = useRef<HTMLButtonElement>(null);
+  const auClavier = useRef(false);
+
+  // Au clavier, le focus suit le panneau : il entre sur la croix a
+  // l'ouverture et revient sur le bouton STATS a la fermeture, sans quoi il se
+  // perdait sous un panneau devenu inerte. A la souris, il ne bouge pas : la
+  // croix n'a pas a s'entourer d'un contour qu'on n'a pas demande.
+  useEffect(() => {
+    if (!auClavier.current) return;
+    if (isStatsOpen) boutonFermer.current?.focus();
+    else boutonStats.current?.focus();
+  }, [isStatsOpen]);
+
+  // Un clic dont `detail` vaut 0 vient du clavier (Entree ou Espace).
+  function basculer(ouvrir: boolean, clavier: boolean) {
+    auClavier.current = clavier;
+    setIsStatsOpen(ouvrir);
+  }
 
   function shortenName(name: string): string {
     if (!name) return "";
@@ -60,6 +80,16 @@ export default function Player({
     >
       {stats && (
         <div
+          id={panneauId}
+          role="region"
+          aria-label={`Statistiques de ${firstname} ${lastname}`}
+          // Ferme, le panneau reste dans la page pour son animation, mais
+          // inerte : ni le clavier ni les lecteurs d'ecran n'y entrent, et
+          // ses chiffres ne passent plus devant le nom du joueur.
+          inert={!isStatsOpen}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") basculer(false, true);
+          }}
           // `translate` et non `transform` : Tailwind v4 pose les deplacements
           // sur la propriete CSS `translate`, qu une transition sur `transform`
           // n atteint pas. C est ce qui avait supprime le glissement du haut.
@@ -72,10 +102,15 @@ export default function Player({
         >
           <div className="flex items-center justify-between w-full">
             <p className="">STATS</p>
-            <X
-              className="hover:cursor-pointer hover:text-spanish-accent-2 transition-colors"
-              onClick={() => setIsStatsOpen(!isStatsOpen)}
-            />
+            <button
+              ref={boutonFermer}
+              type="button"
+              aria-label="Fermer les statistiques"
+              onClick={(e) => basculer(false, e.detail === 0)}
+              className="rounded-sm hover:cursor-pointer hover:text-spanish-accent-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <X aria-hidden="true" />
+            </button>
           </div>
 
           {poste === "Gardien" ? (
@@ -183,10 +218,19 @@ export default function Player({
           stats.matchesPlayed > 0 &&
           surLaFeuille(poste) && (
             <Badge
+              asChild
               className="hover:bg-spanish-accent-2-light/20 bg-spanish-accent-2-light/10  text-spanish-accent-2 hover:cursor-pointer transition-colors"
-              onClick={() => setIsStatsOpen(!isStatsOpen)}
             >
-              STATS
+              <button
+                ref={boutonStats}
+                type="button"
+                aria-expanded={isStatsOpen}
+                aria-controls={panneauId}
+                aria-label={`Statistiques de ${firstname} ${lastname}`}
+                onClick={(e) => basculer(true, e.detail === 0)}
+              >
+                STATS
+              </button>
             </Badge>
           )}
       </div>
