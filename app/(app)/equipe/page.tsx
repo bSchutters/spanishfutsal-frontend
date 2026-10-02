@@ -3,7 +3,7 @@ import Player from "@/components/player";
 import { Separator } from "@/components/ui/separator";
 import { getPlayersForDisplay } from "@/lib/getPlayers";
 import { equipeMetadata } from "./metadata";
-import { rangPoste } from "@/lib/postes";
+import { rangPoste, surLaFeuille } from "@/lib/postes";
 
 export const metadata = equipeMetadata;
 
@@ -39,11 +39,7 @@ export default async function Equipe() {
         <h1 className="text-4xl font-marjorie italic font-bold">Nos joueurs</h1>
         <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 ">
           {players
-            .filter(
-              (player) =>
-                (player.actif === true && player.poste === "Joueur") ||
-                player.poste === "Gardien"
-            )
+            .filter((player) => player.actif === true && surLaFeuille(player.poste))
             .sort((a, b) => {
               // Gardiens en premier, puis joueurs triés par numéro
               if (a.poste === "Gardien" && b.poste !== "Gardien") return -1;
@@ -69,7 +65,9 @@ export default async function Equipe() {
             ))}
         </div>
 
-        {players.some((player) => player.actif === false) && (
+        {/* Les anciens du terrain seulement : un ancien membre du staff reste
+            dans le bloc Staff, il n'apparait pas deux fois. */}
+        {players.some((player) => player.actif === false && surLaFeuille(player.poste)) && (
           <>
             <Separator className="bg-spanish-bg-dark w-full" />
             <h2 className="text-4xl font-marjorie italic font-bold">
@@ -77,7 +75,7 @@ export default async function Equipe() {
             </h2>
             <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-4 ">
               {players
-                .filter((player) => player.actif === false)
+                .filter((player) => player.actif === false && surLaFeuille(player.poste))
                 .sort((a, b) => {
                   // Gardiens en premier, puis joueurs triés par numéro
                   if (a.poste === "Gardien" && b.poste !== "Gardien") return -1;
