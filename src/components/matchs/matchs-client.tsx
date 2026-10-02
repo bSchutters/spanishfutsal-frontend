@@ -3,7 +3,6 @@
 import BoxModule from "@/components/layout/boxModule";
 import Team from "@/components/team";
 import { Button } from "@/components/ui/button";
-import useBreakpoint from "@/hooks/useBreakpoints";
 import { lectureDuDirect, useLiveStore } from "@/store/useLiveStore";
 import { extractVideoId } from "@/lib/youtubeVideoId";
 import { getVenueById } from "@/lib/getVenueById";
@@ -39,7 +38,6 @@ export default function MatchsClient({
 }: {
   initialMatchs: Match[];
 }) {
-  const { isMobile } = useBreakpoint();
   const live = useLiveStore((s) => s.live);
   const ouvrir = useLiveStore((s) => s.ouvrir);
   const { isLoading, fetchMatchs, reset } = useMatchsStore();
@@ -96,6 +94,9 @@ export default function MatchsClient({
   // Créer un tableau de refs
   const matchRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Le prochain match au milieu de l'ecran, sur telephone aussi : cale en
+  // bas, il passait sous le bandeau de mesure d'audience, bouton Adresse
+  // compris, tant que ce bandeau n'avait pas ete ferme.
   useEffect(() => {
     if (
       !isArchived &&
@@ -104,10 +105,10 @@ export default function MatchsClient({
     ) {
       matchRefs.current[fallbackIndex]?.scrollIntoView({
         behavior: "instant",
-        block: isMobile ? "end" : "center",
+        block: "center",
       });
     }
-  }, [fallbackIndex, isMobile, isArchived]);
+  }, [fallbackIndex, isArchived]);
 
   if (isLoading) {
     return (
