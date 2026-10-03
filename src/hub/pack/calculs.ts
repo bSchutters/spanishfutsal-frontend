@@ -21,6 +21,11 @@ export function resumeLigne(l: { article: string; couleur: string; taille: strin
   return [[l.article, l.couleur.toLowerCase()].filter(Boolean).join(" "), l.taille, flocage].filter(Boolean).join(" · ");
 }
 
+/** La reference complete chez Joma : le modele, un point, le code couleur, « 104263.339 ». */
+export function referenceComplete(reference: string, codeCouleur: string): string {
+  return [reference.trim(), codeCouleur.trim()].filter(Boolean).join(".");
+}
+
 /** Le prix d'une piece : l'article, plus le numero et le nom s'ils sont floques. */
 export function prixUnitaire(prixArticle: number, flocage: PrixFlocage, numero: string, nom: string): number {
   return enEuros(
@@ -82,7 +87,7 @@ export function construireLignes(
       varianteId: variante.id,
       article: article.nom,
       couleur: variante.couleur,
-      reference: variante.reference,
+      reference: referenceComplete(article.reference, variante.codeCouleur),
       taille: saisie.taille,
       quantite: saisie.quantite,
       numero,

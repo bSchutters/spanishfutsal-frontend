@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { accesValide, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
-import { construireLignes, dateLimitePassee, prixUnitaire, recapJoma, totalDes } from "@/hub/pack/calculs";
+import { construireLignes, dateLimitePassee, prixUnitaire, recapJoma, referenceComplete, totalDes } from "@/hub/pack/calculs";
 import {
   lireTailles,
   schemaArticle,
@@ -21,6 +21,7 @@ const FLOCAGE = { numero: 5, nom: 2.5 };
 const maillot: Article = {
   id: 1,
   nom: "Maillot de match",
+  reference: "104263",
   description: "",
   prix: 35,
   tailles: ["S", "M", "L", "XL"],
@@ -28,21 +29,22 @@ const maillot: Article = {
   actif: true,
   ordre: 0,
   variantes: [
-    { id: "bleu", couleur: "Bleu", reference: "JOMA-101", photo: null },
-    { id: "blanc", couleur: "Blanc", reference: "JOMA-102", photo: null },
+    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photo: null },
+    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photo: null },
   ],
 };
 
 const sac: Article = {
   id: 2,
   nom: "Sac",
+  reference: "400486",
   description: "",
   prix: 19.9,
   tailles: ["Unique"],
   floquable: false,
   actif: false,
   ordre: 1,
-  variantes: [{ id: "noir", couleur: "", reference: "JOMA-900", photo: null }],
+  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photo: null }],
 };
 
 const CATALOGUE = [maillot, sac];
@@ -56,6 +58,14 @@ const ligne = (partiel: Partial<LigneSaisie> = {}): LigneSaisie => ({
   numero: "",
   nom: "",
   ...partiel,
+});
+
+describe("référence Joma", () => {
+  it("compose le modèle et le code couleur, ou garde celui des deux qui existe", () => {
+    expect(referenceComplete("104263", "339")).toBe("104263.339");
+    expect(referenceComplete(" 104263 ", "")).toBe("104263");
+    expect(referenceComplete("", "339")).toBe("339");
+  });
 });
 
 describe("prix", () => {
@@ -85,7 +95,7 @@ describe("construction d'une commande", () => {
           varianteId: "blanc",
           article: "Maillot de match",
           couleur: "Blanc",
-          reference: "JOMA-102",
+          reference: "104263.200",
           taille: "M",
           quantite: 2,
           numero: "10",
@@ -159,14 +169,15 @@ describe("saisies", () => {
     const article = {
       id: null,
       nom: "Short",
+      reference: "",
       description: "",
       prix: 20,
       tailles: ["M"],
       floquable: false,
       actif: true,
       variantes: [
-        { id: null, couleur: "", reference: "J1", photoId: null },
-        { id: null, couleur: "Blanc", reference: "J2", photoId: null },
+        { id: null, couleur: "", codeCouleur: "339", photoId: null },
+        { id: null, couleur: "Blanc", codeCouleur: "200", photoId: null },
       ],
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);

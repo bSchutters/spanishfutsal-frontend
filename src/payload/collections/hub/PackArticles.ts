@@ -5,8 +5,9 @@ import { adminHub } from './partage'
 
 /**
  * Le catalogue du Pack : les articles Joma que les joueurs peuvent
- * commander. Une couleur est une variante de l'article, avec sa propre
- * reference Joma et sa photo.
+ * commander. Une couleur est une variante de l'article, avec son code
+ * couleur Joma et sa photo : la reference complete chez Joma est celle du
+ * modele, un point, le code couleur (« 104263.339 »).
  *
  * Un article ne se supprime pas depuis le Hub : on le retire en decochant
  * Actif, il quitte la page des joueurs et reste dans les commandes deja
@@ -28,7 +29,18 @@ export const PackArticles: CollectionConfig = {
   },
   defaultSort: 'sort_order',
   fields: [
-    { name: 'name', type: 'text', required: true, label: 'Nom' },
+    {
+      type: 'row',
+      fields: [
+        { name: 'name', type: 'text', required: true, label: 'Nom', admin: { width: '66%' } },
+        {
+          name: 'reference',
+          type: 'text',
+          label: 'Reference Joma du modele',
+          admin: { width: '34%', description: 'Par exemple 104263.' },
+        },
+      ],
+    },
     { name: 'description', type: 'textarea', label: 'Description' },
     {
       type: 'row',
@@ -55,7 +67,13 @@ export const PackArticles: CollectionConfig = {
           type: 'row',
           fields: [
             { name: 'color', type: 'text', label: 'Couleur', admin: { width: '50%' } },
-            { name: 'reference', type: 'text', label: 'Reference Joma', admin: { width: '50%' } },
+            // La colonne garde son nom de premiere version, mais porte le code couleur.
+            {
+              name: 'reference',
+              type: 'text',
+              label: 'Code couleur Joma',
+              admin: { width: '50%', description: 'Par exemple 339, pour 104263.339.' },
+            },
           ],
         },
         { name: 'photo', type: 'upload', relationTo: 'media', label: 'Photo' },

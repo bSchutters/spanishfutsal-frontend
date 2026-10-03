@@ -12,12 +12,12 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerArticle } from "@/hub/actions/pack";
-import { formaterPrix } from "@/hub/pack/calculs";
+import { formaterPrix, referenceComplete } from "@/hub/pack/calculs";
 import { lireTailles, type Article } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 
 type Photo = { id: number; url: string } | null;
-type VarianteFormulaire = { cle: string; id: string | null; couleur: string; reference: string; photo: Photo };
+type VarianteFormulaire = { cle: string; id: string | null; couleur: string; codeCouleur: string; photo: Photo };
 
 let compteur = 0;
 const nouvelleCle = () => `v${++compteur}`;
@@ -95,6 +95,7 @@ function FicheArticle({
   onEnregistre: (article: Article) => void;
 }) {
   const [nom, setNom] = useState(article?.nom ?? "");
+  const [reference, setReference] = useState(article?.reference ?? "");
   const [description, setDescription] = useState(article?.description ?? "");
   const [prix, setPrix] = useState(article ? String(article.prix).replace(".", ",") : "");
   const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
@@ -102,8 +103,8 @@ function FicheArticle({
   const [actif, setActif] = useState(article?.actif ?? true);
   const [variantes, setVariantes] = useState<VarianteFormulaire[]>(() =>
     article?.variantes.length
-      ? article.variantes.map((v) => ({ cle: nouvelleCle(), id: v.id, couleur: v.couleur, reference: v.reference, photo: v.photo }))
-      : [{ cle: nouvelleCle(), id: null, couleur: "", reference: "", photo: null }],
+      ? article.variantes.map((v) => ({ cle: nouvelleCle(), id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photo: v.photo }))
+      : [{ cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photo: null }],
   );
   const [enCours, setEnCours] = useState(false);
 
@@ -116,12 +117,13 @@ function FicheArticle({
     const r = await enregistrerArticle({
       id: article?.id ?? null,
       nom,
+      reference,
       description,
       prix: Number(prix.replace(",", ".")),
       tailles: lireTailles(tailles),
       floquable,
       actif,
-      variantes: variantes.map((v) => ({ id: v.id, couleur: v.couleur, reference: v.reference, photoId: v.photo?.id ?? null })),
+      variantes: variantes.map((v) => ({ id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photoId: v.photo?.id ?? null })),
     });
     setEnCours(false);
     if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
@@ -132,9 +134,22 @@ function FicheArticle({
   return (
     <form onSubmit={enregistrer} className="flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="article-nom">Nom</Label>
-          <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
+        <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="article-nom">Nom</Label>
+            <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="article-reference">Référence Joma</Label>
+            <Input
+              id="article-reference"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder="104263"
+              spellCheck={false}
+              className="h-10"
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="article-description">Description</Label>
@@ -171,7 +186,7 @@ function FicheArticle({
         <div className="flex flex-col gap-3">
           <div>
             <p className="text-sm font-medium">Couleurs</p>
-            <p className="text-xs text-muted-foreground">Chacune avec sa référence Joma et sa photo. Une seule couleur peut rester sans nom.</p>
+            <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et sa photo. Une seule couleur peut rester sans nom.</p>
           </div>
           {variantes.map((v, rang) => (
             <div key={v.cle} className="flex flex-col gap-3 rounded-md border border-border p-3">
@@ -187,13 +202,20 @@ function FicheArticle({
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor={`reference-${v.cle}`}>Référence Joma</Label>
+                  <Label htmlFor={`code-${v.cle}`}>Code couleur Joma</Label>
                   <Input
-                    id={`reference-${v.cle}`}
-                    value={v.reference}
-                    onChange={(e) => changerVariante(v.cle, { reference: e.target.value })}
+                    id={`code-${v.cle}`}
+                    value={v.codeCouleur}
+                    onChange={(e) => changerVariante(v.cle, { codeCouleur: e.target.value })}
+                    placeholder="339"
+                    spellCheck={false}
                     className="h-10"
                   />
+                  {referenceComplete(reference, v.codeCouleur) ? (
+                    <p className="text-xs text-muted-foreground">
+                      Chez Joma : <span className="font-mono">{referenceComplete(reference, v.codeCouleur)}</span>
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3">
@@ -221,7 +243,7 @@ function FicheArticle({
             variant="hubSecondary"
             size="sm"
             className="self-start"
-            onClick={() => setVariantes((liste) => [...liste, { cle: nouvelleCle(), id: null, couleur: "", reference: "", photo: null }])}
+            onClick={() => setVariantes((liste) => [...liste, { cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photo: null }])}
           >
             <Plus aria-hidden="true" />
             Ajouter une couleur
@@ -298,6 +320,7 @@ export default function Catalogue({ articles: initiaux, peutEditer }: { articles
                   <span className="block truncate text-sm font-medium">{a.nom}</span>
                   <span className="block truncate text-xs text-muted-foreground">
                     {[
+                      a.reference,
                       a.variantes.map((v) => v.couleur).filter(Boolean).join(", "),
                       a.tailles.join(" "),
                       a.floquable ? "floquable" : "",

@@ -25,18 +25,21 @@ export const COULEURS_STATUT_COMMANDE: Record<StatutCommande, string> = {
   cancelled: "#8a94a6",
 };
 
-/** Une couleur d'un article, avec sa propre reference Joma et sa photo. */
+/** Une couleur d'un article, avec son code couleur Joma et sa photo. */
 export type Variante = {
   /** L'identifiant de la ligne dans la collection, stable d'une modification a l'autre. */
   id: string;
   couleur: string;
-  reference: string;
+  /** Le code couleur Joma, « 339 » : il complete la reference de l'article. */
+  codeCouleur: string;
   photo: { id: number; url: string } | null;
 };
 
 export type Article = {
   id: number;
   nom: string;
+  /** La reference Joma du modele, « 104263 ». */
+  reference: string;
   description: string;
   prix: number;
   tailles: string[];
@@ -162,6 +165,7 @@ export const schemaArticle = z
   .object({
     id: z.nullable(identifiant),
     nom: obligatoire(80, "Le nom"),
+    reference: texteLibre(40, "La référence : 40 caractères au plus."),
     description: texteLibre(500, "La description : 500 caractères au plus."),
     prix: prix("Le prix"),
     tailles: z
@@ -174,7 +178,7 @@ export const schemaArticle = z
         z.object({
           id: z.nullable(z.string()),
           couleur: texteLibre(40, "Une couleur : 40 caractères au plus."),
-          reference: texteLibre(60, "Une référence : 60 caractères au plus."),
+          codeCouleur: texteLibre(20, "Un code couleur : 20 caractères au plus."),
           photoId: z.nullable(identifiant),
         }),
       )

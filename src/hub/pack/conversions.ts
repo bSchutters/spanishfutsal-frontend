@@ -23,6 +23,7 @@ export function articleDe(doc: Doc): Article {
   return {
     id: Number(doc.id),
     nom: texte(doc.name),
+    reference: texte(doc.reference),
     description: texte(doc.description),
     prix: nombre(doc.price),
     tailles: tailles.map((t) => t.trim()),
@@ -32,7 +33,8 @@ export function articleDe(doc: Doc): Article {
     variantes: variantes.map((v) => ({
       id: String(v.id),
       couleur: texte(v.color),
-      reference: texte(v.reference),
+      // La colonne de la couleur s'appelle `reference` : elle porte le code couleur.
+      codeCouleur: texte(v.reference),
       photo: photoDe(v.photo),
     })),
   };

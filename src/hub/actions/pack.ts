@@ -45,6 +45,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
 
   const data = {
     name: s.nom,
+    reference: s.reference,
     description: s.description,
     price: s.prix,
     sizes: s.tailles,
@@ -53,7 +54,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
     variants: s.variantes.map((v) => ({
       ...(v.id ? { id: v.id } : {}),
       color: v.couleur,
-      reference: v.reference,
+      reference: v.codeCouleur,
       photo: v.photoId,
     })),
   };
