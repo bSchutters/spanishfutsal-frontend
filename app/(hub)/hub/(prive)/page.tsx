@@ -1,4 +1,4 @@
-import { Cake, CalendarDays, ChevronRight, ClipboardList, Lightbulb, Radio, TriangleAlert } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, ClipboardList, Lightbulb, Radio, ShoppingBag, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -52,7 +52,7 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
   const { refus } = await searchParams;
   const accueil = await chargerAccueil(user);
   const { blocs } = accueil;
-  const aucunBloc = !blocs.calendrier && !blocs.joueurs && !blocs.direct;
+  const aucunBloc = !Object.values(blocs).some(Boolean);
 
   return (
     <>
@@ -249,6 +249,24 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
               </Link>
             ) : (
               <Rien>Aucune diffusion pour l&apos;instant.</Rien>
+            )}
+          </Panneau>
+        ) : null}
+        {blocs.pack ? (
+          <Panneau titre="Pack" actions={<ToutVoir href="/hub/pack?statut=toutes" />}>
+            {accueil.commandesRecues > 0 ? (
+              <Link href="/hub/pack" className={LIEN}>
+                <Icone>
+                  <ShoppingBag className="size-4" />
+                </Icone>
+                <span className="min-w-0 flex-1 text-sm">
+                  {pluriel(accueil.commandesRecues, "commande")} {accueil.commandesRecues > 1 ? "attendent" : "attend"} d&apos;être
+                  passée{accueil.commandesRecues > 1 ? "s" : ""} chez Joma
+                </span>
+                <Chevron />
+              </Link>
+            ) : (
+              <Rien>Aucune commande en attente.</Rien>
             )}
           </Panneau>
         ) : null}

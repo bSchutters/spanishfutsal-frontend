@@ -13,6 +13,7 @@ import * as migration_20260917_130723_postes_staff from './20260917_130723_poste
 import * as migration_20260917_131029_poste_adjoint from './20260917_131029_poste_adjoint';
 import * as migration_20260917_161038_module_direct from './20260917_161038_module_direct';
 import * as migration_20260917_173247_sans_discord from './20260917_173247_sans_discord';
+import * as migration_20261003_111747_module_pack from './20261003_111747_module_pack';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20260917_173247_sans_discord.up,
     down: migration_20260917_173247_sans_discord.down,
-    name: '20260917_173247_sans_discord'
+    name: '20260917_173247_sans_discord',
+  },
+  {
+    up: migration_20261003_111747_module_pack.up,
+    down: migration_20261003_111747_module_pack.down,
+    name: '20261003_111747_module_pack'
   },
 ];

@@ -8,9 +8,12 @@ import { Formats } from "@/payload/collections/hub/Formats";
 import { Ideas } from "@/payload/collections/hub/Ideas";
 import { Networks } from "@/payload/collections/hub/Networks";
 import { NotificationLog } from "@/payload/collections/hub/NotificationLog";
+import { PackArticles } from "@/payload/collections/hub/PackArticles";
+import { PackOrders } from "@/payload/collections/hub/PackOrders";
 import { PostTemplates } from "@/payload/collections/hub/PostTemplates";
 import { PushSubscriptions } from "@/payload/collections/hub/PushSubscriptions";
 import { HubSettings } from "@/payload/globals/HubSettings";
+import { PackSettings } from "@/payload/globals/PackSettings";
 
 /**
  * Le critere d'acceptation du lot 1 : aucune collection du Hub ne se lit sans
@@ -28,6 +31,8 @@ const collections = [
   Comments,
   PushSubscriptions,
   NotificationLog,
+  PackArticles,
+  PackOrders,
 ];
 
 const anonyme = { req: { user: null } } as never;
@@ -65,6 +70,11 @@ describe("collections du Hub sans session", () => {
   it("les reglages du Hub non plus", async () => {
     expect(await HubSettings.access?.read?.(anonyme)).toBe(false);
     expect(await HubSettings.access?.update?.(anonyme)).toBe(false);
+  });
+
+  it("ni ceux du Pack, mot de passe compris", async () => {
+    expect(await PackSettings.access?.read?.(anonyme)).toBe(false);
+    expect(await PackSettings.access?.update?.(anonyme)).toBe(false);
   });
 });
 
@@ -126,5 +136,32 @@ describe("statut d un post", () => {
     expect(statutApresRemplissage("ready", "PROCHAIN MATCH", 1)).toBeNull();
     expect(statutApresRemplissage("published", "PROCHAIN MATCH", 1)).toBeNull();
     expect(statutApresRemplissage("cancelled", "PROCHAIN MATCH", 1)).toBeNull();
+  });
+});
+
+describe("module Pack", () => {
+  const packLecture = {
+    req: { user: { id: 4, role: "manager", hub: { access: true, modules: [{ module: "pack", level: "read" }], feeds: [] } } },
+  } as never;
+
+  it("un lecteur du Pack lit catalogue et commandes, sans rien modifier", async () => {
+    expect(await PackArticles.access?.read?.(packLecture)).toBe(true);
+    expect(await PackOrders.access?.read?.(packLecture)).toBe(true);
+    expect(await PackArticles.access?.update?.(packLecture)).toBe(false);
+    expect(await PackOrders.access?.update?.(packLecture)).toBe(false);
+    expect(await PackSettings.access?.update?.(packLecture)).toBe(false);
+  });
+
+  it("un droit sur le calendrier n'ouvre pas le Pack", async () => {
+    expect(await PackOrders.access?.read?.(editeur)).toBe(false);
+    expect(await PackSettings.access?.read?.(editeur)).toBe(false);
+  });
+
+  it("un article ne se supprime pas depuis le Hub, meme en edition", async () => {
+    const packEdition = {
+      req: { user: { id: 5, role: "manager", hub: { access: true, modules: [{ module: "pack", level: "edit" }], feeds: [] } } },
+    } as never;
+    expect(await PackArticles.access?.update?.(packEdition)).toBe(true);
+    expect(await PackArticles.access?.delete?.(packEdition)).toBe(false);
   });
 });

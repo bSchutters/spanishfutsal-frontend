@@ -9,8 +9,23 @@ La page `/hub` montre ce qui attend la personne, du plus urgent au moins urgent.
 - **Calendrier** : un bandeau rouge quand des posts sont en retard (date passée sans publication, tous responsables confondus), le prochain match du calendrier, ses trois prochains posts à faire (ceux dont elle est responsable) et le nombre d'idées qui attendent son vote.
 - **Joueurs** : les anniversaires des fiches actives, aujourd'hui et les six jours suivants. En édition seulement, les feuilles de stats des matchs joués qui restent vides.
 - **Direct** : la dernière diffusion, avec l'écart de spectateurs par rapport à la précédente.
+- **Pack** : le nombre de commandes reçues qui attendent d'être passées chez Joma.
 
 Les modules et les flux de la personne sont dans son Profil.
+
+## Le Pack : commandes Joma des joueurs
+
+Le module **Pack** rassemble les commandes d'articles Joma sans compte pour les joueurs ni paiement en ligne. Il s'ouvre à une personne depuis la page Membres, comme les autres modules.
+
+**Préparer la page des joueurs**, onglet Catalogue :
+
+1. Ajouter les articles : nom, prix (logo du club compris), tailles séparées par des virgules, floquable ou non, puis une ou plusieurs couleurs, chacune avec sa référence Joma et sa photo. Décocher « Dans le catalogue » retire un article de la page sans le sortir des commandes déjà passées.
+2. Dans le bloc **Page des joueurs** : choisir un mot de passe, vérifier les prix des flocages (numéro et nom), mettre une date limite si besoin, puis cocher **Commandes ouvertes**. Sans mot de passe, personne n'entre.
+3. Partager le **lien** (ou son QR code) et le mot de passe dans le groupe. **Nouveau lien** coupe aussitôt l'ancien ; changer le mot de passe oblige chacun à le retaper.
+
+**Côté joueur**, la page `/pack/…` demande le mot de passe, puis : le nom dans la liste de l'effectif (ou « Autre »), les articles avec couleur, taille, quantité et flocage, un téléphone ou un e-mail. Une même personne peut envoyer plusieurs commandes. Rien ne se modifie après l'envoi : le joueur prévient le club.
+
+**Traiter les commandes**, onglet Commandes : elles arrivent en « Reçue ». Un clic ouvre une commande, que le club corrige (taille, quantité, flocage, articles, coordonnées, statut) ; une ligne qui ne change pas de nature garde son prix d'origine. Pour commander chez Joma, cocher les commandes, **Préparer la commande Joma**, décocher les articles à garder pour plus tard, **Télécharger le PDF** (quantités par référence, couleur et taille, puis les flocages, sans prix ni noms de joueurs), puis **Marquer commandées**. Ensuite, passer chaque commande en « Livrée » à la distribution. Une commande abandonnée passe en « Annulée ».
 
 ## Ajouter une personne et ses droits
 

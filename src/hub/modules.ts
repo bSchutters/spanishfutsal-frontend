@@ -5,7 +5,8 @@
  * utilisateur se construisent depuis cette liste. Ajouter un module revient
  * a ajouter une entree ici et ses pages sous app/(hub)/hub/(prive)/. Les
  * modules : `calendar` (calendrier, posts, idees), `players` (effectif et
- * statistiques des matchs) et `live` (audience des diffusions).
+ * statistiques des matchs), `live` (audience des diffusions) et `pack`
+ * (articles Joma et commandes des joueurs).
  *
  * Aucun import React ici : ce fichier est lu par la configuration Payload.
  * L'icone est un nom, la navigation le traduit en composant.
@@ -19,7 +20,7 @@ export const LIBELLES_NIVEAUX: Record<Niveau, string> = {
   edit: "Édition",
 };
 
-export type IconeModule = "calendar-days" | "users" | "radio";
+export type IconeModule = "calendar-days" | "users" | "radio" | "shopping-bag";
 export type IconeEntree =
   IconeModule | "list-todo" | "lightbulb" | "chart-column";
 
@@ -70,6 +71,14 @@ export const MODULES = [
     route: "/hub/direct",
     icone: "radio",
     navigation: [{ nom: "Direct", route: "/hub/direct", icone: "radio" }],
+  },
+  {
+    key: "pack",
+    nom: "Pack",
+    description: "Le catalogue Joma du club et les commandes des joueurs.",
+    route: "/hub/pack",
+    icone: "shopping-bag",
+    navigation: [{ nom: "Pack", route: "/hub/pack", icone: "shopping-bag" }],
   },
 ] as const satisfies ReadonlyArray<ModuleHub>;
 

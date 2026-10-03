@@ -6,20 +6,21 @@ import { getPayloadClient } from "@/lib/payload";
 
 export const dynamic = "force-dynamic";
 
-/** Une photo de joueur ne depasse pas ce poids avant conversion. */
+/** Une photo ne depasse pas ce poids avant conversion. */
 const POIDS_MAX = 15 * 1024 * 1024;
 
 /**
- * Le depot d'une photo de joueur depuis la fiche du Hub. Le fichier va dans
- * la collection Medias du site, qui le convertit en WebP et le borne a
- * 1920 px comme pour toute image du site. Le droit est celui du module
- * Joueurs en edition ; l'ecriture se fait ensuite en systeme, la matrice
- * des droits de l'admin n'ayant pas a etre ouverte pour cela.
+ * Le depot d'une photo depuis le Hub : celle d'un joueur dans sa fiche, ou
+ * celle d'un article du Pack. Le fichier va dans la collection Medias du
+ * site, qui le convertit en WebP et le borne a 1920 px comme pour toute
+ * image du site. Le droit est l'edition sur l'un des deux modules ;
+ * l'ecriture se fait ensuite en systeme, la matrice des droits de l'admin
+ * n'ayant pas a etre ouverte pour cela.
  */
 export async function POST(request: NextRequest) {
   const session = await lireSession();
-  if (!session || !peutEditer(session.user, "players")) {
-    return NextResponse.json({ erreur: "Vous n'avez pas le droit de modifier l'effectif." }, { status: 403 });
+  if (!session || !(peutEditer(session.user, "players") || peutEditer(session.user, "pack"))) {
+    return NextResponse.json({ erreur: "Vous n'avez pas le droit de déposer une photo." }, { status: 403 });
   }
 
   let corps: FormData;

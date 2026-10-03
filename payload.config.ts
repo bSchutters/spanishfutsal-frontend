@@ -29,9 +29,12 @@ import { HubMedia } from '@/payload/collections/hub/HubMedia'
 import { Ideas } from '@/payload/collections/hub/Ideas'
 import { Networks } from '@/payload/collections/hub/Networks'
 import { NotificationLog } from '@/payload/collections/hub/NotificationLog'
+import { PackArticles } from '@/payload/collections/hub/PackArticles'
+import { PackOrders } from '@/payload/collections/hub/PackOrders'
 import { PostTemplates } from '@/payload/collections/hub/PostTemplates'
 import { PushSubscriptions } from '@/payload/collections/hub/PushSubscriptions'
 import { HubSettings } from '@/payload/globals/HubSettings'
+import { PackSettings } from '@/payload/globals/PackSettings'
 import { Settings } from '@/payload/globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -83,8 +86,10 @@ export default buildConfig({
     PushSubscriptions,
     NotificationLog,
     HubMedia,
+    PackArticles,
+    PackOrders,
   ],
-  globals: [Settings, HubSettings],
+  globals: [Settings, HubSettings, PackSettings],
   i18n: {
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',

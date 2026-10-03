@@ -118,7 +118,7 @@ const nextConfig: NextConfig = {
       // L'espace prive du club et ses flux n'ont rien a faire dans un moteur
       // de recherche. robots.txt les exclut deja, cet en-tete vaut aussi pour
       // les pages atteintes par un lien.
-      ...["/hub", "/hub/:chemin*", "/abonnement/:chemin*", "/api/hub/:chemin*"].map(
+      ...["/hub", "/hub/:chemin*", "/abonnement/:chemin*", "/pack/:chemin*", "/api/hub/:chemin*"].map(
         (source) => ({
           source,
           headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],

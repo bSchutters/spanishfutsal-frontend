@@ -3,6 +3,7 @@ import { listerLesDiffusions, evolution, type Diffusion } from "@/hub/direct/don
 import { modulesAccessibles, peutEditer } from "@/hub/droits";
 import { compterIdeesAVoter } from "@/hub/idees/donnees";
 import { listerEffectif, listerMatchsSaison, type MatchDate } from "@/hub/joueurs/donnees";
+import { listerCommandes } from "@/hub/pack/donnees";
 import type { UtilisateurSession } from "@/hub/session";
 import { anniversairesDeLaSemaine, type Anniversaire } from "./anniversaires";
 
@@ -45,6 +46,8 @@ export type Accueil = {
     saisieStats: boolean;
     /** Derniere diffusion. */
     direct: boolean;
+    /** Commandes du Pack a passer chez Joma. */
+    pack: boolean;
   };
   postsEnRetard: number;
   prochainMatch: ProchainMatch | null;
@@ -53,6 +56,7 @@ export type Accueil = {
   feuillesARemplir: MatchDate[];
   anniversaires: Anniversaire[];
   dernierDirect: DernierDirect | null;
+  commandesRecues: number;
 };
 
 /** Le premier match a venir du calendrier, tel que la personne le voit, ou null s'il n'y en a pas. */
@@ -95,9 +99,10 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     joueurs: ouverts.has("players"),
     saisieStats: peutEditer(user, "players"),
     direct: ouverts.has("live"),
+    pack: ouverts.has("pack"),
   };
 
-  const [tousLesPosts, mesPosts, prochainMatch, ideesAVoter, effectif, matchs, dernierDirect] = await Promise.all([
+  const [tousLesPosts, mesPosts, prochainMatch, ideesAVoter, effectif, matchs, dernierDirect, commandesRecues] = await Promise.all([
     blocs.calendrier ? listerPostsAFaire(user, false) : [],
     blocs.calendrier ? listerPostsAFaire(user, true) : [],
     blocs.calendrier ? chargerProchainMatch(user, maintenant) : null,
@@ -105,6 +110,7 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     blocs.joueurs ? listerEffectif() : [],
     blocs.saisieStats ? listerMatchsSaison().then((r) => r.matchs) : [],
     blocs.direct ? chargerDernierDirect() : null,
+    blocs.pack ? listerCommandes("received").then((c) => c.length) : 0,
   ]);
 
   return {
@@ -116,5 +122,6 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     feuillesARemplir: matchs.filter((m) => m.etat === "a_saisir"),
     anniversaires: anniversairesDeLaSemaine(effectif, maintenant),
     dernierDirect,
+    commandesRecues,
   };
 }

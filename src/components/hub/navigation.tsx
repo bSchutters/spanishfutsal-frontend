@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChartColumn, ChevronDown, House, Lightbulb, ListTodo, Radio, UserRound, Users } from "lucide-react";
+import { CalendarDays, ChartColumn, ChevronDown, House, Lightbulb, ListTodo, Radio, ShoppingBag, UserRound, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +43,7 @@ const ICONES: Record<IconeNavigation, typeof House> = {
   users: Users,
   "chart-column": ChartColumn,
   radio: Radio,
+  "shopping-bag": ShoppingBag,
   user: UserRound,
 };
 
