@@ -57,7 +57,8 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
       ...(v.id ? { id: v.id } : {}),
       color: v.couleur,
       reference: v.codeCouleur,
-      photo: v.photoId,
+      photo: v.photoIds[0] ?? null,
+      photos: v.photoIds.slice(1),
     })),
   };
 
@@ -76,6 +77,24 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
     revalidatePath("/hub/pack", "layout");
     const relu = await chargerArticle(id, payload);
     return relu ? { ok: true, donnees: relu } : { ok: false, erreur: "Enregistré, mais impossible à relire." };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
+/**
+ * Un article supprime du catalogue. Les commandes qui le contiennent gardent
+ * leurs lignes, qui portent leur propre copie de l'article. Ses photos restent
+ * dans les Medias du site.
+ */
+export async function supprimerArticle(id: unknown): Promise<Resultat> {
+  await exigerModule("pack", "edit");
+  if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) return { ok: false, erreur: "Article inconnu." };
+  const payload = await getPayloadClient();
+  try {
+    await payload.delete({ collection: "pack-articles", id });
+    revalidatePath("/hub/pack", "layout");
+    return { ok: true };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

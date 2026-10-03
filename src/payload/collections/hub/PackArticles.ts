@@ -1,21 +1,22 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminSeulement, editionModule, lectureModule } from '@/hub/droits'
+import { editionModule, lectureModule } from '@/hub/droits'
 import { LIBELLES_MODE_REMISE, MODES_REMISE } from '@/hub/pack/schema'
 import { adminHub } from './partage'
 
 /**
  * Le catalogue du Pack : les articles Joma que les joueurs peuvent
  * commander. Une couleur est une variante de l'article, avec son code
- * couleur Joma et sa photo : la reference complete chez Joma est celle du
+ * couleur Joma et ses photos : la reference complete chez Joma est celle du
  * modele, un point, le code couleur (« 104263.339 »).
  *
  * Le prix est celui du catalogue Joma. Le joueur paie ce prix moins la
  * remise du club : la generale des reglages, aucune, ou celle de l'article.
  *
- * Un article ne se supprime pas depuis le Hub : on le retire en decochant
- * Actif, il quitte la page des joueurs et reste dans les commandes deja
- * passees. La suppression reste aux administrateurs, dans l'admin.
+ * Un article se retire de la page des joueurs en decochant Actif, ou se
+ * supprime depuis le Hub. Dans les deux cas, les commandes deja passees
+ * gardent leurs lignes : chacune porte sa copie du nom, de la couleur, de
+ * la reference et du prix.
  */
 export const PackArticles: CollectionConfig = {
   slug: 'pack-articles',
@@ -29,7 +30,7 @@ export const PackArticles: CollectionConfig = {
     read: lectureModule('pack'),
     create: editionModule('pack'),
     update: editionModule('pack'),
-    delete: adminSeulement,
+    delete: editionModule('pack'),
   },
   defaultSort: 'sort_order',
   fields: [
@@ -102,7 +103,10 @@ export const PackArticles: CollectionConfig = {
             },
           ],
         },
-        { name: 'photo', type: 'upload', relationTo: 'media', label: 'Photo' },
+        // La premiere photo a sa colonne, les suivantes leur liste : le Hub
+        // les montre comme une seule suite, la principale en tete.
+        { name: 'photo', type: 'upload', relationTo: 'media', label: 'Photo principale' },
+        { name: 'photos', type: 'upload', relationTo: 'media', hasMany: true, maxRows: 9, label: 'Autres photos' },
       ],
     },
     { name: 'sort_order', type: 'number', defaultValue: 0, label: 'Ordre', admin: { position: 'sidebar' } },

@@ -7,8 +7,8 @@ import {
   type Commande,
   type LigneCommande,
   type ModeRemise,
+  type Photo,
   type StatutCommande,
-  type Variante,
 } from "./schema";
 
 /**
@@ -21,7 +21,7 @@ type Doc = Record<string, unknown> & { id: number | string };
 const texte = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 const nombre = (v: unknown) => (typeof v === "number" ? v : typeof v === "string" && v !== "" ? Number(v) : 0);
 
-function photoDe(photo: unknown): Variante["photo"] {
+function photoDe(photo: unknown): Photo | null {
   return photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string"
     ? { id: Number((photo as { id: unknown }).id), url: String((photo as { url: string }).url) }
     : null;
@@ -51,7 +51,7 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
       couleur: texte(v.color),
       // La colonne de la couleur s'appelle `reference` : elle porte le code couleur.
       codeCouleur: texte(v.reference),
-      photo: photoDe(v.photo),
+      photos: [v.photo, ...(Array.isArray(v.photos) ? v.photos : [])].map(photoDe).filter((p): p is Photo => p !== null),
     })),
   };
 }

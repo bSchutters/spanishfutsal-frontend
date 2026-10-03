@@ -41,8 +41,8 @@ const maillot: Article = {
   actif: true,
   ordre: 0,
   variantes: [
-    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photo: null },
-    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photo: null },
+    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photos: [] },
+    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photos: [] },
   ],
 };
 
@@ -58,7 +58,7 @@ const sac: Article = {
   floquable: false,
   actif: false,
   ordre: 1,
-  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photo: null }],
+  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photos: [] }],
 };
 
 const CATALOGUE = [maillot, sac];
@@ -215,8 +215,8 @@ describe("saisies", () => {
       floquable: false,
       actif: true,
       variantes: [
-        { id: null, couleur: "", codeCouleur: "339", photoId: null },
-        { id: null, couleur: "Blanc", codeCouleur: "200", photoId: null },
+        { id: null, couleur: "", codeCouleur: "339", photoIds: [] },
+        { id: null, couleur: "Blanc", codeCouleur: "200", photoIds: [] },
       ],
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);
@@ -235,7 +235,7 @@ describe("saisies", () => {
       tailles: ["M"],
       floquable: false,
       actif: true,
-      variantes: [{ id: null, couleur: "", codeCouleur: "", photoId: null }],
+      variantes: [{ id: null, couleur: "", codeCouleur: "", photoIds: [] }],
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);
     expect(schemaArticle.safeParse({ ...article, remiseParticuliere: 15 }).success).toBe(true);
@@ -337,5 +337,80 @@ describe("PDF pour Joma", () => {
     expect(texte.startsWith("%PDF-")).toBe(true);
     const { PDFDocument } = await import("pdf-lib");
     expect((await PDFDocument.load(octets)).getPageCount()).toBeGreaterThan(1);
+  });
+});
+
+describe("photos d'une couleur", () => {
+  it("met la photo principale en tête, puis les autres, sans les vides", () => {
+    const article = articleDe({
+      id: 9,
+      name: "Maillot",
+      price: 30,
+      variants: [
+        {
+          id: "bleu",
+          color: "Bleu",
+          reference: "339",
+          photo: { id: 1, url: "/a.webp" },
+          photos: [{ id: 2, url: "/b.webp" }, 3, { id: 4, url: "/d.webp" }],
+        },
+      ],
+    });
+    expect(article.variantes[0].photos.map((p) => p.id)).toEqual([1, 2, 4]);
+  });
+
+  it("accepte dix photos au plus par couleur", () => {
+    const variante = (n: number) => ({ id: null, couleur: "", codeCouleur: "", photoIds: Array.from({ length: n }, (_, i) => i + 1) });
+    const article = {
+      id: null,
+      nom: "Sac",
+      reference: "",
+      description: "",
+      prixCatalogue: 20,
+      modeRemise: "general" as const,
+      remiseParticuliere: null,
+      tailles: ["Unique"],
+      floquable: false,
+      actif: true,
+    };
+    expect(schemaArticle.safeParse({ ...article, variantes: [variante(10)] }).success).toBe(true);
+    expect(schemaArticle.safeParse({ ...article, variantes: [variante(11)] }).success).toBe(false);
+  });
+});
+
+describe("article supprimé", () => {
+  const orpheline: LigneCommande = {
+    id: "l9",
+    articleId: null,
+    varianteId: "x",
+    article: "Ancien sweat",
+    couleur: "Gris",
+    reference: "100000.250",
+    taille: "L",
+    quantite: 1,
+    numero: "",
+    nom: "",
+    prixUnitaire: 28,
+  };
+
+  it("garde la ligne d'une commande avec sa copie, seule la quantité change", () => {
+    const r = construireLignes(
+      [{ id: "l9", articleId: null, varianteId: "x", taille: "L", quantite: 2, numero: "", nom: "" }],
+      CATALOGUE,
+      FLOCAGE,
+      { inactifsAdmis: true, anciennes: [orpheline] },
+    );
+    expect(r.ok && r.lignes).toEqual([{ ...orpheline, quantite: 2 }]);
+    expect(r.ok && r.total).toBe(56);
+  });
+
+  it("refuse un article absent sans ligne enregistrée, comme depuis la page des joueurs", () => {
+    const r = construireLignes(
+      [{ id: null, articleId: 99, varianteId: "x", taille: "L", quantite: 1, numero: "", nom: "" }],
+      CATALOGUE,
+      FLOCAGE,
+      { inactifsAdmis: false },
+    );
+    expect(r.ok).toBe(false);
   });
 });

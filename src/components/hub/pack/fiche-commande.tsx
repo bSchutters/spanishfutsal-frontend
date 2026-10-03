@@ -55,7 +55,7 @@ export default function FicheCommande({
     commande.lignes.map((l) => ({
       cle: nouvelleCle(),
       id: l.id,
-      articleId: l.articleId ?? 0,
+      articleId: l.articleId,
       varianteId: l.varianteId ?? "",
       taille: l.taille,
       quantite: l.quantite,
@@ -164,7 +164,7 @@ export default function FicheCommande({
                       {l.quantite} × {affichee ? formaterPrix(affichee.prixUnitaire) : "?"}
                     </span>
                     {peutEditer && !article ? (
-                      <span className="block text-xs text-destructive">Cet article n&apos;existe plus au catalogue : retirez la ligne pour enregistrer.</span>
+                      <span className="block text-xs text-muted-foreground">Article supprimé du catalogue : la ligne garde son nom, sa référence et son prix.</span>
                     ) : null}
                   </span>
                   {peutEditer ? (

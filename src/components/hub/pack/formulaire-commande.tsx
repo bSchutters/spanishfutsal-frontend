@@ -6,10 +6,11 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
 import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
-import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
+import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type Photo, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ListeDeroulante from "./liste-deroulante";
 
@@ -20,21 +21,71 @@ let compteur = 0;
 const nouvelleCle = () => `p${++compteur}`;
 const AUTRE = "autre";
 
+/** Les photos d'une couleur : la grande, et les vignettes pour passer de l'une a l'autre. */
+function Galerie({ photos, legende }: { photos: Photo[]; legende: string }) {
+  const [vue, setVue] = useState(0);
+  const affichee = photos[Math.min(vue, photos.length - 1)];
+  return (
+    <div className="flex flex-col bg-white/5">
+      <div className="flex aspect-[4/3] items-center justify-center">
+        {affichee ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={affichee.url} alt={legende} className="size-full object-contain" />
+        ) : (
+          <Shirt className="size-10 text-muted-foreground" aria-hidden="true" />
+        )}
+      </div>
+      {photos.length > 1 ? (
+        <div className="flex gap-1.5 overflow-x-auto px-2 pb-2">
+          {photos.map((p, rang) => (
+            <button
+              key={p.id}
+              type="button"
+              aria-label={`Photo ${rang + 1} sur ${photos.length}`}
+              aria-pressed={rang === vue}
+              onClick={() => setVue(rang)}
+              className={cn(
+                "size-12 shrink-0 overflow-hidden rounded-md border-2 bg-white/5 transition-colors",
+                rang === vue ? "border-primary" : "border-transparent opacity-70 hover:opacity-100",
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.url} alt="" className="size-full object-cover" />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 /** Une carte du catalogue : couleur, taille, quantite et flocage, puis « Ajouter ». */
 function CarteArticle({ article, flocage, onAjouter }: { article: Article; flocage: PrixFlocage; onAjouter: (ligne: LignePanier) => void }) {
   const [varianteId, setVarianteId] = useState(article.variantes[0]?.id ?? "");
   const [taille, setTaille] = useState("");
   const [quantite, setQuantite] = useState(1);
+  const [avecFlocage, setAvecFlocage] = useState(false);
   const [numero, setNumero] = useState("");
   const [nom, setNom] = useState("");
   const [ajoute, setAjoute] = useState(false);
 
   const variante = article.variantes.find((v) => v.id === varianteId) ?? article.variantes[0];
-  const photo = variante?.photo ?? article.variantes.find((v) => v.photo)?.photo ?? null;
+  // Une couleur sans photo montre celles de la premiere couleur qui en a.
+  const photos = variante?.photos.length ? variante.photos : (article.variantes.find((v) => v.photos.length > 0)?.photos ?? []);
   const numeroValide = numero === "" || /^\d{1,2}$/.test(numero);
+  const flocageIncomplet = avecFlocage && numero === "" && nom.trim() === "";
 
   const ajouter = () => {
-    onAjouter({ cle: nouvelleCle(), id: null, articleId: article.id, varianteId, taille, quantite, numero, nom: nom.trim() });
+    onAjouter({
+      cle: nouvelleCle(),
+      id: null,
+      articleId: article.id,
+      varianteId,
+      taille,
+      quantite,
+      numero: avecFlocage ? numero : "",
+      nom: avecFlocage ? nom.trim() : "",
+    });
     setQuantite(1);
     setNumero("");
     setNom("");
@@ -42,16 +93,18 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
     setTimeout(() => setAjoute(false), 1500);
   };
 
+  const libelleBouton = ajoute
+    ? "Ajouté"
+    : !taille
+      ? "Choisissez une taille"
+      : flocageIncomplet
+        ? "Indiquez un numéro ou un nom"
+        : "Ajouter à ma commande";
+
   return (
     <li className="flex flex-col overflow-hidden rounded-lg border border-border bg-card">
-      <div className="flex aspect-[4/3] items-center justify-center bg-white/5">
-        {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo.url} alt={[article.nom, variante?.couleur].filter(Boolean).join(" ")} className="size-full object-contain" />
-        ) : (
-          <Shirt className="size-10 text-muted-foreground" aria-hidden="true" />
-        )}
-      </div>
+      {/* La cle remet la galerie sur la photo principale a chaque changement de couleur. */}
+      <Galerie key={variante?.id} photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
           <div className="flex items-baseline justify-between gap-3">
@@ -107,35 +160,49 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
         </div>
 
         {article.floquable ? (
-          <div className="flex flex-col gap-1.5">
-            <div className="grid grid-cols-[5rem_1fr] gap-2">
-              <Input
-                aria-label={`Numéro à floquer, ${article.nom}`}
-                inputMode="numeric"
-                placeholder="N°"
-                maxLength={2}
-                value={numero}
-                onChange={(e) => setNumero(e.target.value.replace(/\D/g, ""))}
-                className="h-10"
-              />
-              <Input
-                aria-label={`Nom à floquer, ${article.nom}`}
-                placeholder="Nom au dos"
-                maxLength={LONGUEUR_NOM_FLOCAGE}
-                value={nom}
-                onChange={(e) => setNom(e.target.value.toUpperCase())}
-                className="h-10"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Facultatif : numéro +{formaterPrix(flocage.numero)}, nom +{formaterPrix(flocage.nom)} par pièce.
-            </p>
+          <div className="flex flex-col gap-2">
+            <label className="flex cursor-pointer items-center justify-between gap-3">
+              <span>
+                <span className="block text-sm font-medium">Flocage</span>
+                <span className="block text-xs text-muted-foreground">
+                  Numéro +{formaterPrix(flocage.numero)}, nom +{formaterPrix(flocage.nom)} par pièce.
+                </span>
+              </span>
+              <Switch checked={avecFlocage} onCheckedChange={setAvecFlocage} aria-label={`Flocage, ${article.nom}`} />
+            </label>
+            {avecFlocage ? (
+              <div className="grid grid-cols-[5rem_1fr] gap-2">
+                <Input
+                  aria-label={`Numéro à floquer, ${article.nom}`}
+                  inputMode="numeric"
+                  placeholder="N°"
+                  maxLength={2}
+                  value={numero}
+                  onChange={(e) => setNumero(e.target.value.replace(/\D/g, ""))}
+                  className="h-10"
+                />
+                <Input
+                  aria-label={`Nom à floquer, ${article.nom}`}
+                  placeholder="Nom au dos"
+                  maxLength={LONGUEUR_NOM_FLOCAGE}
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value.toUpperCase())}
+                  className="h-10"
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
 
-        <Button type="button" variant="hubSecondary" className="mt-auto h-10" disabled={!taille || !numeroValide} onClick={ajouter}>
+        <Button
+          type="button"
+          variant="hubSecondary"
+          className="mt-auto h-10"
+          disabled={!taille || !numeroValide || flocageIncomplet}
+          onClick={ajouter}
+        >
           {ajoute ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
-          {ajoute ? "Ajouté" : taille ? "Ajouter à ma commande" : "Choisissez une taille"}
+          {libelleBouton}
         </Button>
       </div>
     </li>

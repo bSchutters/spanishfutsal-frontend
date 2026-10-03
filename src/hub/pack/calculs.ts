@@ -80,6 +80,13 @@ export function construireLignes(
   const lignes: LigneCommande[] = [];
   for (const saisie of saisies) {
     const article = catalogue.find((a) => a.id === saisie.articleId);
+    // L'article d'une ligne deja enregistree a ete supprime : la ligne garde
+    // sa copie (nom, couleur, reference, prix), seule la quantite peut changer.
+    const orpheline = !article && saisie.id ? options.anciennes?.find((l) => l.id === saisie.id) : undefined;
+    if (orpheline) {
+      lignes.push({ ...orpheline, quantite: saisie.quantite });
+      continue;
+    }
     if (!article || (!article.actif && !options.inactifsAdmis)) {
       return { ok: false, erreur: "Un article n'est plus proposé. Rechargez la page." };
     }

@@ -25,14 +25,17 @@ export const COULEURS_STATUT_COMMANDE: Record<StatutCommande, string> = {
   cancelled: "#8a94a6",
 };
 
-/** Une couleur d'un article, avec son code couleur Joma et sa photo. */
+export type Photo = { id: number; url: string };
+
+/** Une couleur d'un article, avec son code couleur Joma et ses photos. */
 export type Variante = {
   /** L'identifiant de la ligne dans la collection, stable d'une modification a l'autre. */
   id: string;
   couleur: string;
   /** Le code couleur Joma, « 339 » : il complete la reference de l'article. */
   codeCouleur: string;
-  photo: { id: number; url: string } | null;
+  /** Les photos de la couleur, la principale en premier. */
+  photos: Photo[];
 };
 
 /** Comment la remise s'applique a un article : la generale, aucune, ou la sienne. */
@@ -128,8 +131,9 @@ export const LONGUEUR_NOM_FLOCAGE = 15;
 /** Une ligne telle qu'un joueur ou le club la saisit : le prix se calcule au serveur, jamais ici. */
 export const schemaLigneSaisie = z.object({
   id: z.nullable(z.string()),
-  articleId: identifiant,
-  varianteId: z.string().check(z.minLength(1, "Choisissez une couleur.")),
+  // Nul pour une ligne deja enregistree dont l'article a ete supprime depuis.
+  articleId: z.nullable(identifiant),
+  varianteId: z.string(),
   taille: obligatoire(20, "La taille"),
   quantite: z.number().check(z.int(), z.gte(1, "Au moins une pièce."), z.lte(20, "Vingt pièces au plus par ligne.")),
   numero: z
@@ -202,7 +206,7 @@ export const schemaArticle = z
           id: z.nullable(z.string()),
           couleur: texteLibre(40, "Une couleur : 40 caractères au plus."),
           codeCouleur: texteLibre(20, "Un code couleur : 20 caractères au plus."),
-          photoId: z.nullable(identifiant),
+          photoIds: z.array(identifiant).check(z.maxLength(10, "Dix photos au plus par couleur.")),
         }),
       )
       .check(z.minLength(1, "Ajoutez au moins une couleur."), z.maxLength(12, "Douze couleurs au plus.")),

@@ -1,24 +1,26 @@
 "use client";
 
-import { ImagePlus, Loader2, Plus, Shirt, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Etiquette, Panneau } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { enregistrerArticle } from "@/hub/actions/pack";
+import { enregistrerArticle, supprimerArticle } from "@/hub/actions/pack";
 import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/pack/calculs";
 import { LIBELLES_MODE_REMISE, lireTailles, MODES_REMISE, type Article, type ModeRemise } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ListeDeroulante from "./liste-deroulante";
 
-type Photo = { id: number; url: string } | null;
-type VarianteFormulaire = { cle: string; id: string | null; couleur: string; codeCouleur: string; photo: Photo };
+type PhotoDeposee = { id: number; url: string };
+type Photo = PhotoDeposee | null;
+type VarianteFormulaire = { cle: string; id: string | null; couleur: string; codeCouleur: string; photos: PhotoDeposee[] };
 
 const nombreSaisi = (texte: string) => (texte.trim() === "" ? NaN : Number(texte.replace(",", ".")));
 
@@ -44,46 +46,93 @@ function Vignette({ photo, grande = false }: { photo: Photo; grande?: boolean })
   );
 }
 
-/** Le depot d'une photo de couleur, par la route des photos du Hub. */
-function DepotPhoto({ photo, nom, onChange }: { photo: Photo; nom: string; onChange: (photo: Photo) => void }) {
+/** Combien de photos une couleur peut porter. */
+const PHOTOS_MAX = 10;
+
+/**
+ * Les photos d'une couleur, par la route des photos du Hub. La premiere est
+ * la photo principale, celle de la vignette ; l'etoile en fait passer une
+ * autre en tete. Plusieurs fichiers se deposent d'un coup, l'un apres l'autre.
+ */
+function PhotosCouleur({ photos, nom, onChange }: { photos: PhotoDeposee[]; nom: string; onChange: (photos: PhotoDeposee[]) => void }) {
   const entree = useRef<HTMLInputElement>(null);
-  const [enCours, setEnCours] = useState(false);
+  const [enCours, setEnCours] = useState(0);
 
   const deposer = async (fichiers: FileList | null) => {
-    const fichier = fichiers?.[0];
-    if (!fichier) return;
-    setEnCours(true);
-    try {
-      const corps = new FormData();
-      corps.append("file", fichier, fichier.name);
-      corps.append("alt", nom);
-      const reponse = await fetch("/api/hub/photos", { method: "POST", body: corps, credentials: "include" });
-      const json = (await reponse.json()) as { id?: number; url?: string; erreur?: string };
-      if (!reponse.ok || typeof json.id !== "number") throw new Error(json.erreur ?? `${reponse.status}`);
-      onChange({ id: json.id, url: json.url ?? "" });
-    } catch (erreur) {
-      toast.error(erreur instanceof Error && erreur.message ? erreur.message : "La photo n'a pas pu être déposée.");
-    } finally {
-      setEnCours(false);
-      if (entree.current) entree.current.value = "";
+    const liste = Array.from(fichiers ?? []).slice(0, PHOTOS_MAX - photos.length);
+    if (liste.length === 0) return;
+    let suite = photos;
+    for (const fichier of liste) {
+      setEnCours((n) => n + 1);
+      try {
+        const corps = new FormData();
+        corps.append("file", fichier, fichier.name);
+        corps.append("alt", nom);
+        const reponse = await fetch("/api/hub/photos", { method: "POST", body: corps, credentials: "include" });
+        const json = (await reponse.json()) as { id?: number; url?: string; erreur?: string };
+        if (!reponse.ok || typeof json.id !== "number") throw new Error(json.erreur ?? `${reponse.status}`);
+        suite = [...suite, { id: json.id, url: json.url ?? "" }];
+        onChange(suite);
+      } catch (erreur) {
+        toast.error(erreur instanceof Error && erreur.message ? erreur.message : `${fichier.name} n'a pas pu être déposée.`);
+      } finally {
+        setEnCours((n) => n - 1);
+      }
     }
+    if (entree.current) entree.current.value = "";
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <Vignette photo={photo} grande />
-      <input ref={entree} type="file" accept="image/*" className="sr-only" onChange={(e) => void deposer(e.target.files)} />
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="hubSecondary" size="sm" disabled={enCours} onClick={() => entree.current?.click()}>
-          {enCours ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ImagePlus aria-hidden="true" />}
-          {enCours ? "Dépôt…" : photo ? "Changer" : "Photo"}
-        </Button>
-        {photo ? (
-          <Button type="button" variant="hubSecondary" size="sm" disabled={enCours} onClick={() => onChange(null)}>
-            Retirer
-          </Button>
-        ) : null}
-      </div>
+    <div className="flex flex-col gap-2">
+      {photos.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {photos.map((p, rang) => (
+            <li key={p.id} className="relative">
+              <Vignette photo={p} grande />
+              {rang === 0 ? (
+                <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/60 text-center text-[10px] font-medium">Principale</span>
+              ) : (
+                <button
+                  type="button"
+                  aria-label="En faire la photo principale"
+                  title="En faire la photo principale"
+                  onClick={() => onChange([p, ...photos.filter((x) => x.id !== p.id)])}
+                  className="absolute bottom-1 left-1 flex size-6 items-center justify-center rounded-full bg-black/60 hover:bg-black/80"
+                >
+                  <Star className="size-3.5" aria-hidden="true" />
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Retirer cette photo"
+                onClick={() => onChange(photos.filter((x) => x.id !== p.id))}
+                className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-black/60 hover:bg-black/80"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <input
+        ref={entree}
+        type="file"
+        accept="image/*"
+        multiple
+        className="sr-only"
+        onChange={(e) => void deposer(e.target.files)}
+      />
+      <Button
+        type="button"
+        variant="hubSecondary"
+        size="sm"
+        className="self-start"
+        disabled={enCours > 0 || photos.length >= PHOTOS_MAX}
+        onClick={() => entree.current?.click()}
+      >
+        {enCours > 0 ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ImagePlus aria-hidden="true" />}
+        {enCours > 0 ? "Dépôt…" : photos.length >= PHOTOS_MAX ? `${PHOTOS_MAX} photos au plus` : photos.length > 0 ? "Ajouter des photos" : "Photos"}
+      </Button>
     </div>
   );
 }
@@ -93,13 +142,16 @@ function FicheArticle({
   remiseGenerale,
   onFermer,
   onEnregistre,
+  onSupprime,
 }: {
   article: Article | null;
   remiseGenerale: number;
   onFermer: () => void;
   onEnregistre: (article: Article) => void;
+  onSupprime: (id: number) => void;
 }) {
   const [nom, setNom] = useState(article?.nom ?? "");
+  const [confirmation, setConfirmation] = useState(false);
   const [reference, setReference] = useState(article?.reference ?? "");
   const [description, setDescription] = useState(article?.description ?? "");
   const [prixCatalogue, setPrixCatalogue] = useState(article ? String(article.prixCatalogue).replace(".", ",") : "");
@@ -116,13 +168,24 @@ function FicheArticle({
   const [actif, setActif] = useState(article?.actif ?? true);
   const [variantes, setVariantes] = useState<VarianteFormulaire[]>(() =>
     article?.variantes.length
-      ? article.variantes.map((v) => ({ cle: nouvelleCle(), id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photo: v.photo }))
-      : [{ cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photo: null }],
+      ? article.variantes.map((v) => ({ cle: nouvelleCle(), id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photos: v.photos }))
+      : [{ cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photos: [] }],
   );
   const [enCours, setEnCours] = useState(false);
 
   const changerVariante = (cle: string, partiel: Partial<VarianteFormulaire>) =>
     setVariantes((liste) => liste.map((v) => (v.cle === cle ? { ...v, ...partiel } : v)));
+
+  const supprimer = async () => {
+    if (!article) return;
+    setEnCours(true);
+    const r = await supprimerArticle(article.id);
+    setEnCours(false);
+    setConfirmation(false);
+    if (!r.ok) return void toast.error(r.erreur);
+    toast.success(`« ${article.nom} » est supprimé du catalogue.`);
+    onSupprime(article.id);
+  };
 
   const enregistrer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +201,7 @@ function FicheArticle({
       tailles: lireTailles(tailles),
       floquable,
       actif,
-      variantes: variantes.map((v) => ({ id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photoId: v.photo?.id ?? null })),
+      variantes: variantes.map((v) => ({ id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photoIds: v.photos.map((p) => p.id) })),
     });
     setEnCours(false);
     if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
@@ -244,7 +307,7 @@ function FicheArticle({
         <div className="flex flex-col gap-3">
           <div>
             <p className="text-sm font-medium">Couleurs</p>
-            <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et sa photo. Une seule couleur peut rester sans nom.</p>
+            <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et ses photos, la première étant la principale. Une seule couleur peut rester sans nom.</p>
           </div>
           {variantes.map((v, rang) => (
             <div key={v.cle} className="flex flex-col gap-3 rounded-md border border-border p-3">
@@ -276,11 +339,11 @@ function FicheArticle({
                   ) : null}
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <DepotPhoto
-                  photo={v.photo}
+              <div className="flex items-start justify-between gap-3">
+                <PhotosCouleur
+                  photos={v.photos}
                   nom={[nom, v.couleur].filter(Boolean).join(" ")}
-                  onChange={(photo) => changerVariante(v.cle, { photo })}
+                  onChange={(photos) => changerVariante(v.cle, { photos })}
                 />
                 {variantes.length > 1 ? (
                   <Button
@@ -301,7 +364,7 @@ function FicheArticle({
             variant="hubSecondary"
             size="sm"
             className="self-start"
-            onClick={() => setVariantes((liste) => [...liste, { cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photo: null }])}
+            onClick={() => setVariantes((liste) => [...liste, { cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photos: [] }])}
           >
             <Plus aria-hidden="true" />
             Ajouter une couleur
@@ -309,7 +372,20 @@ function FicheArticle({
         </div>
       </div>
 
-      <div className="flex shrink-0 justify-end gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        {article ? (
+          <Button
+            type="button"
+            variant="hubSecondary"
+            className="text-destructive"
+            onClick={() => setConfirmation(true)}
+            disabled={enCours}
+          >
+            <Trash2 aria-hidden="true" />
+            Supprimer
+          </Button>
+        ) : null}
+        <span className="flex-1" />
         <Button type="button" variant="hubSecondary" onClick={onFermer} disabled={enCours}>
           Annuler
         </Button>
@@ -317,6 +393,26 @@ function FicheArticle({
           {enCours ? "Enregistrement…" : "Enregistrer"}
         </Button>
       </div>
+
+      <Dialog open={confirmation} onOpenChange={setConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer « {article?.nom} » ?</DialogTitle>
+            <DialogDescription>
+              Il disparaît du catalogue et de la page des joueurs. Les commandes déjà passées gardent leurs lignes, avec leur nom, leur
+              référence et leur prix. Pour le cacher sans le supprimer, décochez plutôt « Dans le catalogue ».
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="hubSecondary" onClick={() => setConfirmation(false)}>
+              Garder
+            </Button>
+            <Button type="button" variant="hub" className="bg-destructive text-white hover:bg-destructive/90" disabled={enCours} onClick={() => void supprimer()}>
+              Supprimer l&apos;article
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }
@@ -343,6 +439,10 @@ export default function Catalogue({
 
   const ouvrir = (article: Article | null) => setOuverture((o) => ({ ouvert: true, article, cle: o.cle + 1 }));
   const fermer = () => setOuverture((o) => ({ ...o, ouvert: false }));
+  const supprime = (id: number) => {
+    setArticles((liste) => liste.filter((a) => a.id !== id));
+    fermer();
+  };
   const enregistre = (article: Article) => {
     setArticles((liste) => {
       const autres = liste.filter((a) => a.id !== article.id);
@@ -381,7 +481,7 @@ export default function Catalogue({
                   !a.actif && "opacity-50",
                 )}
               >
-                <Vignette photo={a.variantes.find((v) => v.photo)?.photo ?? null} />
+                <Vignette photo={a.variantes.find((v) => v.photos.length > 0)?.photos[0] ?? null} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{a.nom}</span>
                   <span className="block truncate text-xs text-muted-foreground">
@@ -422,6 +522,7 @@ export default function Catalogue({
               remiseGenerale={remiseGenerale}
               onFermer={fermer}
               onEnregistre={enregistre}
+              onSupprime={supprime}
             />
           ) : null}
         </SheetContent>

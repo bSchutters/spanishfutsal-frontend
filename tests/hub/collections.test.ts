@@ -157,11 +157,12 @@ describe("module Pack", () => {
     expect(await PackSettings.access?.read?.(editeur)).toBe(false);
   });
 
-  it("un article ne se supprime pas depuis le Hub, meme en edition", async () => {
+  it("un article se supprime avec l edition du Pack, pas avec la lecture", async () => {
     const packEdition = {
       req: { user: { id: 5, role: "manager", hub: { access: true, modules: [{ module: "pack", level: "edit" }], feeds: [] } } },
     } as never;
     expect(await PackArticles.access?.update?.(packEdition)).toBe(true);
-    expect(await PackArticles.access?.delete?.(packEdition)).toBe(false);
+    expect(await PackArticles.access?.delete?.(packEdition)).toBe(true);
+    expect(await PackArticles.access?.delete?.(packLecture)).toBe(false);
   });
 });
