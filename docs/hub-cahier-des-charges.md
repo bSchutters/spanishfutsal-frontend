@@ -98,7 +98,7 @@ Le rapport se termine par la liste des **écarts ou risques** par rapport à ce 
 | Route | Accès | Rôle |
 |---|---|---|
 | `/hub/connexion` | public, noindex | formulaire de connexion |
-| `/hub` | connecté + accès Hub | accueil : modules disponibles |
+| `/hub` | connecté + accès Hub | accueil : tableau de bord, un bloc par module ouvert |
 | `/hub/calendrier` | module calendrier | vues calendrier |
 | `/hub/calendrier/a-faire` | module calendrier | vue « À faire » |
 | `/hub/calendrier/evenements/[id]` | module calendrier | détail / édition d'un événement |
@@ -709,6 +709,7 @@ Recommandé si le coût reste raisonnable : un test end-to-end (Playwright) de c
 | Droits depuis le Hub (17/09/2026) | Ouvrir un module demandait d aller dans chaque fiche de l admin Payload. Une page `/hub/membres`, réservée aux administrateurs, règle l accès au Hub, le niveau de chaque module et les flux autorisés, compte par compte. Elle se rejoint par le menu du compte, et par le profil sur téléphone. Elle crée aussi un compte : prénom, nom, adresse, droits, et un mot de passe tiré au hasard montré une seule fois. Un compte créé ici est toujours un manager, jamais un administrateur, ce rôle restant dans Payload avec ses verrous. Elle ne touche ni au rôle, ni au mot de passe d un compte existant, ni aux notifications que chacun choisit. La liste des modules vient du registre, donc un module ajouté au code y apparaît sans rien d autre à faire. Lecture et écriture avec les droits de la personne, `overrideAccess: false`, donc les règles de Users s appliquent une seconde fois |
 | Membre sans flux (16/09/2026) | Un compte qui a l acces au Hub mais aucun flux autorise voyait toutes les pages planter : la regle de lecture renvoyait « interdit », que Payload transforme en erreur. Elle renvoie desormais un filtre qui ne trouve rien, donc des listes vides. Trouve par Bryan sur la previsualisation Vercel |
 | Mot de passe depuis le profil (02/10/2026) | Un compte cree depuis Membres gardait a vie son mot de passe tire au hasard : aucun ecran pour le changer, l admin Payload n etant montree qu aux administrateurs. Le Profil porte un bloc Mot de passe : l actuel, puis le nouveau deux fois, huit caracteres au moins, different de l actuel. L actuel se verifie par une connexion Payload, donc memes echecs comptes et meme verrou qu a l entree, plus la limite par compte du Hub. La session en cours et celles des autres appareils restent ouvertes. La page Membres ne touche toujours pas au mot de passe d un compte existant |
+| Accueil en tableau de bord (03/10/2026) | L accueil ne listait que les modules et le perimetre, deja presents dans le menu et le Profil : ces deux panneaux sont retires, a la demande de Bryan. A la place, un bloc par module ouvert, du plus urgent au moins urgent : posts en retard (tous responsables), prochain match, trois prochains posts dont la personne est responsable, idees a voter (module calendrier) ; anniversaires des fiches actives sur une semaine glissante, aujourd hui compris, vue de Bruxelles (module joueurs) ; feuilles de stats vides des matchs joues (joueurs en edition) ; derniere diffusion et ecart avec la precedente (module direct). Chaque bloc lit ses donnees par les fonctions de son module, avec les memes regles que ses pages |
 
 ---
 

@@ -2,6 +2,16 @@
 
 L'espace privé du club, sur `/hub`. Calendrier des posts, matchs et entraînements, flux à s'abonner sur le téléphone, idées de contenu, rappels. Le cahier des charges et le journal des décisions sont dans `hub-cahier-des-charges.md`.
 
+## L'accueil
+
+La page `/hub` montre ce qui attend la personne, du plus urgent au moins urgent. Chaque bloc n'apparaît que si elle a le droit sur son module :
+
+- **Calendrier** : un bandeau rouge quand des posts sont en retard (date passée sans publication, tous responsables confondus), le prochain match du calendrier, ses trois prochains posts à faire (ceux dont elle est responsable) et le nombre d'idées qui attendent son vote.
+- **Joueurs** : les anniversaires des fiches actives, aujourd'hui et les six jours suivants. En édition seulement, les feuilles de stats des matchs joués qui restent vides.
+- **Direct** : la dernière diffusion, avec l'écart de spectateurs par rapport à la précédente.
+
+Les modules et les flux de la personne sont dans son Profil.
+
 ## Ajouter une personne et ses droits
 
 Tout se passe dans le Hub, page **Membres**, réservée aux administrateurs et accessible par le menu du compte, en bas de la barre latérale, ou par le profil sur téléphone.
