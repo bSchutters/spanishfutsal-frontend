@@ -14,17 +14,26 @@ import type { Article, Commande, ReglagesPack, StatutCommande } from "./schema";
 
 type Doc = Record<string, unknown> & { id: number | string };
 
+/** La remise generale du club, en pourcentage. */
+async function remiseGenerale(client: Payload): Promise<number> {
+  const doc = (await client.findGlobal({ slug: "pack-settings", depth: 0 })) as Record<string, unknown>;
+  return typeof doc.discount === "number" ? doc.discount : 0;
+}
+
 /** Le catalogue, les articles actifs d'abord, dans l'ordre choisi par le club. */
 export async function listerArticles(options: { actifsSeulement: boolean }, payload?: Payload): Promise<Article[]> {
   const client = payload ?? (await getPayloadClient());
-  const { docs } = await client.find({
-    collection: "pack-articles",
-    where: options.actifsSeulement ? { active: { equals: true } } : undefined,
-    sort: "sort_order",
-    limit: 300,
-    depth: 1,
-  });
-  const articles = (docs as Doc[]).map(articleDe);
+  const [{ docs }, remise] = await Promise.all([
+    client.find({
+      collection: "pack-articles",
+      where: options.actifsSeulement ? { active: { equals: true } } : undefined,
+      sort: "sort_order",
+      limit: 300,
+      depth: 1,
+    }),
+    remiseGenerale(client),
+  ]);
+  const articles = (docs as Doc[]).map((doc) => articleDe(doc, remise));
   return articles.sort(
     (a, b) => Number(b.actif) - Number(a.actif) || a.ordre - b.ordre || a.nom.localeCompare(b.nom, "fr"),
   );
@@ -33,7 +42,8 @@ export async function listerArticles(options: { actifsSeulement: boolean }, payl
 export async function chargerArticle(id: number, payload?: Payload): Promise<Article | null> {
   const client = payload ?? (await getPayloadClient());
   try {
-    return articleDe((await client.findByID({ collection: "pack-articles", id, depth: 1 })) as Doc);
+    const [doc, remise] = await Promise.all([client.findByID({ collection: "pack-articles", id, depth: 1 }), remiseGenerale(client)]);
+    return articleDe(doc as Doc, remise);
   } catch {
     return null;
   }
@@ -54,6 +64,7 @@ export async function chargerReglagesPack(payload?: Payload): Promise<ReglagesPa
   }
   return {
     ouvert: doc.open === true,
+    remise: typeof doc.discount === "number" ? doc.discount : 0,
     dateLimite: typeof doc.deadline === "string" ? versChampDate(doc.deadline) || null : null,
     jeton: String(doc.token ?? ""),
     motDePasse: typeof doc.password === "string" ? doc.password : "",

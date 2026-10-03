@@ -35,12 +35,28 @@ export type Variante = {
   photo: { id: number; url: string } | null;
 };
 
+/** Comment la remise s'applique a un article : la generale, aucune, ou la sienne. */
+export const MODES_REMISE = ["general", "none", "custom"] as const;
+export type ModeRemise = (typeof MODES_REMISE)[number];
+
+export const LIBELLES_MODE_REMISE: Record<ModeRemise, string> = {
+  general: "Remise générale",
+  none: "Sans remise",
+  custom: "Remise particulière",
+};
+
+export type RemiseArticle = { mode: ModeRemise; /** En pourcentage, pour une remise particuliere. */ taux: number | null };
+
 export type Article = {
   id: number;
   nom: string;
   /** La reference Joma du modele, « 104263 ». */
   reference: string;
   description: string;
+  /** Le prix du catalogue Joma. */
+  prixCatalogue: number;
+  remise: RemiseArticle;
+  /** Le prix que paie le joueur, calcule depuis le prix catalogue et la remise. */
   prix: number;
   tailles: string[];
   floquable: boolean;
@@ -54,6 +70,8 @@ export type PrixFlocage = { numero: number; nom: number };
 
 export type ReglagesPack = {
   ouvert: boolean;
+  /** La remise generale, en pourcentage. */
+  remise: number;
   /** « 2026-10-31 », dernier jour ou l'on peut commander, ou null. */
   dateLimite: string | null;
   jeton: string;
@@ -99,6 +117,9 @@ const obligatoire = (max: number, quoi: string) =>
   z.string().check(z.trim(), z.minLength(1, `${quoi} : obligatoire.`), z.maxLength(max, `${quoi} : trop long.`));
 const prix = (quoi: string) =>
   z.number(`${quoi} : un nombre.`).check(z.gte(0, `${quoi} : pas de prix négatif.`), z.lte(1000, `${quoi} : trop élevé.`));
+
+const pourcentage = (quoi: string) =>
+  z.number(`${quoi} : un nombre.`).check(z.gte(0, `${quoi} : pas de pourcentage négatif.`), z.lte(100, `${quoi} : 100 % au plus.`));
 
 /** Un numero de maillot : un ou deux chiffres, ou rien. */
 export const NUMERO_VALIDE = /^\d{1,2}$/;
@@ -167,7 +188,9 @@ export const schemaArticle = z
     nom: obligatoire(80, "Le nom"),
     reference: texteLibre(40, "La référence : 40 caractères au plus."),
     description: texteLibre(500, "La description : 500 caractères au plus."),
-    prix: prix("Le prix"),
+    prixCatalogue: prix("Le prix catalogue"),
+    modeRemise: z.enum(MODES_REMISE),
+    remiseParticuliere: z.nullable(pourcentage("La remise particulière")),
     tailles: z
       .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille : 20 caractères au plus.")))
       .check(z.minLength(1, "Indiquez au moins une taille."), z.maxLength(40, "Quarante tailles au plus.")),
@@ -185,6 +208,10 @@ export const schemaArticle = z
       .check(z.minLength(1, "Ajoutez au moins une couleur."), z.maxLength(12, "Douze couleurs au plus.")),
   })
   .check(
+    z.refine((a) => a.modeRemise !== "custom" || a.remiseParticuliere !== null, {
+      message: "Indiquez le pourcentage de la remise particulière.",
+      path: ["remiseParticuliere"],
+    }),
     z.refine((a) => a.variantes.length === 1 || a.variantes.every((v) => v.couleur !== ""), {
       message: "Avec plusieurs couleurs, chacune doit porter un nom.",
       path: ["variantes"],
@@ -203,6 +230,7 @@ export type SaisieArticle = z.infer<typeof schemaArticle>;
 /** Les reglages de la page des joueurs. */
 export const schemaReglagesPack = z.object({
   ouvert: z.boolean(),
+  remise: pourcentage("La remise générale"),
   dateLimite: z.nullable(z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/, "La date limite : jour, mois, année."))),
   motDePasse: z
     .string()

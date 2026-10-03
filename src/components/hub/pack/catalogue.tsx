@@ -12,12 +12,15 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerArticle } from "@/hub/actions/pack";
-import { formaterPrix, referenceComplete } from "@/hub/pack/calculs";
-import { lireTailles, type Article } from "@/hub/pack/schema";
+import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/pack/calculs";
+import { LIBELLES_MODE_REMISE, lireTailles, MODES_REMISE, type Article, type ModeRemise } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
+import ListeDeroulante from "./liste-deroulante";
 
 type Photo = { id: number; url: string } | null;
 type VarianteFormulaire = { cle: string; id: string | null; couleur: string; codeCouleur: string; photo: Photo };
+
+const nombreSaisi = (texte: string) => (texte.trim() === "" ? NaN : Number(texte.replace(",", ".")));
 
 let compteur = 0;
 const nouvelleCle = () => `v${++compteur}`;
@@ -87,17 +90,27 @@ function DepotPhoto({ photo, nom, onChange }: { photo: Photo; nom: string; onCha
 
 function FicheArticle({
   article,
+  remiseGenerale,
   onFermer,
   onEnregistre,
 }: {
   article: Article | null;
+  remiseGenerale: number;
   onFermer: () => void;
   onEnregistre: (article: Article) => void;
 }) {
   const [nom, setNom] = useState(article?.nom ?? "");
   const [reference, setReference] = useState(article?.reference ?? "");
   const [description, setDescription] = useState(article?.description ?? "");
-  const [prix, setPrix] = useState(article ? String(article.prix).replace(".", ",") : "");
+  const [prixCatalogue, setPrixCatalogue] = useState(article ? String(article.prixCatalogue).replace(".", ",") : "");
+  const [modeRemise, setModeRemise] = useState<ModeRemise>(article?.remise.mode ?? "general");
+  const [remiseParticuliere, setRemiseParticuliere] = useState(
+    article?.remise.taux !== null && article?.remise.taux !== undefined ? String(article.remise.taux).replace(".", ",") : "",
+  );
+  const remiseSaisie = {
+    mode: modeRemise,
+    taux: Number.isFinite(nombreSaisi(remiseParticuliere)) ? nombreSaisi(remiseParticuliere) : null,
+  };
   const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
   const [floquable, setFloquable] = useState(article?.floquable ?? false);
   const [actif, setActif] = useState(article?.actif ?? true);
@@ -119,7 +132,9 @@ function FicheArticle({
       nom,
       reference,
       description,
-      prix: Number(prix.replace(",", ".")),
+      prixCatalogue: nombreSaisi(prixCatalogue),
+      modeRemise,
+      remiseParticuliere: modeRemise === "custom" ? nombreSaisi(remiseParticuliere) : null,
       tailles: lireTailles(tailles),
       floquable,
       actif,
@@ -158,9 +173,16 @@ function FicheArticle({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-prix">Prix (€)</Label>
-            <Input id="article-prix" inputMode="decimal" value={prix} onChange={(e) => setPrix(e.target.value)} required className="h-10" />
-            <p className="text-xs text-muted-foreground">Logo du club compris.</p>
+            <Label htmlFor="article-prix">Prix catalogue (€)</Label>
+            <Input
+              id="article-prix"
+              inputMode="decimal"
+              value={prixCatalogue}
+              onChange={(e) => setPrixCatalogue(e.target.value)}
+              required
+              className="h-10"
+            />
+            <p className="text-xs text-muted-foreground">Le prix Joma, logo du club compris.</p>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="article-tailles">Tailles</Label>
@@ -168,6 +190,42 @@ function FicheArticle({
             <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
           </div>
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="article-remise">Remise</Label>
+            <ListeDeroulante
+              id="article-remise"
+              value={modeRemise}
+              onChange={(e) => setModeRemise(e.target.value as ModeRemise)}
+              className="h-10"
+            >
+              {MODES_REMISE.map((m) => (
+                <option key={m} value={m}>
+                  {m === "general" ? `${LIBELLES_MODE_REMISE[m]} (${remiseGenerale.toLocaleString("fr-BE")} %)` : LIBELLES_MODE_REMISE[m]}
+                </option>
+              ))}
+            </ListeDeroulante>
+          </div>
+          {modeRemise === "custom" ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="article-remise-particuliere">Remise de cet article (%)</Label>
+              <Input
+                id="article-remise-particuliere"
+                inputMode="decimal"
+                value={remiseParticuliere}
+                onChange={(e) => setRemiseParticuliere(e.target.value)}
+                required
+                className="h-10"
+              />
+            </div>
+          ) : null}
+        </div>
+        {Number.isFinite(nombreSaisi(prixCatalogue)) ? (
+          <p className="rounded-md bg-secondary/50 px-3 py-2 text-sm">
+            Prix joueur : <span className="font-semibold tabular-nums">{formaterPrix(prixJoueur(nombreSaisi(prixCatalogue), remiseSaisie, remiseGenerale))}</span>
+            <span className="text-muted-foreground"> (remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %)</span>
+          </p>
+        ) : null}
         <label className="flex cursor-pointer items-center justify-between gap-4">
           <span>
             <span className="block text-sm font-medium">Floquable</span>
@@ -267,7 +325,15 @@ function FicheArticle({
  * Le catalogue du Pack : les articles actifs, puis ceux retires, estompes.
  * Un clic ouvre la fiche ; en lecture seule, la liste ne s'ouvre pas.
  */
-export default function Catalogue({ articles: initiaux, peutEditer }: { articles: Article[]; peutEditer: boolean }) {
+export default function Catalogue({
+  articles: initiaux,
+  peutEditer,
+  remiseGenerale,
+}: {
+  articles: Article[];
+  peutEditer: boolean;
+  remiseGenerale: number;
+}) {
   const [articles, setArticles] = useState(initiaux);
   const [ouverture, setOuverture] = useState<{ ouvert: boolean; article: Article | null; cle: number }>({
     ouvert: false,
@@ -330,7 +396,12 @@ export default function Catalogue({ articles: initiaux, peutEditer }: { articles
                   </span>
                 </span>
                 {!a.actif ? <Etiquette>Retiré</Etiquette> : null}
-                <span className="shrink-0 text-sm font-semibold tabular-nums">{formaterPrix(a.prix)}</span>
+                <span className="shrink-0 text-right tabular-nums">
+                  <span className="block text-sm font-semibold">{formaterPrix(a.prix)}</span>
+                  {a.prix !== a.prixCatalogue ? (
+                    <span className="block text-[11px] text-muted-foreground line-through">{formaterPrix(a.prixCatalogue)}</span>
+                  ) : null}
+                </span>
               </button>
             </li>
           ))}
@@ -345,7 +416,13 @@ export default function Catalogue({ articles: initiaux, peutEditer }: { articles
           </SheetHeader>
           {/* Garde la fiche pendant l'animation de fermeture ; la cle la remonte a chaque ouverture. */}
           {ouverture.cle > 0 ? (
-            <FicheArticle key={ouverture.cle} article={ouverture.article} onFermer={fermer} onEnregistre={enregistre} />
+            <FicheArticle
+              key={ouverture.cle}
+              article={ouverture.article}
+              remiseGenerale={remiseGenerale}
+              onFermer={fermer}
+              onEnregistre={enregistre}
+            />
           ) : null}
         </SheetContent>
       </Sheet>

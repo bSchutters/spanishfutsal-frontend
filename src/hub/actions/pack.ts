@@ -47,7 +47,9 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
     name: s.nom,
     reference: s.reference,
     description: s.description,
-    price: s.prix,
+    price: s.prixCatalogue,
+    discount_mode: s.modeRemise,
+    custom_discount: s.modeRemise === "custom" ? s.remiseParticuliere : null,
     sizes: s.tailles,
     flockable: s.floquable,
     active: s.actif,
@@ -91,6 +93,7 @@ export async function enregistrerReglagesPack(saisie: unknown): Promise<Resultat
       slug: "pack-settings",
       data: {
         open: s.ouvert,
+        discount: s.remise,
         deadline: s.dateLimite ? jourEnDate(s.dateLimite) : null,
         password: s.motDePasse,
         flock_number_price: s.prixNumero,

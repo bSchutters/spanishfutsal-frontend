@@ -33,6 +33,7 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
   const [ouvert, setOuvert] = useState(reglages.ouvert);
   const [dateLimite, setDateLimite] = useState(reglages.dateLimite ?? "");
   const [motDePasse, setMotDePasse] = useState(reglages.motDePasse);
+  const [remise, setRemise] = useState(String(reglages.remise).replace(".", ","));
   const [prixNumero, setPrixNumero] = useState(String(reglages.flocage.numero));
   const [prixNom, setPrixNom] = useState(String(reglages.flocage.nom));
   const [confirmation, setConfirmation] = useState(false);
@@ -44,6 +45,7 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
     lancer(async () => {
       const r = await enregistrerReglagesPack({
         ouvert,
+        remise: Number(remise.replace(",", ".") || "0"),
         dateLimite: dateLimite || null,
         motDePasse,
         prixNumero: Number(prixNumero.replace(",", ".")),
@@ -91,6 +93,13 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
               className="h-10"
             />
             <p className="text-xs text-muted-foreground">À donner aux joueurs avec le lien. Le changer les déconnecte tous.</p>
+          </div>
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <Label htmlFor="pack-remise">Remise générale (%)</Label>
+            <Input id="pack-remise" inputMode="decimal" value={remise} onChange={(e) => setRemise(e.target.value)} className="h-10 sm:max-w-40" />
+            <p className="text-xs text-muted-foreground">
+              Déduite du prix catalogue de chaque article. Un article peut en être exclu, ou avoir la sienne, dans sa fiche.
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="pack-prix-numero">Flocage du numéro (€)</Label>

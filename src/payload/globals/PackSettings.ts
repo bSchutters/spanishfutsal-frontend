@@ -31,6 +31,16 @@ export const PackSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'discount',
+      type: 'number',
+      required: true,
+      defaultValue: 0,
+      min: 0,
+      max: 100,
+      label: 'Remise generale (%)',
+      admin: { description: 'Deduite du prix catalogue de chaque article, sauf exception sur l article.' },
+    },
+    {
       name: 'token',
       type: 'text',
       label: 'Jeton du lien',

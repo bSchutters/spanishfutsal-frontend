@@ -1,4 +1,4 @@
-import type { Article, Commande, LigneCommande, LigneSaisie, PrixFlocage } from "./schema";
+import type { Article, Commande, LigneCommande, LigneSaisie, PrixFlocage, RemiseArticle } from "./schema";
 
 /**
  * Les calculs du Pack : le prix d'une ligne, la commande construite depuis
@@ -24,6 +24,27 @@ export function resumeLigne(l: { article: string; couleur: string; taille: strin
 /** La reference complete chez Joma : le modele, un point, le code couleur, « 104263.339 ». */
 export function referenceComplete(reference: string, codeCouleur: string): string {
   return [reference.trim(), codeCouleur.trim()].filter(Boolean).join(".");
+}
+
+/** Le pourcentage de remise d'un article : le general, aucun, ou le sien. */
+export function tauxRemise(remise: RemiseArticle, remiseGenerale: number): number {
+  if (remise.mode === "none") return 0;
+  if (remise.mode === "custom") return remise.taux ?? 0;
+  return remiseGenerale;
+}
+
+/** Un prix apres remise, arrondi au centime. */
+export function prixApresRemise(prixCatalogue: number, taux: number): number {
+  return enEuros(Math.round((enCentimes(prixCatalogue) * (100 - taux)) / 100));
+}
+
+/**
+ * Le prix que paie le joueur pour un article, flocage non compris : le prix
+ * catalogue, remise du club deduite. C'est la seule regle a changer si le
+ * club decidait de garder la remise pour lui.
+ */
+export function prixJoueur(prixCatalogue: number, remise: RemiseArticle, remiseGenerale: number): number {
+  return prixApresRemise(prixCatalogue, tauxRemise(remise, remiseGenerale));
 }
 
 /** Le prix d'une piece : l'article, plus le numero et le nom s'ils sont floques. */

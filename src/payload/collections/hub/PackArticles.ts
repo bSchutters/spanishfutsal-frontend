@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminSeulement, editionModule, lectureModule } from '@/hub/droits'
+import { LIBELLES_MODE_REMISE, MODES_REMISE } from '@/hub/pack/schema'
 import { adminHub } from './partage'
 
 /**
@@ -8,6 +9,9 @@ import { adminHub } from './partage'
  * commander. Une couleur est une variante de l'article, avec son code
  * couleur Joma et sa photo : la reference complete chez Joma est celle du
  * modele, un point, le code couleur (« 104263.339 »).
+ *
+ * Le prix est celui du catalogue Joma. Le joueur paie ce prix moins la
+ * remise du club : la generale des reglages, aucune, ou celle de l'article.
  *
  * Un article ne se supprime pas depuis le Hub : on le retire en decochant
  * Actif, il quitte la page des joueurs et reste dans les commandes deja
@@ -45,9 +49,31 @@ export const PackArticles: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'price', type: 'number', required: true, min: 0, label: 'Prix (EUR)', admin: { width: '33%', step: 0.01 } },
+        { name: 'price', type: 'number', required: true, min: 0, label: 'Prix catalogue (EUR)', admin: { width: '33%', step: 0.01 } },
         { name: 'flockable', type: 'checkbox', defaultValue: false, label: 'Floquable', admin: { width: '33%' } },
         { name: 'active', type: 'checkbox', defaultValue: true, label: 'Actif', admin: { width: '33%' } },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'discount_mode',
+          type: 'select',
+          required: true,
+          defaultValue: 'general',
+          label: 'Remise',
+          options: MODES_REMISE.map((value) => ({ label: LIBELLES_MODE_REMISE[value], value })),
+          admin: { width: '50%' },
+        },
+        {
+          name: 'custom_discount',
+          type: 'number',
+          min: 0,
+          max: 100,
+          label: 'Remise particuliere (%)',
+          admin: { width: '50%', condition: (data) => data?.discount_mode === 'custom' },
+        },
       ],
     },
     {

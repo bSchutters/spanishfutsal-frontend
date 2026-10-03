@@ -28,7 +28,7 @@ export default async function PageCatalogue() {
       ) : (
         <Avis>{reglages.ouvert ? "Les commandes sont ouvertes." : "Les commandes sont fermées."}</Avis>
       )}
-      <Catalogue articles={articles} peutEditer={edition} />
+      <Catalogue articles={articles} peutEditer={edition} remiseGenerale={reglages.remise} />
     </>
   );
 }

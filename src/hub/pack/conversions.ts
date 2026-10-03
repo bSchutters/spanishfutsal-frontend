@@ -1,5 +1,15 @@
 import { versChampDate } from "@/hub/dates";
-import { STATUTS_COMMANDE, type Article, type Commande, type LigneCommande, type StatutCommande, type Variante } from "./schema";
+import { prixJoueur } from "./calculs";
+import {
+  MODES_REMISE,
+  STATUTS_COMMANDE,
+  type Article,
+  type Commande,
+  type LigneCommande,
+  type ModeRemise,
+  type StatutCommande,
+  type Variante,
+} from "./schema";
 
 /**
  * Les documents Payload du Pack traduits dans les formes du module. Pures,
@@ -17,15 +27,21 @@ function photoDe(photo: unknown): Variante["photo"] {
     : null;
 }
 
-export function articleDe(doc: Doc): Article {
+/** Un article du catalogue ; `remiseGenerale` sert a calculer le prix du joueur. */
+export function articleDe(doc: Doc, remiseGenerale = 0): Article {
   const tailles = Array.isArray(doc.sizes) ? doc.sizes.filter((t): t is string => typeof t === "string" && t.trim() !== "") : [];
   const variantes = Array.isArray(doc.variants) ? (doc.variants as Doc[]) : [];
+  const prixCatalogue = nombre(doc.price);
+  const mode = MODES_REMISE.includes(doc.discount_mode as ModeRemise) ? (doc.discount_mode as ModeRemise) : "general";
+  const remise = { mode, taux: typeof doc.custom_discount === "number" ? doc.custom_discount : null };
   return {
     id: Number(doc.id),
     nom: texte(doc.name),
     reference: texte(doc.reference),
     description: texte(doc.description),
-    prix: nombre(doc.price),
+    prixCatalogue,
+    remise,
+    prix: prixJoueur(prixCatalogue, remise, remiseGenerale),
     tailles: tailles.map((t) => t.trim()),
     floquable: doc.flockable === true,
     actif: doc.active !== false,

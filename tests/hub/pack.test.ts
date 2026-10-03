@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { accesValide, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
-import { construireLignes, dateLimitePassee, prixUnitaire, recapJoma, referenceComplete, totalDes } from "@/hub/pack/calculs";
+import {
+  construireLignes,
+  dateLimitePassee,
+  prixJoueur,
+  prixUnitaire,
+  recapJoma,
+  referenceComplete,
+  tauxRemise,
+  totalDes,
+} from "@/hub/pack/calculs";
+import { articleDe } from "@/hub/pack/conversions";
 import {
   lireTailles,
   schemaArticle,
@@ -23,6 +33,8 @@ const maillot: Article = {
   nom: "Maillot de match",
   reference: "104263",
   description: "",
+  prixCatalogue: 35,
+  remise: { mode: "general", taux: null },
   prix: 35,
   tailles: ["S", "M", "L", "XL"],
   floquable: true,
@@ -39,6 +51,8 @@ const sac: Article = {
   nom: "Sac",
   reference: "400486",
   description: "",
+  prixCatalogue: 19.9,
+  remise: { mode: "none", taux: null },
   prix: 19.9,
   tailles: ["Unique"],
   floquable: false,
@@ -65,6 +79,29 @@ describe("référence Joma", () => {
     expect(referenceComplete("104263", "339")).toBe("104263.339");
     expect(referenceComplete(" 104263 ", "")).toBe("104263");
     expect(referenceComplete("", "339")).toBe("339");
+  });
+});
+
+describe("remise", () => {
+  it("prend la remise générale, aucune, ou celle de l'article", () => {
+    expect(tauxRemise({ mode: "general", taux: null }, 30)).toBe(30);
+    expect(tauxRemise({ mode: "none", taux: 50 }, 30)).toBe(0);
+    expect(tauxRemise({ mode: "custom", taux: 10 }, 30)).toBe(10);
+  });
+
+  it("déduit la remise du prix catalogue, arrondi au centime", () => {
+    expect(prixJoueur(59.95, { mode: "general", taux: null }, 30)).toBe(41.97);
+    expect(prixJoueur(59.95, { mode: "none", taux: null }, 30)).toBe(59.95);
+    expect(prixJoueur(59.95, { mode: "custom", taux: 10 }, 30)).toBe(53.96);
+  });
+
+  it("calcule le prix du joueur à la lecture d'un article", () => {
+    const article = articleDe(
+      { id: 7, name: "Maillot", price: 59.95, discount_mode: "custom", custom_discount: 10, variants: [], sizes: ["M"] },
+      30,
+    );
+    expect([article.prixCatalogue, article.prix]).toEqual([59.95, 53.96]);
+    expect(articleDe({ id: 8, name: "Sac", price: 20, variants: [] }, 25).prix).toBe(15);
   });
 });
 
@@ -171,7 +208,9 @@ describe("saisies", () => {
       nom: "Short",
       reference: "",
       description: "",
-      prix: 20,
+      prixCatalogue: 20,
+      modeRemise: "general" as const,
+      remiseParticuliere: null,
       tailles: ["M"],
       floquable: false,
       actif: true,
@@ -182,6 +221,24 @@ describe("saisies", () => {
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);
     expect(schemaArticle.safeParse({ ...article, variantes: [article.variantes[0]] }).success).toBe(true);
+  });
+
+  it("demande le pourcentage d'une remise particulière", () => {
+    const article = {
+      id: null,
+      nom: "Short",
+      reference: "",
+      description: "",
+      prixCatalogue: 20,
+      modeRemise: "custom" as const,
+      remiseParticuliere: null,
+      tailles: ["M"],
+      floquable: false,
+      actif: true,
+      variantes: [{ id: null, couleur: "", codeCouleur: "", photoId: null }],
+    };
+    expect(schemaArticle.safeParse(article).success).toBe(false);
+    expect(schemaArticle.safeParse({ ...article, remiseParticuliere: 15 }).success).toBe(true);
   });
 
   it("lit une liste de tailles séparées par des virgules ou des lignes", () => {

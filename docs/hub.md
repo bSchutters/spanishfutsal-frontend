@@ -19,9 +19,11 @@ Le module **Pack** rassemble les commandes d'articles Joma sans compte pour les 
 
 **Préparer la page des joueurs**, onglet Catalogue :
 
-1. Ajouter les articles : nom, référence Joma du modèle (104263), prix (logo du club compris), tailles séparées par des virgules, floquable ou non, puis une ou plusieurs couleurs, chacune avec son code couleur Joma (339) et sa photo. La référence complète, 104263.339, se compose toute seule pour les commandes et le PDF. Décocher « Dans le catalogue » retire un article de la page sans le sortir des commandes déjà passées.
-2. Dans le bloc **Page des joueurs** : choisir un mot de passe, vérifier les prix des flocages (numéro et nom), mettre une date limite si besoin, puis cocher **Commandes ouvertes**. Sans mot de passe, personne n'entre.
+1. Ajouter les articles : nom, référence Joma du modèle (104263), prix catalogue Joma (logo du club compris), remise (la générale, aucune, ou une remise propre à l'article), tailles séparées par des virgules, floquable ou non, puis une ou plusieurs couleurs, chacune avec son code couleur Joma (339) et sa photo. La référence complète, 104263.339, se compose toute seule pour les commandes et le PDF. Décocher « Dans le catalogue » retire un article de la page sans le sortir des commandes déjà passées.
+2. Dans le bloc **Page des joueurs** : régler la **remise générale** (en %), choisir un mot de passe, vérifier les prix des flocages (numéro et nom), mettre une date limite si besoin, puis cocher **Commandes ouvertes**. Sans mot de passe, personne n'entre.
 3. Partager le **lien** (ou son QR code) et le mot de passe dans le groupe. **Nouveau lien** coupe aussitôt l'ancien ; changer le mot de passe oblige chacun à le retaper.
+
+Le joueur paie le prix catalogue moins la remise de l'article, arrondi au centime ; la page lui montre le prix catalogue barré. Les flocages gardent leur prix, sans remise.
 
 **Côté joueur**, la page `/pack/…` demande le mot de passe, puis : le nom dans la liste de l'effectif (ou « Autre »), les articles avec couleur, taille, quantité et flocage, un téléphone ou un e-mail. Une même personne peut envoyer plusieurs commandes. Rien ne se modifie après l'envoi : le joueur prévient le club.
 

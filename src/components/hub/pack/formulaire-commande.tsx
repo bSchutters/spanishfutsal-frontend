@@ -56,7 +56,12 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
         <div>
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="text-base font-semibold">{article.nom}</h3>
-            <span className="shrink-0 text-sm font-semibold tabular-nums">{formaterPrix(article.prix)}</span>
+            <span className="shrink-0 text-right tabular-nums">
+              {article.prix < article.prixCatalogue ? (
+                <span className="mr-1.5 text-xs text-muted-foreground line-through">{formaterPrix(article.prixCatalogue)}</span>
+              ) : null}
+              <span className="text-sm font-semibold">{formaterPrix(article.prix)}</span>
+            </span>
           </div>
           {article.description ? <p className="mt-1 text-xs text-muted-foreground">{article.description}</p> : null}
         </div>
