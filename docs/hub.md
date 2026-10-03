@@ -17,7 +17,9 @@ Les modules et les flux de la personne sont dans son Profil.
 
 Le module **Pack** rassemble les commandes d'articles Joma sans compte pour les joueurs ni paiement en ligne. Il s'ouvre à une personne depuis la page Membres, comme les autres modules.
 
-**Préparer la page des joueurs**, onglet Catalogue :
+Le module a deux entrées dans le menu, **Commandes** et **Catalogue**.
+
+**Préparer la page des joueurs**, page Catalogue :
 
 1. Ajouter les articles : nom, référence Joma du modèle (104263), prix catalogue Joma (logo du club compris), remise (la générale, aucune, ou une remise propre à l'article), tailles séparées par des virgules, floquable ou non, puis une ou plusieurs couleurs, chacune avec son code couleur Joma (339) et jusqu'à dix photos (la première est la principale, l'étoile en désigne une autre). La référence complète, 104263.339, se compose toute seule pour les commandes et le PDF. Décocher « Dans le catalogue » cache un article de la page des joueurs ; **Supprimer**, dans sa fiche, le retire pour de bon. Dans les deux cas, les commandes déjà passées gardent leurs lignes (nom, référence, prix).
 2. Dans le bloc **Page des joueurs** : régler la **remise générale** (en %), choisir un mot de passe, vérifier les prix des flocages (numéro et nom), mettre une date limite si besoin, puis cocher **Commandes ouvertes**. Sans mot de passe, personne n'entre.
@@ -25,9 +27,9 @@ Le module **Pack** rassemble les commandes d'articles Joma sans compte pour les 
 
 Le joueur paie le prix catalogue moins la remise de l'article, arrondi au centime ; la page lui montre le prix catalogue barré. Les flocages gardent leur prix, sans remise.
 
-**Côté joueur**, la page `/pack/…` demande le mot de passe, puis : le nom dans la liste de l'effectif (ou « Autre »), les articles avec leurs photos, couleur, taille, quantité, et un interrupteur Flocage qui fait apparaître le numéro et le nom, un téléphone ou un e-mail. Une même personne peut envoyer plusieurs commandes. Rien ne se modifie après l'envoi : le joueur prévient le club.
+**Côté joueur**, la page `/pack/…` demande le mot de passe, puis : le nom dans la liste de l'effectif (ou « Autre »), les articles avec leurs photos en diaporama (on glisse ou on clique sur les flèches), couleur, taille, quantité, et un interrupteur Flocage qui fait apparaître le numéro et le nom, un téléphone ou un e-mail. Une même personne peut envoyer plusieurs commandes. Rien ne se modifie après l'envoi : le joueur prévient le club.
 
-**Traiter les commandes**, onglet Commandes : elles arrivent en « Reçue ». Un clic ouvre une commande, que le club corrige (taille, quantité, flocage, articles, coordonnées, statut) ; une ligne qui ne change pas de nature garde son prix d'origine. Pour commander chez Joma, cocher les commandes, **Préparer la commande Joma**, décocher les articles à garder pour plus tard, **Télécharger le PDF** (quantités par référence, couleur et taille, puis les flocages, sans prix ni noms de joueurs), puis **Marquer commandées**. Ensuite, passer chaque commande en « Livrée » à la distribution. Une commande abandonnée passe en « Annulée ».
+**Traiter les commandes**, page Commandes : elles arrivent en « Reçue ». Un clic ouvre une commande, que le club corrige (taille, quantité, flocage, articles, coordonnées, statut) ; une ligne qui ne change pas de nature garde son prix d'origine. Pour commander chez Joma, cocher les commandes, **Préparer la commande Joma**, décocher les articles à garder pour plus tard, **Télécharger le PDF** (quantités par référence, couleur et taille, puis les flocages, sans prix ni noms de joueurs), puis **Marquer commandées**. Ensuite, passer chaque commande en « Livrée » à la distribution. Une commande abandonnée passe en « Annulée ».
 
 ## Ajouter une personne et ses droits
 

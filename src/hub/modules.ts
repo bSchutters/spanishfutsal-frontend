@@ -22,7 +22,7 @@ export const LIBELLES_NIVEAUX: Record<Niveau, string> = {
 
 export type IconeModule = "calendar-days" | "users" | "radio" | "shopping-bag";
 export type IconeEntree =
-  IconeModule | "list-todo" | "lightbulb" | "chart-column";
+  IconeModule | "list-todo" | "lightbulb" | "chart-column" | "shirt";
 
 export type EntreeModule = { nom: string; route: string; icone: IconeEntree };
 
@@ -76,9 +76,12 @@ export const MODULES = [
     key: "pack",
     nom: "Pack",
     description: "Le catalogue Joma du club et les commandes des joueurs.",
-    route: "/hub/pack",
+    route: "/hub/pack/commandes",
     icone: "shopping-bag",
-    navigation: [{ nom: "Pack", route: "/hub/pack", icone: "shopping-bag" }],
+    navigation: [
+      { nom: "Commandes", route: "/hub/pack/commandes", icone: "shopping-bag" },
+      { nom: "Catalogue", route: "/hub/pack/catalogue", icone: "shirt" },
+    ],
   },
 ] as const satisfies ReadonlyArray<ModuleHub>;
 

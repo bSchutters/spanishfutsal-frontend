@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Plus, Shirt, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
 import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
-import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type Photo, type PrixFlocage } from "@/hub/pack/schema";
+import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
+import DiaporamaPhotos from "./diaporama-photos";
 import ListeDeroulante from "./liste-deroulante";
 
 type Personne = { id: number; nom: string };
@@ -20,44 +21,6 @@ type LignePanier = LigneSaisie & { cle: string };
 let compteur = 0;
 const nouvelleCle = () => `p${++compteur}`;
 const AUTRE = "autre";
-
-/** Les photos d'une couleur : la grande, et les vignettes pour passer de l'une a l'autre. */
-function Galerie({ photos, legende }: { photos: Photo[]; legende: string }) {
-  const [vue, setVue] = useState(0);
-  const affichee = photos[Math.min(vue, photos.length - 1)];
-  return (
-    <div className="flex flex-col bg-white/5">
-      <div className="flex aspect-[4/3] items-center justify-center">
-        {affichee ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={affichee.url} alt={legende} className="size-full object-contain" />
-        ) : (
-          <Shirt className="size-10 text-muted-foreground" aria-hidden="true" />
-        )}
-      </div>
-      {photos.length > 1 ? (
-        <div className="flex gap-1.5 overflow-x-auto px-2 pb-2">
-          {photos.map((p, rang) => (
-            <button
-              key={p.id}
-              type="button"
-              aria-label={`Photo ${rang + 1} sur ${photos.length}`}
-              aria-pressed={rang === vue}
-              onClick={() => setVue(rang)}
-              className={cn(
-                "size-12 shrink-0 overflow-hidden rounded-md border-2 bg-white/5 transition-colors",
-                rang === vue ? "border-primary" : "border-transparent opacity-70 hover:opacity-100",
-              )}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.url} alt="" className="size-full object-cover" />
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 /** Une carte du catalogue : couleur, taille, quantite et flocage, puis « Ajouter ». */
 function CarteArticle({ article, flocage, onAjouter }: { article: Article; flocage: PrixFlocage; onAjouter: (ligne: LignePanier) => void }) {
@@ -103,8 +66,8 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
 
   return (
     <li className="flex flex-col overflow-hidden rounded-lg border border-border bg-card">
-      {/* La cle remet la galerie sur la photo principale a chaque changement de couleur. */}
-      <Galerie key={variante?.id} photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} />
+      {/* La cle remet le diaporama sur la photo principale a chaque changement de couleur. */}
+      <DiaporamaPhotos key={variante?.id} photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
           <div className="flex items-baseline justify-between gap-3">

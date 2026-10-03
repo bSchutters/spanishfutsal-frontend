@@ -253,9 +253,9 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
           </Panneau>
         ) : null}
         {blocs.pack ? (
-          <Panneau titre="Pack" actions={<ToutVoir href="/hub/pack?statut=toutes" />}>
+          <Panneau titre="Pack" actions={<ToutVoir href="/hub/pack/commandes?statut=toutes" />}>
             {accueil.commandesRecues > 0 ? (
-              <Link href="/hub/pack" className={LIEN}>
+              <Link href="/hub/pack/commandes" className={LIEN}>
                 <Icone>
                   <ShoppingBag className="size-4" />
                 </Icone>

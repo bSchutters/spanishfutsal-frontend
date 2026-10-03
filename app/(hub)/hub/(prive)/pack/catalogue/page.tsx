@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { Avis, EnTetePage } from "@/components/hub/mise-en-page";
 import Catalogue from "@/components/hub/pack/catalogue";
-import OngletsPack from "@/components/hub/pack/onglets-pack";
 import ReglagesPackForm from "@/components/hub/pack/reglages-pack";
 import { peutEditer } from "@/hub/droits";
 import { baseUrlHub } from "@/hub/flux/base-url";
@@ -22,7 +21,7 @@ export default async function PageCatalogue() {
 
   return (
     <>
-      <EnTetePage titre="Pack" description="Le catalogue Joma et la page de commande des joueurs." actions={<OngletsPack actif="catalogue" />} />
+      <EnTetePage titre="Catalogue" description="Les articles Joma et la page de commande des joueurs." />
       {edition ? (
         <ReglagesPackForm reglages={reglages} baseUrl={baseUrlHub()} />
       ) : (
