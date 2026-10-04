@@ -37,7 +37,9 @@ export const COULEURS_FLOCAGE_DEFAUT: CouleursFlocage = { remplissage: "#fdd700"
  * Ou poser le flocage sur la photo de dos, en pourcentage de l'image (carree) :
  * le centre vertical et la hauteur des lettres, pour le nom et le numero ;
  * puis les sponsors du club (src/hub/pack/sponsors.ts), Sofexia au-dessus du
- * numero et Wabee en dessous, avec leur centre vertical et une largeur commune.
+ * numero et Wabee en dessous, avec leur centre vertical et une largeur commune ;
+ * enfin le logo du club sur la face avant, sur la photo principale de chaque
+ * couleur : son centre et son diametre.
  */
 export type DispositionFlocage = {
   nomY: number;
@@ -48,10 +50,14 @@ export type DispositionFlocage = {
   sponsorHautY: number;
   sponsorBasY: number;
   sponsorLargeur: number;
+  logoAvant: boolean;
+  logoX: number;
+  logoY: number;
+  logoTaille: number;
 };
 
 /** Les reglages chiffres de la disposition, ceux des curseurs. */
-export type CoteDisposition = Exclude<keyof DispositionFlocage, "sponsors">;
+export type CoteDisposition = Exclude<keyof DispositionFlocage, "sponsors" | "logoAvant">;
 
 /**
  * Calees sur la photo de dos d'un maillot Joma a plat, le nom sous le numero
@@ -66,6 +72,11 @@ export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = {
   sponsorHautY: 19,
   sponsorBasY: 72,
   sponsorLargeur: 24,
+  // Le logo sur la poitrine opposee a celui de Joma, sur la photo de face d'un maillot Joma.
+  logoAvant: false,
+  logoX: 62,
+  logoY: 25,
+  logoTaille: 9,
 };
 
 /** Une couleur d'un article, avec son code couleur Joma et ses photos. */
@@ -257,6 +268,10 @@ export const schemaArticle = z
       sponsorHautY: z.optional(pourcentage("La position de Sofexia")),
       sponsorBasY: z.optional(pourcentage("La position de Wabee")),
       sponsorLargeur: z.optional(pourcentage("La largeur des sponsors")),
+      logoAvant: z.optional(z.boolean("Le logo sur la face avant : oui ou non.")),
+      logoX: z.optional(pourcentage("La position du logo")),
+      logoY: z.optional(pourcentage("La hauteur du logo")),
+      logoTaille: z.optional(pourcentage("La taille du logo")),
     }),
     actif: z.boolean(),
     variantes: z

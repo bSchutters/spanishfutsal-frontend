@@ -2,7 +2,7 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Shirt } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useState, type ReactNode } from "react";
 
 import type { Photo } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
@@ -13,19 +13,19 @@ import { cn } from "@/lib/utils";
  * image entiere sans recadrage. Une seule photo : ni fleches ni points.
  *
  * `allerA` amene le diaporama sur une photo (la vue de dos quand on active le
- * flocage) ; `calque` pose un contenu par-dessus une photo (l'apercu du
- * flocage).
+ * flocage) ; `calques` posent un contenu par-dessus des photos (le logo sur
+ * la face avant, l'apercu du flocage sur le dos).
  */
 export default function DiaporamaPhotos({
   photos,
   legende,
   allerA = null,
-  calque = null,
+  calques = [],
 }: {
   photos: Photo[];
   legende: string;
   allerA?: number | null;
-  calque?: { index: number; contenu: ReactNode } | null;
+  calques?: { index: number; contenu: ReactNode }[];
 }) {
   const plusieurs = photos.length > 1;
   const [viewport, api] = useEmblaCarousel({ loop: plusieurs, active: plusieurs });
@@ -86,7 +86,7 @@ export default function DiaporamaPhotos({
                 draggable={false}
                 className="size-full select-none object-contain"
               />
-              {calque && calque.index === rang ? calque.contenu : null}
+              {calques.map((calque, n) => (calque.index === rang ? <Fragment key={n}>{calque.contenu}</Fragment> : null))}
             </div>
           ))}
         </div>

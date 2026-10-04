@@ -481,6 +481,13 @@ describe("aperçu du flocage", () => {
     expect(dispositionDe(lecture.data.dispositionFlocage)).toEqual({ ...DISPOSITION_FLOCAGE_DEFAUT, ...ancienne });
   });
 
+  it("laisse le logo de la face avant éteint tant qu'on ne l'a pas ajouté", () => {
+    const sans = articleDe({ id: 14, name: "Short", price: 20, variants: [{ id: "v" }] });
+    expect(sans.dispositionFlocage.logoAvant).toBe(false);
+    const avec = articleDe({ id: 15, name: "Polo", price: 25, flock_layout: { logoAvant: true, logoX: 70, logoTaille: "grand" }, variants: [{ id: "v" }] });
+    expect(avec.dispositionFlocage).toMatchObject({ logoAvant: true, logoX: 70, logoY: DISPOSITION_FLOCAGE_DEFAUT.logoY, logoTaille: DISPOSITION_FLOCAGE_DEFAUT.logoTaille });
+  });
+
   it("choisit la version des sponsors d'après la couleur des lettres", () => {
     // Lettres jaunes sur le maillot marine, marine sur le jaune, noires pour le gardien.
     expect(versionSponsors("#fdd700")).toBe("dom");

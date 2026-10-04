@@ -41,6 +41,10 @@ export function dispositionDe(v: unknown): DispositionFlocage {
     sponsorHautY: lire("sponsorHautY"),
     sponsorBasY: lire("sponsorBasY"),
     sponsorLargeur: lire("sponsorLargeur"),
+    logoAvant: typeof brut.logoAvant === "boolean" ? brut.logoAvant : DISPOSITION_FLOCAGE_DEFAUT.logoAvant,
+    logoX: lire("logoX"),
+    logoY: lire("logoY"),
+    logoTaille: lire("logoTaille"),
   };
 }
 

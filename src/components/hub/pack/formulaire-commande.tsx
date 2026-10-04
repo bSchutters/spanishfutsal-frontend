@@ -12,7 +12,7 @@ import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueur
 import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
-import ApercuFlocage from "./apercu-flocage";
+import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
 import ListeDeroulante from "./liste-deroulante";
 
@@ -54,6 +54,11 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
           ),
         }
       : null;
+  // Le logo du club sur la photo principale, la face avant, si l'article le prevoit.
+  const logo =
+    article.dispositionFlocage.logoAvant && photos.length > 0 && indexDos !== 0
+      ? { index: 0, contenu: <ApercuLogo disposition={article.dispositionFlocage} /> }
+      : null;
   const flocageIncomplet = avecFlocage && numero === "" && nom.trim() === "";
 
   const ajouter = () => {
@@ -90,7 +95,7 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
         photos={photos}
         legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")}
         allerA={avecFlocage && indexDos >= 0 ? indexDos : null}
-        calque={apercu}
+        calques={[logo, apercu].filter((c) => c !== null)}
       />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>

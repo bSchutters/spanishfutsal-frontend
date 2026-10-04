@@ -128,6 +128,19 @@ function TexteFloque({ texte, x, y, taille, couleurs, espacement = 0 }: { texte:
   );
 }
 
+/**
+ * Le logo du club sur la face avant, pose sur la photo principale (carree) a
+ * la place reglee pour l'article. Coordonnees sur 1000, comme l'apercu du dos.
+ */
+export function ApercuLogo({ disposition }: { disposition: DispositionFlocage }) {
+  const taille = disposition.logoTaille * 10;
+  return (
+    <svg viewBox="0 0 1000 1000" className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
+      <image href={LOGO} x={disposition.logoX * 10 - taille / 2} y={disposition.logoY * 10 - taille / 2} width={taille} height={taille} />
+    </svg>
+  );
+}
+
 /** Un sponsor centre sur le dos, a la largeur donnee, sa hauteur suivant son dessin. */
 function SponsorDos({ sponsor, version, centreY, largeur }: { sponsor: Sponsor; version: VersionSponsors; centreY: number; largeur: number }) {
   const hauteur = largeur / sponsor.ratio;

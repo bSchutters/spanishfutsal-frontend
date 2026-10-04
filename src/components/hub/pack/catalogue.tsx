@@ -27,7 +27,7 @@ import {
   type ModeRemise,
 } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
-import ApercuFlocage from "./apercu-flocage";
+import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import ListeDeroulante from "./liste-deroulante";
 
 type PhotoDeposee = { id: number; url: string };
@@ -227,6 +227,112 @@ function PhotosCouleur({
   );
 }
 
+/** Les curseurs d'une disposition, en pourcentage de la photo. */
+function curseurDe(disposition: DispositionFlocage, onDisposition: (d: DispositionFlocage) => void) {
+  return function curseur(cle: CoteDisposition, libelle: string, min: number, max: number) {
+    return (
+      <label className="flex flex-col gap-1 text-xs">
+        <span className="flex justify-between text-muted-foreground">
+          {libelle}
+          <span className="tabular-nums">{disposition[cle].toLocaleString("fr-BE")} %</span>
+        </span>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={0.5}
+          value={disposition[cle]}
+          onChange={(e) => onDisposition({ ...disposition, [cle]: Number(e.target.value) })}
+          className="accent-primary"
+        />
+      </label>
+    );
+  };
+}
+
+/** Remet les reglages donnes a leur valeur par defaut, sans toucher aux autres. */
+const remettre = (disposition: DispositionFlocage, cles: CoteDisposition[]): DispositionFlocage => ({
+  ...disposition,
+  ...Object.fromEntries(cles.map((cle) => [cle, DISPOSITION_FLOCAGE_DEFAUT[cle]])),
+});
+
+/** Le choix de la couleur d'un apercu, des qu'il y en a plusieurs. */
+function ChoixCouleur({ variantes, choisie, onChoisir }: { variantes: VarianteFormulaire[]; choisie: string; onChoisir: (cle: string) => void }) {
+  if (variantes.length < 2) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Couleur de l'aperçu">
+      {variantes.map((v) => (
+        <button
+          key={v.cle}
+          type="button"
+          aria-pressed={v.cle === choisie}
+          onClick={() => onChoisir(v.cle)}
+          className={cn(
+            "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+            v.cle === choisie ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {v.couleur || "Sans nom"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Le logo du club sur la face avant, regle sur la photo principale d'une
+ * couleur : sa place et sa taille sont propres a l'article.
+ */
+function ReglageLogo({
+  variantes,
+  disposition,
+  onDisposition,
+}: {
+  variantes: VarianteFormulaire[];
+  disposition: DispositionFlocage;
+  onDisposition: (d: DispositionFlocage) => void;
+}) {
+  const [choisie, setChoisie] = useState<string | null>(null);
+  const avecPhoto = variantes.filter((v) => v.photos.length > 0);
+  const variante = avecPhoto.find((v) => v.cle === choisie) ?? avecPhoto[0];
+  const curseur = curseurDe(disposition, onDisposition);
+
+  if (!variante) {
+    return (
+      <p className="rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+        Ajoutez une photo de face dans une couleur : le logo s&apos;y pose, et sa place se règle ici.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-border p-3">
+      <p className="text-sm font-medium">Aperçu du logo</p>
+      <ChoixCouleur variantes={avecPhoto} choisie={variante.cle} onChoisir={setChoisie} />
+      <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={variante.photos[0].url} alt="" className="size-full object-contain" />
+        <ApercuLogo disposition={disposition} />
+      </div>
+      <p className="text-xs text-muted-foreground">Le logo se pose sur la photo principale de chaque couleur : glissez la photo de face en premier.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {curseur("logoX", "Position horizontale", 5, 95)}
+        {curseur("logoY", "Hauteur du logo", 5, 80)}
+        {curseur("logoTaille", "Taille du logo", 2, 30)}
+      </div>
+      <Button
+        type="button"
+        variant="hubSecondary"
+        size="sm"
+        className="self-start"
+        onClick={() => onDisposition(remettre(disposition, ["logoX", "logoY", "logoTaille"]))}
+      >
+        Position par défaut
+      </Button>
+    </div>
+  );
+}
+
 /**
  * La position du flocage, reglee sur la photo de dos d'une couleur (la
  * premiere qui en a une, ou celle choisie) : les sponsors, le nom et le
@@ -253,23 +359,7 @@ function ReglageFlocage({
   const avecPhotoDos = variantes.filter((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
   const avecDos = avecPhotoDos.find((v) => v.cle === choisie) ?? avecPhotoDos[0];
   const photoDos = avecDos?.photos.find((p) => p.id === avecDos.photoDosId) ?? null;
-  const curseur = (cle: CoteDisposition, libelle: string, min: number, max: number) => (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="flex justify-between text-muted-foreground">
-        {libelle}
-        <span className="tabular-nums">{disposition[cle].toLocaleString("fr-BE")} %</span>
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={0.5}
-        value={disposition[cle]}
-        onChange={(e) => onDisposition({ ...disposition, [cle]: Number(e.target.value) })}
-        className="accent-primary"
-      />
-    </label>
-  );
+  const curseur = curseurDe(disposition, onDisposition);
 
   if (!avecDos || !photoDos) {
     return (
@@ -282,25 +372,8 @@ function ReglageFlocage({
   return (
     <div className="flex flex-col gap-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Aperçu du flocage</p>
-      {avecPhotoDos.length > 1 ? (
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Couleur de l'aperçu">
-          {avecPhotoDos.map((v) => (
-            <button
-              key={v.cle}
-              type="button"
-              aria-pressed={v.cle === avecDos.cle}
-              onClick={() => setChoisie(v.cle)}
-              className={cn(
-                "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                v.cle === avecDos.cle ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {v.couleur || "Sans nom"}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      <div className="relative mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-md bg-white">
+      <ChoixCouleur variantes={avecPhotoDos} choisie={avecDos.cle} onChoisir={setChoisie} />
+      <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photoDos.url} alt="" className="size-full object-contain" />
         <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} />
@@ -338,7 +411,9 @@ function ReglageFlocage({
         variant="hubSecondary"
         size="sm"
         className="self-start"
-        onClick={() => onDisposition({ ...DISPOSITION_FLOCAGE_DEFAUT, sponsors: disposition.sponsors })}
+        onClick={() =>
+          onDisposition(remettre(disposition, ["nomY", "nomHauteur", "numeroY", "numeroHauteur", "sponsorHautY", "sponsorBasY", "sponsorLargeur"]))
+        }
       >
         Positions par défaut
       </Button>
@@ -517,6 +592,18 @@ function FicheArticle({
             <span className="text-muted-foreground"> (remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %)</span>
           </p>
         ) : null}
+        <label className="flex cursor-pointer items-center justify-between gap-4">
+          <span>
+            <span className="block text-sm font-medium">Logo sur la face avant</span>
+            <span className="block text-xs text-muted-foreground">Le logo du club sur la photo de face, à la place réglée pour cet article.</span>
+          </span>
+          <Switch
+            checked={disposition.logoAvant}
+            onCheckedChange={(logoAvant) => setDisposition((d) => ({ ...d, logoAvant }))}
+            aria-label="Logo sur la face avant"
+          />
+        </label>
+        {disposition.logoAvant ? <ReglageLogo variantes={variantes} disposition={disposition} onDisposition={setDisposition} /> : null}
         <label className="flex cursor-pointer items-center justify-between gap-4">
           <span>
             <span className="block text-sm font-medium">Floquable</span>
