@@ -131,12 +131,22 @@ function TexteFloque({ texte, x, y, taille, couleurs, espacement = 0 }: { texte:
 /**
  * Le logo du club sur la face avant, pose sur la photo principale (carree) a
  * la place reglee pour l'article. Coordonnees sur 1000, comme l'apercu du dos.
+ * Un maillot photographie de biais demande de le tourner, de le pencher comme
+ * la poitrine (inclinaison verticale) et de le resserrer en largeur.
  */
 export function ApercuLogo({ disposition }: { disposition: DispositionFlocage }) {
   const taille = disposition.logoTaille * 10;
+  const forme = [
+    `translate(${disposition.logoX * 10} ${disposition.logoY * 10})`,
+    `rotate(${disposition.logoRotation})`,
+    `skewY(${disposition.logoInclinaison})`,
+    `scale(${disposition.logoLargeur / 100} 1)`,
+  ].join(" ");
   return (
     <svg viewBox="0 0 1000 1000" className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
-      <image href={LOGO} x={disposition.logoX * 10 - taille / 2} y={disposition.logoY * 10 - taille / 2} width={taille} height={taille} />
+      <g transform={forme}>
+        <image href={LOGO} x={-taille / 2} y={-taille / 2} width={taille} height={taille} />
+      </g>
     </svg>
   );
 }

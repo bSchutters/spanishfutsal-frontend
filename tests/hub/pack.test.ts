@@ -461,7 +461,7 @@ describe("aperçu du flocage", () => {
   });
 
   it("accepte une disposition d'avant les sponsors et la complète", () => {
-    const ancienne = { nomY: 60, nomHauteur: 6, numeroY: 41, numeroHauteur: 22 };
+    const ancienne = { nomY: 60, nomHauteur: 6, numeroY: 41, numeroHauteur: 22, logoInclinaison: -12 };
     const lecture = schemaArticle.safeParse({
       id: null,
       nom: "Maillot",
@@ -486,6 +486,8 @@ describe("aperçu du flocage", () => {
     expect(sans.dispositionFlocage.logoAvant).toBe(false);
     const avec = articleDe({ id: 15, name: "Polo", price: 25, flock_layout: { logoAvant: true, logoX: 70, logoTaille: "grand" }, variants: [{ id: "v" }] });
     expect(avec.dispositionFlocage).toMatchObject({ logoAvant: true, logoX: 70, logoY: DISPOSITION_FLOCAGE_DEFAUT.logoY, logoTaille: DISPOSITION_FLOCAGE_DEFAUT.logoTaille });
+    // Droit tant qu'on ne l'a pas penche : pas d'inclinaison, de rotation ni de resserrement.
+    expect(avec.dispositionFlocage).toMatchObject({ logoInclinaison: 0, logoRotation: 0, logoLargeur: 100 });
   });
 
   it("choisit la version des sponsors d'après la couleur des lettres", () => {

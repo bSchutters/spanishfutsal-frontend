@@ -227,14 +227,17 @@ function PhotosCouleur({
   );
 }
 
-/** Les curseurs d'une disposition, en pourcentage de la photo. */
+/** Les curseurs d'une disposition, en pourcentage de la photo, ou en degres pour un angle. */
 function curseurDe(disposition: DispositionFlocage, onDisposition: (d: DispositionFlocage) => void) {
-  return function curseur(cle: CoteDisposition, libelle: string, min: number, max: number) {
+  return function curseur(cle: CoteDisposition, libelle: string, min: number, max: number, unite: "%" | "°" = "%") {
     return (
       <label className="flex flex-col gap-1 text-xs">
         <span className="flex justify-between text-muted-foreground">
           {libelle}
-          <span className="tabular-nums">{disposition[cle].toLocaleString("fr-BE")} %</span>
+          <span className="tabular-nums">
+            {disposition[cle].toLocaleString("fr-BE")}
+            {unite === "%" ? " %" : "°"}
+          </span>
         </span>
         <input
           type="range"
@@ -319,13 +322,16 @@ function ReglageLogo({
         {curseur("logoX", "Position horizontale", 5, 95)}
         {curseur("logoY", "Hauteur du logo", 5, 80)}
         {curseur("logoTaille", "Taille du logo", 2, 30)}
+        {curseur("logoLargeur", "Largeur (vue de biais)", 30, 100)}
+        {curseur("logoInclinaison", "Inclinaison", -45, 45, "°")}
+        {curseur("logoRotation", "Rotation", -45, 45, "°")}
       </div>
       <Button
         type="button"
         variant="hubSecondary"
         size="sm"
         className="self-start"
-        onClick={() => onDisposition(remettre(disposition, ["logoX", "logoY", "logoTaille"]))}
+        onClick={() => onDisposition(remettre(disposition, ["logoX", "logoY", "logoTaille", "logoLargeur", "logoInclinaison", "logoRotation"]))}
       >
         Position par défaut
       </Button>

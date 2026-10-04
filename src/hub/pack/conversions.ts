@@ -45,6 +45,9 @@ export function dispositionDe(v: unknown): DispositionFlocage {
     logoX: lire("logoX"),
     logoY: lire("logoY"),
     logoTaille: lire("logoTaille"),
+    logoInclinaison: lire("logoInclinaison"),
+    logoRotation: lire("logoRotation"),
+    logoLargeur: lire("logoLargeur"),
   };
 }
 

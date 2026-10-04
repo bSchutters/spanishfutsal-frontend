@@ -39,7 +39,8 @@ export const COULEURS_FLOCAGE_DEFAUT: CouleursFlocage = { remplissage: "#fdd700"
  * puis les sponsors du club (src/hub/pack/sponsors.ts), Sofexia au-dessus du
  * numero et Wabee en dessous, avec leur centre vertical et une largeur commune ;
  * enfin le logo du club sur la face avant, sur la photo principale de chaque
- * couleur : son centre et son diametre.
+ * couleur : son centre, son diametre, et de quoi suivre un maillot photographie
+ * de biais (inclinaison et rotation en degres, largeur en pourcentage).
  */
 export type DispositionFlocage = {
   nomY: number;
@@ -54,6 +55,9 @@ export type DispositionFlocage = {
   logoX: number;
   logoY: number;
   logoTaille: number;
+  logoInclinaison: number;
+  logoRotation: number;
+  logoLargeur: number;
 };
 
 /** Les reglages chiffres de la disposition, ceux des curseurs. */
@@ -77,6 +81,9 @@ export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = {
   logoX: 62,
   logoY: 25,
   logoTaille: 9,
+  logoInclinaison: 0,
+  logoRotation: 0,
+  logoLargeur: 100,
 };
 
 /** Une couleur d'un article, avec son code couleur Joma et ses photos. */
@@ -180,6 +187,9 @@ const prix = (quoi: string) =>
 const pourcentage = (quoi: string) =>
   z.number(`${quoi} : un nombre.`).check(z.gte(0, `${quoi} : pas de pourcentage négatif.`), z.lte(100, `${quoi} : 100 % au plus.`));
 
+const angle = (quoi: string) =>
+  z.number(`${quoi} : un nombre.`).check(z.gte(-45, `${quoi} : 45 degrés au plus.`), z.lte(45, `${quoi} : 45 degrés au plus.`));
+
 const couleurHex = z.string().check(z.regex(/^#[0-9a-fA-F]{6}$/, "Une couleur au format #rrggbb."));
 
 /** Un numero de maillot : un ou deux chiffres, ou rien. */
@@ -272,6 +282,9 @@ export const schemaArticle = z
       logoX: z.optional(pourcentage("La position du logo")),
       logoY: z.optional(pourcentage("La hauteur du logo")),
       logoTaille: z.optional(pourcentage("La taille du logo")),
+      logoInclinaison: z.optional(angle("L'inclinaison du logo")),
+      logoRotation: z.optional(angle("La rotation du logo")),
+      logoLargeur: z.optional(pourcentage("La largeur du logo")),
     }),
     actif: z.boolean(),
     variantes: z
