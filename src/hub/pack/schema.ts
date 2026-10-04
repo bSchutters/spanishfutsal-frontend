@@ -251,10 +251,12 @@ export const schemaArticle = z
       nomHauteur: pourcentage("La taille du nom"),
       numeroY: pourcentage("La position du numéro"),
       numeroHauteur: pourcentage("La taille du numéro"),
-      sponsors: z.boolean(),
-      sponsorHautY: pourcentage("La position de Sofexia"),
-      sponsorBasY: pourcentage("La position de Wabee"),
-      sponsorLargeur: pourcentage("La largeur des sponsors"),
+      // Absents d'une fiche ouverte avant leur arrivee (04/10/2026) : completes
+      // par les valeurs par defaut a l'enregistrement, plutot que refuses.
+      sponsors: z.optional(z.boolean("Les sponsors : oui ou non.")),
+      sponsorHautY: z.optional(pourcentage("La position de Sofexia")),
+      sponsorBasY: z.optional(pourcentage("La position de Wabee")),
+      sponsorLargeur: z.optional(pourcentage("La largeur des sponsors")),
     }),
     actif: z.boolean(),
     variantes: z

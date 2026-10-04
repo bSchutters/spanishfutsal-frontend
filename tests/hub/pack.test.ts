@@ -11,7 +11,7 @@ import {
   tauxRemise,
   totalDes,
 } from "@/hub/pack/calculs";
-import { articleDe } from "@/hub/pack/conversions";
+import { articleDe, dispositionDe } from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -458,6 +458,27 @@ describe("aperçu du flocage", () => {
     expect(sans.dispositionFlocage.sponsors).toBe(true);
     const retires = articleDe({ id: 13, name: "Polo", price: 30, flock_layout: { sponsors: false, sponsorLargeur: 30 }, variants: [{ id: "v" }] });
     expect(retires.dispositionFlocage).toMatchObject({ sponsors: false, sponsorLargeur: 30, sponsorHautY: DISPOSITION_FLOCAGE_DEFAUT.sponsorHautY });
+  });
+
+  it("accepte une disposition d'avant les sponsors et la complète", () => {
+    const ancienne = { nomY: 60, nomHauteur: 6, numeroY: 41, numeroHauteur: 22 };
+    const lecture = schemaArticle.safeParse({
+      id: null,
+      nom: "Maillot",
+      reference: "104263",
+      description: "",
+      prixCatalogue: 16,
+      modeRemise: "general",
+      remiseParticuliere: null,
+      tailles: ["M"],
+      floquable: true,
+      dispositionFlocage: ancienne,
+      actif: true,
+      variantes: [{ id: null, couleur: "", codeCouleur: "339", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
+    });
+    expect(lecture.success).toBe(true);
+    if (!lecture.success) return;
+    expect(dispositionDe(lecture.data.dispositionFlocage)).toEqual({ ...DISPOSITION_FLOCAGE_DEFAUT, ...ancienne });
   });
 
   it("choisit la version des sponsors d'après la couleur des lettres", () => {

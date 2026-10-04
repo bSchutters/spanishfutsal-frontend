@@ -374,7 +374,7 @@ function FicheArticle({
   };
   const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
   const [floquable, setFloquable] = useState(article?.floquable ?? false);
-  const [disposition, setDisposition] = useState<DispositionFlocage>(article?.dispositionFlocage ?? DISPOSITION_FLOCAGE_DEFAUT);
+  const [disposition, setDisposition] = useState<DispositionFlocage>({ ...DISPOSITION_FLOCAGE_DEFAUT, ...article?.dispositionFlocage });
   const [essaiNumero, setEssaiNumero] = useState("10");
   const [essaiNom, setEssaiNom] = useState("NOM");
   const [actif, setActif] = useState(article?.actif ?? true);

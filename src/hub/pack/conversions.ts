@@ -27,8 +27,8 @@ const nombre = (v: unknown) => (typeof v === "number" ? v : typeof v === "string
 
 const hex = (v: unknown, defaut: string) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : defaut);
 
-/** La disposition rangee en JSON, chaque valeur absente ou fausse remplacee par celle par defaut. */
-function dispositionDe(v: unknown): DispositionFlocage {
+/** La disposition rangee en JSON, ou saisie, chaque valeur absente ou fausse remplacee par celle par defaut. */
+export function dispositionDe(v: unknown): DispositionFlocage {
   const brut = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
   const lire = (cle: CoteDisposition) =>
     typeof brut[cle] === "number" && Number.isFinite(brut[cle]) ? (brut[cle] as number) : DISPOSITION_FLOCAGE_DEFAUT[cle];
