@@ -107,7 +107,27 @@ export const PackArticles: CollectionConfig = {
         // les montre comme une seule suite, la principale en tete.
         { name: 'photo', type: 'upload', relationTo: 'media', label: 'Photo principale' },
         { name: 'photos', type: 'upload', relationTo: 'media', hasMany: true, maxRows: 9, label: 'Autres photos' },
+        {
+          name: 'back_photo_id',
+          type: 'number',
+          label: 'Photo de dos (identifiant du media)',
+          admin: { description: 'L une des photos de la couleur, celle qui porte l apercu du flocage. Se regle dans le Hub.' },
+        },
+        {
+          type: 'row',
+          fields: [
+            { name: 'flock_fill', type: 'text', label: 'Flocage : lettre', admin: { width: '33%', description: '#fdd700 par defaut.' } },
+            { name: 'flock_outline', type: 'text', label: 'Flocage : contour', admin: { width: '33%', description: '#223454 par defaut.' } },
+            { name: 'flock_outer', type: 'text', label: 'Flocage : contour exterieur', admin: { width: '33%', description: '#fdd700 par defaut.' } },
+          ],
+        },
       ],
+    },
+    {
+      name: 'flock_layout',
+      type: 'json',
+      label: 'Position du flocage sur la photo de dos',
+      admin: { description: 'Se regle dans le Hub, avec l apercu.' },
     },
     { name: 'sort_order', type: 'number', defaultValue: 0, label: 'Ordre', admin: { position: 'sidebar' } },
   ],

@@ -12,6 +12,7 @@ import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueur
 import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
+import ApercuFlocage from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
 import ListeDeroulante from "./liste-deroulante";
 
@@ -36,6 +37,17 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
   // Une couleur sans photo montre celles de la premiere couleur qui en a.
   const photos = variante?.photos.length ? variante.photos : (article.variantes.find((v) => v.photos.length > 0)?.photos ?? []);
   const numeroValide = numero === "" || /^\d{1,2}$/.test(numero);
+  // La photo de dos de la couleur choisie, si elle en a une parmi les photos montrees.
+  const indexDos = variante?.photoDosId ? photos.findIndex((p) => p.id === variante.photoDosId) : -1;
+  const apercu =
+    avecFlocage && indexDos >= 0 && variante
+      ? {
+          index: indexDos,
+          contenu: (
+            <ApercuFlocage numero={numero} nom={nom.trim()} couleurs={variante.couleursFlocage} disposition={article.dispositionFlocage} />
+          ),
+        }
+      : null;
   const flocageIncomplet = avecFlocage && numero === "" && nom.trim() === "";
 
   const ajouter = () => {
@@ -67,7 +79,13 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
   return (
     <li className="flex flex-col overflow-hidden rounded-lg border border-border bg-card">
       {/* La cle remet le diaporama sur la photo principale a chaque changement de couleur. */}
-      <DiaporamaPhotos key={variante?.id} photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} />
+      <DiaporamaPhotos
+        key={variante?.id}
+        photos={photos}
+        legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")}
+        allerA={avecFlocage && indexDos >= 0 ? indexDos : null}
+        calque={apercu}
+      />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
           <div className="flex items-baseline justify-between gap-3">
@@ -133,6 +151,9 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
               </span>
               <Switch checked={avecFlocage} onCheckedChange={setAvecFlocage} aria-label={`Flocage, ${article.nom}`} />
             </label>
+            {avecFlocage && indexDos >= 0 ? (
+              <p className="text-xs text-muted-foreground">Aperçu indicatif sur la photo de dos : l&apos;impression peut légèrement différer.</p>
+            ) : null}
             {avecFlocage ? (
               <div className="grid grid-cols-[5rem_1fr] gap-2">
                 <Input

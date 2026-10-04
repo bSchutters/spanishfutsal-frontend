@@ -2,7 +2,7 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Shirt } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import type { Photo } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
@@ -11,8 +11,22 @@ import { cn } from "@/lib/utils";
  * Les photos d'une couleur en diaporama : on glisse du doigt, on clique sur
  * les fleches, ou on vise un point. Fond blanc, comme les visuels Joma, et
  * image entiere sans recadrage. Une seule photo : ni fleches ni points.
+ *
+ * `allerA` amene le diaporama sur une photo (la vue de dos quand on active le
+ * flocage) ; `calque` pose un contenu par-dessus une photo (l'apercu du
+ * flocage).
  */
-export default function DiaporamaPhotos({ photos, legende }: { photos: Photo[]; legende: string }) {
+export default function DiaporamaPhotos({
+  photos,
+  legende,
+  allerA = null,
+  calque = null,
+}: {
+  photos: Photo[];
+  legende: string;
+  allerA?: number | null;
+  calque?: { index: number; contenu: ReactNode } | null;
+}) {
   const plusieurs = photos.length > 1;
   const [viewport, api] = useEmblaCarousel({ loop: plusieurs, active: plusieurs });
   const [courante, setCourante] = useState(0);
@@ -20,6 +34,10 @@ export default function DiaporamaPhotos({ photos, legende }: { photos: Photo[]; 
   const suivre = useCallback(() => {
     if (api) setCourante(api.selectedScrollSnap());
   }, [api]);
+
+  useEffect(() => {
+    if (api && allerA !== null && allerA >= 0) api.scrollTo(allerA);
+  }, [api, allerA]);
 
   useEffect(() => {
     if (!api) return;
@@ -55,7 +73,7 @@ export default function DiaporamaPhotos({ photos, legende }: { photos: Photo[]; 
           {photos.map((p, rang) => (
             <div
               key={p.id}
-              className="aspect-square min-w-0 shrink-0 grow-0 basis-full"
+              className="relative aspect-square min-w-0 shrink-0 grow-0 basis-full"
               role="group"
               aria-roledescription="photo"
               aria-label={`${rang + 1} sur ${photos.length}`}
@@ -68,6 +86,7 @@ export default function DiaporamaPhotos({ photos, legende }: { photos: Photo[]; 
                 draggable={false}
                 className="size-full select-none object-contain"
               />
+              {calque && calque.index === rang ? calque.contenu : null}
             </div>
           ))}
         </div>

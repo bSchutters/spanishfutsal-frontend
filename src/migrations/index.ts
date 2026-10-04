@@ -17,6 +17,7 @@ import * as migration_20261003_111747_module_pack from './20261003_111747_module
 import * as migration_20261003_161720_pack_reference_modele from './20261003_161720_pack_reference_modele';
 import * as migration_20261003_163143_pack_remise from './20261003_163143_pack_remise';
 import * as migration_20261003_164148_pack_photos from './20261003_164148_pack_photos';
+import * as migration_20261004_111729_pack_apercu_flocage from './20261004_111729_pack_apercu_flocage';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20261003_164148_pack_photos.up,
     down: migration_20261003_164148_pack_photos.down,
-    name: '20261003_164148_pack_photos'
+    name: '20261003_164148_pack_photos',
+  },
+  {
+    up: migration_20261004_111729_pack_apercu_flocage.up,
+    down: migration_20261004_111729_pack_apercu_flocage.down,
+    name: '20261004_111729_pack_apercu_flocage'
   },
 ];

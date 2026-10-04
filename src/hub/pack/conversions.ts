@@ -6,6 +6,9 @@ import {
   type Article,
   type Commande,
   type LigneCommande,
+  COULEURS_FLOCAGE_DEFAUT,
+  DISPOSITION_FLOCAGE_DEFAUT,
+  type DispositionFlocage,
   type ModeRemise,
   type Photo,
   type StatutCommande,
@@ -20,6 +23,16 @@ type Doc = Record<string, unknown> & { id: number | string };
 
 const texte = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 const nombre = (v: unknown) => (typeof v === "number" ? v : typeof v === "string" && v !== "" ? Number(v) : 0);
+
+const hex = (v: unknown, defaut: string) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : defaut);
+
+/** La disposition rangee en JSON, chaque valeur absente ou fausse remplacee par celle par defaut. */
+function dispositionDe(v: unknown): DispositionFlocage {
+  const brut = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+  const lire = (cle: keyof DispositionFlocage) =>
+    typeof brut[cle] === "number" && Number.isFinite(brut[cle]) ? (brut[cle] as number) : DISPOSITION_FLOCAGE_DEFAUT[cle];
+  return { nomY: lire("nomY"), nomHauteur: lire("nomHauteur"), numeroY: lire("numeroY"), numeroHauteur: lire("numeroHauteur") };
+}
 
 function photoDe(photo: unknown): Photo | null {
   return photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string"
@@ -44,6 +57,7 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
     prix: prixJoueur(prixCatalogue, remise, remiseGenerale),
     tailles: tailles.map((t) => t.trim()),
     floquable: doc.flockable === true,
+    dispositionFlocage: dispositionDe(doc.flock_layout),
     actif: doc.active !== false,
     ordre: nombre(doc.sort_order),
     variantes: variantes.map((v) => ({
@@ -52,6 +66,12 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
       // La colonne de la couleur s'appelle `reference` : elle porte le code couleur.
       codeCouleur: texte(v.reference),
       photos: [v.photo, ...(Array.isArray(v.photos) ? v.photos : [])].map(photoDe).filter((p): p is Photo => p !== null),
+      photoDosId: typeof v.back_photo_id === "number" ? v.back_photo_id : null,
+      couleursFlocage: {
+        remplissage: hex(v.flock_fill, COULEURS_FLOCAGE_DEFAUT.remplissage),
+        contour: hex(v.flock_outline, COULEURS_FLOCAGE_DEFAUT.contour),
+        exterieur: hex(v.flock_outer, COULEURS_FLOCAGE_DEFAUT.exterieur),
+      },
     })),
   };
 }

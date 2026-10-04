@@ -13,6 +13,8 @@ import {
 } from "@/hub/pack/calculs";
 import { articleDe } from "@/hub/pack/conversions";
 import {
+  COULEURS_FLOCAGE_DEFAUT,
+  DISPOSITION_FLOCAGE_DEFAUT,
   lireTailles,
   schemaArticle,
   schemaCommandeJoueur,
@@ -38,11 +40,12 @@ const maillot: Article = {
   prix: 35,
   tailles: ["S", "M", "L", "XL"],
   floquable: true,
+  dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
   actif: true,
   ordre: 0,
   variantes: [
-    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photos: [] },
-    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photos: [] },
+    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
+    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
   ],
 };
 
@@ -56,9 +59,10 @@ const sac: Article = {
   prix: 19.9,
   tailles: ["Unique"],
   floquable: false,
+  dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
   actif: false,
   ordre: 1,
-  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photos: [] }],
+  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
 };
 
 const CATALOGUE = [maillot, sac];
@@ -213,10 +217,11 @@ describe("saisies", () => {
       remiseParticuliere: null,
       tailles: ["M"],
       floquable: false,
+      dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
       actif: true,
       variantes: [
-        { id: null, couleur: "", codeCouleur: "339", photoIds: [] },
-        { id: null, couleur: "Blanc", codeCouleur: "200", photoIds: [] },
+        { id: null, couleur: "", codeCouleur: "339", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
+        { id: null, couleur: "Blanc", codeCouleur: "200", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
       ],
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);
@@ -234,8 +239,9 @@ describe("saisies", () => {
       remiseParticuliere: null,
       tailles: ["M"],
       floquable: false,
+      dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
       actif: true,
-      variantes: [{ id: null, couleur: "", codeCouleur: "", photoIds: [] }],
+      variantes: [{ id: null, couleur: "", codeCouleur: "", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
     };
     expect(schemaArticle.safeParse(article).success).toBe(false);
     expect(schemaArticle.safeParse({ ...article, remiseParticuliere: 15 }).success).toBe(true);
@@ -360,7 +366,7 @@ describe("photos d'une couleur", () => {
   });
 
   it("accepte dix photos au plus par couleur", () => {
-    const variante = (n: number) => ({ id: null, couleur: "", codeCouleur: "", photoIds: Array.from({ length: n }, (_, i) => i + 1) });
+    const variante = (n: number) => ({ id: null, couleur: "", codeCouleur: "", photoIds: Array.from({ length: n }, (_, i) => i + 1), photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT });
     const article = {
       id: null,
       nom: "Sac",
@@ -371,6 +377,7 @@ describe("photos d'une couleur", () => {
       remiseParticuliere: null,
       tailles: ["Unique"],
       floquable: false,
+      dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
       actif: true,
     };
     expect(schemaArticle.safeParse({ ...article, variantes: [variante(10)] }).success).toBe(true);
@@ -421,5 +428,27 @@ describe("menu du Pack", () => {
     const routes = trouverModule("pack")?.navigation.map((e) => e.route) ?? [];
     expect(routes).toEqual(["/hub/pack/commandes", "/hub/pack/catalogue"]);
     expect(routes.some((r) => routes.some((autre) => autre !== r && r.startsWith(`${autre}/`)))).toBe(false);
+  });
+});
+
+describe("aperçu du flocage", () => {
+  it("prend les couleurs et la position par défaut quand rien n'est réglé", () => {
+    const article = articleDe({ id: 10, name: "Maillot", price: 30, flockable: true, variants: [{ id: "v", color: "Marine" }] });
+    expect(article.dispositionFlocage).toEqual(DISPOSITION_FLOCAGE_DEFAUT);
+    expect(article.variantes[0].couleursFlocage).toEqual(COULEURS_FLOCAGE_DEFAUT);
+    expect(article.variantes[0].photoDosId).toBeNull();
+  });
+
+  it("garde une position réglée et complète celle qui manque", () => {
+    const article = articleDe({
+      id: 11,
+      name: "Maillot",
+      price: 30,
+      flock_layout: { nomY: 20, numeroHauteur: 25, numeroY: "x" },
+      variants: [{ id: "v", back_photo_id: 96, flock_fill: "#FFFFFF", flock_outline: "rouge" }],
+    });
+    expect(article.dispositionFlocage).toEqual({ ...DISPOSITION_FLOCAGE_DEFAUT, nomY: 20, numeroHauteur: 25 });
+    expect(article.variantes[0].photoDosId).toBe(96);
+    expect(article.variantes[0].couleursFlocage).toEqual({ ...COULEURS_FLOCAGE_DEFAUT, remplissage: "#ffffff" });
   });
 });

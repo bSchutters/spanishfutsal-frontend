@@ -52,6 +52,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
     custom_discount: s.modeRemise === "custom" ? s.remiseParticuliere : null,
     sizes: s.tailles,
     flockable: s.floquable,
+    flock_layout: s.dispositionFlocage,
     active: s.actif,
     variants: s.variantes.map((v) => ({
       ...(v.id ? { id: v.id } : {}),
@@ -59,6 +60,11 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
       reference: v.codeCouleur,
       photo: v.photoIds[0] ?? null,
       photos: v.photoIds.slice(1),
+      // Une photo de dos qui n'est plus parmi les photos de la couleur ne compte plus.
+      back_photo_id: v.photoDosId !== null && v.photoIds.includes(v.photoDosId) ? v.photoDosId : null,
+      flock_fill: v.couleursFlocage.remplissage,
+      flock_outline: v.couleursFlocage.contour,
+      flock_outer: v.couleursFlocage.exterieur,
     })),
   };
 

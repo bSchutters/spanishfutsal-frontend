@@ -27,6 +27,21 @@ export const COULEURS_STATUT_COMMANDE: Record<StatutCommande, string> = {
 
 export type Photo = { id: number; url: string };
 
+/** Les trois couleurs d'un flocage : la lettre, son contour, et le contour exterieur. */
+export type CouleursFlocage = { remplissage: string; contour: string; exterieur: string };
+
+/** Le flocage du club : jaune, contour marine, contour jaune, releves sur le visuel du numero. */
+export const COULEURS_FLOCAGE_DEFAUT: CouleursFlocage = { remplissage: "#fdd700", contour: "#223454", exterieur: "#fdd700" };
+
+/**
+ * Ou poser le flocage sur la photo de dos, en pourcentage de l'image (carree) :
+ * le centre vertical et la hauteur des lettres, pour le nom et le numero.
+ */
+export type DispositionFlocage = { nomY: number; nomHauteur: number; numeroY: number; numeroHauteur: number };
+
+/** Calees sur la photo de dos d'un maillot Joma a plat. */
+export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = { nomY: 17, nomHauteur: 4.5, numeroY: 33, numeroHauteur: 20 };
+
 /** Une couleur d'un article, avec son code couleur Joma et ses photos. */
 export type Variante = {
   /** L'identifiant de la ligne dans la collection, stable d'une modification a l'autre. */
@@ -36,6 +51,9 @@ export type Variante = {
   codeCouleur: string;
   /** Les photos de la couleur, la principale en premier. */
   photos: Photo[];
+  /** La photo de dos, parmi les siennes, ou rien : elle porte l'apercu du flocage. */
+  photoDosId: number | null;
+  couleursFlocage: CouleursFlocage;
 };
 
 /** Comment la remise s'applique a un article : la generale, aucune, ou la sienne. */
@@ -63,6 +81,7 @@ export type Article = {
   prix: number;
   tailles: string[];
   floquable: boolean;
+  dispositionFlocage: DispositionFlocage;
   actif: boolean;
   ordre: number;
   variantes: Variante[];
@@ -123,6 +142,8 @@ const prix = (quoi: string) =>
 
 const pourcentage = (quoi: string) =>
   z.number(`${quoi} : un nombre.`).check(z.gte(0, `${quoi} : pas de pourcentage négatif.`), z.lte(100, `${quoi} : 100 % au plus.`));
+
+const couleurHex = z.string().check(z.regex(/^#[0-9a-fA-F]{6}$/, "Une couleur au format #rrggbb."));
 
 /** Un numero de maillot : un ou deux chiffres, ou rien. */
 export const NUMERO_VALIDE = /^\d{1,2}$/;
@@ -199,6 +220,12 @@ export const schemaArticle = z
       .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille : 20 caractères au plus.")))
       .check(z.minLength(1, "Indiquez au moins une taille."), z.maxLength(40, "Quarante tailles au plus.")),
     floquable: z.boolean(),
+    dispositionFlocage: z.object({
+      nomY: pourcentage("La position du nom"),
+      nomHauteur: pourcentage("La taille du nom"),
+      numeroY: pourcentage("La position du numéro"),
+      numeroHauteur: pourcentage("La taille du numéro"),
+    }),
     actif: z.boolean(),
     variantes: z
       .array(
@@ -206,6 +233,8 @@ export const schemaArticle = z
           id: z.nullable(z.string()),
           couleur: texteLibre(40, "Une couleur : 40 caractères au plus."),
           codeCouleur: texteLibre(20, "Un code couleur : 20 caractères au plus."),
+          photoDosId: z.nullable(identifiant),
+          couleursFlocage: z.object({ remplissage: couleurHex, contour: couleurHex, exterieur: couleurHex }),
           photoIds: z.array(identifiant).check(z.maxLength(10, "Dix photos au plus par couleur.")),
         }),
       )

@@ -14,17 +14,46 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerArticle, supprimerArticle } from "@/hub/actions/pack";
 import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/pack/calculs";
-import { LIBELLES_MODE_REMISE, lireTailles, MODES_REMISE, type Article, type ModeRemise } from "@/hub/pack/schema";
+import {
+  COULEURS_FLOCAGE_DEFAUT,
+  DISPOSITION_FLOCAGE_DEFAUT,
+  LIBELLES_MODE_REMISE,
+  lireTailles,
+  MODES_REMISE,
+  type Article,
+  type CouleursFlocage,
+  type DispositionFlocage,
+  type ModeRemise,
+} from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
+import ApercuFlocage from "./apercu-flocage";
 import ListeDeroulante from "./liste-deroulante";
 
 type PhotoDeposee = { id: number; url: string };
 type Photo = PhotoDeposee | null;
-type VarianteFormulaire = { cle: string; id: string | null; couleur: string; codeCouleur: string; photos: PhotoDeposee[] };
+type VarianteFormulaire = {
+  cle: string;
+  id: string | null;
+  couleur: string;
+  codeCouleur: string;
+  photos: PhotoDeposee[];
+  photoDosId: number | null;
+  couleursFlocage: CouleursFlocage;
+};
 
 const nombreSaisi = (texte: string) => (texte.trim() === "" ? NaN : Number(texte.replace(",", ".")));
 
 let compteur = 0;
+const nouvelleVariante = (): VarianteFormulaire => ({
+  cle: `v${++compteur}`,
+  id: null,
+  couleur: "",
+  codeCouleur: "",
+  photos: [],
+  photoDosId: null,
+  couleursFlocage: { ...COULEURS_FLOCAGE_DEFAUT },
+});
+
 const nouvelleCle = () => `v${++compteur}`;
 
 /** La vignette d'un article : la photo de sa premiere couleur, ou une icone. */
@@ -54,7 +83,20 @@ const PHOTOS_MAX = 10;
  * la photo principale, celle de la vignette ; l'etoile en fait passer une
  * autre en tete. Plusieurs fichiers se deposent d'un coup, l'un apres l'autre.
  */
-function PhotosCouleur({ photos, nom, onChange }: { photos: PhotoDeposee[]; nom: string; onChange: (photos: PhotoDeposee[]) => void }) {
+function PhotosCouleur({
+  photos,
+  nom,
+  onChange,
+  photoDosId,
+  onDos,
+}: {
+  photos: PhotoDeposee[];
+  nom: string;
+  onChange: (photos: PhotoDeposee[]) => void;
+  /** Fournis pour un article floquable : la photo de dos, et son choix. */
+  photoDosId?: number | null;
+  onDos?: (id: number | null) => void;
+}) {
   const entree = useRef<HTMLInputElement>(null);
   const [enCours, setEnCours] = useState(0);
 
@@ -102,6 +144,20 @@ function PhotosCouleur({ photos, nom, onChange }: { photos: PhotoDeposee[]; nom:
                   <Star className="size-3.5" aria-hidden="true" />
                 </button>
               )}
+              {onDos ? (
+                <button
+                  type="button"
+                  aria-pressed={p.id === photoDosId}
+                  title={p.id === photoDosId ? "Photo de dos : porte l'aperçu du flocage" : "Marquer comme vue de dos"}
+                  onClick={() => onDos(p.id === photoDosId ? null : p.id)}
+                  className={cn(
+                    "absolute top-1 left-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                    p.id === photoDosId ? "bg-primary text-primary-foreground" : "bg-black/60 text-white/80 hover:bg-black/80",
+                  )}
+                >
+                  Dos
+                </button>
+              ) : null}
               <button
                 type="button"
                 aria-label="Retirer cette photo"
@@ -137,6 +193,80 @@ function PhotosCouleur({ photos, nom, onChange }: { photos: PhotoDeposee[]; nom:
   );
 }
 
+/**
+ * La position du flocage, reglee sur la photo de dos de la premiere couleur
+ * qui en a une : le nom et le numero d'essai s'y dessinent en direct.
+ */
+function ReglageFlocage({
+  variantes,
+  disposition,
+  onDisposition,
+  essaiNumero,
+  essaiNom,
+  onEssaiNumero,
+  onEssaiNom,
+}: {
+  variantes: VarianteFormulaire[];
+  disposition: DispositionFlocage;
+  onDisposition: (d: DispositionFlocage) => void;
+  essaiNumero: string;
+  essaiNom: string;
+  onEssaiNumero: (v: string) => void;
+  onEssaiNom: (v: string) => void;
+}) {
+  const avecDos = variantes.find((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
+  const photoDos = avecDos?.photos.find((p) => p.id === avecDos.photoDosId) ?? null;
+  const curseur = (cle: keyof DispositionFlocage, libelle: string, min: number, max: number) => (
+    <label className="flex flex-col gap-1 text-xs">
+      <span className="flex justify-between text-muted-foreground">
+        {libelle}
+        <span className="tabular-nums">{disposition[cle].toLocaleString("fr-BE")} %</span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={0.5}
+        value={disposition[cle]}
+        onChange={(e) => onDisposition({ ...disposition, [cle]: Number(e.target.value) })}
+        className="accent-primary"
+      />
+    </label>
+  );
+
+  if (!avecDos || !photoDos) {
+    return (
+      <p className="rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+        Marquez une photo « Dos » dans une couleur : le joueur verra son flocage dessus, et la position se règle ici.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-border p-3">
+      <p className="text-sm font-medium">Aperçu du flocage</p>
+      <div className="relative mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-md bg-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photoDos.url} alt="" className="size-full object-contain" />
+        <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} />
+      </div>
+      <div className="grid grid-cols-[5rem_1fr] gap-2">
+        <Input aria-label="Numéro d'essai" inputMode="numeric" maxLength={2} value={essaiNumero} onChange={(e) => onEssaiNumero(e.target.value.replace(/\D/g, ""))} />
+        <Input aria-label="Nom d'essai" value={essaiNom} onChange={(e) => onEssaiNom(e.target.value.toUpperCase())} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {curseur("nomY", "Hauteur du nom", 5, 60)}
+        {curseur("nomHauteur", "Taille du nom", 1, 12)}
+        {curseur("numeroY", "Hauteur du numéro", 10, 80)}
+        {curseur("numeroHauteur", "Taille du numéro", 5, 40)}
+      </div>
+      <Button type="button" variant="hubSecondary" size="sm" className="self-start" onClick={() => onDisposition(DISPOSITION_FLOCAGE_DEFAUT)}>
+        Positions par défaut
+      </Button>
+    </div>
+  );
+}
+
 function FicheArticle({
   article,
   remiseGenerale,
@@ -165,11 +295,22 @@ function FicheArticle({
   };
   const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
   const [floquable, setFloquable] = useState(article?.floquable ?? false);
+  const [disposition, setDisposition] = useState<DispositionFlocage>(article?.dispositionFlocage ?? DISPOSITION_FLOCAGE_DEFAUT);
+  const [essaiNumero, setEssaiNumero] = useState("10");
+  const [essaiNom, setEssaiNom] = useState("NOM");
   const [actif, setActif] = useState(article?.actif ?? true);
   const [variantes, setVariantes] = useState<VarianteFormulaire[]>(() =>
     article?.variantes.length
-      ? article.variantes.map((v) => ({ cle: nouvelleCle(), id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photos: v.photos }))
-      : [{ cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photos: [] }],
+      ? article.variantes.map((v) => ({
+          cle: nouvelleCle(),
+          id: v.id,
+          couleur: v.couleur,
+          codeCouleur: v.codeCouleur,
+          photos: v.photos,
+          photoDosId: v.photoDosId,
+          couleursFlocage: v.couleursFlocage,
+        }))
+      : [nouvelleVariante()],
   );
   const [enCours, setEnCours] = useState(false);
 
@@ -201,7 +342,15 @@ function FicheArticle({
       tailles: lireTailles(tailles),
       floquable,
       actif,
-      variantes: variantes.map((v) => ({ id: v.id, couleur: v.couleur, codeCouleur: v.codeCouleur, photoIds: v.photos.map((p) => p.id) })),
+      dispositionFlocage: disposition,
+      variantes: variantes.map((v) => ({
+        id: v.id,
+        couleur: v.couleur,
+        codeCouleur: v.codeCouleur,
+        photoIds: v.photos.map((p) => p.id),
+        photoDosId: v.photoDosId,
+        couleursFlocage: v.couleursFlocage,
+      })),
     });
     setEnCours(false);
     if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
@@ -296,6 +445,17 @@ function FicheArticle({
           </span>
           <Switch checked={floquable} onCheckedChange={setFloquable} aria-label="Floquable" />
         </label>
+        {floquable ? (
+          <ReglageFlocage
+            variantes={variantes}
+            disposition={disposition}
+            onDisposition={setDisposition}
+            essaiNumero={essaiNumero}
+            essaiNom={essaiNom}
+            onEssaiNumero={setEssaiNumero}
+            onEssaiNom={setEssaiNom}
+          />
+        ) : null}
         <label className="flex cursor-pointer items-center justify-between gap-4">
           <span>
             <span className="block text-sm font-medium">Dans le catalogue</span>
@@ -344,6 +504,8 @@ function FicheArticle({
                   photos={v.photos}
                   nom={[nom, v.couleur].filter(Boolean).join(" ")}
                   onChange={(photos) => changerVariante(v.cle, { photos })}
+                  photoDosId={v.photoDosId}
+                  onDos={floquable ? (photoDosId) => changerVariante(v.cle, { photoDosId }) : undefined}
                 />
                 {variantes.length > 1 ? (
                   <Button
@@ -357,6 +519,28 @@ function FicheArticle({
                   </Button>
                 ) : null}
               </div>
+              {floquable ? (
+                <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <span className="text-muted-foreground">Flocage :</span>
+                  {(
+                    [
+                      ["remplissage", "Lettre"],
+                      ["contour", "Contour"],
+                      ["exterieur", "Contour extérieur"],
+                    ] as const
+                  ).map(([cle, libelle]) => (
+                    <label key={cle} className="flex cursor-pointer items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={v.couleursFlocage[cle]}
+                        onChange={(e) => changerVariante(v.cle, { couleursFlocage: { ...v.couleursFlocage, [cle]: e.target.value } })}
+                        className="size-6 cursor-pointer rounded border border-border bg-transparent"
+                      />
+                      {libelle}
+                    </label>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ))}
           <Button
@@ -364,7 +548,7 @@ function FicheArticle({
             variant="hubSecondary"
             size="sm"
             className="self-start"
-            onClick={() => setVariantes((liste) => [...liste, { cle: nouvelleCle(), id: null, couleur: "", codeCouleur: "", photos: [] }])}
+            onClick={() => setVariantes((liste) => [...liste, nouvelleVariante()])}
           >
             <Plus aria-hidden="true" />
             Ajouter une couleur
