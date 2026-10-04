@@ -8,6 +8,7 @@ import {
   type LigneCommande,
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
+  type CoteDisposition,
   type DispositionFlocage,
   type ModeRemise,
   type Photo,
@@ -29,9 +30,18 @@ const hex = (v: unknown, defaut: string) => (typeof v === "string" && /^#[0-9a-f
 /** La disposition rangee en JSON, chaque valeur absente ou fausse remplacee par celle par defaut. */
 function dispositionDe(v: unknown): DispositionFlocage {
   const brut = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
-  const lire = (cle: keyof DispositionFlocage) =>
+  const lire = (cle: CoteDisposition) =>
     typeof brut[cle] === "number" && Number.isFinite(brut[cle]) ? (brut[cle] as number) : DISPOSITION_FLOCAGE_DEFAUT[cle];
-  return { nomY: lire("nomY"), nomHauteur: lire("nomHauteur"), numeroY: lire("numeroY"), numeroHauteur: lire("numeroHauteur") };
+  return {
+    nomY: lire("nomY"),
+    nomHauteur: lire("nomHauteur"),
+    numeroY: lire("numeroY"),
+    numeroHauteur: lire("numeroHauteur"),
+    sponsors: typeof brut.sponsors === "boolean" ? brut.sponsors : DISPOSITION_FLOCAGE_DEFAUT.sponsors,
+    sponsorHautY: lire("sponsorHautY"),
+    sponsorBasY: lire("sponsorBasY"),
+    sponsorLargeur: lire("sponsorLargeur"),
+  };
 }
 
 function photoDe(photo: unknown): Photo | null {

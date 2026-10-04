@@ -35,12 +35,38 @@ export const COULEURS_FLOCAGE_DEFAUT: CouleursFlocage = { remplissage: "#fdd700"
 
 /**
  * Ou poser le flocage sur la photo de dos, en pourcentage de l'image (carree) :
- * le centre vertical et la hauteur des lettres, pour le nom et le numero.
+ * le centre vertical et la hauteur des lettres, pour le nom et le numero ;
+ * puis les sponsors du club (src/hub/pack/sponsors.ts), Sofexia au-dessus du
+ * numero et Wabee en dessous, avec leur centre vertical et une largeur commune.
  */
-export type DispositionFlocage = { nomY: number; nomHauteur: number; numeroY: number; numeroHauteur: number };
+export type DispositionFlocage = {
+  nomY: number;
+  nomHauteur: number;
+  numeroY: number;
+  numeroHauteur: number;
+  sponsors: boolean;
+  sponsorHautY: number;
+  sponsorBasY: number;
+  sponsorLargeur: number;
+};
 
-/** Calees sur la photo de dos d'un maillot Joma a plat. */
-export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = { nomY: 17, nomHauteur: 4.5, numeroY: 33, numeroHauteur: 20 };
+/** Les reglages chiffres de la disposition, ceux des curseurs. */
+export type CoteDisposition = Exclude<keyof DispositionFlocage, "sponsors">;
+
+/**
+ * Calees sur la photo de dos d'un maillot Joma a plat, le nom sous le numero
+ * comme Bryan l'a regle sur le maillot des joueurs le 04/10/2026.
+ */
+export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = {
+  nomY: 60,
+  nomHauteur: 6,
+  numeroY: 41,
+  numeroHauteur: 22,
+  sponsors: true,
+  sponsorHautY: 19,
+  sponsorBasY: 72,
+  sponsorLargeur: 24,
+};
 
 /** Une couleur d'un article, avec son code couleur Joma et ses photos. */
 export type Variante = {
@@ -225,6 +251,10 @@ export const schemaArticle = z
       nomHauteur: pourcentage("La taille du nom"),
       numeroY: pourcentage("La position du numéro"),
       numeroHauteur: pourcentage("La taille du numéro"),
+      sponsors: z.boolean(),
+      sponsorHautY: pourcentage("La position de Sofexia"),
+      sponsorBasY: pourcentage("La position de Wabee"),
+      sponsorLargeur: pourcentage("La largeur des sponsors"),
     }),
     actif: z.boolean(),
     variantes: z

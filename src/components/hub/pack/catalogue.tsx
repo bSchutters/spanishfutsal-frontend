@@ -21,6 +21,7 @@ import {
   lireTailles,
   MODES_REMISE,
   type Article,
+  type CoteDisposition,
   type CouleursFlocage,
   type DispositionFlocage,
   type ModeRemise,
@@ -67,7 +68,7 @@ function Vignette({ photo, grande = false }: { photo: Photo; grande?: boolean })
     >
       {photo ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo.url} alt="" className="size-full object-cover" />
+        <img src={photo.url} alt="" draggable={false} className="size-full object-cover" />
       ) : (
         <Shirt className="size-5 text-muted-foreground" aria-hidden="true" />
       )}
@@ -78,10 +79,19 @@ function Vignette({ photo, grande = false }: { photo: Photo; grande?: boolean })
 /** Combien de photos une couleur peut porter. */
 const PHOTOS_MAX = 10;
 
+/** La liste avec la photo `id` deplacee au rang `rang`. */
+function deplacer(photos: PhotoDeposee[], id: number, rang: number): PhotoDeposee[] {
+  const photo = photos.find((p) => p.id === id);
+  if (!photo) return photos;
+  const reste = photos.filter((p) => p.id !== id);
+  return [...reste.slice(0, rang), photo, ...reste.slice(rang)];
+}
+
 /**
  * Les photos d'une couleur, par la route des photos du Hub. La premiere est
  * la photo principale, celle de la vignette ; l'etoile en fait passer une
- * autre en tete. Plusieurs fichiers se deposent d'un coup, l'un apres l'autre.
+ * autre en tete, et l'ordre se change en glissant les vignettes. Plusieurs
+ * fichiers se deposent d'un coup, l'un apres l'autre.
  */
 function PhotosCouleur({
   photos,
@@ -99,6 +109,9 @@ function PhotosCouleur({
 }) {
   const entree = useRef<HTMLInputElement>(null);
   const [enCours, setEnCours] = useState(0);
+  // La photo qu'on glisse : la liste se reordonne en direct sous le pointeur.
+  const [tiree, setTiree] = useState<number | null>(null);
+  const triable = photos.length > 1;
 
   const deposer = async (fichiers: FileList | null) => {
     const liste = Array.from(fichiers ?? []).slice(0, PHOTOS_MAX - photos.length);
@@ -129,7 +142,27 @@ function PhotosCouleur({
       {photos.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {photos.map((p, rang) => (
-            <li key={p.id} className="relative">
+            <li
+              key={p.id}
+              draggable={triable}
+              onDragStart={(e) => {
+                setTiree(p.id);
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", String(p.id));
+              }}
+              onDragOver={(e) => {
+                if (tiree === null) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (tiree !== p.id) onChange(deplacer(photos, tiree, rang));
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setTiree(null);
+              }}
+              onDragEnd={() => setTiree(null)}
+              className={cn("relative", triable && "cursor-grab active:cursor-grabbing", tiree === p.id && "opacity-40")}
+            >
               <Vignette photo={p} grande />
               {rang === 0 ? (
                 <span className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/60 text-center text-[10px] font-medium">Principale</span>
@@ -170,6 +203,7 @@ function PhotosCouleur({
           ))}
         </ul>
       ) : null}
+      {triable ? <p className="text-xs text-muted-foreground">Glissez les photos pour changer leur ordre.</p> : null}
       <input
         ref={entree}
         type="file"
@@ -194,8 +228,9 @@ function PhotosCouleur({
 }
 
 /**
- * La position du flocage, reglee sur la photo de dos de la premiere couleur
- * qui en a une : le nom et le numero d'essai s'y dessinent en direct.
+ * La position du flocage, reglee sur la photo de dos d'une couleur (la
+ * premiere qui en a une, ou celle choisie) : les sponsors, le nom et le
+ * numero d'essai s'y dessinent en direct.
  */
 function ReglageFlocage({
   variantes,
@@ -214,9 +249,11 @@ function ReglageFlocage({
   onEssaiNumero: (v: string) => void;
   onEssaiNom: (v: string) => void;
 }) {
-  const avecDos = variantes.find((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
+  const [choisie, setChoisie] = useState<string | null>(null);
+  const avecPhotoDos = variantes.filter((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
+  const avecDos = avecPhotoDos.find((v) => v.cle === choisie) ?? avecPhotoDos[0];
   const photoDos = avecDos?.photos.find((p) => p.id === avecDos.photoDosId) ?? null;
-  const curseur = (cle: keyof DispositionFlocage, libelle: string, min: number, max: number) => (
+  const curseur = (cle: CoteDisposition, libelle: string, min: number, max: number) => (
     <label className="flex flex-col gap-1 text-xs">
       <span className="flex justify-between text-muted-foreground">
         {libelle}
@@ -245,6 +282,24 @@ function ReglageFlocage({
   return (
     <div className="flex flex-col gap-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Aperçu du flocage</p>
+      {avecPhotoDos.length > 1 ? (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Couleur de l'aperçu">
+          {avecPhotoDos.map((v) => (
+            <button
+              key={v.cle}
+              type="button"
+              aria-pressed={v.cle === avecDos.cle}
+              onClick={() => setChoisie(v.cle)}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                v.cle === avecDos.cle ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {v.couleur || "Sans nom"}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="relative mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photoDos.url} alt="" className="size-full object-contain" />
@@ -255,12 +310,36 @@ function ReglageFlocage({
         <Input aria-label="Nom d'essai" value={essaiNom} onChange={(e) => onEssaiNom(e.target.value.toUpperCase())} />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        {curseur("nomY", "Hauteur du nom", 5, 60)}
+        {curseur("nomY", "Hauteur du nom", 5, 90)}
         {curseur("nomHauteur", "Taille du nom", 1, 12)}
         {curseur("numeroY", "Hauteur du numéro", 10, 80)}
         {curseur("numeroHauteur", "Taille du numéro", 5, 40)}
       </div>
-      <Button type="button" variant="hubSecondary" size="sm" className="self-start" onClick={() => onDisposition(DISPOSITION_FLOCAGE_DEFAUT)}>
+      <label className="flex items-center justify-between gap-3 text-sm">
+        <span>
+          Sponsors du club
+          <span className="block text-xs text-muted-foreground">Sofexia au-dessus du numéro, Wabee en dessous, dans la couleur des lettres.</span>
+        </span>
+        <Switch
+          checked={disposition.sponsors}
+          onCheckedChange={(sponsors) => onDisposition({ ...disposition, sponsors })}
+          aria-label="Sponsors du club"
+        />
+      </label>
+      {disposition.sponsors ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {curseur("sponsorHautY", "Hauteur de Sofexia", 5, 60)}
+          {curseur("sponsorBasY", "Hauteur de Wabee", 30, 95)}
+          {curseur("sponsorLargeur", "Largeur des sponsors", 5, 50)}
+        </div>
+      ) : null}
+      <Button
+        type="button"
+        variant="hubSecondary"
+        size="sm"
+        className="self-start"
+        onClick={() => onDisposition({ ...DISPOSITION_FLOCAGE_DEFAUT, sponsors: disposition.sponsors })}
+      >
         Positions par défaut
       </Button>
     </div>

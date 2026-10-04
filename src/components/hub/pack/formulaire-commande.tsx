@@ -39,12 +39,18 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
   const numeroValide = numero === "" || /^\d{1,2}$/.test(numero);
   // La photo de dos de la couleur choisie, si elle en a une parmi les photos montrees.
   const indexDos = variante?.photoDosId ? photos.findIndex((p) => p.id === variante.photoDosId) : -1;
+  // Les sponsors du club y sont toujours ; le numero et le nom, une fois le flocage demande.
   const apercu =
-    avecFlocage && indexDos >= 0 && variante
+    article.floquable && indexDos >= 0 && variante
       ? {
           index: indexDos,
           contenu: (
-            <ApercuFlocage numero={numero} nom={nom.trim()} couleurs={variante.couleursFlocage} disposition={article.dispositionFlocage} />
+            <ApercuFlocage
+              numero={avecFlocage ? numero : ""}
+              nom={avecFlocage ? nom.trim() : ""}
+              couleurs={variante.couleursFlocage}
+              disposition={article.dispositionFlocage}
+            />
           ),
         }
       : null;

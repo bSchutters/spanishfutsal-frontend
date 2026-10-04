@@ -22,6 +22,7 @@ import {
   type LigneCommande,
   type LigneSaisie,
 } from "@/hub/pack/schema";
+import { imageSponsor, SPONSORS, versionSponsors } from "@/hub/pack/sponsors";
 
 /**
  * Le module Pack : prix et flocages, commande construite depuis le
@@ -450,5 +451,21 @@ describe("aperçu du flocage", () => {
     expect(article.dispositionFlocage).toEqual({ ...DISPOSITION_FLOCAGE_DEFAUT, nomY: 20, numeroHauteur: 25 });
     expect(article.variantes[0].photoDosId).toBe(96);
     expect(article.variantes[0].couleursFlocage).toEqual({ ...COULEURS_FLOCAGE_DEFAUT, remplissage: "#ffffff" });
+  });
+
+  it("met les sponsors par défaut, sauf s'ils ont été retirés de l'article", () => {
+    const sans = articleDe({ id: 12, name: "Maillot", price: 30, flock_layout: { numeroY: 41 }, variants: [{ id: "v" }] });
+    expect(sans.dispositionFlocage.sponsors).toBe(true);
+    const retires = articleDe({ id: 13, name: "Polo", price: 30, flock_layout: { sponsors: false, sponsorLargeur: 30 }, variants: [{ id: "v" }] });
+    expect(retires.dispositionFlocage).toMatchObject({ sponsors: false, sponsorLargeur: 30, sponsorHautY: DISPOSITION_FLOCAGE_DEFAUT.sponsorHautY });
+  });
+
+  it("choisit la version des sponsors d'après la couleur des lettres", () => {
+    // Lettres jaunes sur le maillot marine, marine sur le jaune, noires pour le gardien.
+    expect(versionSponsors("#fdd700")).toBe("dom");
+    expect(versionSponsors("#223454")).toBe("ext");
+    expect(versionSponsors("#000000")).toBe("gk-ext");
+    expect(imageSponsor(SPONSORS.haut, "dom")).toBe("/assets/images/flocage/sofexia-dom.svg");
+    expect(imageSponsor(SPONSORS.bas, "gk-ext")).toBe("/assets/images/flocage/wabee-gk-ext.svg");
   });
 });
