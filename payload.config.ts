@@ -135,6 +135,17 @@ export default buildConfig({
       collections: {
         media: {
           prefix: 'media',
+          /**
+           * Les images du site sont servies directement par Vercel Blob, sans
+           * repasser par `/api/media/file/...`. Ce detour appelait `head()` a
+           * chaque requete manquee par le cache, et chaque appel compte dans
+           * les 10 000 operations mensuelles du plan Hobby : au-dela, le
+           * stockage est coupe jusqu a trente jours et le site perd ses
+           * images. La collection est en lecture publique, le detour ne
+           * protegeait donc rien. L adresse est calculee a la lecture, rien
+           * n est a migrer en base.
+           */
+          disablePayloadAccessControl: true,
         },
         // Les visuels du Hub, gardes tels quels : un prefixe a part dans le meme stockage.
         'hub-media': {

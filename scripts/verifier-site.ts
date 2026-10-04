@@ -166,24 +166,27 @@ function premierId(valeur: unknown): string | number | undefined {
 }
 
 /**
- * La premiere image matricielle servie par Payload. Les SVG sont ecartes :
+ * La premiere image matricielle des medias du site : servie par Vercel Blob
+ * quand le jeton est la, par Payload sinon. Les SVG sont ecartes :
  * `next/image` les sert tels quels, sans passer par le proxy.
  */
-function premierMediaLocal(valeur: unknown): string | undefined {
+function premierMedia(valeur: unknown): string | undefined {
   if (typeof valeur === 'string') {
-    const estMedia = valeur.startsWith('/api/media/file/') && !/\.svg(\?|$)/.test(valeur)
+    const estMedia =
+      (valeur.startsWith('/api/media/file/') || /^https:\/\/[^/]+\.public\.blob\.vercel-storage\.com\/media\//.test(valeur)) &&
+      !/\.svg(\?|$)/.test(valeur)
     return estMedia ? valeur : undefined
   }
   if (Array.isArray(valeur) || (valeur && typeof valeur === 'object')) {
     for (const enfant of Object.values(valeur as Record<string, unknown>)) {
-      const trouve = premierMediaLocal(enfant)
+      const trouve = premierMedia(enfant)
       if (trouve) return trouve
     }
   }
   return undefined
 }
 
-/** Le proxy d'images de Next accepte-t-il cette adresse locale ? */
+/** Le proxy d'images de Next accepte-t-il cette adresse ? */
 async function verifierImage(source: string, nom: string) {
   const chemin = `/_next/image?url=${encodeURIComponent(source)}&w=256&q=75`
   try {
@@ -314,14 +317,14 @@ async function main() {
       await verifierApi(`/api/public/rankings/${saison}`)
     }
 
-    // Le proxy d'images : un fichier de public/, puis un media Payload, dont
-    // l'adresse porte une query string quand il est heberge sur Vercel Blob.
+    // Le proxy d'images : un fichier de public/, puis un media Payload, qui
+    // arrive de Vercel Blob en production et du disque sans jeton.
     await verifierImage('/assets/images/webp/placeholder.webp', 'image statique via /_next/image')
-    const media = premierMediaLocal(reponses['/api/public/sponsors']) ?? premierMediaLocal(reponses['/api/public/joueurs-with-stats'])
+    const media = premierMedia(reponses['/api/public/sponsors']) ?? premierMedia(reponses['/api/public/joueurs-with-stats'])
     if (media) {
       await verifierImage(media, 'media Payload via /_next/image')
     } else {
-      console.log('--    media Payload via /_next/image (aucun media local dans les reponses, ignore)')
+      console.log('--    media Payload via /_next/image (aucun media dans les reponses, ignore)')
     }
 
     await verifierAdmin()

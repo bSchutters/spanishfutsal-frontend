@@ -42,7 +42,11 @@ const CSP_PUBLIC = [
   // i.ytimg.com sert les images du lecteur une fois qu'il tourne. La vignette
   // de la facade, elle, passe par le proxy d'images du site : aucune requete
   // ne part chez Google avant que le visiteur ne lance la diffusion.
-  "img-src 'self' data: blob: https://i.ytimg.com",
+  //
+  // Vercel Blob sert directement les medias du site (voir payload.config.ts).
+  // Les pages publiques les recoivent par /_next/image, donc depuis 'self',
+  // mais le Hub affiche les photos des joueurs et du Pack telles quelles.
+  "img-src 'self' data: blob: https://i.ytimg.com https://*.public.blob.vercel-storage.com",
   "font-src 'self'",
   // Le lecteur HLS telecharge les segments depuis le diffuseur du club et les
   // assemble en memoire, d'ou `connect-src` pour les requetes et
@@ -134,9 +138,11 @@ const nextConfig: NextConfig = {
     // (accueil et /a-propos) sont concernees, elles pesaient 291 Ko.
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3072, 3840],
     // Depuis Next 16, toute image locale doit correspondre a un motif declare
-    // ici, et une query string est refusee sauf mention explicite. Les medias
-    // Payload en ont une : `/api/media/file/x.webp?prefix=media` quand ils sont
-    // heberges sur Vercel Blob. Les fichiers de public/ n'en ont jamais.
+    // ici, et une query string est refusee sauf mention explicite. Les fichiers
+    // de public/ n'en ont jamais. `/api/media/file/**` ne sert plus qu'en
+    // l'absence de jeton Vercel Blob : Payload stocke alors les medias sur le
+    // disque et les sert lui-meme. Avec le jeton, ils arrivent par le motif
+    // distant `*.public.blob.vercel-storage.com` plus bas.
     localPatterns: [
       { pathname: "/assets/**", search: "" },
       { pathname: "/api/media/file/**" },
