@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: { absolute: "Pack UD Asturiana" } };
 export const dynamic = "force-dynamic";
 
 function Carte({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">{children}</p>;
+  return <p className="max-w-xl rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">{children}</p>;
 }
 
 /**
@@ -37,7 +37,11 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
   if (!reglages.motDePasse) {
     contenu = <Carte>Cette page n&apos;est pas encore prête. Le club vous préviendra quand elle sera ouverte.</Carte>;
   } else if (!entre) {
-    contenu = <EntreePack jeton={jeton} />;
+    contenu = (
+      <div className="w-full max-w-md">
+        <EntreePack jeton={jeton} />
+      </div>
+    );
   } else if (ferme) {
     contenu = <Carte>Les commandes sont fermées pour le moment. Le club vous préviendra à la prochaine ouverture.</Carte>;
   } else {
@@ -46,7 +50,7 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-6 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+    <main className="flex min-h-dvh w-full flex-col gap-6 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8">
       <header className="flex items-center gap-3">
         <Image src="/assets/images/svg/logo-asturiana.svg" alt="" width={48} height={48} className="size-12" />
         <div>

@@ -250,7 +250,7 @@ export default function FormulaireCommande({
 
   if (envoyee) {
     return (
-      <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
+      <section className="flex max-w-2xl flex-col gap-4 rounded-lg border border-border bg-card p-5">
         <div>
           <h2 className="text-lg font-semibold">Commande envoyée</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -289,34 +289,21 @@ export default function FormulaireCommande({
   }
 
   return (
-    <form onSubmit={envoyer} className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3 rounded-lg border border-border bg-card p-5">
-        <h2 className="text-base font-semibold">Qui commande ?</h2>
-        <ListeDeroulante aria-label="Votre nom" value={personne} onChange={(e) => setPersonne(e.target.value)} className="h-10" required>
-          <option value="">Choisissez votre nom…</option>
-          {effectif.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nom}
-            </option>
-          ))}
-          <option value={AUTRE}>Autre (parent, proche…)</option>
-        </ListeDeroulante>
-        {personne === AUTRE ? (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pack-autre-nom">Votre nom</Label>
-            <Input id="pack-autre-nom" value={autreNom} onChange={(e) => setAutreNom(e.target.value)} autoComplete="name" required className="h-10" />
-          </div>
-        ) : null}
-      </section>
-
-      <section className="flex flex-col gap-3">
+    // Pleine largeur : sur grand ecran, les articles a gauche et la commande dans
+    // une colonne a droite qui reste visible ; sur telephone, tout se suit,
+    // « Qui commande ? » d'abord (la colonne s'efface, ses blocs se rangent par `order`).
+    <form
+      onSubmit={envoyer}
+      className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_24rem]"
+    >
+      <section className="order-2 flex flex-col gap-3 lg:col-start-1 lg:row-start-1">
         <h2 className="text-base font-semibold">Les articles</h2>
         {articles.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
             Aucun article pour le moment.
           </p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 min-[1800px]:grid-cols-4">
             {articles.map((a) => (
               <CarteArticle key={a.id} article={a} flocage={flocage} onAjouter={(l) => setPanier((x) => [...x, l])} />
             ))}
@@ -324,73 +311,94 @@ export default function FormulaireCommande({
         )}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-lg border border-border bg-card p-5">
-        <h2 className="text-base font-semibold">Ma commande</h2>
-        {panier.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Rien pour l&apos;instant : ajoutez un article ci-dessus.</p>
-        ) : (
-          <ul className="divide-y divide-border rounded-md border border-border text-sm">
-            {panier.map((l, i) => {
-              const ligne = apercu.ok ? apercu.lignes[i] : null;
-              return (
-                <li key={l.cle} className="flex items-center justify-between gap-3 px-3 py-2">
-                  <span className="min-w-0">
-                    <span className="block">{ligne ? resumeLigne(ligne) : "Article indisponible"}</span>
-                    <span className="block text-xs text-muted-foreground tabular-nums">
-                      {l.quantite} × {ligne ? formaterPrix(ligne.prixUnitaire) : "?"}
+      <div className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:flex lg:max-h-[calc(100dvh-3rem)] lg:flex-col lg:gap-6 lg:overflow-y-auto">
+        <section className="order-1 flex flex-col gap-3 rounded-lg border border-border bg-card p-5 lg:order-none">
+          <h2 className="text-base font-semibold">Qui commande ?</h2>
+          <ListeDeroulante aria-label="Votre nom" value={personne} onChange={(e) => setPersonne(e.target.value)} className="h-10" required>
+            <option value="">Choisissez votre nom…</option>
+            {effectif.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nom}
+              </option>
+            ))}
+            <option value={AUTRE}>Autre (parent, proche…)</option>
+          </ListeDeroulante>
+          {personne === AUTRE ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="pack-autre-nom">Votre nom</Label>
+              <Input id="pack-autre-nom" value={autreNom} onChange={(e) => setAutreNom(e.target.value)} autoComplete="name" required className="h-10" />
+            </div>
+          ) : null}
+        </section>
+
+        <section className="order-3 flex flex-col gap-3 rounded-lg border border-border bg-card p-5 lg:order-none">
+          <h2 className="text-base font-semibold">Ma commande</h2>
+          {panier.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Rien pour l&apos;instant : ajoutez un article.</p>
+          ) : (
+            <ul className="divide-y divide-border rounded-md border border-border text-sm">
+              {panier.map((l, i) => {
+                const ligne = apercu.ok ? apercu.lignes[i] : null;
+                return (
+                  <li key={l.cle} className="flex items-center justify-between gap-3 px-3 py-2">
+                    <span className="min-w-0">
+                      <span className="block">{ligne ? resumeLigne(ligne) : "Article indisponible"}</span>
+                      <span className="block text-xs text-muted-foreground tabular-nums">
+                        {l.quantite} × {ligne ? formaterPrix(ligne.prixUnitaire) : "?"}
+                      </span>
                     </span>
-                  </span>
-                  <Button
-                    type="button"
-                    variant="hubSecondary"
-                    size="sm"
-                    aria-label="Retirer cette ligne"
-                    onClick={() => setPanier((x) => x.filter((y) => y.cle !== l.cle))}
-                  >
-                    <Trash2 aria-hidden="true" />
-                  </Button>
-                </li>
-              );
-            })}
-            <li className="flex justify-between px-3 py-2 font-semibold">
-              <span>Total</span>
-              <span className="tabular-nums">{apercu.ok ? formaterPrix(apercu.total) : "?"}</span>
-            </li>
-          </ul>
-        )}
-      </section>
+                    <Button
+                      type="button"
+                      variant="hubSecondary"
+                      size="sm"
+                      aria-label="Retirer cette ligne"
+                      onClick={() => setPanier((x) => x.filter((y) => y.cle !== l.cle))}
+                    >
+                      <Trash2 aria-hidden="true" />
+                    </Button>
+                  </li>
+                );
+              })}
+              <li className="flex justify-between px-3 py-2 font-semibold">
+                <span>Total</span>
+                <span className="tabular-nums">{apercu.ok ? formaterPrix(apercu.total) : "?"}</span>
+              </li>
+            </ul>
+          )}
+        </section>
 
-      <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
-        <div>
-          <h2 className="text-base font-semibold">Vos coordonnées</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Un téléphone ou une adresse e-mail, pour vous contacter au sujet du virement.</p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pack-telephone">Téléphone</Label>
-            <Input id="pack-telephone" type="tel" autoComplete="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} className="h-10" />
+        <section className="order-4 flex flex-col gap-4 rounded-lg border border-border bg-card p-5 lg:order-none">
+          <div>
+            <h2 className="text-base font-semibold">Vos coordonnées</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Un téléphone ou une adresse e-mail, pour vous contacter au sujet du virement.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="pack-telephone">Téléphone</Label>
+              <Input id="pack-telephone" type="tel" autoComplete="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} className="h-10" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="pack-email">E-mail</Label>
+              <Input id="pack-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10" />
+            </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pack-email">E-mail</Label>
-            <Input id="pack-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10" />
+            <Label htmlFor="pack-remarque">Remarque</Label>
+            <Textarea id="pack-remarque" value={remarque} onChange={(e) => setRemarque(e.target.value)} rows={2} maxLength={500} />
           </div>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="pack-remarque">Remarque</Label>
-          <Textarea id="pack-remarque" value={remarque} onChange={(e) => setRemarque(e.target.value)} rows={2} maxLength={500} />
-        </div>
-      </section>
+        </section>
 
-      {erreur ? (
-        <p role="alert" className="text-sm text-destructive">
-          {erreur}
-        </p>
-      ) : null}
-      <div className="flex flex-col gap-2">
-        <Button type="submit" variant="hub" className="h-11" disabled={enCours || panier.length === 0 || !apercu.ok}>
-          {enCours ? "Envoi…" : apercu.ok && panier.length > 0 ? `Envoyer ma commande · ${formaterPrix(apercu.total)}` : "Envoyer ma commande"}
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">Pas de paiement en ligne : le club vous contactera pour le virement.</p>
+        {erreur ? (
+          <p role="alert" className="order-5 text-sm text-destructive lg:order-none">
+            {erreur}
+          </p>
+        ) : null}
+        <div className="order-6 flex flex-col gap-2 lg:order-none">
+          <Button type="submit" variant="hub" className="h-11" disabled={enCours || panier.length === 0 || !apercu.ok}>
+            {enCours ? "Envoi…" : apercu.ok && panier.length > 0 ? `Envoyer ma commande · ${formaterPrix(apercu.total)}` : "Envoyer ma commande"}
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">Pas de paiement en ligne : le club vous contactera pour le virement.</p>
+        </div>
       </div>
     </form>
   );
