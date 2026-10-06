@@ -18,6 +18,7 @@ import * as migration_20261003_161720_pack_reference_modele from './20261003_161
 import * as migration_20261003_163143_pack_remise from './20261003_163143_pack_remise';
 import * as migration_20261003_164148_pack_photos from './20261003_164148_pack_photos';
 import * as migration_20261004_111729_pack_apercu_flocage from './20261004_111729_pack_apercu_flocage';
+import * as migration_20261006_144326_pack_logo_variante from './20261006_144326_pack_logo_variante';
 
 export const migrations = [
   {
@@ -118,6 +119,11 @@ export const migrations = [
   {
     up: migration_20261004_111729_pack_apercu_flocage.up,
     down: migration_20261004_111729_pack_apercu_flocage.down,
-    name: '20261004_111729_pack_apercu_flocage'
+    name: '20261004_111729_pack_apercu_flocage',
+  },
+  {
+    up: migration_20261006_144326_pack_logo_variante.up,
+    down: migration_20261006_144326_pack_logo_variante.down,
+    name: '20261006_144326_pack_logo_variante'
   },
 ];

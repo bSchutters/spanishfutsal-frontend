@@ -17,6 +17,7 @@ import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/p
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
+  LIBELLES_LOGO,
   LIBELLES_MODE_REMISE,
   lireTailles,
   MODES_REMISE,
@@ -25,6 +26,8 @@ import {
   type CouleursFlocage,
   type DispositionFlocage,
   type ModeRemise,
+  type VersionLogo,
+  VERSIONS_LOGO,
 } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
@@ -40,6 +43,7 @@ type VarianteFormulaire = {
   photos: PhotoDeposee[];
   photoDosId: number | null;
   couleursFlocage: CouleursFlocage;
+  logo: VersionLogo;
 };
 
 const nombreSaisi = (texte: string) => (texte.trim() === "" ? NaN : Number(texte.replace(",", ".")));
@@ -53,6 +57,7 @@ const nouvelleVariante = (): VarianteFormulaire => ({
   photos: [],
   photoDosId: null,
   couleursFlocage: { ...COULEURS_FLOCAGE_DEFAUT },
+  logo: "club",
 });
 
 const nouvelleCle = () => `v${++compteur}`;
@@ -315,7 +320,7 @@ function ReglageLogo({
       <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={variante.photos[0].url} alt="" className="size-full object-contain" />
-        <ApercuLogo disposition={disposition} />
+        <ApercuLogo disposition={disposition} logo={variante.logo} />
       </div>
       <p className="text-xs text-muted-foreground">Le logo se pose sur la photo principale de chaque couleur : glissez la photo de face en premier.</p>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -382,7 +387,7 @@ function ReglageFlocage({
       <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photoDos.url} alt="" className="size-full object-contain" />
-        <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} />
+        <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} logo={avecDos.logo} />
       </div>
       <div className="grid grid-cols-[5rem_1fr] gap-2">
         <Input aria-label="Numéro d'essai" inputMode="numeric" maxLength={2} value={essaiNumero} onChange={(e) => onEssaiNumero(e.target.value.replace(/\D/g, ""))} />
@@ -469,6 +474,7 @@ function FicheArticle({
           photos: v.photos,
           photoDosId: v.photoDosId,
           couleursFlocage: v.couleursFlocage,
+          logo: v.logo,
         }))
       : [nouvelleVariante()],
   );
@@ -510,6 +516,7 @@ function FicheArticle({
         photoIds: v.photos.map((p) => p.id),
         photoDosId: v.photoDosId,
         couleursFlocage: v.couleursFlocage,
+        logo: v.logo,
       })),
     });
     setEnCours(false);
@@ -712,6 +719,22 @@ function FicheArticle({
                     </label>
                   ))}
                 </div>
+              ) : null}
+              {floquable || disposition.logoAvant ? (
+                <label className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-muted-foreground">Logo :</span>
+                  <ListeDeroulante
+                    value={v.logo}
+                    onChange={(e) => changerVariante(v.cle, { logo: e.target.value as VersionLogo })}
+                    className="h-8 w-auto text-xs"
+                  >
+                    {VERSIONS_LOGO.map((l) => (
+                      <option key={l} value={l}>
+                        {LIBELLES_LOGO[l]}
+                      </option>
+                    ))}
+                  </ListeDeroulante>
+                </label>
               ) : null}
             </div>
           ))}

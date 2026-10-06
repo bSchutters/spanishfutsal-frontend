@@ -3,7 +3,7 @@
 import localFont from "next/font/local";
 import { useEffect, useState } from "react";
 
-import type { CouleursFlocage, DispositionFlocage } from "@/hub/pack/schema";
+import type { CouleursFlocage, DispositionFlocage, VersionLogo } from "@/hub/pack/schema";
 import { imageSponsor, SPONSORS, versionSponsors, type Sponsor, type VersionSponsors } from "@/hub/pack/sponsors";
 
 /**
@@ -32,7 +32,8 @@ const TRAIT_EXTERIEUR = 2 * (0.0095 + 0.011);
 const LOGO_DIAMETRE = 0.103;
 const LOGO_CENTRE_DEPUIS_LE_BAS = 0.089;
 
-const LOGO = "/assets/images/svg/logo-asturiana.svg";
+/** Le logo du club en couleurs, ou l'une des versions des gardiens (public/assets/images/flocage). */
+const imageLogo = (logo: VersionLogo) => (logo === "club" ? "/assets/images/svg/logo-asturiana.svg" : `/assets/images/flocage/logo-${logo}.svg`);
 
 /** La largeur du numero et le milieu du bas de chaque chiffre, en em depuis la gauche du numero. */
 type Mesure = { numero: string; largeurEm: number; centres: number[] };
@@ -134,7 +135,7 @@ function TexteFloque({ texte, x, y, taille, couleurs, espacement = 0 }: { texte:
  * Un maillot photographie de biais demande de le tourner, de le pencher comme
  * la poitrine (inclinaison verticale) et de le resserrer en largeur.
  */
-export function ApercuLogo({ disposition }: { disposition: DispositionFlocage }) {
+export function ApercuLogo({ disposition, logo = "club" }: { disposition: DispositionFlocage; logo?: VersionLogo }) {
   const taille = disposition.logoTaille * 10;
   const forme = [
     `translate(${disposition.logoX * 10} ${disposition.logoY * 10})`,
@@ -145,7 +146,7 @@ export function ApercuLogo({ disposition }: { disposition: DispositionFlocage })
   return (
     <svg viewBox="0 0 1000 1000" className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
       <g transform={forme}>
-        <image href={LOGO} x={-taille / 2} y={-taille / 2} width={taille} height={taille} />
+        <image href={imageLogo(logo)} x={-taille / 2} y={-taille / 2} width={taille} height={taille} />
       </g>
     </svg>
   );
@@ -168,11 +169,13 @@ export default function ApercuFlocage({
   nom,
   couleurs,
   disposition,
+  logo = "club",
 }: {
   numero: string;
   nom: string;
   couleurs: CouleursFlocage;
   disposition: DispositionFlocage;
+  logo?: VersionLogo;
 }) {
   const mesure = useMesureDuNumero(numero);
   if (!numero && !nom && !disposition.sponsors) return null;
@@ -184,7 +187,7 @@ export default function ApercuFlocage({
   const baseNumero = disposition.numeroY * 10 + (disposition.numeroHauteur * 10) / 2;
 
   const gaucheNumero = 500 - (mesure.largeurEm * tailleNumero) / 2;
-  const logo = LOGO_DIAMETRE * disposition.numeroHauteur * 10;
+  const diametreLogo = LOGO_DIAMETRE * disposition.numeroHauteur * 10;
   const logoY = baseNumero - LOGO_CENTRE_DEPUIS_LE_BAS * disposition.numeroHauteur * 10;
   const version = versionSponsors(couleurs.remplissage);
 
@@ -208,11 +211,11 @@ export default function ApercuFlocage({
           {mesure.centres.map((centre, rang) => (
             <image
               key={rang}
-              href={LOGO}
-              x={gaucheNumero + centre * tailleNumero - logo / 2}
-              y={logoY - logo / 2}
-              width={logo}
-              height={logo}
+              href={imageLogo(logo)}
+              x={gaucheNumero + centre * tailleNumero - diametreLogo / 2}
+              y={logoY - diametreLogo / 2}
+              width={diametreLogo}
+              height={diametreLogo}
             />
           ))}
         </>

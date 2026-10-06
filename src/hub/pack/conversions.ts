@@ -8,11 +8,13 @@ import {
   type LigneCommande,
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
+  VERSIONS_LOGO,
   type CoteDisposition,
   type DispositionFlocage,
   type ModeRemise,
   type Photo,
   type StatutCommande,
+  type VersionLogo,
 } from "./schema";
 
 /**
@@ -89,6 +91,7 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
         contour: hex(v.flock_outline, COULEURS_FLOCAGE_DEFAUT.contour),
         exterieur: hex(v.flock_outer, COULEURS_FLOCAGE_DEFAUT.exterieur),
       },
+      logo: VERSIONS_LOGO.includes(v.flock_logo as VersionLogo) ? (v.flock_logo as VersionLogo) : "club",
     })),
   };
 }

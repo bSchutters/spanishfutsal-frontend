@@ -50,6 +50,7 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
               nom={avecFlocage ? nom.trim() : ""}
               couleurs={variante.couleursFlocage}
               disposition={article.dispositionFlocage}
+              logo={variante.logo}
             />
           ),
         }
@@ -57,7 +58,7 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
   // Le logo du club sur la photo principale, la face avant, si l'article le prevoit.
   const logo =
     article.dispositionFlocage.logoAvant && photos.length > 0 && indexDos !== 0
-      ? { index: 0, contenu: <ApercuLogo disposition={article.dispositionFlocage} /> }
+      ? { index: 0, contenu: <ApercuLogo disposition={article.dispositionFlocage} logo={variante?.logo ?? "club"} /> }
       : null;
   const flocageIncomplet = avecFlocage && numero === "" && nom.trim() === "";
 

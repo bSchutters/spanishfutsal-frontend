@@ -65,6 +65,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
       flock_fill: v.couleursFlocage.remplissage,
       flock_outline: v.couleursFlocage.contour,
       flock_outer: v.couleursFlocage.exterieur,
+      flock_logo: v.logo ?? "club",
     })),
   };
 

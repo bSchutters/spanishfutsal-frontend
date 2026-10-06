@@ -86,6 +86,21 @@ export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = {
   logoLargeur: 100,
 };
 
+/**
+ * Le logo du club pose dans le numero et sur la face avant, en trois versions
+ * fournies par le club (b_LOGO/SVG) : en couleurs pour les joueurs, a domicile
+ * comme a l'exterieur ; marine et rouge pour le gardien a domicile ; noir et
+ * blanc pour le gardien a l'exterieur. Les maillots de gardien portent la
+ * meme version sur la poitrine et dans le numero.
+ */
+export const VERSIONS_LOGO = ["club", "gk-dom", "gk-ext"] as const;
+export type VersionLogo = (typeof VERSIONS_LOGO)[number];
+export const LIBELLES_LOGO: Record<VersionLogo, string> = {
+  club: "Club, en couleurs",
+  "gk-dom": "Gardien domicile, marine et rouge",
+  "gk-ext": "Gardien extérieur, noir et blanc",
+};
+
 /** Une couleur d'un article, avec son code couleur Joma et ses photos. */
 export type Variante = {
   /** L'identifiant de la ligne dans la collection, stable d'une modification a l'autre. */
@@ -98,6 +113,8 @@ export type Variante = {
   /** La photo de dos, parmi les siennes, ou rien : elle porte l'apercu du flocage. */
   photoDosId: number | null;
   couleursFlocage: CouleursFlocage;
+  /** La version du logo du club, dans le numero et sur la face avant. */
+  logo: VersionLogo;
 };
 
 /** Comment la remise s'applique a un article : la generale, aucune, ou la sienne. */
@@ -295,6 +312,8 @@ export const schemaArticle = z
           codeCouleur: texteLibre(20, "Un code couleur : 20 caractères au plus."),
           photoDosId: z.nullable(identifiant),
           couleursFlocage: z.object({ remplissage: couleurHex, contour: couleurHex, exterieur: couleurHex }),
+          // Absent d'une fiche ouverte avant son arrivee : le logo du club.
+          logo: z.optional(z.enum(VERSIONS_LOGO)),
           photoIds: z.array(identifiant).check(z.maxLength(10, "Dix photos au plus par couleur.")),
         }),
       )

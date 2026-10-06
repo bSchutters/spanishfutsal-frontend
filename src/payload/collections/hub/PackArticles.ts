@@ -121,6 +121,12 @@ export const PackArticles: CollectionConfig = {
             { name: 'flock_outer', type: 'text', label: 'Flocage : contour exterieur', admin: { width: '33%', description: '#fdd700 par defaut.' } },
           ],
         },
+        {
+          name: 'flock_logo',
+          type: 'text',
+          label: 'Logo du club (numero et face avant)',
+          admin: { description: 'club (en couleurs), gk-dom (gardien domicile) ou gk-ext (gardien exterieur). Se regle dans le Hub.' },
+        },
       ],
     },
     {

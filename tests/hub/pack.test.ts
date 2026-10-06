@@ -45,8 +45,8 @@ const maillot: Article = {
   actif: true,
   ordre: 0,
   variantes: [
-    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
-    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT },
+    { id: "bleu", couleur: "Bleu", codeCouleur: "339", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT, logo: "club" },
+    { id: "blanc", couleur: "Blanc", codeCouleur: "200", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT, logo: "club" },
   ],
 };
 
@@ -63,7 +63,7 @@ const sac: Article = {
   dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
   actif: false,
   ordre: 1,
-  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
+  variantes: [{ id: "noir", couleur: "", codeCouleur: "100", photos: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT, logo: "club" }],
 };
 
 const CATALOGUE = [maillot, sac];
@@ -488,6 +488,16 @@ describe("aperçu du flocage", () => {
     expect(avec.dispositionFlocage).toMatchObject({ logoAvant: true, logoX: 70, logoY: DISPOSITION_FLOCAGE_DEFAUT.logoY, logoTaille: DISPOSITION_FLOCAGE_DEFAUT.logoTaille });
     // Droit tant qu'on ne l'a pas penche : pas d'inclinaison, de rotation ni de resserrement.
     expect(avec.dispositionFlocage).toMatchObject({ logoInclinaison: 0, logoRotation: 0, logoLargeur: 100 });
+  });
+
+  it("lit la version du logo de chaque couleur, le logo du club par défaut", () => {
+    const article = articleDe({
+      id: 16,
+      name: "Maillot gardien",
+      price: 30,
+      variants: [{ id: "a", flock_logo: "gk-dom" }, { id: "b", flock_logo: "gk-ext" }, { id: "c" }, { id: "d", flock_logo: "rouge" }],
+    });
+    expect(article.variantes.map((v) => v.logo)).toEqual(["gk-dom", "gk-ext", "club", "club"]);
   });
 
   it("choisit la version des sponsors d'après la couleur des lettres", () => {
