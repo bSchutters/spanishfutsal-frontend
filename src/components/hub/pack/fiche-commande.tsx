@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerCommande } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
@@ -20,7 +21,6 @@ import {
   type PrixFlocage,
   type StatutCommande,
 } from "@/hub/pack/schema";
-import ListeDeroulante from "./liste-deroulante";
 
 type LigneEdition = LigneSaisie & { cle: string };
 
@@ -192,26 +192,32 @@ export default function FicheCommande({
                   </Button>
                 </div>
                 <div className="grid grid-cols-[1fr_1fr_4.5rem] gap-2">
-                  <ListeDeroulante
-                    aria-label="Couleur"
-                    value={l.varianteId}
-                    onChange={(e) => changer(l.cle, { varianteId: e.target.value })}
-                    disabled={article.variantes.length < 2}
-                  >
-                    {article.variantes.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.couleur || "Couleur unique"}
-                      </option>
-                    ))}
-                  </ListeDeroulante>
-                  <ListeDeroulante aria-label="Taille" value={l.taille} onChange={(e) => changer(l.cle, { taille: e.target.value })}>
-                    {article.tailles.includes(l.taille) ? null : <option value={l.taille}>{l.taille}</option>}
-                    {article.tailles.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </ListeDeroulante>
+                  <Select value={l.varianteId} onValueChange={(varianteId) => changer(l.cle, { varianteId })} disabled={article.variantes.length < 2}>
+                    <SelectTrigger aria-label="Couleur" className="w-full">
+                      <SelectValue placeholder="Couleur" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {article.variantes.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.couleur || "Couleur unique"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={l.taille} onValueChange={(taille) => changer(l.cle, { taille })}>
+                    <SelectTrigger aria-label="Taille" className="w-full">
+                      <SelectValue placeholder="Taille" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Une taille retiree du catalogue depuis la commande reste choisie. */}
+                      {l.taille && !article.tailles.includes(l.taille) ? <SelectItem value={l.taille}>{l.taille}</SelectItem> : null}
+                      {article.tailles.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Input
                     aria-label="Quantité"
                     type="number"
@@ -231,15 +237,18 @@ export default function FicheCommande({
             );
           })}
           {peutEditer ? (
-            <ListeDeroulante aria-label="Ajouter un article" value={ajout} onChange={(e) => ajouterArticle(Number(e.target.value))}>
-              <option value="">Ajouter un article…</option>
-              {catalogue.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nom}
-                  {a.actif ? "" : " (retiré)"}
-                </option>
-              ))}
-            </ListeDeroulante>
+            <Select value={ajout} onValueChange={(id) => ajouterArticle(Number(id))}>
+              <SelectTrigger aria-label="Ajouter un article" className="w-full">
+                <SelectValue placeholder="Ajouter un article…" />
+              </SelectTrigger>
+              <SelectContent>
+                {catalogue.map((a) => (
+                  <SelectItem key={a.id} value={String(a.id)}>
+                    {a.actif ? a.nom : `${a.nom} (retiré)`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : null}
           <p className="flex items-center justify-between border-t border-border pt-3 text-sm">
             <span className="text-muted-foreground">Total</span>
@@ -255,13 +264,18 @@ export default function FicheCommande({
           <>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="commande-statut">Statut</Label>
-              <ListeDeroulante id="commande-statut" value={statut} onChange={(e) => setStatut(e.target.value as StatutCommande)} className="h-10">
-                {STATUTS_COMMANDE.map((s) => (
-                  <option key={s} value={s}>
-                    {LIBELLES_STATUT_COMMANDE[s]}
-                  </option>
-                ))}
-              </ListeDeroulante>
+              <Select value={statut} onValueChange={(s) => setStatut(s as StatutCommande)}>
+                <SelectTrigger id="commande-statut" className="w-full data-[size=default]:h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUTS_COMMANDE.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {LIBELLES_STATUT_COMMANDE[s]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="commande-remarque">Remarque</Label>

@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
@@ -14,7 +15,6 @@ import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage 
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
-import ListeDeroulante from "./liste-deroulante";
 
 type Personne = { id: number; nom: string };
 type LignePanier = LigneSaisie & { cle: string };
@@ -133,14 +133,18 @@ function CarteArticle({ article, flocage, onAjouter }: { article: Article; floca
         ) : null}
 
         <div className="grid grid-cols-[1fr_5rem] gap-2">
-          <ListeDeroulante aria-label={`Taille, ${article.nom}`} value={taille} onChange={(e) => setTaille(e.target.value)} className="h-10">
-            <option value="">Taille…</option>
-            {article.tailles.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </ListeDeroulante>
+          <Select value={taille} onValueChange={setTaille}>
+            <SelectTrigger aria-label={`Taille, ${article.nom}`} className="w-full data-[size=default]:h-10">
+              <SelectValue placeholder="Taille…" />
+            </SelectTrigger>
+            <SelectContent>
+              {article.tailles.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             aria-label={`Quantité, ${article.nom}`}
             type="number"
@@ -236,6 +240,8 @@ export default function FormulaireCommande({
   const envoyer = async (e: React.FormEvent) => {
     e.preventDefault();
     setErreur(null);
+    // La liste du design ne bloque pas l'envoi comme la liste native qu'elle remplace.
+    if (!personne) return void setErreur("Choisissez votre nom en haut de la page.");
     setEnCours(true);
     const r = await envoyerCommande(jeton, {
       joueurId: personne && personne !== AUTRE ? Number(personne) : null,
@@ -320,15 +326,19 @@ export default function FormulaireCommande({
       <div className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:flex lg:max-h-[calc(100dvh-3rem)] lg:flex-col lg:gap-6 lg:overflow-y-auto">
         <section className="order-1 flex flex-col gap-3 rounded-lg border border-border bg-card p-5 lg:order-none">
           <h2 className="text-base font-semibold">Qui commande ?</h2>
-          <ListeDeroulante aria-label="Votre nom" value={personne} onChange={(e) => setPersonne(e.target.value)} className="h-10" required>
-            <option value="">Choisissez votre nom…</option>
-            {effectif.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nom}
-              </option>
-            ))}
-            <option value={AUTRE}>Autre (parent, proche…)</option>
-          </ListeDeroulante>
+          <Select value={personne} onValueChange={setPersonne}>
+            <SelectTrigger aria-label="Votre nom" className="w-full data-[size=default]:h-10">
+              <SelectValue placeholder="Choisissez votre nom…" />
+            </SelectTrigger>
+            <SelectContent>
+              {effectif.map((p) => (
+                <SelectItem key={p.id} value={String(p.id)}>
+                  {p.nom}
+                </SelectItem>
+              ))}
+              <SelectItem value={AUTRE}>Autre (parent, proche…)</SelectItem>
+            </SelectContent>
+          </Select>
           {personne === AUTRE ? (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="pack-autre-nom">Votre nom</Label>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +32,6 @@ import {
 } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
-import ListeDeroulante from "./liste-deroulante";
 
 type PhotoDeposee = { id: number; url: string };
 type Photo = PhotoDeposee | null;
@@ -572,18 +572,18 @@ function FicheArticle({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="article-remise">Remise</Label>
-            <ListeDeroulante
-              id="article-remise"
-              value={modeRemise}
-              onChange={(e) => setModeRemise(e.target.value as ModeRemise)}
-              className="h-10"
-            >
-              {MODES_REMISE.map((m) => (
-                <option key={m} value={m}>
-                  {m === "general" ? `${LIBELLES_MODE_REMISE[m]} (${remiseGenerale.toLocaleString("fr-BE")} %)` : LIBELLES_MODE_REMISE[m]}
-                </option>
-              ))}
-            </ListeDeroulante>
+            <Select value={modeRemise} onValueChange={(m) => setModeRemise(m as ModeRemise)}>
+              <SelectTrigger id="article-remise" className="w-full data-[size=default]:h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MODES_REMISE.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m === "general" ? `${LIBELLES_MODE_REMISE[m]} (${remiseGenerale.toLocaleString("fr-BE")} %)` : LIBELLES_MODE_REMISE[m]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {modeRemise === "custom" ? (
             <div className="flex flex-col gap-1.5">
@@ -723,17 +723,18 @@ function FicheArticle({
               {floquable || disposition.logoAvant ? (
                 <label className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-muted-foreground">Logo :</span>
-                  <ListeDeroulante
-                    value={v.logo}
-                    onChange={(e) => changerVariante(v.cle, { logo: e.target.value as VersionLogo })}
-                    className="h-8 w-auto text-xs"
-                  >
-                    {VERSIONS_LOGO.map((l) => (
-                      <option key={l} value={l}>
-                        {LIBELLES_LOGO[l]}
-                      </option>
-                    ))}
-                  </ListeDeroulante>
+                  <Select value={v.logo} onValueChange={(logo) => changerVariante(v.cle, { logo: logo as VersionLogo })}>
+                    <SelectTrigger size="sm" aria-label="Logo" className="text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VERSIONS_LOGO.map((l) => (
+                        <SelectItem key={l} value={l}>
+                          {LIBELLES_LOGO[l]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
               ) : null}
             </div>
