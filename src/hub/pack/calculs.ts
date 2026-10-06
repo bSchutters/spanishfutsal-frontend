@@ -86,6 +86,20 @@ export function enNomsJoma(
   }));
 }
 
+/** Les tags du catalogue, chacun une fois (a la casse pres), dans l'ordre ou les articles les portent. */
+export function tagsDuCatalogue(articles: readonly Pick<Article, "tags">[]): string[] {
+  const vus = new Map<string, string>();
+  for (const a of articles) for (const t of a.tags) if (!vus.has(t.toLowerCase())) vus.set(t.toLowerCase(), t);
+  return [...vus.values()];
+}
+
+/** Les articles qui portent un tag, ou tous sans tag choisi. */
+export function filtrerParTag<T extends Pick<Article, "tags">>(articles: readonly T[], tag: string | null): T[] {
+  if (!tag) return [...articles];
+  const cherche = tag.toLowerCase();
+  return articles.filter((a) => a.tags.some((t) => t.toLowerCase() === cherche));
+}
+
 /** Le total d'une liste de lignes. */
 export function totalDes(lignes: readonly Pick<LigneCommande, "prixUnitaire" | "quantite">[]): number {
   return enEuros(lignes.reduce((somme, l) => somme + enCentimes(l.prixUnitaire) * l.quantite, 0));

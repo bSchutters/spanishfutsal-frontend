@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
-import { avancementJoma, construireLignes, formaterPrix, MINIMUM_JOMA, prixUnitaire, totalDes } from "@/hub/pack/calculs";
+import { avancementJoma, construireLignes, filtrerParTag, formaterPrix, MINIMUM_JOMA, prixUnitaire, tagsDuCatalogue, totalDes } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
@@ -551,10 +551,14 @@ export default function FormulaireCommande({
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoyee, setEnvoyee] = useState<CommandeEnvoyee | null>(null);
   const [panierVisible, setPanierVisible] = useState(false);
+  // Le tag choisi pour filtrer les articles, ou aucun : tous.
+  const [filtre, setFiltre] = useState<string | null>(null);
   const zonePanier = useRef<HTMLElement>(null);
 
   const apercu = useMemo(() => construireLignes(panier, articles, flocage, { inactifsAdmis: false }), [panier, articles, flocage]);
   const pieces = panier.reduce((n, l) => n + l.quantite, 0);
+  const tags = useMemo(() => tagsDuCatalogue(articles), [articles]);
+  const visibles = filtrerParTag(articles, filtre);
 
   // Sur telephone, la barre du bas mene a la commande tant qu'elle n'est pas a l'ecran.
   useEffect(() => {
@@ -648,11 +652,41 @@ export default function FormulaireCommande({
             </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">Touchez un article pour choisir sa couleur, sa taille et son flocage.</p>
           </div>
+          {tags.length > 0 ? (
+            // Une rangee qui defile au doigt sur telephone, et passe a la ligne sur grand ecran.
+            <div
+              role="group"
+              aria-label="Filtrer les articles"
+              className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+            >
+              {[null, ...tags].map((tag) => {
+                const actif = (tag ?? "") === (filtre ?? "");
+                const nombre = filtrerParTag(articles, tag).length;
+                return (
+                  <button
+                    key={tag ?? "tout"}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() => setFiltre(tag)}
+                    className={cn(
+                      "flex h-9 shrink-0 items-center gap-1.5 rounded-full border-2 px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                      actif
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-spanish-bg-lighter bg-spanish-bg-light text-foreground hover:border-primary/60",
+                    )}
+                  >
+                    {tag ?? "Tout"}
+                    <span className={cn("text-xs tabular-nums", actif ? "text-primary-foreground/70" : "text-muted-foreground")}>{nombre}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
           {articles.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">Aucun article pour le moment.</p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 2xl:grid-cols-4">
-              {articles.map((a, rang) => (
+              {visibles.map((a, rang) => (
                 <CarteProduit
                   key={a.id}
                   article={a}

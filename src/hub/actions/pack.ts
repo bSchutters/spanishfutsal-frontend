@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Resultat } from "@/hub/actions/evenements";
 import { versChampDate } from "@/hub/dates";
 import { construireLignes } from "@/hub/pack/calculs";
-import { dispositionDe, versLignesCollection } from "@/hub/pack/conversions";
+import { dispositionDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
 import { chargerArticle, chargerCommande, chargerReglagesPack, listerArticles } from "@/hub/pack/donnees";
 import {
   premiereErreur,
@@ -52,6 +52,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
     discount_mode: s.modeRemise,
     custom_discount: s.modeRemise === "custom" ? s.remiseParticuliere : null,
     sizes: s.tailles,
+    tags: tagsDe(s.tags ?? []),
     flockable: s.floquable,
     flock_layout: dispositionDe(s.dispositionFlocage),
     active: s.actif,

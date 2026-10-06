@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical, ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, GripVertical, ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerArticle, reordonnerArticles, supprimerArticle } from "@/hub/actions/pack";
-import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/pack/calculs";
+import { formaterPrix, prixJoueur, referenceComplete, tagsDuCatalogue, tauxRemise } from "@/hub/pack/calculs";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -228,6 +229,111 @@ function PhotosCouleur({
         {enCours > 0 ? "Dépôt…" : photos.length >= PHOTOS_MAX ? `${PHOTOS_MAX} photos au plus` : photos.length > 0 ? "Ajouter des photos" : "Photos"}
       </Button>
     </div>
+  );
+}
+
+/**
+ * Les tags d'un article, en liste a choix multiple : tous ceux du catalogue,
+ * coches s'ils sont sur l'article, et une recherche qui en cree un nouveau a
+ * la volee quand le mot tape n'existe pas encore.
+ */
+function ChampTags({ tags, onChange, connus }: { tags: string[]; onChange: (tags: string[]) => void; connus: string[] }) {
+  const [ouvert, setOuvert] = useState(false);
+  const [recherche, setRecherche] = useState("");
+  const present = (tag: string) => tags.some((t) => t.toLowerCase() === tag.toLowerCase());
+  // Ceux du catalogue, puis ceux crees ici et pas encore enregistres.
+  const tous = [...connus, ...tags.filter((t) => !connus.some((k) => k.toLowerCase() === t.toLowerCase()))];
+  const mot = recherche.trim().replace(/\s+/g, " ").slice(0, 30);
+  const filtres = tous.filter((t) => t.toLowerCase().includes(mot.toLowerCase()));
+  const nouveau = mot && !tous.some((t) => t.toLowerCase() === mot.toLowerCase()) ? mot : null;
+
+  const basculer = (tag: string) => {
+    if (present(tag)) onChange(tags.filter((t) => t.toLowerCase() !== tag.toLowerCase()));
+    else if (tags.length < 10) onChange([...tags, tag]);
+  };
+  const creer = (tag: string) => {
+    basculer(tag);
+    setRecherche("");
+  };
+
+  return (
+    <Popover
+      open={ouvert}
+      onOpenChange={(o) => {
+        setOuvert(o);
+        if (!o) setRecherche("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          id="article-tags"
+          className="flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border-2 border-spanish-bg-lighter bg-spanish-bg-light px-2 py-1.5 text-start transition-colors outline-none hover:bg-spanish-bg-lighter focus-visible:ring-[3px] focus-visible:ring-spanish-accent/50"
+        >
+          {tags.length > 0 ? (
+            tags.map((t) => (
+              <span key={t} className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">
+                {t}
+              </span>
+            ))
+          ) : (
+            <span className="px-1 text-sm text-muted-foreground">Choisir ou créer des tags…</span>
+          )}
+          <ChevronDown className="ms-auto size-4 shrink-0 opacity-50" aria-hidden="true" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] min-w-64 p-0">
+        <div className="border-b border-border p-2">
+          <input
+            autoFocus
+            aria-label="Chercher ou créer un tag"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              // Entree cree le mot tape, ou coche le seul tag qui lui correspond, sans envoyer la fiche.
+              e.preventDefault();
+              if (nouveau) creer(nouveau);
+              else if (filtres.length === 1) creer(filtres[0]);
+            }}
+            placeholder="Chercher ou créer un tag"
+            className="h-8 w-full bg-transparent px-2 text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <ul role="listbox" aria-label="Tags" aria-multiselectable="true" className="max-h-60 overflow-y-auto p-1">
+          {filtres.map((t) => (
+            <li key={t}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={present(t)}
+                onClick={() => basculer(t)}
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-start text-sm transition-colors hover:bg-spanish-bg-lighter focus-visible:bg-spanish-bg-lighter focus-visible:outline-none"
+              >
+                <Check className={cn("size-4 shrink-0 text-primary", present(t) ? "opacity-100" : "opacity-0")} aria-hidden="true" />
+                {t}
+              </button>
+            </li>
+          ))}
+          {nouveau ? (
+            <li>
+              <button
+                type="button"
+                onClick={() => creer(nouveau)}
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-start text-sm text-primary transition-colors hover:bg-spanish-bg-lighter focus-visible:bg-spanish-bg-lighter focus-visible:outline-none"
+              >
+                <Plus className="size-4 shrink-0" aria-hidden="true" />
+                Créer « {nouveau} »
+              </button>
+            </li>
+          ) : null}
+          {filtres.length === 0 && !nouveau ? (
+            <li className="px-2 py-1.5 text-sm text-muted-foreground">Aucun tag pour l&apos;instant : tapez-en un.</li>
+          ) : null}
+        </ul>
+        {tags.length >= 10 ? <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">Dix tags au plus par article.</p> : null}
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -533,12 +639,15 @@ function ReglagesFlocage({
 function FicheArticle({
   article,
   remiseGenerale,
+  tagsConnus,
   onFermer,
   onEnregistre,
   onSupprime,
 }: {
   article: Article | null;
   remiseGenerale: number;
+  /** Les tags des articles du catalogue, proposes a un clic. */
+  tagsConnus: string[];
   onFermer: () => void;
   onEnregistre: (article: Article) => void;
   onSupprime: (id: number) => void;
@@ -558,6 +667,7 @@ function FicheArticle({
     taux: Number.isFinite(nombreSaisi(remiseParticuliere)) ? nombreSaisi(remiseParticuliere) : null,
   };
   const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
+  const [tags, setTags] = useState<string[]>(article?.tags ?? []);
   const [floquable, setFloquable] = useState(article?.floquable ?? false);
   const [disposition, setDisposition] = useState<DispositionFlocage>({ ...DISPOSITION_FLOCAGE_DEFAUT, ...article?.dispositionFlocage });
   const [essaiNumero, setEssaiNumero] = useState("10");
@@ -611,6 +721,7 @@ function FicheArticle({
       modeRemise,
       remiseParticuliere: modeRemise === "custom" ? nombreSaisi(remiseParticuliere) : null,
       tailles: lireTailles(tailles),
+      tags,
       floquable,
       actif,
       dispositionFlocage: disposition,
@@ -677,6 +788,11 @@ function FicheArticle({
                 <Label htmlFor="article-tailles">Tailles</Label>
                 <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
                 <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-tags">Tags</Label>
+                <ChampTags tags={tags} onChange={setTags} connus={tagsConnus} />
+                <p className="text-xs text-muted-foreground">Pour ranger les articles : les joueurs filtrent la page par tag. Un mot nouveau se crée depuis la liste.</p>
               </div>
               <label className="flex cursor-pointer items-center justify-between gap-4 rounded-md bg-secondary/40 px-3 py-2.5">
                 <span>
@@ -1143,7 +1259,14 @@ export default function Catalogue({
                 >
                   <Vignette photo={a.variantes.find((v) => v.photos.length > 0)?.photos[0] ?? null} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{a.nom}</span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span className="truncate text-sm font-medium">{a.nom}</span>
+                      {a.tags.map((t) => (
+                        <span key={t} className="shrink-0 rounded-full bg-secondary px-1.5 py-px text-[10px] text-muted-foreground">
+                          {t}
+                        </span>
+                      ))}
+                    </span>
                     <span className="block truncate text-xs text-muted-foreground">
                       {[
                         a.reference,
@@ -1186,6 +1309,7 @@ export default function Catalogue({
               key={ouverture.cle}
               article={ouverture.article}
               remiseGenerale={remiseGenerale}
+              tagsConnus={tagsDuCatalogue(articles)}
               onFermer={fermer}
               onEnregistre={enregistre}
               onSupprime={supprime}

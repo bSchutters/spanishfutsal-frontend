@@ -90,6 +90,12 @@ export const PackArticles: CollectionConfig = {
       admin: { description: 'La liste des tailles proposees, dans l ordre, par exemple ["S","M","L"].' },
     },
     {
+      name: 'tags',
+      type: 'json',
+      label: 'Tags',
+      admin: { description: 'Des mots pour ranger l article, par exemple ["Maillots"] : les joueurs filtrent la page par tag. Se regle dans le Hub.' },
+    },
+    {
       name: 'variants',
       type: 'array',
       minRows: 1,

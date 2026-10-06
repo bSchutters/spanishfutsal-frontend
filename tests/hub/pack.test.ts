@@ -6,6 +6,8 @@ import {
   avancementJoma,
   dateLimitePassee,
   enNomsJoma,
+  filtrerParTag,
+  tagsDuCatalogue,
   prixJoueur,
   prixUnitaire,
   recapJoma,
@@ -13,7 +15,7 @@ import {
   tauxRemise,
   totalDes,
 } from "@/hub/pack/calculs";
-import { articleDe, dispositionDe } from "@/hub/pack/conversions";
+import { articleDe, dispositionDe, tagsDe } from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -37,6 +39,7 @@ const maillot: Article = {
   id: 1,
   nom: "Maillot de match",
   nomJoma: "",
+  tags: ["Maillots"],
   reference: "104263",
   description: "",
   prixCatalogue: 35,
@@ -57,6 +60,7 @@ const sac: Article = {
   id: 2,
   nom: "Sac",
   nomJoma: "",
+  tags: [],
   reference: "400486",
   description: "",
   prixCatalogue: 19.9,
@@ -423,6 +427,24 @@ describe("article supprimé", () => {
       { inactifsAdmis: false },
     );
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("tags du catalogue", () => {
+  it("lit les tags sans vide ni doublon, dans leur ordre", () => {
+    expect(tagsDe([" Maillots ", "maillots", "", 4, "Gardien", "Lifestyle  du  club"])).toEqual(["Maillots", "Gardien", "Lifestyle du club"]);
+    expect(tagsDe("Maillots")).toEqual([]);
+  });
+
+  it("liste les tags une fois chacun et filtre les articles", () => {
+    const articles = [
+      { id: 1, tags: ["Maillots", "Joueurs"] },
+      { id: 2, tags: ["maillots", "Gardien"] },
+      { id: 3, tags: [] },
+    ];
+    expect(tagsDuCatalogue(articles)).toEqual(["Maillots", "Joueurs", "Gardien"]);
+    expect(filtrerParTag(articles, "MAILLOTS").map((a) => a.id)).toEqual([1, 2]);
+    expect(filtrerParTag(articles, null).map((a) => a.id)).toEqual([1, 2, 3]);
   });
 });
 

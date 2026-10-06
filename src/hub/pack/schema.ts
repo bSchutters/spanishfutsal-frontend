@@ -147,6 +147,8 @@ export type Article = {
   /** Le prix que paie le joueur, calcule depuis le prix catalogue et la remise. */
   prix: number;
   tailles: string[];
+  /** Des mots pour ranger l'article, « Maillots », « Lifestyle » : les joueurs filtrent la page par tag. */
+  tags: string[];
   floquable: boolean;
   dispositionFlocage: DispositionFlocage;
   actif: boolean;
@@ -290,6 +292,12 @@ export const schemaArticle = z
     tailles: z
       .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille : 20 caractères au plus.")))
       .check(z.minLength(1, "Indiquez au moins une taille."), z.maxLength(40, "Quarante tailles au plus.")),
+    // Absents d'une fiche ouverte avant leur arrivee (07/10/2026) : aucun tag.
+    tags: z.optional(
+      z
+        .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(30, "Un tag : 30 caractères au plus.")))
+        .check(z.maxLength(10, "Dix tags au plus.")),
+    ),
     floquable: z.boolean(),
     dispositionFlocage: z.object({
       nomY: pourcentage("La position du nom"),

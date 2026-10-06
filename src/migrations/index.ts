@@ -20,6 +20,7 @@ import * as migration_20261003_164148_pack_photos from './20261003_164148_pack_p
 import * as migration_20261004_111729_pack_apercu_flocage from './20261004_111729_pack_apercu_flocage';
 import * as migration_20261006_144326_pack_logo_variante from './20261006_144326_pack_logo_variante';
 import * as migration_20261006_181503_pack_nom_joma from './20261006_181503_pack_nom_joma';
+import * as migration_20261006_223637_pack_tags from './20261006_223637_pack_tags';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261006_181503_pack_nom_joma.up,
     down: migration_20261006_181503_pack_nom_joma.down,
-    name: '20261006_181503_pack_nom_joma'
+    name: '20261006_181503_pack_nom_joma',
+  },
+  {
+    up: migration_20261006_223637_pack_tags.up,
+    down: migration_20261006_223637_pack_tags.down,
+    name: '20261006_223637_pack_tags'
   },
 ];

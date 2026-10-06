@@ -60,6 +60,20 @@ function photoDe(photo: unknown): Photo | null {
     : null;
 }
 
+/** Les tags ranges en JSON : des mots non vides, sans doublon a la casse pres, dans leur ordre. */
+export function tagsDe(v: unknown): string[] {
+  const vus = new Set<string>();
+  const tags: string[] = [];
+  for (const brut of Array.isArray(v) ? v : []) {
+    if (typeof brut !== "string") continue;
+    const tag = brut.trim().replace(/\s+/g, " ");
+    if (!tag || vus.has(tag.toLowerCase())) continue;
+    vus.add(tag.toLowerCase());
+    tags.push(tag);
+  }
+  return tags;
+}
+
 /** Un article du catalogue ; `remiseGenerale` sert a calculer le prix du joueur. */
 export function articleDe(doc: Doc, remiseGenerale = 0): Article {
   const tailles = Array.isArray(doc.sizes) ? doc.sizes.filter((t): t is string => typeof t === "string" && t.trim() !== "") : [];
@@ -77,6 +91,7 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
     remise,
     prix: prixJoueur(prixCatalogue, remise, remiseGenerale),
     tailles: tailles.map((t) => t.trim()),
+    tags: tagsDe(doc.tags),
     floquable: doc.flockable === true,
     dispositionFlocage: dispositionDe(doc.flock_layout),
     actif: doc.active !== false,
