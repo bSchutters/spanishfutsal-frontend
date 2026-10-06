@@ -83,6 +83,19 @@ export async function listerCommandes(statut?: StatutCommande | null, payload?: 
   return (docs as Doc[]).map(commandeDe);
 }
 
+/** Les commandes deja passees chez Joma, commandees ou livrees, pour retelecharger leur PDF. */
+export async function listerCommandesPasseesChezJoma(payload?: Payload): Promise<Commande[]> {
+  const client = payload ?? (await getPayloadClient());
+  const { docs } = await client.find({
+    collection: "pack-orders",
+    where: { status: { in: ["ordered", "delivered"] } },
+    sort: "-createdAt",
+    limit: 1000,
+    depth: 1,
+  });
+  return (docs as Doc[]).map(commandeDe);
+}
+
 /** Les commandes demandees par identifiant, dans l'ordre de reception. */
 export async function chargerCommandes(ids: readonly number[], payload?: Payload): Promise<Commande[]> {
   if (ids.length === 0) return [];

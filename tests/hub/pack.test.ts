@@ -8,6 +8,8 @@ import {
   dateLimitePassee,
   enNomsJoma,
   filtrerParTag,
+  lotsJoma,
+  passeesChezJoma,
   tagsDuCatalogue,
   taillesSelonNomJoma,
   prixJoueur,
@@ -421,6 +423,19 @@ describe("PDF pour Joma", () => {
     for (const l of lignes) expect(flux).toContain(enHexa(l));
     expect(flux).not.toContain(enHexa("..."));
   });
+
+  it("marque la copie d'une commande déjà passée, à la date de sa commande", async () => {
+    const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
+    const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
+    const recap = { commandes: 1, pieces: 2, totaux: [total], flocages: [] };
+    const maintenant = new Date("2026-10-07T10:00:00Z");
+    const copie = await fluxDesPages(await pdfCommandeJoma(recap, maintenant, { copie: true, passeeLe: "2026-10-06" }));
+    expect(copie).toContain(enHexa("mardi 6 octobre 2026"));
+    expect(copie).toContain(enHexa("Copie de la commande"));
+    const originale = await fluxDesPages(await pdfCommandeJoma(recap, maintenant));
+    expect(originale).toContain(enHexa("mercredi 7 octobre 2026"));
+    expect(originale).not.toContain(enHexa("Copie"));
+  });
 });
 
 describe("photos d'une couleur", () => {
@@ -634,6 +649,23 @@ describe("commandes à passer chez Joma", () => {
     const statuts = ["received", "ordered", "delivered", "cancelled", "received"] as const;
     const commandes = statuts.map((statut, id) => ({ id, statut }));
     expect(aCommanderChezJoma(commandes).map((c) => c.id)).toEqual([0, 4]);
+  });
+
+  it("regroupe les commandes déjà passées par jour, la plus récente en tête, pour retélécharger leur PDF", () => {
+    const c = (id: number, statut: "received" | "ordered" | "delivered" | "cancelled", commandeeLe: string | null) => ({ id, statut, commandeeLe });
+    const commandes = [
+      c(1, "ordered", "2026-09-20"),
+      c(2, "delivered", "2026-10-06"),
+      c(3, "ordered", "2026-10-06"),
+      c(4, "cancelled", "2026-10-06"),
+      c(5, "received", null),
+      c(6, "ordered", null),
+    ];
+    expect(passeesChezJoma(commandes).map((x) => x.id)).toEqual([1, 2, 3]);
+    expect(lotsJoma(commandes).map((l) => [l.date, l.commandes.map((x) => x.id)])).toEqual([
+      ["2026-10-06", [2, 3]],
+      ["2026-09-20", [1]],
+    ]);
   });
 });
 

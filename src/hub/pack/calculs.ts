@@ -77,6 +77,24 @@ export function aCommanderChezJoma<T extends Pick<Commande, "statut">>(commandes
 }
 
 /**
+ * Les commandes deja passees chez Joma, commandees ou livrees, avec leur
+ * date : celles dont le PDF se retelecharge. Une annulee n'y est plus.
+ */
+export function passeesChezJoma<T extends Pick<Commande, "statut" | "commandeeLe">>(commandes: readonly T[]): T[] {
+  return commandes.filter((c) => c.commandeeLe !== null && (c.statut === "ordered" || c.statut === "delivered"));
+}
+
+/** Les commandes passees chez Joma, une liste par jour de commande, la plus recente en tete. */
+export function lotsJoma<T extends Pick<Commande, "statut" | "commandeeLe">>(commandes: readonly T[]): { date: string; commandes: T[] }[] {
+  const parDate = new Map<string, T[]>();
+  for (const c of passeesChezJoma(commandes)) {
+    const date = c.commandeeLe as string;
+    parDate.set(date, [...(parDate.get(date) ?? []), c]);
+  }
+  return [...parDate.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([date, liste]) => ({ date, commandes: liste }));
+}
+
+/**
  * Les commandes telles que Joma doit les lire : sans les articles ecartes
  * (designes par leur nom affiche, celui que le club connait), et chaque ligne
  * sous le nom Joma de son article, ou son nom affiche s'il n'en a pas.

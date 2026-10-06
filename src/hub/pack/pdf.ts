@@ -161,7 +161,16 @@ const COLONNES_TOTAUX: Colonne[] = [
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
-export async function pdfCommandeJoma(recap: RecapJoma, maintenant = new Date()): Promise<Uint8Array> {
+/**
+ * `copie` : le PDF d'une commande deja passee chez Joma, date de sa commande
+ * (`passeeLe`) en tete, et marque comme une copie pour que personne ne le
+ * prenne pour une nouvelle commande.
+ */
+export async function pdfCommandeJoma(
+  recap: RecapJoma,
+  maintenant = new Date(),
+  { copie = false, passeeLe = null }: { copie?: boolean; passeeLe?: string | null } = {},
+): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle("Commande Joma - UD Asturiana");
   doc.setAuthor("UD Asturiana");
@@ -172,11 +181,12 @@ export async function pdfCommandeJoma(recap: RecapJoma, maintenant = new Date())
 
   mise.texte("UD Asturiana · Commande Joma", 18, true);
   mise.texte(
-    `${formaterDate(maintenant)} · ${pluriel(recap.commandes, "commande")} · ${pluriel(recap.pieces, "pièce")}`,
+    `${formaterDate(passeeLe ?? maintenant)} · ${pluriel(recap.commandes, "commande")} · ${pluriel(recap.pieces, "pièce")}`,
     10,
     false,
     GRIS,
   );
+  if (copie) mise.texte(`Copie de la commande, téléchargée le ${formaterDate(maintenant)}`, 10, true, GRIS);
   mise.espace(14);
 
   mise.texte("Quantités par article", 12, true);
