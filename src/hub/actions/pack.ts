@@ -107,6 +107,44 @@ export async function supprimerArticle(id: unknown): Promise<Resultat> {
   }
 }
 
+/**
+ * L'ordre du catalogue, glisse dans le Hub : chaque article prend son rang
+ * dans la liste recue, et la page des joueurs suit cet ordre. Seuls les
+ * articles qui changent de rang s'ecrivent.
+ */
+export async function reordonnerArticles(ids: unknown): Promise<Resultat> {
+  await exigerModule("pack", "edit");
+  if (
+    !Array.isArray(ids) ||
+    ids.length === 0 ||
+    ids.length > 300 ||
+    !ids.every((id) => Number.isInteger(id) && id > 0) ||
+    new Set(ids).size !== ids.length
+  ) {
+    return { ok: false, erreur: "Cet ordre n'est pas valable." };
+  }
+  const liste = ids as number[];
+  const payload = await getPayloadClient();
+  try {
+    const { docs } = await payload.find({
+      collection: "pack-articles",
+      where: { id: { in: liste } },
+      limit: liste.length,
+      depth: 0,
+    });
+    if (docs.length !== liste.length) return { ok: false, erreur: "Le catalogue a changé entre-temps : rechargez la page." };
+    const rangs = new Map(docs.map((doc) => [Number(doc.id), doc.sort_order]));
+    for (const [rang, id] of liste.entries()) {
+      if (rangs.get(id) === rang) continue;
+      await payload.update({ collection: "pack-articles", id, data: { sort_order: rang }, depth: 0 });
+    }
+    revalidatePath("/hub/pack", "layout");
+    return { ok: true };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
 export async function enregistrerReglagesPack(saisie: unknown): Promise<Resultat<ReglagesPack>> {
   await exigerModule("pack", "edit");
   const lecture = schemaReglagesPack.safeParse(saisie);

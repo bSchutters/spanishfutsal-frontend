@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
+import { GripVertical, ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { enregistrerArticle, supprimerArticle } from "@/hub/actions/pack";
+import { enregistrerArticle, reordonnerArticles, supprimerArticle } from "@/hub/actions/pack";
 import { formaterPrix, prixJoueur, referenceComplete, tauxRemise } from "@/hub/pack/calculs";
 import {
   COULEURS_FLOCAGE_DEFAUT,
@@ -949,6 +949,9 @@ function FicheArticle({
 /**
  * Le catalogue du Pack : les articles actifs, puis ceux retires, estompes.
  * Un clic ouvre la fiche ; en lecture seule, la liste ne s'ouvre pas.
+ * L'ordre se change en glissant les articles, ou aux fleches depuis leur
+ * poignee : il s'enregistre au lacher, et la page des joueurs le suit. Un
+ * article reste du cote des actifs ou de celui des retires.
  */
 export default function Catalogue({
   articles: initiaux,
@@ -965,6 +968,18 @@ export default function Catalogue({
     article: null,
     cle: 0,
   });
+  // L'article qu'on glisse : la liste se reordonne en direct sous le pointeur.
+  const [tiree, setTiree] = useState<number | null>(null);
+  // La liste d'avant le glisser, rendue si l'article est lache hors de la liste ou sur Echap.
+  const avant = useRef<Article[] | null>(null);
+  const depose = useRef(false);
+  // Un envoi a la fois : pendant qu'il part, seul le dernier ordre demande attend son tour.
+  const envoi = useRef<{ enCours: boolean; suivant: number[] | null }>({ enCours: false, suivant: null });
+  // Le rang de chaque article tel que la base le connait, pour revenir en arriere si un envoi echoue.
+  const enBase = useRef(new Map(initiaux.map((a) => [a.id, a.ordre])));
+  const triable = peutEditer && articles.length > 1;
+
+  const tri = (a: Article, b: Article) => Number(b.actif) - Number(a.actif) || a.ordre - b.ordre || a.nom.localeCompare(b.nom, "fr");
 
   const ouvrir = (article: Article | null) => setOuverture((o) => ({ ouvert: true, article, cle: o.cle + 1 }));
   const fermer = () => setOuverture((o) => ({ ...o, ouvert: false }));
@@ -975,11 +990,55 @@ export default function Catalogue({
   const enregistre = (article: Article) => {
     setArticles((liste) => {
       const autres = liste.filter((a) => a.id !== article.id);
-      return [...autres, article].sort(
-        (a, b) => Number(b.actif) - Number(a.actif) || a.ordre - b.ordre || a.nom.localeCompare(b.nom, "fr"),
-      );
+      return [...autres, article].sort(tri);
     });
     fermer();
+  };
+
+  // La liste avec l'article `id` au rang `rang`, chaque article renumerote a sa nouvelle place.
+  const deplace = (liste: Article[], id: number, rang: number): Article[] => {
+    const article = liste.find((a) => a.id === id);
+    if (!article) return liste;
+    const reste = liste.filter((a) => a.id !== id);
+    return [...reste.slice(0, rang), article, ...reste.slice(rang)].map((a, i) => (a.ordre === i ? a : { ...a, ordre: i }));
+  };
+
+  // L'ordre affiche part en base ; s'il echoue, la liste reprend le dernier ordre enregistre.
+  const enregistrerOrdre = async (liste: Article[]) => {
+    envoi.current.suivant = liste.map((a) => a.id);
+    if (envoi.current.enCours) return;
+    envoi.current.enCours = true;
+    while (envoi.current.suivant) {
+      const ids = envoi.current.suivant;
+      envoi.current.suivant = null;
+      const r = await reordonnerArticles(ids).catch(() => ({
+        ok: false as const,
+        erreur: "L'ordre n'a pas pu être enregistré. Vérifiez votre connexion et réessayez.",
+      }));
+      if (!r.ok) {
+        envoi.current.suivant = null;
+        setArticles((l) => l.map((a) => ({ ...a, ordre: enBase.current.get(a.id) ?? a.ordre })).sort(tri));
+        toast.error(r.erreur);
+        break;
+      }
+      ids.forEach((id, rang) => enBase.current.set(id, rang));
+      if (!envoi.current.suivant) toast.success("Ordre enregistré.", { id: "ordre-catalogue" });
+    }
+    envoi.current.enCours = false;
+  };
+
+  // Depuis la poignee, les fleches font monter ou descendre l'article d'un rang.
+  const auClavier = (e: React.KeyboardEvent<HTMLElement>, article: Article, rang: number) => {
+    const pas = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0;
+    if (pas === 0) return;
+    e.preventDefault();
+    if (articles[rang + pas]?.actif !== article.actif) return;
+    const suite = deplace(articles, article.id, rang + pas);
+    setArticles(suite);
+    void enregistrerOrdre(suite);
+    // La poignee garde le focus, meme si sa ligne a change de place dans la page.
+    const poignee = e.currentTarget;
+    requestAnimationFrame(() => poignee.focus());
   };
 
   return (
@@ -998,43 +1057,102 @@ export default function Catalogue({
       {articles.length === 0 ? (
         <p className="px-4 py-3 text-sm text-muted-foreground">Aucun article pour l&apos;instant.</p>
       ) : (
-        <ul className="divide-y divide-border">
-          {articles.map((a) => (
-            <li key={a.id}>
-              <button
-                type="button"
-                disabled={!peutEditer}
-                onClick={() => ouvrir(a)}
+        <>
+          {triable ? <p className="px-4 pt-3 text-xs text-muted-foreground">Glissez les articles pour changer leur ordre sur la page des joueurs.</p> : null}
+          {/* Lache n'importe ou sur la liste, l'ordre affiche s'enregistre. */}
+          <ul
+            className="divide-y divide-border"
+            onDragOver={(e) => {
+              if (tiree === null) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(e) => {
+              if (tiree === null) return;
+              e.preventDefault();
+              depose.current = true;
+              setTiree(null);
+              const precedente = avant.current;
+              if (precedente && articles.some((a, rang) => a.id !== precedente[rang]?.id)) void enregistrerOrdre(articles);
+            }}
+          >
+            {articles.map((a, rang) => (
+              <li
+                key={a.id}
+                draggable={triable}
+                onDragStart={(e) => {
+                  avant.current = articles;
+                  depose.current = false;
+                  setTiree(a.id);
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", String(a.id));
+                }}
+                onDragOver={() => {
+                  if (tiree === null || tiree === a.id) return;
+                  // Un actif reste parmi les actifs, un retire parmi les retires.
+                  if (articles.find((x) => x.id === tiree)?.actif === a.actif) setArticles(deplace(articles, tiree, rang));
+                }}
+                onDragEnd={() => {
+                  if (!depose.current && avant.current) setArticles(avant.current);
+                  avant.current = null;
+                  setTiree(null);
+                }}
                 className={cn(
-                  "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors enabled:hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none",
+                  "flex transition-colors",
+                  peutEditer && "hover:bg-accent/40",
                   !a.actif && "opacity-50",
+                  tiree === a.id && "opacity-40",
                 )}
               >
-                <Vignette photo={a.variantes.find((v) => v.photos.length > 0)?.photos[0] ?? null} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{a.nom}</span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {[
-                      a.reference,
-                      a.variantes.map((v) => v.couleur).filter(Boolean).join(", "),
-                      a.tailles.join(" "),
-                      a.floquable ? "floquable" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                {triable ? (
+                  // Pas un vrai bouton : Firefox ne lance pas de glisser depuis un bouton.
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Déplacer ${a.nom}`}
+                    aria-keyshortcuts="ArrowUp ArrowDown"
+                    title="Glissez, ou utilisez les flèches haut et bas"
+                    onKeyDown={(e) => auClavier(e, a, rang)}
+                    className="flex shrink-0 cursor-grab items-center ps-3 text-muted-foreground hover:text-foreground focus-visible:bg-accent/40 focus-visible:text-foreground focus-visible:outline-none active:cursor-grabbing"
+                  >
+                    <GripVertical className="size-4" aria-hidden="true" />
                   </span>
-                </span>
-                {!a.actif ? <Etiquette>Retiré</Etiquette> : null}
-                <span className="shrink-0 text-right tabular-nums">
-                  <span className="block text-sm font-semibold">{formaterPrix(a.prix)}</span>
-                  {a.prix !== a.prixCatalogue ? (
-                    <span className="block text-[11px] text-muted-foreground line-through">{formaterPrix(a.prixCatalogue)}</span>
-                  ) : null}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={!peutEditer}
+                  onClick={() => ouvrir(a)}
+                  className={cn(
+                    "flex min-w-0 flex-1 items-center gap-3 py-3 pe-4 text-left focus-visible:bg-accent/40 focus-visible:outline-none",
+                    triable ? "ps-2" : "ps-4",
+                  )}
+                >
+                  <Vignette photo={a.variantes.find((v) => v.photos.length > 0)?.photos[0] ?? null} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{a.nom}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {[
+                        a.reference,
+                        a.variantes.map((v) => v.couleur).filter(Boolean).join(", "),
+                        a.tailles.join(" "),
+                        a.floquable ? "floquable" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  {!a.actif ? <Etiquette>Retiré</Etiquette> : null}
+                  <span className="shrink-0 text-right tabular-nums">
+                    <span className="block text-sm font-semibold">{formaterPrix(a.prix)}</span>
+                    {a.prix !== a.prixCatalogue ? (
+                      <span className="block text-[11px] text-muted-foreground line-through">{formaterPrix(a.prixCatalogue)}</span>
+                    ) : null}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       {/* Une fenetre centree, presque plein ecran, plutot qu'un panneau glisse depuis le bord. */}
