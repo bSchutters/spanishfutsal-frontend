@@ -1,20 +1,10 @@
 "use client";
 
-import localFont from "next/font/local";
 import { useEffect, useState } from "react";
 
 import type { CouleursFlocage, DispositionFlocage, VersionLogo } from "@/hub/pack/schema";
 import { imageSponsor, SPONSORS, versionSponsors, type Sponsor, type VersionSponsors } from "@/hub/pack/sponsors";
-
-/**
- * La police du flocage du club, Tanker (Indian Type Foundry, distribuee
- * librement par Fontshare). Chargee seulement la ou l'apercu s'affiche.
- */
-const tanker = localFont({
-  src: "../../../../public/assets/fonts/tanker/Tanker-Regular.otf",
-  display: "swap",
-  preload: false,
-});
+import { tanker } from "./police-tanker";
 
 /** La hauteur des capitales et des chiffres de Tanker, en em. */
 const HAUTEUR_CAPITALE = 0.75;
@@ -111,9 +101,36 @@ function useMesureDuNumero(numero: string): Mesure {
   return mesure?.numero === numero ? mesure : estimation(numero);
 }
 
-/** Un texte en trois couches : contour exterieur, contour, puis la lettre. */
-function TexteFloque({ texte, x, y, taille, couleurs, espacement = 0 }: { texte: string; x: number; y: number; taille: number; couleurs: CouleursFlocage; espacement?: number }) {
+/**
+ * Un texte en trois couches : contour exterieur, contour, puis la lettre. Le
+ * nom n'a pas de contour, seul le numero en porte (precise par Bryan le
+ * 06/10/2026) : sans `contours`, la lettre seule.
+ */
+function TexteFloque({
+  texte,
+  x,
+  y,
+  taille,
+  couleurs,
+  espacement = 0,
+  contours = true,
+}: {
+  texte: string;
+  x: number;
+  y: number;
+  taille: number;
+  couleurs: CouleursFlocage;
+  espacement?: number;
+  contours?: boolean;
+}) {
   const commun = { x, y, fontSize: taille, textAnchor: "middle" as const, letterSpacing: espacement * taille };
+  if (!contours) {
+    return (
+      <text {...commun} fill={couleurs.remplissage}>
+        {texte}
+      </text>
+    );
+  }
   return (
     <>
       <text {...commun} fill={couleurs.exterieur} stroke={couleurs.exterieur} strokeWidth={TRAIT_EXTERIEUR * taille} strokeLinejoin="round">
@@ -204,7 +221,7 @@ export default function ApercuFlocage({
           <SponsorDos sponsor={SPONSORS.bas} version={version} centreY={disposition.sponsorBasY * 10} largeur={disposition.sponsorLargeur * 10} />
         </>
       ) : null}
-      {nom ? <TexteFloque texte={nom} x={500} y={baseNom} taille={tailleNom} couleurs={couleurs} espacement={0.03} /> : null}
+      {nom ? <TexteFloque texte={nom} x={500} y={baseNom} taille={tailleNom} couleurs={couleurs} espacement={0.03} contours={false} /> : null}
       {numero ? (
         <>
           <TexteFloque texte={numero} x={500} y={baseNumero} taille={tailleNumero} couleurs={couleurs} />

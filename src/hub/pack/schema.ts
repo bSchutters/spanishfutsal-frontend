@@ -251,10 +251,8 @@ export const schemaCommandeJoueur = z
       message: "Choisissez votre nom dans la liste, ou indiquez-le.",
       path: ["joueurId"],
     }),
-    z.refine((s) => s.telephone !== "" || s.email !== "", {
-      message: "Indiquez un téléphone ou une adresse e-mail.",
-      path: ["telephone"],
-    }),
+    // Plus de moyen de contact demande (06/10/2026) : le club connait ses joueurs.
+    // Les champs restent, vides, pour garder la forme des commandes deja passees.
   );
 export type SaisieCommandeJoueur = z.infer<typeof schemaCommandeJoueur>;
 
