@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
-import { construireLignes, formaterPrix, prixUnitaire, totalDes } from "@/hub/pack/calculs";
+import { construireLignes, formaterPrix, nomPropose, prixUnitaire, totalDes } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
@@ -110,7 +110,7 @@ function Quantite({ valeur, onChange, libelle, petit = false }: { valeur: number
     <div
       role="group"
       aria-label={libelle}
-      className={cn("inline-flex items-center self-start rounded-lg border-2 border-spanish-bg-lighter bg-spanish-bg-light", petit ? "" : "p-0.5")}
+      className={cn("inline-flex shrink-0 items-center rounded-lg border-2 border-spanish-bg-lighter bg-spanish-bg-light", petit ? "" : "p-0.5")}
     >
       <button type="button" className={bouton} aria-label="Une pièce de moins" disabled={valeur <= 1} onClick={() => onChange(valeur - 1)}>
         <Minus className="size-4" aria-hidden="true" />
@@ -268,8 +268,11 @@ function FicheProduit({
   const total = totalDes([{ prixUnitaire: unitaire, quantite }]);
   const manque = !taille ? "Choisissez une taille" : flocageIncomplet ? "Indiquez un numéro ou un nom" : !numeroValide ? "Deux chiffres au plus" : null;
 
+  const blocFlocage = useRef<HTMLDivElement>(null);
+
   const basculerFlocage = (actif: boolean) => {
     setAvecFlocage(actif);
+    if (actif) requestAnimationFrame(() => blocFlocage.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     // Le joueur qui commande retrouve son numero et son nom, a corriger s'il le veut.
     if (actif && suggestion && numero === "" && nom === "") {
       setNumero(suggestion.numero);
@@ -294,7 +297,7 @@ function FicheProduit({
 
   return (
     // Sur grand ecran, la photo occupe un carre exact a la hauteur de la fenetre, et les reglages defilent a cote.
-    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+    <div className="relative flex min-h-0 flex-1 flex-col lg:flex-row">
       <div className="relative shrink-0 bg-white lg:aspect-square lg:h-full">
         <div className="mx-auto w-full max-w-[44dvh] lg:max-w-none">
           {/* La cle remet le diaporama sur la photo principale a chaque changement de couleur. */}
@@ -306,19 +309,11 @@ function FicheProduit({
             calques={[logo, apercu].filter((c) => c !== null)}
           />
         </div>
-        <button
-          type="button"
-          onClick={onFermer}
-          aria-label="Fermer"
-          className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-primary"
-        >
-          <X className="size-5" aria-hidden="true" />
-        </button>
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-5 pb-6 sm:px-7 sm:pt-7">
-          <DialogTitle className="text-xl leading-tight font-semibold sm:text-2xl">{article.nom}</DialogTitle>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-5 pb-6 sm:px-7 sm:pt-6 [scrollbar-color:var(--spanish-bg-lighter)_transparent] [scrollbar-width:thin]">
+          <DialogTitle className="text-xl leading-tight font-semibold sm:text-2xl lg:pe-10">{article.nom}</DialogTitle>
           {article.description ? <DialogDescription className="mt-1.5 text-sm">{article.description}</DialogDescription> : null}
           <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <Prix euros={article.prix} className="text-3xl text-spanish-accent-2" />
@@ -330,7 +325,7 @@ function FicheProduit({
             ) : null}
           </div>
 
-          <div className="mt-7 flex flex-col gap-6">
+          <div className="mt-6 flex flex-col gap-5">
             {article.variantes.length > 1 ? (
               <Champ libelle="Couleur" detail={variante?.couleur}>
                 <Pastilles
@@ -344,11 +339,8 @@ function FicheProduit({
             <Champ libelle="Taille">
               <Pastilles libelle="Taille" options={article.tailles.map((t) => ({ valeur: t, libelle: t }))} valeur={taille} onChange={setTaille} carre />
             </Champ>
-            <Champ libelle="Quantité">
-              <Quantite valeur={quantite} onChange={setQuantite} libelle="Quantité" />
-            </Champ>
             {article.floquable ? (
-              <div className="rounded-xl border border-border bg-background/40 p-4">
+              <div ref={blocFlocage} className="scroll-mb-4 rounded-xl border border-border bg-background/40 p-4">
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                   <span>
                     <span className="block text-sm font-medium">Flocage au dos</span>
@@ -401,24 +393,41 @@ function FicheProduit({
         </div>
 
         <div className="shrink-0 border-t border-border bg-card px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-7">
-          <div className="flex items-center gap-4">
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground tabular-nums">
-                {quantite} × {formaterPrix(unitaire)}
-              </p>
-              <Prix euros={total} className="text-2xl" />
-            </div>
-            <Button type="button" variant="hub" className="ms-auto h-12 min-w-0 flex-1 text-base sm:flex-none sm:px-8" disabled={manque !== null} onClick={ajouter}>
-              {manque ?? (
+          {/* La quantite et l'ajout, toujours a portee : le prix de la ligne est sur le bouton. */}
+          <div className="flex items-center gap-3">
+            <Quantite valeur={quantite} onChange={setQuantite} libelle="Quantité" />
+            <Button
+              type="button"
+              variant="hub"
+              className="h-12 min-w-0 flex-1 justify-between gap-3 px-4 text-base"
+              disabled={manque !== null}
+              onClick={ajouter}
+            >
+              {manque ? (
+                <span className="mx-auto truncate">{manque}</span>
+              ) : (
                 <>
-                  <Plus aria-hidden="true" />
-                  Ajouter à ma commande
+                  <span className="flex items-center gap-2">
+                    <Plus aria-hidden="true" />
+                    Ajouter
+                  </span>
+                  <Prix euros={total} className="text-xl" />
                 </>
               )}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* La croix ferme toute la fenetre : en haut a droite, sur la photo au telephone, sur le fond marine a l'ordinateur. */}
+      <button
+        type="button"
+        onClick={onFermer}
+        aria-label="Fermer"
+        className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-primary lg:bg-transparent lg:text-muted-foreground lg:hover:bg-spanish-bg-lighter lg:hover:text-foreground"
+      >
+        <X className="size-5" aria-hidden="true" />
+      </button>
     </div>
   );
 }
@@ -509,7 +518,7 @@ export default function FormulaireCommande({
   const pieces = panier.reduce((n, l) => n + l.quantite, 0);
   const joueur = effectif.find((p) => String(p.id) === personne) ?? null;
   const suggestion: Suggestion = joueur
-    ? { numero: joueur.numero !== null ? String(joueur.numero) : "", nom: joueur.nomFamille.toUpperCase().slice(0, LONGUEUR_NOM_FLOCAGE) }
+    ? { numero: joueur.numero !== null ? String(joueur.numero) : "", nom: nomPropose(joueur.nomFamille) }
     : null;
 
   // Sur telephone, la barre du bas mene a la commande tant qu'elle n'est pas a l'ecran.
@@ -680,7 +689,7 @@ export default function FormulaireCommande({
                 <p>Votre commande est vide. Touchez un article pour l&apos;ajouter.</p>
               </div>
             ) : (
-              <ul className="divide-y divide-border px-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+              <ul className="divide-y divide-border px-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto [scrollbar-color:var(--spanish-bg-lighter)_transparent] [scrollbar-width:thin]">
                 {panier.map((l, i) => {
                   const ligne = apercu.ok ? apercu.lignes[i] : null;
                   const article = articles.find((a) => a.id === l.articleId);

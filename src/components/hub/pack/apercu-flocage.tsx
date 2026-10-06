@@ -101,6 +101,40 @@ function useMesureDuNumero(numero: string): Mesure {
   return mesure?.numero === numero ? mesure : estimation(numero);
 }
 
+/** L'espacement des lettres du nom, en em. */
+const ESPACEMENT_NOM = 0.03;
+
+/**
+ * Jusqu'ou un nom trop long se resserre (ses lettres s'affinent, sa hauteur
+ * reste) avant de rapetisser : au flocage, un long nom tient dans la largeur
+ * du dos sans devenir illisible.
+ */
+const RESSERREMENT_MAX = 0.75;
+
+/** La largeur d'un nom, en em, espacement compris : mesuree une fois la police chargee, estimee avant. */
+function useLargeurDuNom(nom: string): number {
+  const [mesure, setMesure] = useState<{ nom: string; largeurEm: number } | null>(null);
+
+  useEffect(() => {
+    if (!nom) return;
+    let annule = false;
+    const taille = 200;
+    const police = `${taille}px ${tanker.style.fontFamily}`;
+    void document.fonts.load(police, nom).then(() => {
+      if (annule) return;
+      const ctx = document.createElement("canvas").getContext("2d");
+      if (!ctx) return;
+      ctx.font = police;
+      setMesure({ nom, largeurEm: ctx.measureText(nom).width / taille + ESPACEMENT_NOM * nom.length });
+    });
+    return () => {
+      annule = true;
+    };
+  }, [nom]);
+
+  return mesure?.nom === nom ? mesure.largeurEm : nom.length * 0.5;
+}
+
 /**
  * Un texte en trois couches : contour exterieur, contour, puis la lettre. Le
  * nom n'a pas de contour, seul le numero en porte (precise par Bryan le
@@ -114,6 +148,7 @@ function TexteFloque({
   couleurs,
   espacement = 0,
   contours = true,
+  longueur,
 }: {
   texte: string;
   x: number;
@@ -122,8 +157,17 @@ function TexteFloque({
   couleurs: CouleursFlocage;
   espacement?: number;
   contours?: boolean;
+  /** Une longueur imposee : le texte se resserre pour y tenir. */
+  longueur?: number;
 }) {
-  const commun = { x, y, fontSize: taille, textAnchor: "middle" as const, letterSpacing: espacement * taille };
+  const commun = {
+    x,
+    y,
+    fontSize: taille,
+    textAnchor: "middle" as const,
+    letterSpacing: espacement * taille,
+    ...(longueur ? { textLength: longueur, lengthAdjust: "spacingAndGlyphs" as const } : {}),
+  };
   if (!contours) {
     return (
       <text {...commun} fill={couleurs.remplissage}>
@@ -195,12 +239,18 @@ export default function ApercuFlocage({
   logo?: VersionLogo;
 }) {
   const mesure = useMesureDuNumero(numero);
+  const largeurNomEm = useLargeurDuNom(nom);
   if (!numero && !nom && !disposition.sponsors) return null;
 
-  const tailleNom = (disposition.nomHauteur * 10) / HAUTEUR_CAPITALE;
+  // Un nom plus large que permis se resserre d'abord, puis rapetisse s'il le faut.
+  let tailleNom = (disposition.nomHauteur * 10) / HAUTEUR_CAPITALE;
+  const largeurMax = disposition.nomLargeurMax * 10;
+  const rapport = largeurMax / (largeurNomEm * tailleNom);
+  if (rapport < RESSERREMENT_MAX) tailleNom *= rapport / RESSERREMENT_MAX;
+  const longueurNom = rapport < 1 ? largeurMax : undefined;
   const tailleNumero = (disposition.numeroHauteur * 10) / HAUTEUR_CAPITALE;
   // La ligne de base est sous le centre vertical, d'une demi-capitale.
-  const baseNom = disposition.nomY * 10 + (disposition.nomHauteur * 10) / 2;
+  const baseNom = disposition.nomY * 10 + (HAUTEUR_CAPITALE * tailleNom) / 2;
   const baseNumero = disposition.numeroY * 10 + (disposition.numeroHauteur * 10) / 2;
 
   const gaucheNumero = 500 - (mesure.largeurEm * tailleNumero) / 2;
@@ -221,7 +271,7 @@ export default function ApercuFlocage({
           <SponsorDos sponsor={SPONSORS.bas} version={version} centreY={disposition.sponsorBasY * 10} largeur={disposition.sponsorLargeur * 10} />
         </>
       ) : null}
-      {nom ? <TexteFloque texte={nom} x={500} y={baseNom} taille={tailleNom} couleurs={couleurs} espacement={0.03} contours={false} /> : null}
+      {nom ? <TexteFloque texte={nom} x={500} y={baseNom} taille={tailleNom} couleurs={couleurs} espacement={ESPACEMENT_NOM} contours={false} longueur={longueurNom} /> : null}
       {numero ? (
         <>
           <TexteFloque texte={numero} x={500} y={baseNumero} taille={tailleNumero} couleurs={couleurs} />

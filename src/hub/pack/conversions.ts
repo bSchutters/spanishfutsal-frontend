@@ -37,6 +37,7 @@ export function dispositionDe(v: unknown): DispositionFlocage {
   return {
     nomY: lire("nomY"),
     nomHauteur: lire("nomHauteur"),
+    nomLargeurMax: lire("nomLargeurMax"),
     numeroY: lire("numeroY"),
     numeroHauteur: lire("numeroHauteur"),
     sponsors: typeof brut.sponsors === "boolean" ? brut.sponsors : DISPOSITION_FLOCAGE_DEFAUT.sponsors,

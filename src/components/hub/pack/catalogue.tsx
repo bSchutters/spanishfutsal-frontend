@@ -493,6 +493,7 @@ function ReglagesFlocage({
       <Groupe titre="Nom">
         {curseur("nomY", "Hauteur", 5, 90)}
         {curseur("nomHauteur", "Taille", 1, 12)}
+        {curseur("nomLargeurMax", "Largeur maximale", 10, 80)}
       </Groupe>
       <Groupe
         titre="Sponsors du club"
@@ -519,7 +520,7 @@ function ReglagesFlocage({
           variant="hubSecondary"
           size="sm"
           onClick={() =>
-            onDisposition(remettre(disposition, ["nomY", "nomHauteur", "numeroY", "numeroHauteur", "sponsorHautY", "sponsorBasY", "sponsorLargeur"]))
+            onDisposition(remettre(disposition, ["nomY", "nomHauteur", "nomLargeurMax", "numeroY", "numeroHauteur", "sponsorHautY", "sponsorBasY", "sponsorLargeur"]))
           }
         >
           Positions par défaut

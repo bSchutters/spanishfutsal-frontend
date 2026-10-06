@@ -33,7 +33,7 @@ Le joueur paie le prix catalogue moins la remise de l'article, arrondi au centim
 
 **Logo sur la face avant.** Un interrupteur de la fiche pose le logo du club sur la photo principale de chaque couleur (glisser la photo de face en premier), avec des curseurs propres à l'article pour sa place et sa taille, et trois de plus pour suivre un maillot photographié de biais : largeur, inclinaison et rotation. Côté joueur, il apparaît sur cette photo dès l'ouverture.
 
-Côté joueur, les sponsors sont toujours sur la photo de dos ; activer le flocage y fait glisser le diaporama, et le numéro et le nom s'y dessinent pendant la saisie, en Tanker (la police du flocage, Indian Type Foundry, gratuite via Fontshare), avec le logo du club dans le bas de chaque chiffre.
+Côté joueur, les sponsors sont toujours sur la photo de dos ; activer le flocage y fait glisser le diaporama, et le numéro et le nom s'y dessinent pendant la saisie, en Tanker (la police du flocage, Indian Type Foundry, gratuite via Fontshare), avec le logo du club dans le bas de chaque chiffre. Le nom n'a pas de contour ; trop long, il se resserre (jusqu'à 75 % de la largeur de ses lettres) puis rapetisse pour tenir dans la largeur maximale réglée par article, curseur « Largeur maximale » du groupe Nom.
 
 **L'ordre du catalogue** se change en glissant les articles par leur poignée, ou aux flèches haut et bas depuis la poignée : il s'enregistre au lâcher, et la page des joueurs le suit. Un article reste parmi les actifs, ou parmi les retirés.
 

@@ -45,6 +45,8 @@ export const COULEURS_FLOCAGE_DEFAUT: CouleursFlocage = { remplissage: "#fdd700"
 export type DispositionFlocage = {
   nomY: number;
   nomHauteur: number;
+  /** La largeur que le nom ne depasse pas : au-dela, il se resserre, puis rapetisse. */
+  nomLargeurMax: number;
   numeroY: number;
   numeroHauteur: number;
   sponsors: boolean;
@@ -70,6 +72,7 @@ export type CoteDisposition = Exclude<keyof DispositionFlocage, "sponsors" | "lo
 export const DISPOSITION_FLOCAGE_DEFAUT: DispositionFlocage = {
   nomY: 60,
   nomHauteur: 6,
+  nomLargeurMax: 36,
   numeroY: 41,
   numeroHauteur: 22,
   sponsors: true,
@@ -285,6 +288,7 @@ export const schemaArticle = z
     dispositionFlocage: z.object({
       nomY: pourcentage("La position du nom"),
       nomHauteur: pourcentage("La taille du nom"),
+      nomLargeurMax: z.optional(pourcentage("La largeur maximale du nom")),
       numeroY: pourcentage("La position du numéro"),
       numeroHauteur: pourcentage("La taille du numéro"),
       // Absents d'une fiche ouverte avant leur arrivee (04/10/2026) : completes
