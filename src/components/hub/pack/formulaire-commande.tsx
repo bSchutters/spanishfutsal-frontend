@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
-import { construireLignes, formaterPrix, nomPropose, prixUnitaire, totalDes } from "@/hub/pack/calculs";
+import { avancementJoma, construireLignes, formaterPrix, MINIMUM_JOMA, nomPropose, prixUnitaire, totalDes } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
@@ -26,7 +26,6 @@ type Suggestion = { numero: string; nom: string } | null;
 
 let compteur = 0;
 const nouvelleCle = () => `p${++compteur}`;
-const AUTRE = "autre";
 const QUANTITE_MAX = 20;
 
 /** Une couleur d'un article et ses photos ; une couleur sans photo montre celles de la premiere qui en a. */
@@ -194,6 +193,55 @@ function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Articl
         </span>
       </button>
     </li>
+  );
+}
+
+/**
+ * La commande groupee chez Joma, qui demande 150 euros au minimum : ce que
+ * les autres ont deja commande, en or plein, puis ce que la commande en cours
+ * y ajouterait, en or plus clair. Un total, jamais qui a commande quoi.
+ */
+function CommandeGroupee({ montant, panier }: { montant: number; panier: number }) {
+  const avec = montant + panier;
+  const { atteint, reste } = avancementJoma(avec);
+  const deja = avancementJoma(montant).part;
+  const ensemble = avancementJoma(avec).part;
+  return (
+    <section aria-labelledby="commande-groupee" className="rounded-xl border border-border bg-card px-4 py-3.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="commande-groupee" className="text-sm font-semibold">
+          Commande groupée chez Joma
+        </h2>
+        <p className="text-sm tabular-nums">
+          <Prix euros={avec} className="text-lg text-spanish-accent-2" />
+          <span className="text-muted-foreground"> sur {formaterPrix(MINIMUM_JOMA)}</span>
+        </p>
+      </div>
+      <div
+        role="progressbar"
+        aria-label="Montant de la commande groupée"
+        aria-valuemin={0}
+        aria-valuemax={MINIMUM_JOMA}
+        aria-valuenow={Math.min(avec, MINIMUM_JOMA)}
+        aria-valuetext={`${formaterPrix(avec)} sur ${formaterPrix(MINIMUM_JOMA)}`}
+        className="relative mt-2 h-2.5 overflow-hidden rounded-full bg-secondary"
+      >
+        <div
+          className="absolute inset-y-0 start-0 rounded-full bg-spanish-accent-2/45 transition-[width] duration-500 motion-reduce:transition-none"
+          style={{ width: `${ensemble * 100}%` }}
+        />
+        <div
+          className="absolute inset-y-0 start-0 rounded-full bg-spanish-accent-2 transition-[width] duration-500 motion-reduce:transition-none"
+          style={{ width: `${deja * 100}%` }}
+        />
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {panier > 0 ? `Avec votre commande : ${formaterPrix(avec)}. ` : ""}
+        {atteint
+          ? "Le minimum de 150 € est atteint : le club peut passer la commande chez Joma."
+          : `Joma demande ${formaterPrix(MINIMUM_JOMA)} au minimum : encore ${formaterPrix(reste)} avant que le club puisse passer la commande.`}
+      </p>
+    </section>
   );
 }
 
@@ -496,14 +544,18 @@ export default function FormulaireCommande({
   articles,
   effectif,
   flocage,
+  montantGroupe,
 }: {
   jeton: string;
   articles: Article[];
   effectif: Personne[];
   flocage: PrixFlocage;
+  /** Le montant des commandes recues, qui attendent la commande groupee chez Joma. */
+  montantGroupe: number;
 }) {
   const [personne, setPersonne] = useState("");
-  const [autreNom, setAutreNom] = useState("");
+  // Les commandes envoyees depuis cette page s'ajoutent au montant charge avec elle.
+  const [montantEnvoye, setMontantEnvoye] = useState(0);
   const [remarque, setRemarque] = useState("");
   const [panier, setPanier] = useState<LignePanier[]>([]);
   // L'article ouvert reste affiche pendant que sa fenetre se ferme ; la cle remet sa fiche a zero.
@@ -557,7 +609,7 @@ export default function FormulaireCommande({
   const envoyer = async (e: React.FormEvent) => {
     e.preventDefault();
     setErreur(null);
-    if (!personne || (personne === AUTRE && !autreNom.trim())) {
+    if (!personne) {
       setErreur("Indiquez qui commande, en haut de votre commande.");
       const champ = document.getElementById("pack-qui");
       champ?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -566,8 +618,8 @@ export default function FormulaireCommande({
     }
     setEnCours(true);
     const r = await envoyerCommande(jeton, {
-      joueurId: personne !== AUTRE ? Number(personne) : null,
-      autreNom: personne === AUTRE ? autreNom : "",
+      joueurId: Number(personne),
+      autreNom: "",
       telephone: "",
       email: "",
       remarque,
@@ -578,7 +630,9 @@ export default function FormulaireCommande({
       setErreur(r.ok ? "La commande est partie, mais la confirmation n'a pas suivi." : r.erreur);
       return;
     }
-    setEnvoyee(r.donnees);
+    const commande = r.donnees;
+    setEnvoyee(commande);
+    setMontantEnvoye((m) => m + commande.total);
     window.scrollTo({ top: 0 });
   };
 
@@ -605,7 +659,8 @@ export default function FormulaireCommande({
         )}
       >
         <section className="flex min-w-0 flex-col gap-5" aria-labelledby="pack-articles">
-          <div>
+          <CommandeGroupee montant={montantGroupe + montantEnvoye} panier={apercu.ok ? apercu.total : 0} />
+          <div className="mt-3">
             <h2 id="pack-articles" className="text-lg leading-tight font-semibold">
               Les articles
             </h2>
@@ -666,21 +721,9 @@ export default function FormulaireCommande({
                       {p.nom}
                     </SelectItem>
                   ))}
-                  <SelectItem value={AUTRE}>Autre (parent, proche…)</SelectItem>
                 </SelectContent>
               </Select>
-              {personne === AUTRE ? (
-                <Input
-                  aria-label="Votre nom et prénom"
-                  placeholder="Votre nom et prénom"
-                  value={autreNom}
-                  onChange={(e) => setAutreNom(e.target.value)}
-                  autoComplete="name"
-                  className="h-11"
-                />
-              ) : (
-                <p className="text-xs text-muted-foreground">Votre nom dans l&apos;effectif, ou « Autre » pour un parent ou un proche.</p>
-              )}
+              <p className="text-xs text-muted-foreground">Votre nom dans l&apos;effectif. Pour vos proches, commandez à votre nom.</p>
             </div>
 
             {panier.length === 0 ? (

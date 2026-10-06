@@ -250,8 +250,9 @@ export const schemaCommandeJoueur = z
     lignes: z.array(schemaLigneSaisie).check(z.minLength(1, "Ajoutez au moins un article."), z.maxLength(40, "Quarante lignes au plus.")),
   })
   .check(
-    z.refine((s) => s.joueurId !== null || s.autreNom !== "", {
-      message: "Choisissez votre nom dans la liste, ou indiquez-le.",
+    // Plus d'« Autre » (06/10/2026) : un joueur qui commande pour ses proches le fait a son nom.
+    z.refine((s) => s.joueurId !== null, {
+      message: "Choisissez votre nom dans la liste.",
       path: ["joueurId"],
     }),
     // Plus de moyen de contact demande (06/10/2026) : le club connait ses joueurs.

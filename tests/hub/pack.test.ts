@@ -196,10 +196,10 @@ describe("construction d'une commande", () => {
 describe("saisies", () => {
   const commande = { joueurId: 3, autreNom: "", telephone: "0470 00 00 00", email: "", remarque: "", lignes: [ligne()] };
 
-  it("exige un nom, mais plus de moyen de contact", () => {
+  it("exige un joueur de la liste, mais plus de moyen de contact", () => {
     expect(schemaCommandeJoueur.safeParse(commande).success).toBe(true);
     expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null }).success).toBe(false);
-    expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null, autreNom: "Papa de Ruben" }).success).toBe(true);
+    expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null, autreNom: "Papa de Ruben" }).success).toBe(false);
     expect(schemaCommandeJoueur.safeParse({ ...commande, telephone: "", email: "" }).success).toBe(true);
   });
 
