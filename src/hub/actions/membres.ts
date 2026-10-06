@@ -83,7 +83,7 @@ function motDePasseAuHasard(longueur = 14): string {
  */
 export async function nouveauMotDePasseMembre(id: unknown): Promise<Resultat<{ membre: Membre; motDePasse: string }>> {
   const { user } = await exigerAdmin();
-  if (!estSuperAdmin(user, process.env.HUB_SUPER_ADMINS)) return { ok: false, erreur: "Réservé au super administrateur." };
+  if (!estSuperAdmin(user)) return { ok: false, erreur: "Réservé au super administrateur." };
   if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) return { ok: false, erreur: "Ce compte n'existe pas." };
   const existant = await chargerMembre(user, id);
   if (!existant) return { ok: false, erreur: "Ce compte n'existe pas." };

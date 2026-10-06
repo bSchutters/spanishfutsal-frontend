@@ -183,6 +183,28 @@ export const Users: CollectionConfig = {
         update: isAdminField,
       },
     },
+    /**
+     * Le super administrateur (Bryan, 07/10/2026) : seul a donner un nouveau
+     * mot de passe a un membre depuis le Hub. Personne ne se l'attribue : ni
+     * l'administration ni le Hub ne l'ecrivent, une migration l'a pose sur le
+     * compte de Bryan. Voir estSuperAdmin dans src/hub/droits.ts.
+     */
+    {
+      name: 'super_admin',
+      type: 'checkbox',
+      label: 'Super administrateur',
+      defaultValue: false,
+      admin: {
+        readOnly: true,
+        description:
+          "Seul le super administrateur donne un nouveau mot de passe a un membre depuis le Hub. Ne se modifie pas ici.",
+        condition: (data) => data?.role === 'admin',
+      },
+      access: {
+        create: () => false,
+        update: () => false,
+      },
+    },
     {
       name: 'permissions',
       type: 'group',

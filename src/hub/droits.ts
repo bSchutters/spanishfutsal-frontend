@@ -20,6 +20,7 @@ export type UtilisateurHub = {
   id: number | string;
   email?: string | null;
   role?: string | null;
+  super_admin?: boolean | null;
   hub?: {
     access?: boolean | null;
     modules?: Array<{ module?: string | null; level?: string | null } | null> | null;
@@ -41,20 +42,14 @@ export function estAdmin(user: unknown): boolean {
 }
 
 /**
- * Le super administrateur : un administrateur dont l'identifiant figure dans
- * `superAdmins`, la variable HUB_SUPER_ADMINS du serveur (des identifiants
- * separes par des virgules). Lui seul donne un nouveau mot de passe a un
- * membre (Bryan, 07/10/2026). Il ne s'attribue ni depuis le Hub ni depuis
- * l'administration : seulement dans la configuration du serveur.
+ * Le super administrateur : un administrateur dont le compte porte la case
+ * `super_admin`. Lui seul donne un nouveau mot de passe a un membre (Bryan,
+ * 07/10/2026). La case ne s'ecrit ni depuis le Hub ni depuis
+ * l'administration : une migration l'a posee sur le compte de Bryan.
  */
-export function estSuperAdmin(user: unknown, superAdmins: string | undefined): boolean {
+export function estSuperAdmin(user: unknown): boolean {
   const u = lire(user);
-  if (!u || u.role !== "admin") return false;
-  const ids = (superAdmins ?? "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-  return ids.includes(String(u.id));
+  return u?.role === "admin" && u.super_admin === true;
 }
 
 export function aAccesHub(user: unknown): boolean {

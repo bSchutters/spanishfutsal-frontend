@@ -45,15 +45,25 @@ const sansFlux: UtilisateurHub = {
 const req = (user: UtilisateurHub | null) => ({ req: { user } }) as never;
 
 describe("super administrateur", () => {
-  it("est un administrateur nomme dans la configuration, et lui seul", async () => {
+  it("est un administrateur dont le compte porte la case, et lui seul", async () => {
     const { estSuperAdmin } = await import("@/hub/droits");
-    expect(estSuperAdmin({ id: 2, role: "admin" }, "2")).toBe(true);
-    expect(estSuperAdmin({ id: 2, role: "admin" }, " 7, 2 ")).toBe(true);
-    expect(estSuperAdmin({ id: 3, role: "admin" }, "2")).toBe(false);
-    expect(estSuperAdmin({ id: 2, role: "manager" }, "2")).toBe(false);
-    expect(estSuperAdmin({ id: 2, role: "admin" }, undefined)).toBe(false);
-    expect(estSuperAdmin({ id: 2, role: "admin" }, "")).toBe(false);
-    expect(estSuperAdmin(null, "2")).toBe(false);
+    expect(estSuperAdmin({ id: 2, role: "admin", super_admin: true })).toBe(true);
+    expect(estSuperAdmin({ id: 3, role: "admin", super_admin: false })).toBe(false);
+    expect(estSuperAdmin({ id: 3, role: "admin" })).toBe(false);
+    // La case seule ne suffit pas : un compte qui perd son role d'administrateur perd aussi ce droit.
+    expect(estSuperAdmin({ id: 2, role: "manager", super_admin: true })).toBe(false);
+    expect(estSuperAdmin(null)).toBe(false);
+  });
+
+  it("ne se donne ni a la creation ni a la modification d'un compte, meme par un administrateur", async () => {
+    const { Users } = await import("@/payload/collections/Users");
+    const champ = Users.fields.find((f) => "name" in f && f.name === "super_admin") as
+      | { access?: { create?: (a: never) => unknown; update?: (a: never) => unknown } }
+      | undefined;
+    const admin = req({ id: 2, role: "admin", super_admin: true });
+    expect(champ).toBeDefined();
+    expect(await champ?.access?.create?.(admin)).toBe(false);
+    expect(await champ?.access?.update?.(admin)).toBe(false);
   });
 });
 

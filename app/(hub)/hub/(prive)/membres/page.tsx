@@ -20,7 +20,7 @@ export default async function PageMembres() {
   return (
     <>
       <EnTetePage titre="Membres" description="Qui entre dans le Hub, sur quels modules et quels flux." />
-      <TableauMembres membres={membres} flux={flux} superAdmin={estSuperAdmin(user, process.env.HUB_SUPER_ADMINS)} />
+      <TableauMembres membres={membres} flux={flux} superAdmin={estSuperAdmin(user)} />
     </>
   );
 }

@@ -21,6 +21,7 @@ import * as migration_20261004_111729_pack_apercu_flocage from './20261004_11172
 import * as migration_20261006_144326_pack_logo_variante from './20261006_144326_pack_logo_variante';
 import * as migration_20261006_181503_pack_nom_joma from './20261006_181503_pack_nom_joma';
 import * as migration_20261006_223637_pack_tags from './20261006_223637_pack_tags';
+import * as migration_20261006_230941_super_admin from './20261006_230941_super_admin';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20261006_223637_pack_tags.up,
     down: migration_20261006_223637_pack_tags.down,
-    name: '20261006_223637_pack_tags'
+    name: '20261006_223637_pack_tags',
+  },
+  {
+    up: migration_20261006_230941_super_admin.up,
+    down: migration_20261006_230941_super_admin.down,
+    name: '20261006_230941_super_admin'
   },
 ];

@@ -47,7 +47,7 @@ Tout se passe dans le Hub, page **Membres**, réservée aux administrateurs et a
 
 **Ajouter un membre** demande son prénom, son nom et son adresse e-mail, puis ses droits. Le mot de passe est tiré au hasard et s'affiche une seule fois, à copier et à lui transmettre ; elle le remplace par le sien dans son **Profil**, bloc Mot de passe (huit caractères au moins, l'actuel est demandé). Un compte créé ici est un membre : le rôle d'administrateur se donne dans l'admin Payload.
 
-**Un mot de passe oublié** : dans la fiche d'un membre, **Nouveau mot de passe** en tire un au hasard, qui remplace l'actuel et s'affiche une fois, à transmettre. Réservé au super administrateur, le compte dont l'identifiant figure dans la variable `HUB_SUPER_ADMINS` du serveur (`.env.local` en local, réglages du projet sur Vercel en production) ; personne ne se l'attribue depuis le Hub.
+**Un mot de passe oublié** : dans la fiche d'un membre, **Nouveau mot de passe** en tire un au hasard, qui remplace l'actuel et s'affiche une fois, à transmettre. Réservé au super administrateur : le compte qui porte la case **Super administrateur** (celui de Bryan, posée par la migration `super_admin`). La case se voit dans l'admin Payload, sur la fiche d'un administrateur, mais ne s'y modifie pas, et le Hub ne l'écrit jamais : personne ne se l'attribue.
 
 Toucher une ligne ouvre les droits d'une personne :
 
