@@ -317,7 +317,7 @@ function ReglageLogo({
     <div className="flex flex-col gap-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Aperçu du logo</p>
       <ChoixCouleur variantes={avecPhoto} choisie={variante.cle} onChoisir={setChoisie} />
-      <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
+      <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={variante.photos[0].url} alt="" className="size-full object-contain" />
         <ApercuLogo disposition={disposition} logo={variante.logo} />
@@ -384,7 +384,7 @@ function ReglageFlocage({
     <div className="flex flex-col gap-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Aperçu du flocage</p>
       <ChoixCouleur variantes={avecPhotoDos} choisie={avecDos.cle} onChoisir={setChoisie} />
-      <div className="relative aspect-square w-full overflow-hidden rounded-md bg-white">
+      <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-md bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photoDos.url} alt="" className="size-full object-contain" />
         <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} logo={avecDos.logo} />
@@ -527,228 +527,234 @@ function FicheArticle({
 
   return (
     <form onSubmit={enregistrer} className="flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5">
-        <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-nom">Nom</Label>
-            <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-reference">Référence Joma</Label>
-            <Input
-              id="article-reference"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              placeholder="104263"
-              spellCheck={false}
-              className="h-10"
-            />
-          </div>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="article-description">Description</Label>
-          <Textarea id="article-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
-          <p className="text-xs text-muted-foreground">Facultative, visible sur la page des joueurs.</p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-prix">Prix catalogue (€)</Label>
-            <Input
-              id="article-prix"
-              inputMode="decimal"
-              value={prixCatalogue}
-              onChange={(e) => setPrixCatalogue(e.target.value)}
-              required
-              className="h-10"
-            />
-            <p className="text-xs text-muted-foreground">Le prix Joma, logo du club compris.</p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-tailles">Tailles</Label>
-            <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
-            <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
-          </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="article-remise">Remise</Label>
-            <Select value={modeRemise} onValueChange={(m) => setModeRemise(m as ModeRemise)}>
-              <SelectTrigger id="article-remise" className="w-full data-[size=default]:h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {MODES_REMISE.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m === "general" ? `${LIBELLES_MODE_REMISE[m]} (${remiseGenerale.toLocaleString("fr-BE")} %)` : LIBELLES_MODE_REMISE[m]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {modeRemise === "custom" ? (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="article-remise-particuliere">Remise de cet article (%)</Label>
-              <Input
-                id="article-remise-particuliere"
-                inputMode="decimal"
-                value={remiseParticuliere}
-                onChange={(e) => setRemiseParticuliere(e.target.value)}
-                required
-                className="h-10"
-              />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* Pleine largeur : l'article et ses couleurs a gauche, le logo avant et le flocage avec leurs apercus a droite. Sur telephone, tout se suit dans cet ordre. */}
+        <div className="grid gap-5 px-5 py-5 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-8 lg:px-8">
+          <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">
+            <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-nom">Nom</Label>
+                <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-reference">Référence Joma</Label>
+                <Input
+                  id="article-reference"
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                  placeholder="104263"
+                  spellCheck={false}
+                  className="h-10"
+                />
+              </div>
             </div>
-          ) : null}
-        </div>
-        {Number.isFinite(nombreSaisi(prixCatalogue)) ? (
-          <p className="rounded-md bg-secondary/50 px-3 py-2 text-sm">
-            Prix joueur : <span className="font-semibold tabular-nums">{formaterPrix(prixJoueur(nombreSaisi(prixCatalogue), remiseSaisie, remiseGenerale))}</span>
-            <span className="text-muted-foreground"> (remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %)</span>
-          </p>
-        ) : null}
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block text-sm font-medium">Logo sur la face avant</span>
-            <span className="block text-xs text-muted-foreground">Le logo du club sur la photo de face, à la place réglée pour cet article.</span>
-          </span>
-          <Switch
-            checked={disposition.logoAvant}
-            onCheckedChange={(logoAvant) => setDisposition((d) => ({ ...d, logoAvant }))}
-            aria-label="Logo sur la face avant"
-          />
-        </label>
-        {disposition.logoAvant ? <ReglageLogo variantes={variantes} disposition={disposition} onDisposition={setDisposition} /> : null}
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block text-sm font-medium">Floquable</span>
-            <span className="block text-xs text-muted-foreground">Le joueur peut ajouter un numéro et un nom, avec supplément.</span>
-          </span>
-          <Switch checked={floquable} onCheckedChange={setFloquable} aria-label="Floquable" />
-        </label>
-        {floquable ? (
-          <ReglageFlocage
-            variantes={variantes}
-            disposition={disposition}
-            onDisposition={setDisposition}
-            essaiNumero={essaiNumero}
-            essaiNom={essaiNom}
-            onEssaiNumero={setEssaiNumero}
-            onEssaiNom={setEssaiNom}
-          />
-        ) : null}
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block text-sm font-medium">Dans le catalogue</span>
-            <span className="block text-xs text-muted-foreground">Décoché, l&apos;article quitte la page des joueurs, mais reste dans les commandes passées.</span>
-          </span>
-          <Switch checked={actif} onCheckedChange={setActif} aria-label="Dans le catalogue" />
-        </label>
-
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="text-sm font-medium">Couleurs</p>
-            <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et ses photos, la première étant la principale. Une seule couleur peut rester sans nom.</p>
-          </div>
-          {variantes.map((v, rang) => (
-            <div key={v.cle} className="flex flex-col gap-3 rounded-md border border-border p-3">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="article-description">Description</Label>
+              <Textarea id="article-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+              <p className="text-xs text-muted-foreground">Facultative, visible sur la page des joueurs.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-prix">Prix catalogue (€)</Label>
+                <Input
+                  id="article-prix"
+                  inputMode="decimal"
+                  value={prixCatalogue}
+                  onChange={(e) => setPrixCatalogue(e.target.value)}
+                  required
+                  className="h-10"
+                />
+                <p className="text-xs text-muted-foreground">Le prix Joma, logo du club compris.</p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-tailles">Tailles</Label>
+                <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
+                <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-remise">Remise</Label>
+                <Select value={modeRemise} onValueChange={(m) => setModeRemise(m as ModeRemise)}>
+                  <SelectTrigger id="article-remise" className="w-full data-[size=default]:h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MODES_REMISE.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m === "general" ? `${LIBELLES_MODE_REMISE[m]} (${remiseGenerale.toLocaleString("fr-BE")} %)` : LIBELLES_MODE_REMISE[m]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {modeRemise === "custom" ? (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor={`couleur-${v.cle}`}>Couleur</Label>
+                  <Label htmlFor="article-remise-particuliere">Remise de cet article (%)</Label>
                   <Input
-                    id={`couleur-${v.cle}`}
-                    value={v.couleur}
-                    onChange={(e) => changerVariante(v.cle, { couleur: e.target.value })}
-                    placeholder={variantes.length === 1 ? "Facultatif" : "Bleu, blanc…"}
+                    id="article-remise-particuliere"
+                    inputMode="decimal"
+                    value={remiseParticuliere}
+                    onChange={(e) => setRemiseParticuliere(e.target.value)}
+                    required
                     className="h-10"
                   />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor={`code-${v.cle}`}>Code couleur Joma</Label>
-                  <Input
-                    id={`code-${v.cle}`}
-                    value={v.codeCouleur}
-                    onChange={(e) => changerVariante(v.cle, { codeCouleur: e.target.value })}
-                    placeholder="339"
-                    spellCheck={false}
-                    className="h-10"
+              ) : null}
+            </div>
+            {Number.isFinite(nombreSaisi(prixCatalogue)) ? (
+              <p className="rounded-md bg-secondary/50 px-3 py-2 text-sm">
+                Prix joueur : <span className="font-semibold tabular-nums">{formaterPrix(prixJoueur(nombreSaisi(prixCatalogue), remiseSaisie, remiseGenerale))}</span>
+                <span className="text-muted-foreground"> (remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %)</span>
+              </p>
+            ) : null}
+            <label className="flex cursor-pointer items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-medium">Dans le catalogue</span>
+                <span className="block text-xs text-muted-foreground">Décoché, l&apos;article quitte la page des joueurs, mais reste dans les commandes passées.</span>
+              </span>
+              <Switch checked={actif} onCheckedChange={setActif} aria-label="Dans le catalogue" />
+            </label>
+          </div>
+          <div className="flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <label className="flex cursor-pointer items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-medium">Logo sur la face avant</span>
+                <span className="block text-xs text-muted-foreground">Le logo du club sur la photo de face, à la place réglée pour cet article.</span>
+              </span>
+              <Switch
+                checked={disposition.logoAvant}
+                onCheckedChange={(logoAvant) => setDisposition((d) => ({ ...d, logoAvant }))}
+                aria-label="Logo sur la face avant"
+              />
+            </label>
+            {disposition.logoAvant ? <ReglageLogo variantes={variantes} disposition={disposition} onDisposition={setDisposition} /> : null}
+            <label className="flex cursor-pointer items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-medium">Floquable</span>
+                <span className="block text-xs text-muted-foreground">Le joueur peut ajouter un numéro et un nom, avec supplément.</span>
+              </span>
+              <Switch checked={floquable} onCheckedChange={setFloquable} aria-label="Floquable" />
+            </label>
+            {floquable ? (
+              <ReglageFlocage
+                variantes={variantes}
+                disposition={disposition}
+                onDisposition={setDisposition}
+                essaiNumero={essaiNumero}
+                essaiNom={essaiNom}
+                onEssaiNumero={setEssaiNumero}
+                onEssaiNom={setEssaiNom}
+              />
+            ) : null}
+          </div>
+          <div className="flex min-w-0 flex-col gap-3 lg:col-start-1 lg:row-start-2">
+            <div>
+              <p className="text-sm font-medium">Couleurs</p>
+              <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et ses photos, la première étant la principale. Une seule couleur peut rester sans nom.</p>
+            </div>
+            {variantes.map((v, rang) => (
+              <div key={v.cle} className="flex flex-col gap-3 rounded-md border border-border p-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor={`couleur-${v.cle}`}>Couleur</Label>
+                    <Input
+                      id={`couleur-${v.cle}`}
+                      value={v.couleur}
+                      onChange={(e) => changerVariante(v.cle, { couleur: e.target.value })}
+                      placeholder={variantes.length === 1 ? "Facultatif" : "Bleu, blanc…"}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor={`code-${v.cle}`}>Code couleur Joma</Label>
+                    <Input
+                      id={`code-${v.cle}`}
+                      value={v.codeCouleur}
+                      onChange={(e) => changerVariante(v.cle, { codeCouleur: e.target.value })}
+                      placeholder="339"
+                      spellCheck={false}
+                      className="h-10"
+                    />
+                    {referenceComplete(reference, v.codeCouleur) ? (
+                      <p className="text-xs text-muted-foreground">
+                        Chez Joma : <span className="font-mono">{referenceComplete(reference, v.codeCouleur)}</span>
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <PhotosCouleur
+                    photos={v.photos}
+                    nom={[nom, v.couleur].filter(Boolean).join(" ")}
+                    onChange={(photos) => changerVariante(v.cle, { photos })}
+                    photoDosId={v.photoDosId}
+                    onDos={floquable ? (photoDosId) => changerVariante(v.cle, { photoDosId }) : undefined}
                   />
-                  {referenceComplete(reference, v.codeCouleur) ? (
-                    <p className="text-xs text-muted-foreground">
-                      Chez Joma : <span className="font-mono">{referenceComplete(reference, v.codeCouleur)}</span>
-                    </p>
+                  {variantes.length > 1 ? (
+                    <Button
+                      type="button"
+                      variant="hubSecondary"
+                      size="sm"
+                      aria-label={`Retirer la couleur ${v.couleur || rang + 1}`}
+                      onClick={() => setVariantes((liste) => liste.filter((x) => x.cle !== v.cle))}
+                    >
+                      <Trash2 aria-hidden="true" />
+                    </Button>
                   ) : null}
                 </div>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                <PhotosCouleur
-                  photos={v.photos}
-                  nom={[nom, v.couleur].filter(Boolean).join(" ")}
-                  onChange={(photos) => changerVariante(v.cle, { photos })}
-                  photoDosId={v.photoDosId}
-                  onDos={floquable ? (photoDosId) => changerVariante(v.cle, { photoDosId }) : undefined}
-                />
-                {variantes.length > 1 ? (
-                  <Button
-                    type="button"
-                    variant="hubSecondary"
-                    size="sm"
-                    aria-label={`Retirer la couleur ${v.couleur || rang + 1}`}
-                    onClick={() => setVariantes((liste) => liste.filter((x) => x.cle !== v.cle))}
-                  >
-                    <Trash2 aria-hidden="true" />
-                  </Button>
+                {floquable ? (
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">Flocage :</span>
+                    {(
+                      [
+                        ["remplissage", "Lettre"],
+                        ["contour", "Contour"],
+                        ["exterieur", "Contour extérieur"],
+                      ] as const
+                    ).map(([cle, libelle]) => (
+                      <label key={cle} className="flex cursor-pointer items-center gap-1.5">
+                        <input
+                          type="color"
+                          value={v.couleursFlocage[cle]}
+                          onChange={(e) => changerVariante(v.cle, { couleursFlocage: { ...v.couleursFlocage, [cle]: e.target.value } })}
+                          className="size-6 cursor-pointer rounded border border-border bg-transparent"
+                        />
+                        {libelle}
+                      </label>
+                    ))}
+                  </div>
+                ) : null}
+                {floquable || disposition.logoAvant ? (
+                  <label className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">Logo :</span>
+                    <Select value={v.logo} onValueChange={(logo) => changerVariante(v.cle, { logo: logo as VersionLogo })}>
+                      <SelectTrigger size="sm" aria-label="Logo" className="text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VERSIONS_LOGO.map((l) => (
+                          <SelectItem key={l} value={l}>
+                            {LIBELLES_LOGO[l]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </label>
                 ) : null}
               </div>
-              {floquable ? (
-                <div className="flex flex-wrap items-center gap-3 text-xs">
-                  <span className="text-muted-foreground">Flocage :</span>
-                  {(
-                    [
-                      ["remplissage", "Lettre"],
-                      ["contour", "Contour"],
-                      ["exterieur", "Contour extérieur"],
-                    ] as const
-                  ).map(([cle, libelle]) => (
-                    <label key={cle} className="flex cursor-pointer items-center gap-1.5">
-                      <input
-                        type="color"
-                        value={v.couleursFlocage[cle]}
-                        onChange={(e) => changerVariante(v.cle, { couleursFlocage: { ...v.couleursFlocage, [cle]: e.target.value } })}
-                        className="size-6 cursor-pointer rounded border border-border bg-transparent"
-                      />
-                      {libelle}
-                    </label>
-                  ))}
-                </div>
-              ) : null}
-              {floquable || disposition.logoAvant ? (
-                <label className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">Logo :</span>
-                  <Select value={v.logo} onValueChange={(logo) => changerVariante(v.cle, { logo: logo as VersionLogo })}>
-                    <SelectTrigger size="sm" aria-label="Logo" className="text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VERSIONS_LOGO.map((l) => (
-                        <SelectItem key={l} value={l}>
-                          {LIBELLES_LOGO[l]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </label>
-              ) : null}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="hubSecondary"
-            size="sm"
-            className="self-start"
-            onClick={() => setVariantes((liste) => [...liste, nouvelleVariante()])}
-          >
-            <Plus aria-hidden="true" />
-            Ajouter une couleur
-          </Button>
+            ))}
+            <Button
+              type="button"
+              variant="hubSecondary"
+              size="sm"
+              className="self-start"
+              onClick={() => setVariantes((liste) => [...liste, nouvelleVariante()])}
+            >
+              <Plus aria-hidden="true" />
+              Ajouter une couleur
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -889,7 +895,7 @@ export default function Catalogue({
       )}
 
       <Sheet open={ouverture.ouvert} onOpenChange={(o) => !o && fermer()}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-none">
           <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
             <SheetTitle>{ouverture.article ? ouverture.article.nom : "Nouvel article"}</SheetTitle>
             <SheetDescription>Un article Joma du pack, avec ses couleurs et ses tailles.</SheetDescription>
