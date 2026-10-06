@@ -42,7 +42,9 @@ export const viewport: Viewport = {
 
 export default function HubLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={cn("hub dark h-full", geist.variable)}>
+    // Comme le site : une extension du navigateur peut poser un style sur <html> avant React
+    // (vu le 07/10/2026 : transition-property et margin-right). L'avertissement ne vaut que pour cette balise.
+    <html lang="fr" className={cn("hub dark h-full", geist.variable)} suppressHydrationWarning>
       <body className="min-h-full bg-background font-sans text-sm text-foreground antialiased">
         {children}
         <ToasterHub />
