@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { creerMembre, enregistrerDroitsMembre } from "@/hub/actions/membres";
+import { creerMembre, enregistrerDroitsMembre, nouveauMotDePasseMembre } from "@/hub/actions/membres";
 import {
   nomDuMembre,
   SAISIE_NOUVEAU_MEMBRE_VIDE,
@@ -77,7 +77,8 @@ export type EtatPanneau = { mode: "modifier"; membre: Membre } | { mode: "creer"
 
 /**
  * Le panneau d'un compte : son identite quand il se cree, puis l'acces au
- * Hub, le niveau de chaque module et les flux.
+ * Hub, le niveau de chaque module et les flux ; pour un compte existant, un
+ * nouveau mot de passe en cas d'oubli.
  */
 function Fiche({
   etat,
@@ -85,12 +86,17 @@ function Fiche({
   onFermer,
   onEnregistre,
   onCree,
+  onMotDePasse,
+  superAdmin,
 }: {
   etat: EtatPanneau;
   flux: FluxChoix[];
+  /** Seul le super administrateur donne un nouveau mot de passe. */
+  superAdmin: boolean;
   onFermer: () => void;
   onEnregistre: (membre: Membre) => void;
   onCree: (membre: Membre, motDePasse: string) => void;
+  onMotDePasse: (membre: Membre, motDePasse: string) => void;
 }) {
   const creation = etat.mode === "creer";
   const depart = creation ? SAISIE_NOUVEAU_MEMBRE_VIDE : etat.membre;
@@ -101,6 +107,18 @@ function Fiche({
   const [niveaux, setNiveaux] = useState<NiveauxParModule>(creation ? {} : etat.membre.niveaux);
   const [fluxIds, setFluxIds] = useState<number[]>(creation ? [] : etat.membre.fluxIds);
   const [enCours, setEnCours] = useState(false);
+  // Un second clic confirme : l'actuel mot de passe cesse de marcher.
+  const [confirmerMotDePasse, setConfirmerMotDePasse] = useState(false);
+
+  const changerMotDePasse = async () => {
+    if (creation) return;
+    setEnCours(true);
+    const r = await nouveauMotDePasseMembre(etat.membre.id).catch(() => ({ ok: false as const, erreur: "Le mot de passe n'a pas pu être changé." }));
+    setEnCours(false);
+    setConfirmerMotDePasse(false);
+    if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Changé, mais impossible à relire." : r.erreur);
+    onMotDePasse(r.donnees.membre, r.donnees.motDePasse);
+  };
 
   const enregistrer = async () => {
     setEnCours(true);
@@ -230,6 +248,35 @@ function Fiche({
             </section>
           </>
         ) : null}
+
+        {!creation && superAdmin ? (
+          <section className="rounded-lg border border-border bg-card px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <KeyRound className="size-4 text-muted-foreground" aria-hidden="true" />
+              Mot de passe
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Un oubli ? Un nouveau mot de passe, tiré au hasard, remplace l&apos;actuel. Il s&apos;affiche une fois, à transmettre ; la personne
+              pourra le changer dans son profil.
+            </p>
+            {confirmerMotDePasse ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs">Son mot de passe actuel ne marchera plus.</span>
+                <Button type="button" variant="hub" size="sm" onClick={() => void changerMotDePasse()} disabled={enCours}>
+                  {enCours ? "Changement…" : "Confirmer"}
+                </Button>
+                <Button type="button" variant="hubSecondary" size="sm" onClick={() => setConfirmerMotDePasse(false)} disabled={enCours}>
+                  Garder l&apos;actuel
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" variant="hubSecondary" size="sm" className="mt-3" onClick={() => setConfirmerMotDePasse(true)} disabled={enCours}>
+                <KeyRound aria-hidden="true" />
+                Nouveau mot de passe
+              </Button>
+            )}
+          </section>
+        ) : null}
       </div>
 
       <div className="flex shrink-0 justify-end gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
@@ -248,18 +295,26 @@ function Fiche({
  * Les comptes du club et ce qu'ils peuvent faire dans le Hub. Un clic sur une
  * ligne ouvre ses droits : l'acces, le niveau de chaque module, les flux. Un
  * administrateur a tout sans reglage, sa ligne ne s'ouvre pas. Les comptes se
- * creent dans l'administration Payload, avec leur mot de passe : ici, on ne
- * regle que les droits.
+ * creent ici, avec un mot de passe tire au hasard, et un nouveau remplace
+ * l'actuel en cas d'oubli : chacun s'affiche une seule fois.
  */
-export default function TableauMembres({ membres: initiaux, flux }: { membres: Membre[]; flux: FluxChoix[] }) {
+export default function TableauMembres({
+  membres: initiaux,
+  flux,
+  superAdmin,
+}: {
+  membres: Membre[];
+  flux: FluxChoix[];
+  superAdmin: boolean;
+}) {
   const [membres, setMembres] = useState(initiaux);
   const [ouvert, setOuvert] = useState<{ etat: EtatPanneau | null; visible: boolean; cle: number }>({
     etat: null,
     visible: false,
     cle: 0,
   });
-  // Le mot de passe d'un compte tout juste cree : il ne se relit jamais.
-  const [nouveau, setNouveau] = useState<{ membre: Membre; motDePasse: string } | null>(null);
+  // Le mot de passe d'un compte tout juste cree, ou tout juste remplace : il ne se relit jamais.
+  const [nouveau, setNouveau] = useState<{ membre: Membre; motDePasse: string; change: boolean } | null>(null);
 
   const ouvrir = (etat: EtatPanneau) => setOuvert((o) => ({ etat, visible: true, cle: o.cle + 1 }));
   const fermer = () => setOuvert((o) => ({ ...o, visible: false }));
@@ -271,7 +326,12 @@ export default function TableauMembres({ membres: initiaux, flux }: { membres: M
 
   const cree = (membre: Membre, motDePasse: string) => {
     setMembres((liste) => [...liste, membre]);
-    setNouveau({ membre, motDePasse });
+    setNouveau({ membre, motDePasse, change: false });
+    fermer();
+  };
+
+  const motDePasseChange = (membre: Membre, motDePasse: string) => {
+    setNouveau({ membre, motDePasse, change: true });
     fermer();
   };
 
@@ -290,7 +350,7 @@ export default function TableauMembres({ membres: initiaux, flux }: { membres: M
           <div className="flex items-start justify-between gap-3">
             <p className="flex items-center gap-2 text-sm font-medium">
               <KeyRound className="size-4 shrink-0 text-primary" aria-hidden="true" />
-              Compte créé pour {nomDuMembre(nouveau.membre)}
+              {nouveau.change ? `Nouveau mot de passe pour ${nomDuMembre(nouveau.membre)}` : `Compte créé pour ${nomDuMembre(nouveau.membre)}`}
             </p>
             <button
               type="button"
@@ -374,6 +434,8 @@ export default function TableauMembres({ membres: initiaux, flux }: { membres: M
               onFermer={fermer}
               onEnregistre={enregistre}
               onCree={cree}
+              onMotDePasse={motDePasseChange}
+              superAdmin={superAdmin}
             />
           ) : null}
         </SheetContent>

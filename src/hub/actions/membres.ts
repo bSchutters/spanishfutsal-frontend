@@ -8,6 +8,7 @@ import * as z from "zod/mini";
 import type { Resultat } from "@/hub/actions/evenements";
 import { chargerMembre, type Membre } from "@/hub/membres/donnees";
 import { nettoyerSelonAcces, schemaDroitsMembre, schemaNouveauMembre, versLignesModules } from "@/hub/membres/schema";
+import { estSuperAdmin } from "@/hub/droits";
 import { exigerAdmin } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
 
@@ -18,8 +19,9 @@ z.config({ jitless: true });
  * aux administrateurs, ici comme dans la collection : l'ecriture se fait avec
  * leurs droits, `overrideAccess: false`, donc les regles de Users et de ses
  * champs s'appliquent une seconde fois. Seuls l'acces, les modules et les
- * flux autorises sont touches ; le role, le mot de passe et les rappels que
- * la personne a choisis restent hors de portee.
+ * flux autorises sont touches ; le role et les rappels que la personne a
+ * choisis restent hors de portee. Le mot de passe ne se choisit pas ici : un
+ * nouveau, tire au hasard, remplace l'actuel en cas d'oubli.
  */
 
 const premiereErreur = (erreur: z.core.$ZodError) => erreur.issues[0]?.message ?? "Vérifiez votre saisie.";
@@ -70,6 +72,40 @@ function motDePasseAuHasard(longueur = 14): string {
   const alphabet = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const octets = randomBytes(longueur);
   return Array.from(octets, (octet) => alphabet[octet % alphabet.length]).join("");
+}
+
+/**
+ * Un nouveau mot de passe pour un membre qui a oublie le sien (demande de
+ * Bryan, 07/10/2026) : tire au hasard, il remplace l'actuel et revient une
+ * seule fois, a transmettre ; la personne le change ensuite dans son profil.
+ * Reserve au super administrateur, pas a tout administrateur. Pas pour un
+ * administrateur : son compte se gere par lui-meme depuis son profil.
+ */
+export async function nouveauMotDePasseMembre(id: unknown): Promise<Resultat<{ membre: Membre; motDePasse: string }>> {
+  const { user } = await exigerAdmin();
+  if (!estSuperAdmin(user, process.env.HUB_SUPER_ADMINS)) return { ok: false, erreur: "Réservé au super administrateur." };
+  if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) return { ok: false, erreur: "Ce compte n'existe pas." };
+  const existant = await chargerMembre(user, id);
+  if (!existant) return { ok: false, erreur: "Ce compte n'existe pas." };
+  if (existant.administrateur) {
+    return { ok: false, erreur: "Le mot de passe d'un administrateur se change dans son profil, ou dans l'administration Payload." };
+  }
+
+  const motDePasse = motDePasseAuHasard();
+  const payload = await getPayloadClient();
+  try {
+    await payload.update({
+      collection: "users",
+      id,
+      data: { password: motDePasse },
+      depth: 0,
+      overrideAccess: false,
+      user,
+    });
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+  return { ok: true, donnees: { membre: existant, motDePasse } };
 }
 
 /**

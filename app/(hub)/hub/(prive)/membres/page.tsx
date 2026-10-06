@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import TableauMembres from "@/components/hub/membres/tableau-membres";
 import { EnTetePage } from "@/components/hub/mise-en-page";
+import { estSuperAdmin } from "@/hub/droits";
 import { listerFlux, listerMembres } from "@/hub/membres/donnees";
 import { exigerAdmin } from "@/hub/session";
 
@@ -19,7 +20,7 @@ export default async function PageMembres() {
   return (
     <>
       <EnTetePage titre="Membres" description="Qui entre dans le Hub, sur quels modules et quels flux." />
-      <TableauMembres membres={membres} flux={flux} />
+      <TableauMembres membres={membres} flux={flux} superAdmin={estSuperAdmin(user, process.env.HUB_SUPER_ADMINS)} />
     </>
   );
 }

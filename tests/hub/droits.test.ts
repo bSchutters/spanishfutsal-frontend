@@ -44,6 +44,19 @@ const sansFlux: UtilisateurHub = {
 
 const req = (user: UtilisateurHub | null) => ({ req: { user } }) as never;
 
+describe("super administrateur", () => {
+  it("est un administrateur nomme dans la configuration, et lui seul", async () => {
+    const { estSuperAdmin } = await import("@/hub/droits");
+    expect(estSuperAdmin({ id: 2, role: "admin" }, "2")).toBe(true);
+    expect(estSuperAdmin({ id: 2, role: "admin" }, " 7, 2 ")).toBe(true);
+    expect(estSuperAdmin({ id: 3, role: "admin" }, "2")).toBe(false);
+    expect(estSuperAdmin({ id: 2, role: "manager" }, "2")).toBe(false);
+    expect(estSuperAdmin({ id: 2, role: "admin" }, undefined)).toBe(false);
+    expect(estSuperAdmin({ id: 2, role: "admin" }, "")).toBe(false);
+    expect(estSuperAdmin(null, "2")).toBe(false);
+  });
+});
+
 describe("acces au Hub", () => {
   it("un administrateur a tout sans reglage", () => {
     expect(aAccesHub(admin)).toBe(true);

@@ -40,6 +40,23 @@ export function estAdmin(user: unknown): boolean {
   return lire(user)?.role === "admin";
 }
 
+/**
+ * Le super administrateur : un administrateur dont l'identifiant figure dans
+ * `superAdmins`, la variable HUB_SUPER_ADMINS du serveur (des identifiants
+ * separes par des virgules). Lui seul donne un nouveau mot de passe a un
+ * membre (Bryan, 07/10/2026). Il ne s'attribue ni depuis le Hub ni depuis
+ * l'administration : seulement dans la configuration du serveur.
+ */
+export function estSuperAdmin(user: unknown, superAdmins: string | undefined): boolean {
+  const u = lire(user);
+  if (!u || u.role !== "admin") return false;
+  const ids = (superAdmins ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return ids.includes(String(u.id));
+}
+
 export function aAccesHub(user: unknown): boolean {
   const compte = lire(user);
   if (!compte) return false;
