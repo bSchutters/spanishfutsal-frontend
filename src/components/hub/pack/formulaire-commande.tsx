@@ -659,8 +659,7 @@ export default function FormulaireCommande({
         )}
       >
         <section className="flex min-w-0 flex-col gap-5" aria-labelledby="pack-articles">
-          <CommandeGroupee montant={montantGroupe + montantEnvoye} panier={apercu.ok ? apercu.total : 0} />
-          <div className="mt-3">
+          <div>
             <h2 id="pack-articles" className="text-lg leading-tight font-semibold">
               Les articles
             </h2>
@@ -683,11 +682,17 @@ export default function FormulaireCommande({
           )}
         </section>
 
-        <aside ref={zonePanier} id="ma-commande" aria-labelledby="pack-commande" className="scroll-mt-4 lg:sticky lg:top-6">
-          <form
-            onSubmit={envoyer}
-            className="flex flex-col rounded-2xl border border-border bg-card lg:max-h-[calc(100dvh-3rem)]"
-          >
+        {/* La colonne de droite reste en place : la commande groupee, puis ma commande, qui retrecit et fait defiler ses lignes si la place manque. */}
+        <aside
+          ref={zonePanier}
+          id="ma-commande"
+          aria-labelledby="pack-commande"
+          className="flex scroll-mt-4 flex-col gap-4 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)]"
+        >
+          <div className="shrink-0">
+            <CommandeGroupee montant={montantGroupe + montantEnvoye} panier={apercu.ok ? apercu.total : 0} />
+          </div>
+          <form onSubmit={envoyer} className="flex flex-col rounded-2xl border border-border bg-card lg:min-h-0">
             <div className="flex items-center gap-3 border-b border-border px-5 py-4">
               <ShoppingBag className="size-5 text-spanish-accent-2" aria-hidden="true" />
               <h2 id="pack-commande" className="text-lg font-semibold">
