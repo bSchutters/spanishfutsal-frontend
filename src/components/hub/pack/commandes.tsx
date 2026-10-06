@@ -157,7 +157,8 @@ function PreparationJoma({
 
   return (
     <Dialog open={ouvert} onOpenChange={(o) => !o && onFermer()}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+      {/* Une seule colonne qui ne s'elargit jamais au contenu : les longs noms Joma passent a la ligne. */}
+      <DialogContent className="max-h-[90dvh] grid-cols-[minmax(0,1fr)] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Commande Joma</DialogTitle>
           <DialogDescription>
@@ -211,7 +212,7 @@ function PreparationJoma({
             {recap.totaux.map((t) => (
               <li key={[t.reference, t.article, t.couleur, t.taille].join("|")} className="flex items-center gap-2 px-3 py-1.5">
                 <span className="w-24 shrink-0 truncate font-mono text-muted-foreground">{t.reference || "sans réf."}</span>
-                <span className="min-w-0 flex-1 truncate">{[t.article, t.couleur].filter(Boolean).join(" ")}</span>
+                <span className="min-w-0 flex-1 break-words">{[t.article, t.couleur].filter(Boolean).join(" ")}</span>
                 <span className="shrink-0">{t.taille}</span>
                 <span className="w-8 shrink-0 text-right font-semibold tabular-nums">{t.quantite}</span>
               </li>
@@ -274,6 +275,17 @@ export default function Commandes({
 
   const enregistree = (commande: Commande) => {
     setListe((x) => x.map((c) => (c.id === commande.id ? commande : c)));
+    setOuverture((o) => ({ ...o, ouvert: false }));
+    router.refresh();
+  };
+
+  const supprimee = (id: number) => {
+    setListe((x) => x.filter((c) => c.id !== id));
+    setSelection((x) => {
+      const suivant = new Set(x);
+      suivant.delete(id);
+      return suivant;
+    });
     setOuverture((o) => ({ ...o, ouvert: false }));
     router.refresh();
   };
@@ -385,6 +397,7 @@ export default function Commandes({
                 peutEditer={peutEditer}
                 onFermer={() => setOuverture((x) => ({ ...x, ouvert: false }))}
                 onEnregistree={enregistree}
+              onSupprimee={supprimee}
               />
             ) : null}
           </SheetContent>

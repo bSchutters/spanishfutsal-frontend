@@ -1,15 +1,16 @@
 "use client";
 
-import { Mail, Phone, Trash2 } from "lucide-react";
+import { Ban, Mail, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { enregistrerCommande } from "@/hub/actions/pack";
+import { enregistrerCommande, supprimerCommande } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
 import {
@@ -39,6 +40,7 @@ export default function FicheCommande({
   peutEditer,
   onFermer,
   onEnregistree,
+  onSupprimee,
 }: {
   commande: Commande;
   catalogue: Article[];
@@ -46,6 +48,7 @@ export default function FicheCommande({
   peutEditer: boolean;
   onFermer: () => void;
   onEnregistree: (commande: Commande) => void;
+  onSupprimee: (id: number) => void;
 }) {
   const [statut, setStatut] = useState<StatutCommande>(commande.statut);
   const [telephone, setTelephone] = useState(commande.telephone);
@@ -65,6 +68,7 @@ export default function FicheCommande({
   );
   const [ajout, setAjout] = useState("");
   const [enCours, setEnCours] = useState(false);
+  const [confirmation, setConfirmation] = useState(false);
 
   const apercu = useMemo(
     () => construireLignes(lignes, catalogue, flocage, { inactifsAdmis: true, anciennes: commande.lignes }),
@@ -93,11 +97,12 @@ export default function FicheCommande({
     setAjout("");
   };
 
-  const enregistrer = async () => {
+  // Annuler ou retablir enregistre aussitot, avec ce que la fiche montre.
+  const enregistrer = async (nouveauStatut: StatutCommande = statut) => {
     setEnCours(true);
     const r = await enregistrerCommande({
       id: commande.id,
-      statut,
+      statut: nouveauStatut,
       telephone,
       email,
       remarque,
@@ -105,8 +110,20 @@ export default function FicheCommande({
     });
     setEnCours(false);
     if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistrée, mais impossible à relire." : r.erreur);
-    toast.success("Commande enregistrée.");
+    toast.success(
+      nouveauStatut === statut ? "Commande enregistrée." : nouveauStatut === "cancelled" ? "Commande annulée." : "Commande rétablie.",
+    );
     onEnregistree(r.donnees);
+  };
+
+  const supprimer = async () => {
+    setEnCours(true);
+    const r = await supprimerCommande(commande.id).catch(() => ({ ok: false as const, erreur: "La commande n'a pas pu être supprimée." }));
+    setEnCours(false);
+    setConfirmation(false);
+    if (!r.ok) return void toast.error(r.erreur);
+    toast.success(`La commande de ${commande.personne} est supprimée.`);
+    onSupprimee(commande.id);
   };
 
   return (
@@ -281,6 +298,31 @@ export default function FicheCommande({
               <Label htmlFor="commande-remarque">Remarque</Label>
               <Textarea id="commande-remarque" value={remarque} onChange={(e) => setRemarque(e.target.value)} rows={3} />
             </div>
+            <div className="flex flex-col gap-3 rounded-md border border-border p-3">
+              <div>
+                <p className="text-sm font-medium">Annuler ou supprimer</p>
+                <p className="text-xs text-muted-foreground">
+                  Annulée, la commande reste dans la liste, estompée, et sort des totaux ; elle se rétablit. Supprimée, elle disparaît pour de bon.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {commande.statut === "cancelled" ? (
+                  <Button type="button" variant="hubSecondary" size="sm" disabled={enCours || !apercu.ok} onClick={() => void enregistrer("received")}>
+                    <RotateCcw aria-hidden="true" />
+                    Rétablir la commande
+                  </Button>
+                ) : (
+                  <Button type="button" variant="hubSecondary" size="sm" disabled={enCours || !apercu.ok} onClick={() => void enregistrer("cancelled")}>
+                    <Ban aria-hidden="true" />
+                    Annuler la commande
+                  </Button>
+                )}
+                <Button type="button" variant="hubSecondary" size="sm" className="text-destructive" disabled={enCours} onClick={() => setConfirmation(true)}>
+                  <Trash2 aria-hidden="true" />
+                  Supprimer la commande
+                </Button>
+              </div>
+            </div>
           </>
         ) : commande.remarque ? (
           <div className="flex flex-col gap-1">
@@ -293,13 +335,33 @@ export default function FicheCommande({
       {peutEditer ? (
         <div className="flex shrink-0 justify-end gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <Button type="button" variant="hubSecondary" onClick={onFermer} disabled={enCours}>
-            Annuler
+            Fermer
           </Button>
-          <Button type="button" variant="hub" onClick={enregistrer} disabled={enCours || !apercu.ok}>
+          <Button type="button" variant="hub" onClick={() => void enregistrer()} disabled={enCours || !apercu.ok}>
             {enCours ? "Enregistrement…" : "Enregistrer"}
           </Button>
         </div>
       ) : null}
+
+      <Dialog open={confirmation} onOpenChange={setConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer la commande de {commande.personne} ?</DialogTitle>
+            <DialogDescription>
+              Commande n° {commande.id}, {formaterPrix(commande.total)}. Elle disparaît pour de bon, du Hub comme de la commande groupée. Pour la garder
+              hors des totaux, annulez-la plutôt.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="hubSecondary" onClick={() => setConfirmation(false)}>
+              Garder
+            </Button>
+            <Button type="button" variant="hub" className="bg-destructive text-white hover:bg-destructive/90" disabled={enCours} onClick={() => void supprimer()}>
+              Supprimer la commande
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

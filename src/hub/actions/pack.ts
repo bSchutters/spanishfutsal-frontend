@@ -109,6 +109,23 @@ export async function supprimerArticle(id: unknown): Promise<Resultat> {
 }
 
 /**
+ * Supprimer une commande, pour de bon. Pour la garder dans la liste, hors des
+ * totaux, l'annuler plutot (statut « annulee »).
+ */
+export async function supprimerCommande(id: unknown): Promise<Resultat> {
+  await exigerModule("pack", "edit");
+  if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) return { ok: false, erreur: "Commande inconnue." };
+  const payload = await getPayloadClient();
+  try {
+    await payload.delete({ collection: "pack-orders", id });
+    revalidatePath("/hub/pack", "layout");
+    return { ok: true };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
+/**
  * L'ordre du catalogue, glisse dans le Hub : chaque article prend son rang
  * dans la liste recue, et la page des joueurs suit cet ordre. Seuls les
  * articles qui changent de rang s'ecrivent.
