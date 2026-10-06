@@ -4,6 +4,7 @@ import Link from "next/link";
 import { EnTetePage } from "@/components/hub/mise-en-page";
 import Commandes from "@/components/hub/pack/commandes";
 import { peutEditer } from "@/hub/droits";
+import { totalDes } from "@/hub/pack/calculs";
 import { chargerReglagesPack, listerArticles, listerCommandes } from "@/hub/pack/donnees";
 import { LIBELLES_STATUT_COMMANDE, STATUTS_COMMANDE, type StatutCommande } from "@/hub/pack/schema";
 import { exigerModule } from "@/hub/session";
@@ -29,11 +30,14 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
   const filtre: StatutCommande | "toutes" =
     statut === "toutes" || STATUTS_COMMANDE.includes(statut as StatutCommande) ? (statut as StatutCommande | "toutes") : "received";
 
-  const [commandes, catalogue, reglages] = await Promise.all([
+  const [commandes, catalogue, reglages, recues] = await Promise.all([
     listerCommandes(filtre === "toutes" ? null : filtre),
     listerArticles({ actifsSeulement: false }),
     chargerReglagesPack(),
+    // Les commandes qui attendent Joma comptent pour le minimum, meme sous un autre filtre.
+    filtre === "received" ? null : listerCommandes("received"),
   ]);
+  const montantRecues = totalDes((recues ?? commandes).flatMap((c) => c.lignes));
 
   return (
     <>
@@ -58,6 +62,7 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
 
       <Commandes
         key={filtre}
+        montantRecues={montantRecues}
         commandes={commandes}
         catalogue={catalogue}
         flocage={reglages.flocage}

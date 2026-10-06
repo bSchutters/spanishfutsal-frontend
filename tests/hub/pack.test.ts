@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { accesValide, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
 import {
   construireLignes,
+  avancementJoma,
   dateLimitePassee,
   nomPropose,
   prixJoueur,
@@ -420,6 +421,15 @@ describe("article supprimé", () => {
       { inactifsAdmis: false },
     );
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("minimum Joma", () => {
+  it("dit ce qu'il manque pour atteindre 150 euros, et quand c'est atteint", () => {
+    expect(avancementJoma(0)).toEqual({ atteint: false, reste: 150, part: 0 });
+    expect(avancementJoma(132.4)).toMatchObject({ atteint: false, reste: 17.6 });
+    expect(avancementJoma(150)).toMatchObject({ atteint: true, reste: 0, part: 1 });
+    expect(avancementJoma(212.5)).toMatchObject({ atteint: true, reste: 0, part: 1 });
   });
 });
 

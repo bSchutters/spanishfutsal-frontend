@@ -1,6 +1,7 @@
 "use client";
 
 import { FileDown, PackageCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -18,7 +19,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { passerCommandeesChezJoma } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
-import { formaterPrix, recapJoma, totalDes } from "@/hub/pack/calculs";
+import { avancementJoma, formaterPrix, MINIMUM_JOMA, recapJoma, totalDes } from "@/hub/pack/calculs";
 import {
   COULEURS_STATUT_COMMANDE,
   LIBELLES_STATUT_COMMANDE,
@@ -31,6 +32,56 @@ import FicheCommande from "./fiche-commande";
 
 const pieces = (c: Pick<Commande, "lignes">) => c.lignes.reduce((n, l) => n + l.quantite, 0);
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+
+/** Une barre qui se remplit jusqu'au minimum Joma, verte une fois atteint. */
+function BarreMinimum({ montant, libelle }: { montant: number; libelle: string }) {
+  const { atteint, part } = avancementJoma(montant);
+  return (
+    <div
+      role="progressbar"
+      aria-label={libelle}
+      aria-valuemin={0}
+      aria-valuemax={MINIMUM_JOMA}
+      aria-valuenow={Math.min(montant, MINIMUM_JOMA)}
+      aria-valuetext={`${formaterPrix(montant)} sur ${formaterPrix(MINIMUM_JOMA)}`}
+      className="h-2 overflow-hidden rounded-full bg-secondary"
+    >
+      <div
+        className="h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none"
+        style={{ width: `${part * 100}%`, backgroundColor: atteint ? COULEURS_STATUT_COMMANDE.delivered : "var(--primary)" }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Le minimum de commande chez Joma : le montant des commandes recues, qui
+ * attendent d'etre passees, face aux 150 euros demandes.
+ */
+function MinimumJoma({ montant }: { montant: number }) {
+  const { atteint, reste } = avancementJoma(montant);
+  return (
+    <section aria-labelledby="minimum-joma" className="rounded-lg border border-border bg-card px-4 py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="minimum-joma" className="text-sm font-semibold">
+          Minimum de commande Joma
+        </h2>
+        <p className="text-sm tabular-nums">
+          <span className="font-semibold">{formaterPrix(montant)}</span>
+          <span className="text-muted-foreground"> sur {formaterPrix(MINIMUM_JOMA)}</span>
+        </p>
+      </div>
+      <div className="mt-2">
+        <BarreMinimum montant={montant} libelle="Montant des commandes reçues" />
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {atteint
+          ? "Minimum atteint : les commandes reçues peuvent partir chez Joma."
+          : `Encore ${formaterPrix(reste)} de commandes reçues avant de pouvoir commander chez Joma.`}
+      </p>
+    </section>
+  );
+}
 
 /**
  * La preparation de la commande Joma : les articles des commandes cochees,
@@ -63,6 +114,9 @@ function PreparationJoma({
   const ordreDesTailles = (nom: string) => catalogue.find((a) => a.nom === nom)?.tailles ?? [];
   const recap = recapJoma(commandes, ecartes, ordreDesTailles);
   const ids = commandes.map((c) => c.id);
+  // Ce qui part vraiment chez Joma : les lignes des commandes cochees, sans les articles ecartes.
+  const montant = totalDes(commandes.flatMap((c) => c.lignes).filter((l) => !ecartes.has(l.article)));
+  const minimum = avancementJoma(montant);
 
   const telecharger = async () => {
     setTelechargement(true);
@@ -137,6 +191,21 @@ function PreparationJoma({
             Dans le PDF : {pluriel(recap.pieces, "pièce")} sur {pluriel(recap.totaux.length, "ligne")}, et{" "}
             {pluriel(recap.flocages.length, "flocage")}.
           </p>
+          <div className="flex flex-col gap-2 border-b border-border px-3 py-2">
+            <p className="flex items-baseline justify-between gap-3 text-xs">
+              <span className="text-muted-foreground">Montant de la commande</span>
+              <span className="tabular-nums">
+                <span className="font-semibold">{formaterPrix(montant)}</span>
+                <span className="text-muted-foreground"> sur {formaterPrix(MINIMUM_JOMA)} minimum</span>
+              </span>
+            </p>
+            <BarreMinimum montant={montant} libelle="Montant de la commande Joma" />
+            {minimum.atteint ? null : (
+              <p className="text-xs" style={{ color: COULEURS_STATUT_COMMANDE.received }}>
+                Il manque {formaterPrix(minimum.reste)} pour atteindre le minimum Joma.
+              </p>
+            )}
+          </div>
           <ul className="max-h-48 divide-y divide-border overflow-y-auto text-xs">
             {recap.totaux.map((t) => (
               <li key={[t.reference, t.article, t.couleur, t.taille].join("|")} className="flex items-center gap-2 px-3 py-1.5">
@@ -169,11 +238,14 @@ function PreparationJoma({
  * commande ; en edition, les cases a cocher preparent la commande Joma.
  */
 export default function Commandes({
+  montantRecues,
   commandes,
   catalogue,
   flocage,
   peutEditer,
 }: {
+  /** Le montant des commandes recues, pour le minimum Joma, calcule par la page quel que soit le filtre. */
+  montantRecues: number;
   commandes: Commande[];
   catalogue: Article[];
   flocage: PrixFlocage;
@@ -183,6 +255,8 @@ export default function Commandes({
   const [selection, setSelection] = useState<Set<number>>(new Set());
   const [ouverture, setOuverture] = useState<{ ouvert: boolean; id: number | null; cle: number }>({ ouvert: false, id: null, cle: 0 });
   const [joma, setJoma] = useState(false);
+  // Le minimum Joma se recalcule au serveur quand une commande change de statut ou de contenu.
+  const router = useRouter();
 
   const ouverte = liste.find((c) => c.id === ouverture.id) ?? null;
   const cochees = liste.filter((c) => selection.has(c.id));
@@ -200,6 +274,7 @@ export default function Commandes({
   const enregistree = (commande: Commande) => {
     setListe((x) => x.map((c) => (c.id === commande.id ? commande : c)));
     setOuverture((o) => ({ ...o, ouvert: false }));
+    router.refresh();
   };
 
   const passees = (ids: number[]) => {
@@ -209,107 +284,111 @@ export default function Commandes({
     );
     setSelection(new Set());
     setJoma(false);
+    router.refresh();
   };
 
   return (
-    <Panneau
-      titre="Commandes"
-      description={`${pluriel(liste.length, "commande")} · ${pluriel(actives.reduce((n, c) => n + pieces(c), 0), "pièce")} · ${formaterPrix(totalDes(actives.flatMap((c) => c.lignes)))} hors annulées`}
-      actions={
-        peutEditer && liste.length > 0 ? (
-          <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-            <Checkbox
-              checked={toutesCochees}
-              onCheckedChange={(c) => setSelection(c === true ? new Set(liste.map((x) => x.id)) : new Set())}
-              aria-label="Tout cocher"
-            />
-            Tout cocher
-          </label>
-        ) : null
-      }
-    >
-      {liste.length === 0 ? (
-        <p className="px-4 py-3 text-sm text-muted-foreground">Aucune commande ici.</p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {liste.map((c) => (
-            <li key={c.id} className={cn("flex items-center gap-3 px-4", c.statut === "cancelled" && "opacity-50")}>
-              {peutEditer ? (
-                <Checkbox
-                  checked={selection.has(c.id)}
-                  onCheckedChange={(coche) => basculer(c.id, coche === true)}
-                  aria-label={`Cocher la commande de ${c.personne}`}
-                />
-              ) : null}
-              <button
-                type="button"
-                onClick={() => setOuverture((o) => ({ ouvert: true, id: c.id, cle: o.cle + 1 }))}
-                className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left focus-visible:outline-none"
-              >
-                <span className="w-20 shrink-0 text-xs text-muted-foreground">
-                  <span className="block">{formaterDateCourte(c.creeLe)}</span>
-                  <span className="block">{formaterHeure(c.creeLe)}</span>
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{c.personne}</span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {pluriel(pieces(c), "pièce")} · {c.lignes.map((l) => l.article).filter((v, i, t) => t.indexOf(v) === i).join(", ")}
+    <>
+      <MinimumJoma montant={montantRecues} />
+      <Panneau
+        titre="Commandes"
+        description={`${pluriel(liste.length, "commande")} · ${pluriel(actives.reduce((n, c) => n + pieces(c), 0), "pièce")} · ${formaterPrix(totalDes(actives.flatMap((c) => c.lignes)))} hors annulées`}
+        actions={
+          peutEditer && liste.length > 0 ? (
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <Checkbox
+                checked={toutesCochees}
+                onCheckedChange={(c) => setSelection(c === true ? new Set(liste.map((x) => x.id)) : new Set())}
+                aria-label="Tout cocher"
+              />
+              Tout cocher
+            </label>
+          ) : null
+        }
+      >
+        {liste.length === 0 ? (
+          <p className="px-4 py-3 text-sm text-muted-foreground">Aucune commande ici.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {liste.map((c) => (
+              <li key={c.id} className={cn("flex items-center gap-3 px-4", c.statut === "cancelled" && "opacity-50")}>
+                {peutEditer ? (
+                  <Checkbox
+                    checked={selection.has(c.id)}
+                    onCheckedChange={(coche) => basculer(c.id, coche === true)}
+                    aria-label={`Cocher la commande de ${c.personne}`}
+                  />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setOuverture((o) => ({ ouvert: true, id: c.id, cle: o.cle + 1 }))}
+                  className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left focus-visible:outline-none"
+                >
+                  <span className="w-20 shrink-0 text-xs text-muted-foreground">
+                    <span className="block">{formaterDateCourte(c.creeLe)}</span>
+                    <span className="block">{formaterHeure(c.creeLe)}</span>
                   </span>
-                </span>
-                <span className="shrink-0 text-right">
-                  <span className="block text-sm font-semibold tabular-nums">{formaterPrix(c.total)}</span>
-                  <span className="block text-[11px] text-muted-foreground">
-                    <PastilleStatut couleur={COULEURS_STATUT_COMMANDE[c.statut]} libelle={LIBELLES_STATUT_COMMANDE[c.statut]} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{c.personne}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {pluriel(pieces(c), "pièce")} · {c.lignes.map((l) => l.article).filter((v, i, t) => t.indexOf(v) === i).join(", ")}
+                    </span>
                   </span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-semibold tabular-nums">{formaterPrix(c.total)}</span>
+                    <span className="block text-[11px] text-muted-foreground">
+                      <PastilleStatut couleur={COULEURS_STATUT_COMMANDE[c.statut]} libelle={LIBELLES_STATUT_COMMANDE[c.statut]} />
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
-      {peutEditer && selection.size > 0 ? (
-        <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3">
-          <span className="text-sm">
-            {pluriel(selection.size, "commande")} cochée{selection.size > 1 ? "s" : ""}
-          </span>
-          <Button type="button" variant="hub" size="sm" onClick={() => setJoma(true)}>
-            <FileDown aria-hidden="true" />
-            Préparer la commande Joma
-          </Button>
-        </div>
-      ) : null}
+        {peutEditer && selection.size > 0 ? (
+          <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3">
+            <span className="text-sm">
+              {pluriel(selection.size, "commande")} cochée{selection.size > 1 ? "s" : ""}
+            </span>
+            <Button type="button" variant="hub" size="sm" onClick={() => setJoma(true)}>
+              <FileDown aria-hidden="true" />
+              Préparer la commande Joma
+            </Button>
+          </div>
+        ) : null}
 
-      <PreparationJoma
-        key={[...selection].sort().join(",")}
-        commandes={cochees}
-        catalogue={catalogue}
-        ouvert={joma}
-        onFermer={() => setJoma(false)}
-        onPassees={passees}
-      />
+        <PreparationJoma
+          key={[...selection].sort().join(",")}
+          commandes={cochees}
+          catalogue={catalogue}
+          ouvert={joma}
+          onFermer={() => setJoma(false)}
+          onPassees={passees}
+        />
 
-      <Sheet open={ouverture.ouvert} onOpenChange={(o) => !o && setOuverture((x) => ({ ...x, ouvert: false }))}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-          <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-            <SheetTitle>{ouverte ? ouverte.personne : "Commande"}</SheetTitle>
-            <SheetDescription>
-              {ouverte ? `Commande n° ${ouverte.id} · ${LIBELLES_STATUT_COMMANDE[ouverte.statut]}` : ""}
-            </SheetDescription>
-          </SheetHeader>
-          {ouverte ? (
-            <FicheCommande
-              key={ouverture.cle}
-              commande={ouverte}
-              catalogue={catalogue}
-              flocage={flocage}
-              peutEditer={peutEditer}
-              onFermer={() => setOuverture((x) => ({ ...x, ouvert: false }))}
-              onEnregistree={enregistree}
-            />
-          ) : null}
-        </SheetContent>
-      </Sheet>
-    </Panneau>
+        <Sheet open={ouverture.ouvert} onOpenChange={(o) => !o && setOuverture((x) => ({ ...x, ouvert: false }))}>
+          <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+            <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
+              <SheetTitle>{ouverte ? ouverte.personne : "Commande"}</SheetTitle>
+              <SheetDescription>
+                {ouverte ? `Commande n° ${ouverte.id} · ${LIBELLES_STATUT_COMMANDE[ouverte.statut]}` : ""}
+              </SheetDescription>
+            </SheetHeader>
+            {ouverte ? (
+              <FicheCommande
+                key={ouverture.cle}
+                commande={ouverte}
+                catalogue={catalogue}
+                flocage={flocage}
+                peutEditer={peutEditer}
+                onFermer={() => setOuverture((x) => ({ ...x, ouvert: false }))}
+                onEnregistree={enregistree}
+              />
+            ) : null}
+          </SheetContent>
+        </Sheet>
+      </Panneau>
+    </>
   );
 }

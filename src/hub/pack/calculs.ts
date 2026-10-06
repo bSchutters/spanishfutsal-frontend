@@ -70,6 +70,19 @@ export function prixUnitaire(prixArticle: number, flocage: PrixFlocage, numero: 
   );
 }
 
+/**
+ * Le montant minimum d'une commande chez Joma (regle donnee par Bryan le
+ * 06/10/2026). Il se compare aux montants des commandes, prix remises et
+ * flocages compris, ceux que le club paie.
+ */
+export const MINIMUM_JOMA = 150;
+
+/** Ou en est un montant face au minimum Joma : atteint ou non, ce qui manque, la part remplie (de 0 a 1). */
+export function avancementJoma(montant: number): { atteint: boolean; reste: number; part: number } {
+  const reste = enEuros(Math.max(0, enCentimes(MINIMUM_JOMA) - enCentimes(montant)));
+  return { atteint: reste === 0, reste, part: Math.min(1, Math.max(0, montant / MINIMUM_JOMA)) };
+}
+
 /** Le total d'une liste de lignes. */
 export function totalDes(lignes: readonly Pick<LigneCommande, "prixUnitaire" | "quantite">[]): number {
   return enEuros(lignes.reduce((somme, l) => somme + enCentimes(l.prixUnitaire) * l.quantite, 0));
