@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerArticle, supprimerArticle } from "@/hub/actions/pack";
@@ -264,6 +263,45 @@ const remettre = (disposition: DispositionFlocage, cles: CoteDisposition[]): Dis
   ...Object.fromEntries(cles.map((cle) => [cle, DISPOSITION_FLOCAGE_DEFAUT[cle]])),
 });
 
+/**
+ * Un bloc de la fiche : un titre, une phrase, une action dans l'en-tete (un
+ * interrupteur), puis son contenu. Sans contenu, l'en-tete se suffit.
+ */
+function Bloc({
+  titre,
+  description,
+  action,
+  children,
+  className,
+  ...props
+}: Omit<React.ComponentProps<"section">, "title"> & { titre: string; description?: string; action?: React.ReactNode }) {
+  return (
+    <section className={cn("rounded-lg border border-border bg-card", className)} {...props}>
+      <div className={cn("flex items-start justify-between gap-4 px-4 py-3", children ? "border-b border-border" : "")}>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold">{titre}</h3>
+          {description ? <p className="mt-0.5 text-xs text-muted-foreground">{description}</p> : null}
+        </div>
+        {action ? <div className="shrink-0 pt-0.5">{action}</div> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** Un groupe de reglages sous un petit titre, « Numéro », « Sponsors »... */
+function Groupe({ titre, action, children }: { titre: string; action?: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{titre}</p>
+        {action}
+      </div>
+      {children ? <div className="grid gap-x-5 gap-y-3 sm:grid-cols-2">{children}</div> : null}
+    </div>
+  );
+}
+
 /** Le choix de la couleur d'un apercu, des qu'il y en a plusieurs. */
 function ChoixCouleur({ variantes, choisie, onChoisir }: { variantes: VarianteFormulaire[]; choisie: string; onChoisir: (cle: string) => void }) {
   if (variantes.length < 2) return null;
@@ -287,147 +325,206 @@ function ChoixCouleur({ variantes, choisie, onChoisir }: { variantes: VarianteFo
   );
 }
 
-/**
- * Le logo du club sur la face avant, regle sur la photo principale d'une
- * couleur : sa place et sa taille sont propres a l'article.
- */
-function ReglageLogo({
-  variantes,
-  disposition,
-  onDisposition,
-}: {
-  variantes: VarianteFormulaire[];
-  disposition: DispositionFlocage;
-  onDisposition: (d: DispositionFlocage) => void;
-}) {
-  const [choisie, setChoisie] = useState<string | null>(null);
-  const avecPhoto = variantes.filter((v) => v.photos.length > 0);
-  const variante = avecPhoto.find((v) => v.cle === choisie) ?? avecPhoto[0];
-  const curseur = curseurDe(disposition, onDisposition);
-
-  if (!variante) {
-    return (
-      <p className="rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
-        Ajoutez une photo de face dans une couleur : le logo s&apos;y pose, et sa place se règle ici.
-      </p>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3 rounded-md border border-border p-3">
-      <p className="text-sm font-medium">Aperçu du logo</p>
-      <ChoixCouleur variantes={avecPhoto} choisie={variante.cle} onChoisir={setChoisie} />
-      <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-md bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={variante.photos[0].url} alt="" className="size-full object-contain" />
-        <ApercuLogo disposition={disposition} logo={variante.logo} />
-      </div>
-      <p className="text-xs text-muted-foreground">Le logo se pose sur la photo principale de chaque couleur : glissez la photo de face en premier.</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {curseur("logoX", "Position horizontale", 5, 95)}
-        {curseur("logoY", "Hauteur du logo", 5, 80)}
-        {curseur("logoTaille", "Taille du logo", 2, 30)}
-        {curseur("logoLargeur", "Largeur (vue de biais)", 30, 100)}
-        {curseur("logoInclinaison", "Inclinaison", -45, 45, "°")}
-        {curseur("logoRotation", "Rotation", -45, 45, "°")}
-      </div>
-      <Button
-        type="button"
-        variant="hubSecondary"
-        size="sm"
-        className="self-start"
-        onClick={() => onDisposition(remettre(disposition, ["logoX", "logoY", "logoTaille", "logoLargeur", "logoInclinaison", "logoRotation"]))}
-      >
-        Position par défaut
-      </Button>
-    </div>
-  );
-}
+type Vue = "face" | "dos";
 
 /**
- * La position du flocage, reglee sur la photo de dos d'une couleur (la
- * premiere qui en a une, ou celle choisie) : les sponsors, le nom et le
- * numero d'essai s'y dessinent en direct.
+ * L'article tel que le joueur le verra, sous les yeux pendant tous les
+ * reglages : une couleur, sa face avec le logo du club, son dos avec les
+ * sponsors, le numero et le nom d'essai, puis son nom et son prix.
  */
-function ReglageFlocage({
+function ApercuArticle({
+  nom,
+  prix,
   variantes,
+  couleur,
+  onCouleur,
+  vue,
+  onVue,
   disposition,
-  onDisposition,
+  floquable,
   essaiNumero,
   essaiNom,
   onEssaiNumero,
   onEssaiNom,
 }: {
+  nom: string;
+  prix: number | null;
   variantes: VarianteFormulaire[];
+  couleur: string | null;
+  onCouleur: (cle: string) => void;
+  vue: Vue;
+  onVue: (vue: Vue) => void;
   disposition: DispositionFlocage;
-  onDisposition: (d: DispositionFlocage) => void;
+  floquable: boolean;
   essaiNumero: string;
   essaiNom: string;
   onEssaiNumero: (v: string) => void;
   onEssaiNom: (v: string) => void;
 }) {
-  const [choisie, setChoisie] = useState<string | null>(null);
-  const avecPhotoDos = variantes.filter((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
-  const avecDos = avecPhotoDos.find((v) => v.cle === choisie) ?? avecPhotoDos[0];
-  const photoDos = avecDos?.photos.find((p) => p.id === avecDos.photoDosId) ?? null;
-  const curseur = curseurDe(disposition, onDisposition);
+  const avecPhotos = variantes.filter((v) => v.photos.length > 0);
+  const variante = avecPhotos.find((v) => v.cle === couleur) ?? avecPhotos[0];
 
-  if (!avecDos || !photoDos) {
+  if (!variante) {
     return (
-      <p className="rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
-        Marquez une photo « Dos » dans une couleur : le joueur verra son flocage dessus, et la position se règle ici.
-      </p>
+      <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-8 text-center text-sm text-muted-foreground">
+        <Shirt className="size-8" aria-hidden="true" />
+        Ajoutez des photos à une couleur : l&apos;article s&apos;affiche ici, tel que le joueur le verra.
+      </div>
     );
   }
 
+  const principale = variante.photos[0];
+  const photoDos = variante.photos.find((p) => p.id === variante.photoDosId) ?? null;
+  const dos = vue === "dos" && photoDos !== null;
+  const photo = dos && photoDos ? photoDos : principale;
+  // Le logo de la face avant ne se pose pas sur une photo principale qui serait celle du dos.
+  const logoAvant = disposition.logoAvant && principale.id !== variante.photoDosId;
+
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border p-3">
-      <p className="text-sm font-medium">Aperçu du flocage</p>
-      <ChoixCouleur variantes={avecPhotoDos} choisie={avecDos.cle} onChoisir={setChoisie} />
-      <div className="relative mx-auto aspect-square w-full max-w-lg overflow-hidden rounded-md bg-white">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <ChoixCouleur variantes={avecPhotos} choisie={variante.cle} onChoisir={onCouleur} />
+        <div className="ms-auto inline-flex rounded-md bg-secondary p-0.5" role="group" aria-label="Côté de l'article">
+          {(["face", "dos"] as const).map((cote) => {
+            const actif = (cote === "dos") === dos;
+            const sansDos = cote === "dos" && !photoDos;
+            return (
+              <button
+                key={cote}
+                type="button"
+                aria-pressed={actif}
+                disabled={sansDos}
+                title={sansDos ? "Marquez la photo de dos de cette couleur : bouton « Dos » sur sa vignette." : undefined}
+                onClick={() => onVue(cote)}
+                className={cn(
+                  "rounded px-3 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                  actif ? "bg-background text-foreground shadow-sm" : "text-muted-foreground enabled:hover:text-foreground",
+                )}
+              >
+                {cote === "face" ? "Face" : "Dos"}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoDos.url} alt="" className="size-full object-contain" />
-        <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={avecDos.couleursFlocage} disposition={disposition} logo={avecDos.logo} />
+        <img src={photo.url} alt="" className="size-full object-contain" />
+        {dos ? (
+          floquable ? (
+            <ApercuFlocage numero={essaiNumero} nom={essaiNom.trim()} couleurs={variante.couleursFlocage} disposition={disposition} logo={variante.logo} />
+          ) : null
+        ) : logoAvant ? (
+          <ApercuLogo disposition={disposition} logo={variante.logo} />
+        ) : null}
       </div>
-      <div className="grid grid-cols-[5rem_1fr] gap-2">
-        <Input aria-label="Numéro d'essai" inputMode="numeric" maxLength={2} value={essaiNumero} onChange={(e) => onEssaiNumero(e.target.value.replace(/\D/g, ""))} />
-        <Input aria-label="Nom d'essai" value={essaiNom} onChange={(e) => onEssaiNom(e.target.value.toUpperCase())} />
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {curseur("nomY", "Hauteur du nom", 5, 90)}
-        {curseur("nomHauteur", "Taille du nom", 1, 12)}
-        {curseur("numeroY", "Hauteur du numéro", 10, 80)}
-        {curseur("numeroHauteur", "Taille du numéro", 5, 40)}
-      </div>
-      <label className="flex items-center justify-between gap-3 text-sm">
-        <span>
-          Sponsors du club
-          <span className="block text-xs text-muted-foreground">Sofexia au-dessus du numéro, Wabee en dessous, dans la couleur des lettres.</span>
-        </span>
-        <Switch
-          checked={disposition.sponsors}
-          onCheckedChange={(sponsors) => onDisposition({ ...disposition, sponsors })}
-          aria-label="Sponsors du club"
-        />
-      </label>
-      {disposition.sponsors ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {curseur("sponsorHautY", "Hauteur de Sofexia", 5, 60)}
-          {curseur("sponsorBasY", "Hauteur de Wabee", 30, 95)}
-          {curseur("sponsorLargeur", "Largeur des sponsors", 5, 50)}
+      <p className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="min-w-0 truncate font-medium">{[nom.trim() || "Nouvel article", variante.couleur].filter(Boolean).join(" · ")}</span>
+        {prix !== null ? <span className="shrink-0 font-semibold tabular-nums">{formaterPrix(prix)}</span> : null}
+      </p>
+      {dos && floquable ? (
+        <div className="grid grid-cols-[5rem_1fr] gap-2">
+          <Input
+            aria-label="Numéro d'essai"
+            inputMode="numeric"
+            maxLength={2}
+            value={essaiNumero}
+            onChange={(e) => onEssaiNumero(e.target.value.replace(/\D/g, ""))}
+          />
+          <Input aria-label="Nom d'essai" value={essaiNom} onChange={(e) => onEssaiNom(e.target.value.toUpperCase())} />
         </div>
       ) : null}
-      <Button
-        type="button"
-        variant="hubSecondary"
-        size="sm"
-        className="self-start"
-        onClick={() =>
-          onDisposition(remettre(disposition, ["nomY", "nomHauteur", "numeroY", "numeroHauteur", "sponsorHautY", "sponsorBasY", "sponsorLargeur"]))
+    </div>
+  );
+}
+
+/** Les reglages du logo de la face avant : sa place, puis de quoi suivre une photo de biais. */
+function ReglagesLogo({ disposition, onDisposition }: { disposition: DispositionFlocage; onDisposition: (d: DispositionFlocage) => void }) {
+  const curseur = curseurDe(disposition, onDisposition);
+  return (
+    <div className="flex flex-col gap-5 p-4">
+      <Groupe titre="Place">
+        {curseur("logoX", "Position horizontale", 5, 95)}
+        {curseur("logoY", "Hauteur", 5, 80)}
+        {curseur("logoTaille", "Taille", 2, 30)}
+      </Groupe>
+      <Groupe titre="Photo de biais">
+        {curseur("logoLargeur", "Largeur", 30, 100)}
+        {curseur("logoInclinaison", "Inclinaison", -45, 45, "°")}
+        {curseur("logoRotation", "Rotation", -45, 45, "°")}
+      </Groupe>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">Sur la photo principale de chaque couleur : glissez la photo de face en premier.</p>
+        <Button
+          type="button"
+          variant="hubSecondary"
+          size="sm"
+          onClick={() => onDisposition(remettre(disposition, ["logoX", "logoY", "logoTaille", "logoLargeur", "logoInclinaison", "logoRotation"]))}
+        >
+          Position par défaut
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Les reglages du flocage : le numero, le nom et les sponsors du club. */
+function ReglagesFlocage({
+  disposition,
+  onDisposition,
+  aUnDos,
+}: {
+  disposition: DispositionFlocage;
+  onDisposition: (d: DispositionFlocage) => void;
+  aUnDos: boolean;
+}) {
+  const curseur = curseurDe(disposition, onDisposition);
+  return (
+    <div className="flex flex-col gap-5 p-4">
+      {aUnDos ? null : (
+        <p className="rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+          Marquez la photo de dos d&apos;une couleur (bouton « Dos » sur sa vignette) : le flocage s&apos;y place, et l&apos;aperçu le montre.
+        </p>
+      )}
+      <Groupe titre="Numéro">
+        {curseur("numeroY", "Hauteur", 10, 80)}
+        {curseur("numeroHauteur", "Taille", 5, 40)}
+      </Groupe>
+      <Groupe titre="Nom">
+        {curseur("nomY", "Hauteur", 5, 90)}
+        {curseur("nomHauteur", "Taille", 1, 12)}
+      </Groupe>
+      <Groupe
+        titre="Sponsors du club"
+        action={
+          <Switch
+            checked={disposition.sponsors}
+            onCheckedChange={(sponsors) => onDisposition({ ...disposition, sponsors })}
+            aria-label="Sponsors du club"
+          />
         }
       >
-        Positions par défaut
-      </Button>
+        {disposition.sponsors ? (
+          <>
+            {curseur("sponsorHautY", "Hauteur de Sofexia", 5, 60)}
+            {curseur("sponsorBasY", "Hauteur de Wabee", 30, 95)}
+            {curseur("sponsorLargeur", "Largeur", 5, 50)}
+          </>
+        ) : null}
+      </Groupe>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">Sofexia au-dessus du numéro, Wabee en dessous, dans la couleur des lettres.</p>
+        <Button
+          type="button"
+          variant="hubSecondary"
+          size="sm"
+          onClick={() =>
+            onDisposition(remettre(disposition, ["nomY", "nomHauteur", "numeroY", "numeroHauteur", "sponsorHautY", "sponsorBasY", "sponsorLargeur"]))
+          }
+        >
+          Positions par défaut
+        </Button>
+      </div>
     </div>
   );
 }
@@ -479,9 +576,14 @@ function FicheArticle({
       : [nouvelleVariante()],
   );
   const [enCours, setEnCours] = useState(false);
+  // L'apercu suit ce qu'on regle : la couleur qu'on touche, la face pour le logo, le dos pour le flocage.
+  const [couleurApercu, setCouleurApercu] = useState<string | null>(null);
+  const [vue, setVue] = useState<Vue>("face");
 
   const changerVariante = (cle: string, partiel: Partial<VarianteFormulaire>) =>
     setVariantes((liste) => liste.map((v) => (v.cle === cle ? { ...v, ...partiel } : v)));
+  const prix = Number.isFinite(nombreSaisi(prixCatalogue)) ? prixJoueur(nombreSaisi(prixCatalogue), remiseSaisie, remiseGenerale) : null;
+  const aUnDos = variantes.some((v) => v.photoDosId !== null && v.photos.some((p) => p.id === v.photoDosId));
 
   const supprimer = async () => {
     if (!article) return;
@@ -528,32 +630,52 @@ function FicheArticle({
   return (
     <form onSubmit={enregistrer} className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {/* Pleine largeur : l'article et ses couleurs a gauche, le logo avant et le flocage avec leurs apercus a droite. Sur telephone, tout se suit dans cet ordre. */}
-        <div className="grid gap-5 px-5 py-5 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-8 lg:px-8">
-          <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">
-            <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="article-nom">Nom</Label>
-                <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
+        {/*
+          Sur grand ecran, les reglages a gauche et l'apercu a droite, qui reste en place pendant qu'on fait defiler.
+          Sur telephone, tout se suit : l'apercu arrive juste avant les reglages du logo et du flocage.
+        */}
+        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,30rem)] lg:grid-rows-[auto_auto_auto_auto_1fr] lg:items-start lg:gap-x-8 lg:px-8">
+          <Bloc titre="L'article" className="lg:col-start-1">
+            <div className="flex flex-col gap-4 p-4">
+              <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="article-nom">Nom</Label>
+                  <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="article-reference">Référence Joma</Label>
+                  <Input
+                    id="article-reference"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    placeholder="104263"
+                    spellCheck={false}
+                    className="h-10"
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="article-reference">Référence Joma</Label>
-                <Input
-                  id="article-reference"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  placeholder="104263"
-                  spellCheck={false}
-                  className="h-10"
-                />
+                <Label htmlFor="article-description">Description</Label>
+                <Textarea id="article-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+                <p className="text-xs text-muted-foreground">Facultative, visible sur la page des joueurs.</p>
               </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-tailles">Tailles</Label>
+                <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
+                <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
+              </div>
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-md bg-secondary/40 px-3 py-2.5">
+                <span>
+                  <span className="block text-sm font-medium">Dans le catalogue</span>
+                  <span className="block text-xs text-muted-foreground">Décoché, l&apos;article quitte la page des joueurs, mais reste dans les commandes passées.</span>
+                </span>
+                <Switch checked={actif} onCheckedChange={setActif} aria-label="Dans le catalogue" />
+              </label>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="article-description">Description</Label>
-              <Textarea id="article-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
-              <p className="text-xs text-muted-foreground">Facultative, visible sur la page des joueurs.</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+          </Bloc>
+
+          <Bloc titre="Prix" description="Le prix Joma, logo du club compris, puis la remise du club." className="lg:col-start-1">
+            <div className="grid gap-4 p-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="article-prix">Prix catalogue (€)</Label>
                 <Input
@@ -564,15 +686,7 @@ function FicheArticle({
                   required
                   className="h-10"
                 />
-                <p className="text-xs text-muted-foreground">Le prix Joma, logo du club compris.</p>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="article-tailles">Tailles</Label>
-                <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
-                <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="article-remise">Remise</Label>
                 <Select value={modeRemise} onValueChange={(m) => setModeRemise(m as ModeRemise)}>
@@ -589,7 +703,7 @@ function FicheArticle({
                 </Select>
               </div>
               {modeRemise === "custom" ? (
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 sm:col-start-2">
                   <Label htmlFor="article-remise-particuliere">Remise de cet article (%)</Label>
                   <Input
                     id="article-remise-particuliere"
@@ -602,163 +716,192 @@ function FicheArticle({
                 </div>
               ) : null}
             </div>
-            {Number.isFinite(nombreSaisi(prixCatalogue)) ? (
-              <p className="rounded-md bg-secondary/50 px-3 py-2 text-sm">
-                Prix joueur : <span className="font-semibold tabular-nums">{formaterPrix(prixJoueur(nombreSaisi(prixCatalogue), remiseSaisie, remiseGenerale))}</span>
-                <span className="text-muted-foreground"> (remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %)</span>
-              </p>
-            ) : null}
-            <label className="flex cursor-pointer items-center justify-between gap-4">
-              <span>
-                <span className="block text-sm font-medium">Dans le catalogue</span>
-                <span className="block text-xs text-muted-foreground">Décoché, l&apos;article quitte la page des joueurs, mais reste dans les commandes passées.</span>
+            <div className="flex items-baseline justify-between gap-4 border-t border-border px-4 py-3">
+              <span className="text-sm text-muted-foreground">Prix joueur</span>
+              <span className="text-end">
+                <span className="text-base font-semibold tabular-nums">{prix !== null ? formaterPrix(prix) : "?"}</span>
+                {prix !== null ? (
+                  <span className="ms-2 text-xs text-muted-foreground">remise de {tauxRemise(remiseSaisie, remiseGenerale).toLocaleString("fr-BE")} %</span>
+                ) : null}
               </span>
-              <Switch checked={actif} onCheckedChange={setActif} aria-label="Dans le catalogue" />
-            </label>
-          </div>
-          <div className="flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-            <label className="flex cursor-pointer items-center justify-between gap-4">
-              <span>
-                <span className="block text-sm font-medium">Logo sur la face avant</span>
-                <span className="block text-xs text-muted-foreground">Le logo du club sur la photo de face, à la place réglée pour cet article.</span>
-              </span>
-              <Switch
-                checked={disposition.logoAvant}
-                onCheckedChange={(logoAvant) => setDisposition((d) => ({ ...d, logoAvant }))}
-                aria-label="Logo sur la face avant"
-              />
-            </label>
-            {disposition.logoAvant ? <ReglageLogo variantes={variantes} disposition={disposition} onDisposition={setDisposition} /> : null}
-            <label className="flex cursor-pointer items-center justify-between gap-4">
-              <span>
-                <span className="block text-sm font-medium">Floquable</span>
-                <span className="block text-xs text-muted-foreground">Le joueur peut ajouter un numéro et un nom, avec supplément.</span>
-              </span>
-              <Switch checked={floquable} onCheckedChange={setFloquable} aria-label="Floquable" />
-            </label>
-            {floquable ? (
-              <ReglageFlocage
-                variantes={variantes}
-                disposition={disposition}
-                onDisposition={setDisposition}
-                essaiNumero={essaiNumero}
-                essaiNom={essaiNom}
-                onEssaiNumero={setEssaiNumero}
-                onEssaiNom={setEssaiNom}
-              />
-            ) : null}
-          </div>
-          <div className="flex min-w-0 flex-col gap-3 lg:col-start-1 lg:row-start-2">
-            <div>
-              <p className="text-sm font-medium">Couleurs</p>
-              <p className="text-xs text-muted-foreground">Chacune avec son code couleur Joma et ses photos, la première étant la principale. Une seule couleur peut rester sans nom.</p>
             </div>
-            {variantes.map((v, rang) => (
-              <div key={v.cle} className="flex flex-col gap-3 rounded-md border border-border p-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor={`couleur-${v.cle}`}>Couleur</Label>
-                    <Input
-                      id={`couleur-${v.cle}`}
-                      value={v.couleur}
-                      onChange={(e) => changerVariante(v.cle, { couleur: e.target.value })}
-                      placeholder={variantes.length === 1 ? "Facultatif" : "Bleu, blanc…"}
-                      className="h-10"
-                    />
+          </Bloc>
+
+          <Bloc
+            titre="Couleurs et photos"
+            description="Chacune avec son code couleur Joma et ses photos ; la première photo est la principale. Une seule couleur peut rester sans nom."
+            className="lg:col-start-1"
+          >
+            <div className="flex flex-col gap-3 p-4">
+              {variantes.map((v, rang) => (
+                <div
+                  key={v.cle}
+                  className="flex flex-col gap-3 rounded-md border border-border bg-background/40 p-3"
+                  onFocusCapture={() => setCouleurApercu(v.cle)}
+                  onPointerDownCapture={() => setCouleurApercu(v.cle)}
+                >
+                  {/* Avec plusieurs couleurs, chacune porte son numero et sa corbeille, en haut de sa carte. */}
+                  {variantes.length > 1 ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Couleur {rang + 1}</p>
+                      <Button
+                        type="button"
+                        variant="hubSecondary"
+                        size="sm"
+                        aria-label={`Retirer la couleur ${v.couleur || rang + 1}`}
+                        onClick={() => setVariantes((liste) => liste.filter((x) => x.cle !== v.cle))}
+                      >
+                        <Trash2 aria-hidden="true" />
+                      </Button>
+                    </div>
+                  ) : null}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor={`couleur-${v.cle}`}>Couleur</Label>
+                      <Input
+                        id={`couleur-${v.cle}`}
+                        value={v.couleur}
+                        onChange={(e) => changerVariante(v.cle, { couleur: e.target.value })}
+                        placeholder={variantes.length === 1 ? "Facultatif" : "Bleu, blanc…"}
+                        className="h-10"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor={`code-${v.cle}`}>Code couleur Joma</Label>
+                      <Input
+                        id={`code-${v.cle}`}
+                        value={v.codeCouleur}
+                        onChange={(e) => changerVariante(v.cle, { codeCouleur: e.target.value })}
+                        placeholder="339"
+                        spellCheck={false}
+                        className="h-10"
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor={`code-${v.cle}`}>Code couleur Joma</Label>
-                    <Input
-                      id={`code-${v.cle}`}
-                      value={v.codeCouleur}
-                      onChange={(e) => changerVariante(v.cle, { codeCouleur: e.target.value })}
-                      placeholder="339"
-                      spellCheck={false}
-                      className="h-10"
-                    />
-                    {referenceComplete(reference, v.codeCouleur) ? (
-                      <p className="text-xs text-muted-foreground">
-                        Chez Joma : <span className="font-mono">{referenceComplete(reference, v.codeCouleur)}</span>
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="flex items-start justify-between gap-3">
+                  {referenceComplete(reference, v.codeCouleur) ? (
+                    <p className="-mt-1 text-xs text-muted-foreground">
+                      Chez Joma : <span className="font-mono">{referenceComplete(reference, v.codeCouleur)}</span>
+                    </p>
+                  ) : null}
                   <PhotosCouleur
                     photos={v.photos}
                     nom={[nom, v.couleur].filter(Boolean).join(" ")}
                     onChange={(photos) => changerVariante(v.cle, { photos })}
                     photoDosId={v.photoDosId}
-                    onDos={floquable ? (photoDosId) => changerVariante(v.cle, { photoDosId }) : undefined}
+                    onDos={
+                      floquable
+                        ? (photoDosId) => {
+                            changerVariante(v.cle, { photoDosId });
+                            if (photoDosId !== null) setVue("dos");
+                          }
+                        : undefined
+                    }
                   />
-                  {variantes.length > 1 ? (
-                    <Button
-                      type="button"
-                      variant="hubSecondary"
-                      size="sm"
-                      aria-label={`Retirer la couleur ${v.couleur || rang + 1}`}
-                      onClick={() => setVariantes((liste) => liste.filter((x) => x.cle !== v.cle))}
-                    >
-                      <Trash2 aria-hidden="true" />
-                    </Button>
+                  {floquable || disposition.logoAvant ? (
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border pt-3 text-xs">
+                      <label className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Logo</span>
+                        <Select value={v.logo} onValueChange={(logo) => changerVariante(v.cle, { logo: logo as VersionLogo })}>
+                          <SelectTrigger size="sm" aria-label="Logo" className="text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VERSIONS_LOGO.map((l) => (
+                              <SelectItem key={l} value={l}>
+                                {LIBELLES_LOGO[l]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      {floquable ? (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-muted-foreground">Flocage</span>
+                          {(
+                            [
+                              ["remplissage", "Lettre"],
+                              ["contour", "Contour"],
+                              ["exterieur", "Contour extérieur"],
+                            ] as const
+                          ).map(([cle, libelle]) => (
+                            <label key={cle} className="flex cursor-pointer items-center gap-1.5">
+                              <input
+                                type="color"
+                                value={v.couleursFlocage[cle]}
+                                onChange={(e) => changerVariante(v.cle, { couleursFlocage: { ...v.couleursFlocage, [cle]: e.target.value } })}
+                                className="size-6 cursor-pointer rounded border border-border bg-transparent"
+                              />
+                              {libelle}
+                            </label>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
-                {floquable ? (
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <span className="text-muted-foreground">Flocage :</span>
-                    {(
-                      [
-                        ["remplissage", "Lettre"],
-                        ["contour", "Contour"],
-                        ["exterieur", "Contour extérieur"],
-                      ] as const
-                    ).map(([cle, libelle]) => (
-                      <label key={cle} className="flex cursor-pointer items-center gap-1.5">
-                        <input
-                          type="color"
-                          value={v.couleursFlocage[cle]}
-                          onChange={(e) => changerVariante(v.cle, { couleursFlocage: { ...v.couleursFlocage, [cle]: e.target.value } })}
-                          className="size-6 cursor-pointer rounded border border-border bg-transparent"
-                        />
-                        {libelle}
-                      </label>
-                    ))}
-                  </div>
-                ) : null}
-                {floquable || disposition.logoAvant ? (
-                  <label className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-muted-foreground">Logo :</span>
-                    <Select value={v.logo} onValueChange={(logo) => changerVariante(v.cle, { logo: logo as VersionLogo })}>
-                      <SelectTrigger size="sm" aria-label="Logo" className="text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VERSIONS_LOGO.map((l) => (
-                          <SelectItem key={l} value={l}>
-                            {LIBELLES_LOGO[l]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </label>
-                ) : null}
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="hubSecondary"
-              size="sm"
-              className="self-start"
-              onClick={() => setVariantes((liste) => [...liste, nouvelleVariante()])}
-            >
-              <Plus aria-hidden="true" />
-              Ajouter une couleur
-            </Button>
-          </div>
+              ))}
+              <Button
+                type="button"
+                variant="hubSecondary"
+                size="sm"
+                className="self-start"
+                onClick={() => setVariantes((liste) => [...liste, nouvelleVariante()])}
+              >
+                <Plus aria-hidden="true" />
+                Ajouter une couleur
+              </Button>
+            </div>
+          </Bloc>
+
+          <section aria-label="Aperçu" className="lg:sticky lg:top-5 lg:col-start-2 lg:row-span-5 lg:row-start-1 lg:self-start">
+            <ApercuArticle
+              nom={nom}
+              prix={prix}
+              variantes={variantes}
+              couleur={couleurApercu}
+              onCouleur={setCouleurApercu}
+              vue={vue}
+              onVue={setVue}
+              disposition={disposition}
+              floquable={floquable}
+              essaiNumero={essaiNumero}
+              essaiNom={essaiNom}
+              onEssaiNumero={setEssaiNumero}
+              onEssaiNom={setEssaiNom}
+            />
+          </section>
+
+          <Bloc
+            titre="Logo sur la face avant"
+            description="Le logo du club sur la photo de face, à la place réglée pour cet article."
+            className="lg:col-start-1"
+            onFocusCapture={() => setVue("face")}
+            onPointerDownCapture={() => setVue("face")}
+            action={
+              <Switch
+                checked={disposition.logoAvant}
+                onCheckedChange={(logoAvant) => setDisposition((d) => ({ ...d, logoAvant }))}
+                aria-label="Logo sur la face avant"
+              />
+            }
+          >
+            {disposition.logoAvant ? <ReglagesLogo disposition={disposition} onDisposition={setDisposition} /> : null}
+          </Bloc>
+
+          <Bloc
+            titre="Flocage"
+            description="Le joueur peut ajouter un numéro et un nom au dos, avec supplément."
+            className="lg:col-start-1"
+            onFocusCapture={() => setVue("dos")}
+            onPointerDownCapture={() => setVue("dos")}
+            action={<Switch checked={floquable} onCheckedChange={setFloquable} aria-label="Floquable" />}
+          >
+            {floquable ? <ReglagesFlocage disposition={disposition} onDisposition={setDisposition} aUnDos={aUnDos} /> : null}
+          </Bloc>
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:px-8">
         {article ? (
           <Button
             type="button"
@@ -894,12 +1037,17 @@ export default function Catalogue({
         </ul>
       )}
 
-      <Sheet open={ouverture.ouvert} onOpenChange={(o) => !o && fermer()}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-none">
-          <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-            <SheetTitle>{ouverture.article ? ouverture.article.nom : "Nouvel article"}</SheetTitle>
-            <SheetDescription>Un article Joma du pack, avec ses couleurs et ses tailles.</SheetDescription>
-          </SheetHeader>
+      {/* Une fenetre centree, presque plein ecran, plutot qu'un panneau glisse depuis le bord. */}
+      <Dialog open={ouverture.ouvert} onOpenChange={(o) => !o && fermer()}>
+        <DialogContent
+          className="flex h-[calc(100dvh-1rem)] max-w-[calc(100%-1rem)] flex-col gap-0 overflow-hidden p-0 sm:h-[calc(100dvh-3rem)] sm:max-w-[min(88rem,calc(100%-3rem))]"
+          // Pas de clavier qui surgit sur telephone a l'ouverture : le nom n'est pas forcement ce qu'on vient changer.
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader className="shrink-0 border-b border-border px-5 py-4 pe-12 text-start lg:px-8">
+            <DialogTitle>{ouverture.article ? ouverture.article.nom : "Nouvel article"}</DialogTitle>
+            <DialogDescription>Un article Joma du pack : son prix, ses couleurs et son marquage, avec l&apos;aperçu du joueur.</DialogDescription>
+          </DialogHeader>
           {/* Garde la fiche pendant l'animation de fermeture ; la cle la remonte a chaque ouverture. */}
           {ouverture.cle > 0 ? (
             <FicheArticle
@@ -911,8 +1059,8 @@ export default function Catalogue({
               onSupprime={supprime}
             />
           ) : null}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </Panneau>
   );
 }
