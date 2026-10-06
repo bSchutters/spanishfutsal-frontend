@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache'
+import { VERSION_CACHE_MEDIAS } from './versionCache'
 import { getPayloadClient } from './payload'
 import type { Poste } from './postes'
 
@@ -126,7 +127,7 @@ async function getPlayersWithStats() {
   return [...playersWithStats, ...inactivePlayers]
 }
 
-export const getPlayers = unstable_cache(getPlayersWithStats, ['players-page'], {
+export const getPlayers = unstable_cache(getPlayersWithStats, ['players-page', VERSION_CACHE_MEDIAS], {
   tags: ['players', 'matches'],
 })
 

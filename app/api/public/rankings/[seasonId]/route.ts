@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
+import { VERSION_CACHE_MEDIAS } from '@/lib/versionCache'
 import { getPayloadClient } from '@/lib/payload'
 import { getTeamsIndex } from '@/lib/getTeamsIndex'
 import { resolveTeam } from '@/lib/teams'
@@ -58,7 +59,7 @@ export async function GET(
 
     const getCached = unstable_cache(
       () => getRankingsBySeason(id),
-      ['rankings', seasonId],
+      ['rankings', seasonId, VERSION_CACHE_MEDIAS],
       { tags: ['rankings', 'teams'] },
     )
     const data = await getCached()

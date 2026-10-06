@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { VERSION_CACHE_MEDIAS } from "./versionCache";
 import { getPayloadClient } from "./payload";
 
 export const SPONSOR_PLATFORMS = [
@@ -88,6 +89,6 @@ async function fetchSponsors(): Promise<Sponsor[]> {
   }));
 }
 
-export const getSponsors = unstable_cache(fetchSponsors, ["sponsors"], {
+export const getSponsors = unstable_cache(fetchSponsors, ["sponsors", VERSION_CACHE_MEDIAS], {
   tags: ["sponsors"],
 });

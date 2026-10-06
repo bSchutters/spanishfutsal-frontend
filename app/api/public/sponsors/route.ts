@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
+import { VERSION_CACHE_MEDIAS } from '@/lib/versionCache'
 import { getPayloadClient } from '@/lib/payload'
 import { sponsorLinks } from '@/lib/getSponsors'
 
@@ -33,7 +34,7 @@ async function getSponsors() {
   }))
 }
 
-const getCachedSponsors = unstable_cache(getSponsors, ['sponsors'], {
+const getCachedSponsors = unstable_cache(getSponsors, ['sponsors', VERSION_CACHE_MEDIAS], {
   tags: ['sponsors'],
 })
 

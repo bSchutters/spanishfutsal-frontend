@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
+import { VERSION_CACHE_MEDIAS } from '@/lib/versionCache'
 import { getPayloadClient } from '@/lib/payload'
 import { getTeamsIndex } from '@/lib/getTeamsIndex'
 import { resolveTeam } from '@/lib/teams'
@@ -61,7 +62,7 @@ async function getMatches() {
   })
 }
 
-const getCachedMatches = unstable_cache(getMatches, ['matches'], {
+const getCachedMatches = unstable_cache(getMatches, ['matches', VERSION_CACHE_MEDIAS], {
   tags: ['matches', 'teams'],
 })
 

@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { VERSION_CACHE_MEDIAS } from "./versionCache";
 import { getCompetitionName } from "./getCompetitionName";
 import { getTeamsIndex } from "./getTeamsIndex";
 import { getPayloadClient } from "./payload";
@@ -85,6 +86,6 @@ async function fetchMatchs(seasonId?: number | null): Promise<Match[]> {
 
 // Cle distincte de celle de la route publique : `unstable_cache` indexe sur la
 // cle, pas sur la fonction, et les deux ne renvoient pas la meme forme.
-export const getMatchs = unstable_cache(fetchMatchs, ["matches-page"], {
+export const getMatchs = unstable_cache(fetchMatchs, ["matches-page", VERSION_CACHE_MEDIAS], {
   tags: ["matches", "teams"],
 });
