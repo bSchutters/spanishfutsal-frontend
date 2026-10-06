@@ -1,4 +1,4 @@
-import { LONGUEUR_NOM_FLOCAGE, type Article, type Commande, type LigneCommande, type LigneSaisie, type PrixFlocage, type RemiseArticle } from "./schema";
+import type { Article, Commande, LigneCommande, LigneSaisie, PrixFlocage, RemiseArticle } from "./schema";
 
 /**
  * Les calculs du Pack : le prix d'une ligne, la commande construite depuis
@@ -9,22 +9,6 @@ import { LONGUEUR_NOM_FLOCAGE, type Article, type Commande, type LigneCommande, 
 
 const enCentimes = (euros: number) => Math.round(euros * 100);
 const enEuros = (centimes: number) => centimes / 100;
-
-/**
- * Le nom de famille propose au flocage, en capitales et en mots entiers dans
- * la limite de longueur, sans petit mot laisse seul au bout (« BOULBEN EL
- * FALLAH » devient « BOULBEN »). Le joueur le change s'il prefere.
- */
-export function nomPropose(nomFamille: string): string {
-  const mots = nomFamille.toUpperCase().split(/\s+/).filter(Boolean);
-  const retenus: string[] = [];
-  for (const mot of mots) {
-    if ([...retenus, mot].join(" ").length > LONGUEUR_NOM_FLOCAGE) break;
-    retenus.push(mot);
-  }
-  while (retenus.length > 1 && retenus[retenus.length - 1].length <= 3) retenus.pop();
-  return retenus.length > 0 ? retenus.join(" ") : (mots[0] ?? "").slice(0, LONGUEUR_NOM_FLOCAGE);
-}
 
 /** « 42,50 € » */
 export function formaterPrix(euros: number): string {

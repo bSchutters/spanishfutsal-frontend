@@ -102,8 +102,7 @@ export async function chargerCommande(id: number, payload?: Payload): Promise<Co
   return commande ?? null;
 }
 
-/** Une personne de l'effectif, avec de quoi preremplir son flocage : son numero et son nom de famille. */
-export type PersonneEffectif = { id: number; nom: string; numero: number | null; nomFamille: string };
+export type PersonneEffectif = { id: number; nom: string };
 
 /** L'effectif actif, staff compris, trie par nom de famille : la liste de la page des joueurs. */
 export async function listerEffectifActif(payload?: Payload): Promise<PersonneEffectif[]> {
@@ -119,8 +118,7 @@ export async function listerEffectifActif(payload?: Payload): Promise<PersonneEf
       id: Number(d.id),
       prenom: String(d.prenom ?? "").trim(),
       nom: String(d.nom ?? "").trim(),
-      numero: typeof d.numero === "number" ? d.numero : null,
     }))
     .sort((a, b) => a.nom.localeCompare(b.nom, "fr") || a.prenom.localeCompare(b.prenom, "fr"))
-    .map((p) => ({ id: p.id, nom: [p.prenom, p.nom].filter(Boolean).join(" "), numero: p.numero, nomFamille: p.nom }));
+    .map((p) => ({ id: p.id, nom: [p.prenom, p.nom].filter(Boolean).join(" ") }));
 }

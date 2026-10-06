@@ -12,17 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
-import { avancementJoma, construireLignes, formaterPrix, MINIMUM_JOMA, nomPropose, prixUnitaire, totalDes } from "@/hub/pack/calculs";
+import { avancementJoma, construireLignes, formaterPrix, MINIMUM_JOMA, prixUnitaire, totalDes } from "@/hub/pack/calculs";
 import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
 import { tanker } from "./police-tanker";
 
-type Personne = { id: number; nom: string; numero: number | null; nomFamille: string };
+type Personne = { id: number; nom: string };
 type LignePanier = LigneSaisie & { cle: string };
-/** Le numero et le nom proposes pour le flocage : ceux du joueur qui commande. */
-type Suggestion = { numero: string; nom: string } | null;
 
 let compteur = 0;
 const nouvelleCle = () => `p${++compteur}`;
@@ -128,56 +126,57 @@ function Quantite({ valeur, onChange, libelle, petit = false }: { valeur: number
   );
 }
 
-/** Un article du catalogue : sa photo, son nom, son prix. Le toucher ouvre sa fiche. */
+/**
+ * Un article du catalogue : ses photos en diaporama (on les fait defiler sans
+ * ouvrir l'article), son nom et son prix. Toucher la photo, ou le nom et le
+ * prix, ouvre sa fiche.
+ */
 function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Article; rang: number; dansPanier: number; onOuvrir: () => void }) {
   const { variante, photos } = photosDe(article, article.variantes[0]?.id ?? "");
-  const principale = photos[0];
-  const logo = article.dispositionFlocage.logoAvant && principale !== undefined && principale.id !== variante?.photoDosId;
   const remise = remiseDe(article);
   const couleurs = article.variantes.map((v) => v.couleur).filter(Boolean);
+  // Comme dans la fiche : le logo sur la face avant, les sponsors sur le dos.
+  const indexDos = variante?.photoDosId ? photos.findIndex((p) => p.id === variante.photoDosId) : -1;
+  const calques = [
+    article.dispositionFlocage.logoAvant && photos.length > 0 && indexDos !== 0
+      ? { index: 0, contenu: <ApercuLogo disposition={article.dispositionFlocage} logo={variante?.logo ?? "club"} /> }
+      : null,
+    article.floquable && indexDos >= 0 && variante
+      ? {
+          index: indexDos,
+          contenu: (
+            <ApercuFlocage numero="" nom="" couleurs={variante.couleursFlocage} disposition={article.dispositionFlocage} logo={variante.logo} />
+          ),
+        }
+      : null,
+  ].filter((c) => c !== null);
 
   return (
     <li
-      className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3"
+      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-[border-color,translate] duration-300 hover:border-primary/50 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:hover:-translate-y-0.5"
       style={{ animationDelay: `${Math.min(rang, 8) * 60}ms`, animationDuration: "500ms", animationFillMode: "both" }}
     >
+      <div className="relative">
+        <DiaporamaPhotos photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} calques={calques} onPhoto={onOuvrir} compact />
+        {remise > 0 ? (
+          <span className="pointer-events-none absolute start-2 top-2 rounded-full bg-spanish-accent-2 px-2 py-0.5 text-[11px] font-bold text-spanish-bg-dark">
+            −{remise} %
+          </span>
+        ) : null}
+        {dansPanier > 0 ? (
+          <span className="pointer-events-none absolute end-2 top-2 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+            <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+            {dansPanier}
+            <span className="sr-only"> dans votre commande</span>
+          </span>
+        ) : null}
+      </div>
       <button
         type="button"
         aria-haspopup="dialog"
         onClick={onOuvrir}
-        className="group flex size-full flex-col overflow-hidden rounded-xl border border-border bg-card text-start transition-[border-color,translate] duration-300 hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-safe:hover:-translate-y-0.5"
+        className="flex flex-1 flex-col text-start focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
       >
-        <span className="relative block aspect-square overflow-hidden bg-white">
-          {principale ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={principale.url}
-                alt=""
-                loading={rang < 6 ? "eager" : "lazy"}
-                draggable={false}
-                className="size-full object-contain transition-transform duration-500 motion-safe:group-hover:scale-[1.04]"
-              />
-              {logo ? <ApercuLogo disposition={article.dispositionFlocage} logo={variante?.logo ?? "club"} /> : null}
-            </>
-          ) : (
-            <span className="flex size-full items-center justify-center">
-              <Shirt className="size-10 text-slate-400" aria-hidden="true" />
-            </span>
-          )}
-          {remise > 0 ? (
-            <span className="absolute start-2 top-2 rounded-full bg-spanish-accent-2 px-2 py-0.5 text-[11px] font-bold text-spanish-bg-dark">
-              −{remise} %
-            </span>
-          ) : null}
-          {dansPanier > 0 ? (
-            <span className="absolute end-2 top-2 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
-              <Check className="size-3" strokeWidth={3} aria-hidden="true" />
-              {dansPanier}
-              <span className="sr-only"> dans votre commande</span>
-            </span>
-          ) : null}
-        </span>
         <span className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
           <span className="text-sm leading-snug font-semibold sm:text-base">{article.nom}</span>
           {couleurs.length > 0 ? (
@@ -266,13 +265,11 @@ function Champ({ libelle, detail, children }: { libelle: string; detail?: string
 function FicheProduit({
   article,
   flocage,
-  suggestion,
   onAjouter,
   onFermer,
 }: {
   article: Article;
   flocage: PrixFlocage;
-  suggestion: Suggestion;
   onAjouter: (ligne: LignePanier) => void;
   onFermer: () => void;
 }) {
@@ -282,7 +279,6 @@ function FicheProduit({
   const [avecFlocage, setAvecFlocage] = useState(false);
   const [numero, setNumero] = useState("");
   const [nom, setNom] = useState("");
-  const [prerempli, setPrerempli] = useState(false);
 
   const { variante, photos } = photosDe(article, varianteId);
   const remise = remiseDe(article);
@@ -321,12 +317,6 @@ function FicheProduit({
   const basculerFlocage = (actif: boolean) => {
     setAvecFlocage(actif);
     if (actif) requestAnimationFrame(() => blocFlocage.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
-    // Le joueur qui commande retrouve son numero et son nom, a corriger s'il le veut.
-    if (actif && suggestion && numero === "" && nom === "") {
-      setNumero(suggestion.numero);
-      setNom(suggestion.nom);
-      setPrerempli(true);
-    }
   };
 
   const ajouter = () => {
@@ -429,10 +419,7 @@ function FicheProduit({
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {prerempli ? "Votre numéro et votre nom, à changer si besoin. " : ""}
-                      {indexDos >= 0 ? "L'aperçu sur la photo de dos est indicatif." : ""}
-                    </p>
+                    {indexDos >= 0 ? <p className="text-xs text-muted-foreground">L&apos;aperçu sur la photo de dos est indicatif.</p> : null}
                   </div>
                 ) : null}
               </div>
@@ -568,10 +555,6 @@ export default function FormulaireCommande({
 
   const apercu = useMemo(() => construireLignes(panier, articles, flocage, { inactifsAdmis: false }), [panier, articles, flocage]);
   const pieces = panier.reduce((n, l) => n + l.quantite, 0);
-  const joueur = effectif.find((p) => String(p.id) === personne) ?? null;
-  const suggestion: Suggestion = joueur
-    ? { numero: joueur.numero !== null ? String(joueur.numero) : "", nom: nomPropose(joueur.nomFamille) }
-    : null;
 
   // Sur telephone, la barre du bas mene a la commande tant qu'elle n'est pas a l'ecran.
   useEffect(() => {
@@ -705,7 +688,6 @@ export default function FormulaireCommande({
               ) : null}
             </div>
 
-            {/* Choisi tot, le nom preremplit le flocage avec le numero et le nom du joueur. */}
             <div className="flex shrink-0 flex-col gap-2 border-b border-border px-5 py-4">
               <Label htmlFor="pack-qui" className="text-sm">
                 Qui commande ?
@@ -845,7 +827,7 @@ export default function FormulaireCommande({
           className="flex h-[calc(100dvh-1rem)] max-w-[calc(100%-1rem)] flex-col gap-0 overflow-hidden p-0 sm:h-[min(42rem,calc(100dvh-4rem))] sm:max-w-[min(68rem,calc(100%-3rem))]"
         >
           {fiche.article ? (
-            <FicheProduit key={fiche.cle} article={fiche.article} flocage={flocage} suggestion={suggestion} onAjouter={ajouter} onFermer={fermer} />
+            <FicheProduit key={fiche.cle} article={fiche.article} flocage={flocage} onAjouter={ajouter} onFermer={fermer} />
           ) : null}
         </DialogContent>
       </Dialog>

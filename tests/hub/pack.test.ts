@@ -5,7 +5,6 @@ import {
   construireLignes,
   avancementJoma,
   dateLimitePassee,
-  nomPropose,
   prixJoueur,
   prixUnitaire,
   recapJoma,
@@ -508,15 +507,6 @@ describe("aperçu du flocage", () => {
       variants: [{ id: "a", flock_logo: "gk-dom" }, { id: "b", flock_logo: "gk-ext" }, { id: "c" }, { id: "d", flock_logo: "rouge" }],
     });
     expect(article.variantes.map((v) => v.logo)).toEqual(["gk-dom", "gk-ext", "club", "club"]);
-  });
-
-  it("propose le nom de famille en mots entiers, sans petit mot laissé seul", () => {
-    expect(nomPropose("Cirino")).toBe("CIRINO");
-    expect(nomPropose("Boulben El Fallah")).toBe("BOULBEN");
-    expect(nomPropose("Correas Martinez")).toBe("CORREAS");
-    expect(nomPropose("Da Silva")).toBe("DA SILVA");
-    expect(nomPropose("Abcdefghijklmnopqrs")).toBe("ABCDEFGHIJKLMNO");
-    expect(nomPropose("")).toBe("");
   });
 
   it("choisit la version des sponsors d'après la couleur des lettres", () => {

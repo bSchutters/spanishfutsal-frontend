@@ -7,6 +7,10 @@ import { Fragment, useCallback, useEffect, useState, type ReactNode } from "reac
 import type { Photo } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 
+/** Les fleches des cartes : petites, et seulement au survol de la souris ou au clavier. */
+const FLECHE_COMPACTE =
+  "size-7 opacity-0 [@media(hover:hover)]:group-hover/diapo:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:hidden";
+
 /**
  * Les photos d'une couleur en diaporama : on glisse du doigt, on clique sur
  * les fleches, ou on vise un point. Fond blanc, comme les visuels Joma, et
@@ -14,18 +18,26 @@ import { cn } from "@/lib/utils";
  *
  * `allerA` amene le diaporama sur une photo (la vue de dos quand on active le
  * flocage) ; `calques` posent un contenu par-dessus des photos (le logo sur
- * la face avant, l'apercu du flocage sur le dos).
+ * la face avant, l'apercu du flocage sur le dos). `onPhoto` repond a un
+ * toucher sur la photo, jamais a un glisser : Embla retient le clic qui suit
+ * un glisser. `compact`, pour les cartes de la liste : fleches plus petites,
+ * montrees au survol de la souris seulement (au doigt, on glisse), et points
+ * sans arret au clavier.
  */
 export default function DiaporamaPhotos({
   photos,
   legende,
   allerA = null,
   calques = [],
+  onPhoto,
+  compact = false,
 }: {
   photos: Photo[];
   legende: string;
   allerA?: number | null;
   calques?: { index: number; contenu: ReactNode }[];
+  onPhoto?: () => void;
+  compact?: boolean;
 }) {
   const plusieurs = photos.length > 1;
   const [viewport, api] = useEmblaCarousel({ loop: plusieurs, active: plusieurs });
@@ -59,7 +71,7 @@ export default function DiaporamaPhotos({
 
   return (
     <div
-      className="relative bg-white"
+      className="group/diapo relative bg-white"
       role="region"
       aria-roledescription="diaporama"
       aria-label={`Photos, ${legende}`}
@@ -73,7 +85,8 @@ export default function DiaporamaPhotos({
           {photos.map((p, rang) => (
             <div
               key={p.id}
-              className="relative aspect-square min-w-0 shrink-0 grow-0 basis-full"
+              className={cn("relative aspect-square min-w-0 shrink-0 grow-0 basis-full", onPhoto && "cursor-pointer")}
+              onClick={onPhoto}
               role="group"
               aria-roledescription="photo"
               aria-label={`${rang + 1} sur ${photos.length}`}
@@ -98,29 +111,37 @@ export default function DiaporamaPhotos({
             type="button"
             aria-label="Photo précédente"
             onClick={() => api?.scrollPrev()}
-            className="absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary"
+            className={cn(
+              "absolute top-1/2 start-2 flex -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
+              compact ? FLECHE_COMPACTE : "size-8",
+            )}
           >
-            <ChevronLeft className="size-5" aria-hidden="true" />
+            <ChevronLeft className={compact ? "size-4" : "size-5"} aria-hidden="true" />
           </button>
           <button
             type="button"
             aria-label="Photo suivante"
             onClick={() => api?.scrollNext()}
-            className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary"
+            className={cn(
+              "absolute top-1/2 end-2 flex -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
+              compact ? FLECHE_COMPACTE : "size-8",
+            )}
           >
-            <ChevronRight className="size-5" aria-hidden="true" />
+            <ChevronRight className={compact ? "size-4" : "size-5"} aria-hidden="true" />
           </button>
-          <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+          <div className={cn("absolute inset-x-0 flex justify-center", compact ? "bottom-1.5 gap-1" : "bottom-2 gap-1.5")}>
             {photos.map((p, rang) => (
               <button
                 key={p.id}
                 type="button"
                 aria-label={`Photo ${rang + 1} sur ${photos.length}`}
                 aria-current={rang === courante ? "true" : undefined}
+                tabIndex={compact ? -1 : undefined}
                 onClick={() => api?.scrollTo(rang)}
                 className={cn(
-                  "h-1.5 rounded-full transition-[width,background-color]",
-                  rang === courante ? "w-5 bg-black/70" : "w-1.5 bg-black/25 hover:bg-black/45",
+                  "rounded-full transition-[width,background-color]",
+                  compact ? "h-1" : "h-1.5",
+                  rang === courante ? (compact ? "w-3.5 bg-black/70" : "w-5 bg-black/70") : cn(compact ? "w-1" : "w-1.5", "bg-black/25 hover:bg-black/45"),
                 )}
               />
             ))}
