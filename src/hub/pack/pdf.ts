@@ -5,9 +5,9 @@ import type { RecapJoma } from "./calculs";
 
 /**
  * Le PDF de la commande Joma : les quantites par reference, couleur et
- * taille, puis le detail des pieces a floquer. A4, polices standard du PDF,
- * aucune ressource a charger. Ni prix ni noms de joueurs : il part chez le
- * fournisseur.
+ * taille. A4, polices standard du PDF, aucune ressource a charger. Ni prix,
+ * ni noms de joueurs, ni flocages (Bryan, 06/10/2026) : il part chez le
+ * fournisseur, qui ne floque pas.
  */
 
 const LARGEUR = 595.28;
@@ -123,16 +123,6 @@ const COLONNES_TOTAUX: Colonne[] = [
   { titre: "Quantité", largeur: 65, aDroite: true },
 ];
 
-const COLONNES_FLOCAGES: Colonne[] = [
-  { titre: "Référence", largeur: 85 },
-  { titre: "Article", largeur: 135 },
-  { titre: "Couleur", largeur: 70 },
-  { titre: "Taille", largeur: 50 },
-  { titre: "Numéro", largeur: 50 },
-  { titre: "Nom", largeur: 85 },
-  { titre: "Qté", largeur: 40, aDroite: true },
-];
-
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
 
 export async function pdfCommandeJoma(recap: RecapJoma, maintenant = new Date()): Promise<Uint8Array> {
@@ -161,19 +151,6 @@ export async function pdfCommandeJoma(recap: RecapJoma, maintenant = new Date())
   );
   mise.espace(6);
   mise.texte(`Total : ${pluriel(recap.pieces, "pièce")}`, 10, true);
-  mise.espace(16);
-
-  mise.texte("Flocages", 12, true);
-  if (recap.flocages.length === 0) {
-    mise.texte("Aucune pièce à floquer.", 10, false, GRIS);
-  } else {
-    mise.texte("Les numéros et noms à imprimer, pièce par pièce.", 9, false, GRIS);
-    mise.espace(2);
-    mise.tableau(
-      COLONNES_FLOCAGES,
-      recap.flocages.map((f) => [f.reference || "-", f.article, f.couleur || "-", f.taille, f.numero || "-", f.nom || "-", String(f.quantite)]),
-    );
-  }
 
   const pages = doc.getPages();
   pages.forEach((page, i) => {

@@ -190,8 +190,7 @@ function PreparationJoma({
 
         <div className="rounded-md border border-border">
           <p className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
-            Dans le PDF : {pluriel(recap.pieces, "pièce")} sur {pluriel(recap.totaux.length, "ligne")}, et{" "}
-            {pluriel(recap.flocages.length, "flocage")}.
+            Dans le PDF : {pluriel(recap.pieces, "pièce")} sur {pluriel(recap.totaux.length, "ligne")}, sans les flocages.
           </p>
           <div className="flex flex-col gap-2 border-b border-border px-3 py-2">
             <p className="flex items-baseline justify-between gap-3 text-xs">
