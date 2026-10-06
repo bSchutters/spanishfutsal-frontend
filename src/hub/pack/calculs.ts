@@ -68,6 +68,15 @@ export function avancementJoma(montant: number): { atteint: boolean; reste: numb
 }
 
 /**
+ * Les commandes qui peuvent partir chez Joma : les recues seulement. Une
+ * commande deja commandee, livree ou annulee ne se commande pas une seconde
+ * fois, meme cochee dans une page restee ouverte.
+ */
+export function aCommanderChezJoma<T extends Pick<Commande, "statut">>(commandes: readonly T[]): T[] {
+  return commandes.filter((c) => c.statut === "received");
+}
+
+/**
  * Les commandes telles que Joma doit les lire : sans les articles ecartes
  * (designes par leur nom affiche, celui que le club connait), et chaque ligne
  * sous le nom Joma de son article, ou son nom affiche s'il n'en a pas.

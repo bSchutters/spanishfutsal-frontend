@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Payload } from "payload";
 
-import { verifierLimite } from "@/hub/limiteur";
+import { limiteAtteinte, verifierLimite } from "@/hub/limiteur";
 
 /** Un magasin cle-valeur en memoire, la meme forme que celui de Payload. */
 function fauxPayload() {
@@ -45,6 +45,21 @@ describe("limite de debit", () => {
 
     vi.advanceTimersByTime(60_001);
     expect((await verifierLimite(payload, "ip", limite)).ok).toBe(true);
+  });
+
+  it("lit la limite sans compter d'essai, pour ne compter que les echecs", async () => {
+    const payload = fauxPayload();
+    const limite = { max: 2, fenetreMs: 60_000 };
+
+    // Lire autant qu'on veut ne rapproche pas de la limite.
+    for (let i = 0; i < 5; i++) expect(await limiteAtteinte(payload, "ip", limite)).toBe(false);
+    await verifierLimite(payload, "ip", limite);
+    expect(await limiteAtteinte(payload, "ip", limite)).toBe(false);
+    await verifierLimite(payload, "ip", limite);
+    expect(await limiteAtteinte(payload, "ip", limite)).toBe(true);
+
+    vi.advanceTimersByTime(60_001);
+    expect(await limiteAtteinte(payload, "ip", limite)).toBe(false);
   });
 
   it("compte chaque cle a part", async () => {

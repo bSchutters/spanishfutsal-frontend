@@ -302,12 +302,20 @@ export default function FicheCommande({
               <div>
                 <p className="text-sm font-medium">Annuler ou supprimer</p>
                 <p className="text-xs text-muted-foreground">
-                  Annulée, la commande reste dans la liste, estompée, et sort des totaux ; elle se rétablit. Supprimée, elle disparaît pour de bon.
+                  Annulée, la commande reste dans la liste, estompée, et sort des totaux ; elle se rétablit, en « Commandée » si elle était déjà
+                  passée chez Joma, en « Reçue » sinon. Supprimée, elle disparaît pour de bon.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {commande.statut === "cancelled" ? (
-                  <Button type="button" variant="hubSecondary" size="sm" disabled={enCours || !apercu.ok} onClick={() => void enregistrer("received")}>
+                  <Button
+                    type="button"
+                    variant="hubSecondary"
+                    size="sm"
+                    disabled={enCours || !apercu.ok}
+                    // Deja passee chez Joma, elle n'y repart pas : elle revient en « Commandee ».
+                    onClick={() => void enregistrer(commande.commandeeLe ? "ordered" : "received")}
+                  >
                     <RotateCcw aria-hidden="true" />
                     Rétablir la commande
                   </Button>

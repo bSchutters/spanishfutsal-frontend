@@ -14,6 +14,8 @@ const LARGEUR = 595.28;
 const HAUTEUR = 841.89;
 const MARGE = 40;
 const LIGNE = 18;
+const TAILLE_CELLULE = 9;
+const INTERLIGNE = 11;
 const GRIS = rgb(0.45, 0.45, 0.45);
 const FOND_ENTETE = rgb(0.92, 0.93, 0.95);
 const TRAIT = rgb(0.8, 0.8, 0.82);
@@ -43,13 +45,37 @@ export function textePdf(texte: string): string {
     .replace(HORS_POLICE, "?");
 }
 
-function tronquer(texte: string, police: PDFFont, taille: number, largeur: number): string {
-  const propre = textePdf(texte);
-  if (police.widthOfTextAtSize(propre, taille) <= largeur) return propre;
-  let coupe = propre;
-  while (coupe.length > 0 && police.widthOfTextAtSize(`${coupe}...`, taille) > largeur) coupe = coupe.slice(0, -1);
-  return `${coupe}...`;
+/**
+ * Un texte en lignes qui tiennent dans `largeur`, coupees entre les mots ;
+ * un mot plus long que la colonne, une reference par exemple, se coupe
+ * lui-meme. Rien ne se perd : Joma doit lire le nom entier.
+ */
+export function lignesDe(texte: string, police: PDFFont, taille: number, largeur: number): string[] {
+  const tient = (t: string) => police.widthOfTextAtSize(t, taille) <= largeur;
+  const lignes: string[] = [];
+  let courante = "";
+  for (const mot of textePdf(texte).split(" ").filter(Boolean)) {
+    const essai = courante ? `${courante} ${mot}` : mot;
+    if (tient(essai)) {
+      courante = essai;
+      continue;
+    }
+    if (courante) lignes.push(courante);
+    let reste = mot;
+    while (!tient(reste) && reste.length > 1) {
+      let n = reste.length - 1;
+      while (n > 1 && !tient(reste.slice(0, n))) n--;
+      lignes.push(reste.slice(0, n));
+      reste = reste.slice(n);
+    }
+    courante = reste;
+  }
+  if (courante) lignes.push(courante);
+  return lignes.length > 0 ? lignes : [""];
 }
+
+/** La hauteur d'une rangee : une ligne de tableau, plus un interligne par ligne de texte en plus. */
+const hauteurDe = (contenus: string[][]) => LIGNE + (Math.max(1, ...contenus.map((c) => c.length)) - 1) * INTERLIGNE;
 
 class Mise {
   page: PDFPage;
@@ -82,29 +108,38 @@ class Mise {
     this.y -= hauteur;
   }
 
-  private entete(colonnes: Colonne[]) {
-    this.page.drawRectangle({ x: MARGE, y: this.y - LIGNE, width: LARGEUR - 2 * MARGE, height: LIGNE, color: FOND_ENTETE });
-    this.cellules(colonnes, colonnes.map((c) => c.titre), true);
+  /** Chaque valeur en lignes a la largeur de sa colonne. */
+  private decouper(colonnes: Colonne[], valeurs: string[], police: PDFFont): string[][] {
+    return colonnes.map((c, i) => lignesDe(valeurs[i] ?? "", police, TAILLE_CELLULE, c.largeur - 8));
   }
 
-  private cellules(colonnes: Colonne[], valeurs: string[], gras: boolean) {
-    const police = gras ? this.grasse : this.normale;
+  private entete(colonnes: Colonne[]) {
+    const contenus = this.decouper(colonnes, colonnes.map((c) => c.titre), this.grasse);
+    const hauteur = hauteurDe(contenus);
+    this.page.drawRectangle({ x: MARGE, y: this.y - hauteur, width: LARGEUR - 2 * MARGE, height: hauteur, color: FOND_ENTETE });
+    this.cellules(colonnes, contenus, this.grasse);
+  }
+
+  private cellules(colonnes: Colonne[], contenus: string[][], police: PDFFont) {
     let x = MARGE + 6;
     colonnes.forEach((c, i) => {
-      const valeur = tronquer(valeurs[i] ?? "", police, 9, c.largeur - 8);
-      const decalage = c.aDroite ? c.largeur - 12 - police.widthOfTextAtSize(valeur, 9) : 0;
-      this.page.drawText(valeur, { x: x + decalage, y: this.y - 12.5, size: 9, font: police });
+      contenus[i].forEach((valeur, n) => {
+        const decalage = c.aDroite ? c.largeur - 12 - police.widthOfTextAtSize(valeur, TAILLE_CELLULE) : 0;
+        this.page.drawText(valeur, { x: x + decalage, y: this.y - 12.5 - n * INTERLIGNE, size: TAILLE_CELLULE, font: police });
+      });
       x += c.largeur;
     });
-    this.y -= LIGNE;
+    this.y -= hauteurDe(contenus);
   }
 
   tableau(colonnes: Colonne[], lignes: string[][]) {
-    this.place(LIGNE * 2);
+    const rangees = lignes.map((valeurs) => this.decouper(colonnes, valeurs, this.normale));
+    // L'en-tete ne reste pas seul en bas de page : la premiere rangee le suit.
+    this.place(LIGNE + hauteurDe(rangees[0] ?? []));
     this.entete(colonnes);
-    for (const valeurs of lignes) {
-      if (this.place(LIGNE)) this.entete(colonnes);
-      this.cellules(colonnes, valeurs, false);
+    for (const contenus of rangees) {
+      if (this.place(hauteurDe(contenus))) this.entete(colonnes);
+      this.cellules(colonnes, contenus, this.normale);
       this.page.drawLine({
         start: { x: MARGE, y: this.y },
         end: { x: LARGEUR - MARGE, y: this.y },
@@ -115,12 +150,13 @@ class Mise {
   }
 }
 
+// La largeur utile de la page, 515 points ; l'article, le plus long, a la plus large.
 const COLONNES_TOTAUX: Colonne[] = [
-  { titre: "Référence", largeur: 100 },
-  { titre: "Article", largeur: 180 },
-  { titre: "Couleur", largeur: 95 },
-  { titre: "Taille", largeur: 75 },
-  { titre: "Quantité", largeur: 65, aDroite: true },
+  { titre: "Référence", largeur: 90 },
+  { titre: "Article", largeur: 220 },
+  { titre: "Couleur", largeur: 85 },
+  { titre: "Taille", largeur: 60 },
+  { titre: "Quantité", largeur: 60, aDroite: true },
 ];
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;

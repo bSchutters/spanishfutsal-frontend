@@ -36,6 +36,16 @@ export async function verifierLimite(
 }
 
 /**
+ * La limite est-elle deja atteinte pour `cle` ? Une simple lecture, rien
+ * n'est compte : pour ne compter que les echecs, verifierLimite vient apres,
+ * sur l'echec seulement.
+ */
+export async function limiteAtteinte(payload: Payload, cle: string, { max }: Limite): Promise<boolean> {
+  const compteur = await payload.kv.get<Compteur>(cle);
+  return !!compteur && compteur.fin > Date.now() && compteur.n >= max;
+}
+
+/**
  * L'adresse du visiteur telle que Vercel la transmet. Derriere un autre
  * mandataire, la premiere adresse de la liste est celle du client.
  */

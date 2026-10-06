@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { accesValide, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
 import {
+  aCommanderChezJoma,
   construireLignes,
   avancementJoma,
   dateLimitePassee,
@@ -366,15 +367,10 @@ describe("PDF pour Joma", () => {
     expect((await PDFDocument.load(octets)).getPageCount()).toBeGreaterThan(1);
   });
 
-  it("n'écrit aucun flocage, même quand la commande en porte", async () => {
-    const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
+  // Le texte des polices standard s'ecrit en hexadecimal dans les flux des pages : on le cherche ainsi.
+  const enHexa = (t: string) => [...t].map((c) => c.charCodeAt(0).toString(16).padStart(2, "0")).join("").toUpperCase();
+  async function fluxDesPages(octets: Uint8Array): Promise<string> {
     const { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } = await import("pdf-lib");
-    const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
-    const octets = await pdfCommandeJoma(
-      { commandes: 1, pieces: 2, totaux: [total], flocages: [{ ...total, numero: "10", nom: "RUBEN" }] },
-      new Date("2026-10-07T10:00:00Z"),
-    );
-    // Le texte des polices standard s'ecrit en hexadecimal dans les flux des pages : on le cherche ainsi.
     const doc = await PDFDocument.load(octets);
     let flux = "";
     for (const page of doc.getPages()) {
@@ -384,11 +380,46 @@ describe("PDF pour Joma", () => {
         if (m instanceof PDFRawStream) flux += new TextDecoder("latin1").decode(decodePDFRawStream(m).decode());
       }
     }
-    const enHexa = (t: string) => [...t].map((c) => c.charCodeAt(0).toString(16).padStart(2, "0")).join("").toUpperCase();
-    flux = flux.toUpperCase();
+    return flux.toUpperCase();
+  }
+
+  it("n'écrit aucun flocage, même quand la commande en porte", async () => {
+    const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
+    const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
+    const flux = await fluxDesPages(
+      await pdfCommandeJoma(
+        { commandes: 1, pieces: 2, totaux: [total], flocages: [{ ...total, numero: "10", nom: "RUBEN" }] },
+        new Date("2026-10-07T10:00:00Z"),
+      ),
+    );
     expect(flux).toContain(enHexa("Maillot de match"));
     expect(flux).not.toContain(enHexa("Flocages"));
     expect(flux).not.toContain(enHexa("RUBEN"));
+  });
+
+  it("passe un long nom Joma à la ligne au lieu de le couper", async () => {
+    const { lignesDe, pdfCommandeJoma } = await import("@/hub/pack/pdf");
+    const { PDFDocument, StandardFonts } = await import("pdf-lib");
+    const police = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
+
+    const nom = "T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII ROYAL MARINE AVEC COL ROND";
+    // La colonne Article du PDF : 220 points, moins ses marges.
+    const lignes = lignesDe(nom, police, 9, 212);
+    expect(lignes.length).toBeGreaterThan(1);
+    expect(lignes.join(" ")).toBe(nom);
+    for (const l of lignes) expect(police.widthOfTextAtSize(l, 9)).toBeLessThanOrEqual(212);
+
+    // Un mot plus large que sa colonne se coupe lui-meme, sans rien perdre.
+    const reference = "104263339104263339104263339";
+    const morceaux = lignesDe(reference, police, 9, 82);
+    expect(morceaux.length).toBeGreaterThan(1);
+    expect(morceaux.join("")).toBe(reference);
+    expect(lignesDe("", police, 9, 82)).toEqual([""]);
+
+    const total = { reference: "104263.339", article: nom, couleur: "Bleu", taille: "M", quantite: 2 };
+    const flux = await fluxDesPages(await pdfCommandeJoma({ commandes: 1, pieces: 2, totaux: [total], flocages: [] }));
+    for (const l of lignes) expect(flux).toContain(enHexa(l));
+    expect(flux).not.toContain(enHexa("..."));
   });
 });
 
@@ -595,6 +626,14 @@ describe("noms Joma du PDF", () => {
       "T-SHIRT CHAMPIONSHIP VIII",
     );
     expect(articleDe({ id: 21, name: "Sweat", price: 30, variants: [] }).nomJoma).toBe("");
+  });
+});
+
+describe("commandes à passer chez Joma", () => {
+  it("ne garde que les commandes reçues : une commande déjà passée ne repart pas", () => {
+    const statuts = ["received", "ordered", "delivered", "cancelled", "received"] as const;
+    const commandes = statuts.map((statut, id) => ({ id, statut }));
+    expect(aCommanderChezJoma(commandes).map((c) => c.id)).toEqual([0, 4]);
   });
 });
 

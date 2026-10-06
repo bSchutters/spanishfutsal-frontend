@@ -199,9 +199,10 @@ export async function regenererLienPack(): Promise<Resultat<ReglagesPack>> {
 
 /**
  * Les commandes cochees, passees chez Joma d'un coup : statut « commandee »
- * et date du jour, sauf pour celles qui l'avaient deja.
+ * et date du jour, sauf pour celles qui l'avaient deja. Seules les recues
+ * passent, comme dans le PDF ; rend celles qui sont passees.
  */
-export async function passerCommandeesChezJoma(ids: unknown): Promise<Resultat> {
+export async function passerCommandeesChezJoma(ids: unknown): Promise<Resultat<number[]>> {
   await exigerModule("pack", "edit");
   if (!Array.isArray(ids) || ids.length === 0 || ids.length > 500 || !ids.every((id) => Number.isInteger(id) && id > 0)) {
     return { ok: false, erreur: "Aucune commande valable n'est cochée." };
@@ -211,10 +212,11 @@ export async function passerCommandeesChezJoma(ids: unknown): Promise<Resultat> 
   try {
     const { docs } = await payload.find({
       collection: "pack-orders",
-      where: { id: { in: ids as number[] } },
+      where: { and: [{ id: { in: ids as number[] } }, { status: { equals: "received" } }] },
       limit: ids.length,
       depth: 0,
     });
+    if (docs.length === 0) return { ok: false, erreur: "Aucune de ces commandes n'est encore à commander. Rechargez la page." };
     for (const doc of docs) {
       await payload.update({
         collection: "pack-orders",
@@ -224,7 +226,7 @@ export async function passerCommandeesChezJoma(ids: unknown): Promise<Resultat> 
       });
     }
     revalidatePath("/hub/pack", "layout");
-    return { ok: true };
+    return { ok: true, donnees: docs.map((d) => Number(d.id)) };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

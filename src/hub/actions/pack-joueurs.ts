@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import type { Resultat } from "@/hub/actions/evenements";
 import { versChampDate } from "@/hub/dates";
-import { adresseIp, verifierLimite, type Limite } from "@/hub/limiteur";
+import { adresseIp, limiteAtteinte, verifierLimite, type Limite } from "@/hub/limiteur";
 import { accesValide, COOKIE_ACCES_PACK, DUREE_ACCES_PACK_SECONDES, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
 import { construireLignes, dateLimitePassee } from "@/hub/pack/calculs";
 import { versLignesCollection } from "@/hub/pack/conversions";
@@ -20,8 +20,11 @@ import { getPayloadClient } from "@/lib/payload";
  * dans le catalogue.
  */
 
-const LIMITE_MOT_DE_PASSE: Limite = { max: 10, fenetreMs: 15 * 60 * 1000 };
-const LIMITE_COMMANDES: Limite = { max: 15, fenetreMs: 60 * 60 * 1000 };
+// Toute une equipe peut passer par la meme box, au club ou a la maison : les
+// limites sont larges et ne comptent que les mauvais mots de passe et les
+// commandes vraiment enregistrees.
+const LIMITE_MOT_DE_PASSE: Limite = { max: 20, fenetreMs: 15 * 60 * 1000 };
+const LIMITE_COMMANDES: Limite = { max: 60, fenetreMs: 60 * 60 * 1000 };
 
 function secret(): string {
   const valeur = process.env.PAYLOAD_SECRET;
@@ -39,10 +42,11 @@ export async function entrerPack(jeton: string, _etat: EtatMotDePassePack, formD
   const reglages = await chargerReglagesPack(payload);
   if (reglages.jeton !== jeton) return { erreur: "Ce lien n'est plus valable. Demandez le nouveau au club." };
 
-  const limite = await verifierLimite(payload, `pack:mot-de-passe:${await adresseIp()}`, LIMITE_MOT_DE_PASSE);
-  if (!limite.ok) return { erreur: "Trop de tentatives. Réessayez dans un quart d'heure." };
+  const cle = `pack:mot-de-passe:${await adresseIp()}`;
+  if (await limiteAtteinte(payload, cle, LIMITE_MOT_DE_PASSE)) return { erreur: "Trop de tentatives. Réessayez dans un quart d'heure." };
 
   if (!motDePasseCorrect(String(formData.get("motDePasse") ?? ""), reglages.motDePasse)) {
+    await verifierLimite(payload, cle, LIMITE_MOT_DE_PASSE);
     return { erreur: "Mot de passe incorrect." };
   }
 
@@ -71,9 +75,6 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
     return { ok: false, erreur: "Les commandes sont fermées." };
   }
 
-  const limite = await verifierLimite(payload, `pack:commande:${await adresseIp()}`, LIMITE_COMMANDES);
-  if (!limite.ok) return { ok: false, erreur: "Trop de commandes envoyées d'ici. Réessayez dans une heure." };
-
   const lecture = schemaCommandeJoueur.safeParse(saisie);
   if (!lecture.success) return { ok: false, erreur: premiereErreur(lecture.error) };
   const s = lecture.data;
@@ -89,6 +90,10 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
     { inactifsAdmis: false },
   );
   if (!construction.ok) return { ok: false, erreur: construction.erreur };
+
+  // Comptee une fois lue et valable : une saisie refusee ne pese pas sur la limite.
+  const limite = await verifierLimite(payload, `pack:commande:${await adresseIp()}`, LIMITE_COMMANDES);
+  if (!limite.ok) return { ok: false, erreur: "Trop de commandes envoyées d'ici. Réessayez dans une heure." };
 
   try {
     const doc = await payload.create({

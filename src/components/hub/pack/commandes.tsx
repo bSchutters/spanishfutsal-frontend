@@ -19,7 +19,16 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { passerCommandeesChezJoma } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
-import { avancementJoma, enNomsJoma, formaterPrix, MINIMUM_JOMA, recapJoma, taillesSelonNomJoma, totalDes } from "@/hub/pack/calculs";
+import {
+  aCommanderChezJoma,
+  avancementJoma,
+  enNomsJoma,
+  formaterPrix,
+  MINIMUM_JOMA,
+  recapJoma,
+  taillesSelonNomJoma,
+  totalDes,
+} from "@/hub/pack/calculs";
 import {
   COULEURS_STATUT_COMMANDE,
   LIBELLES_STATUT_COMMANDE,
@@ -150,8 +159,9 @@ function PreparationJoma({
     lancer(async () => {
       const r = await passerCommandeesChezJoma(ids);
       if (!r.ok) return void toast.error(r.erreur);
-      toast.success(`${pluriel(ids.length, "commande")} passée${ids.length > 1 ? "s" : ""} en « commandée chez Joma ».`);
-      onPassees(ids);
+      const passees = r.donnees ?? ids;
+      toast.success(`${pluriel(passees.length, "commande")} passée${passees.length > 1 ? "s" : ""} en « commandée chez Joma ».`);
+      onPassees(passees);
     });
 
   return (
@@ -235,7 +245,8 @@ function PreparationJoma({
 
 /**
  * Les commandes du Pack, les plus recentes en tete. Un clic ouvre la
- * commande ; en edition, les cases a cocher preparent la commande Joma.
+ * commande ; en edition, les cases des commandes recues preparent la
+ * commande Joma : une commande deja passee ne se coche plus.
  */
 export default function Commandes({
   montantRecues,
@@ -259,9 +270,11 @@ export default function Commandes({
   const router = useRouter();
 
   const ouverte = liste.find((c) => c.id === ouverture.id) ?? null;
-  const cochees = liste.filter((c) => selection.has(c.id));
+  // Une commande qui change de statut sort d'elle-meme de la selection.
+  const aCommander = aCommanderChezJoma(liste);
+  const cochees = aCommander.filter((c) => selection.has(c.id));
   const actives = liste.filter((c) => c.statut !== "cancelled");
-  const toutesCochees = liste.length > 0 && selection.size === liste.length;
+  const toutesCochees = aCommander.length > 0 && cochees.length === aCommander.length;
 
   const basculer = (id: number, coche: boolean) =>
     setSelection((x) => {
@@ -305,14 +318,13 @@ export default function Commandes({
         titre="Commandes"
         description={`${pluriel(liste.length, "commande")} · ${pluriel(actives.reduce((n, c) => n + pieces(c), 0), "pièce")} · ${formaterPrix(totalDes(actives.flatMap((c) => c.lignes)))} hors annulées`}
         actions={
-          peutEditer && liste.length > 0 ? (
+          peutEditer && aCommander.length > 0 ? (
             <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
               <Checkbox
                 checked={toutesCochees}
-                onCheckedChange={(c) => setSelection(c === true ? new Set(liste.map((x) => x.id)) : new Set())}
-                aria-label="Tout cocher"
+                onCheckedChange={(c) => setSelection(c === true ? new Set(aCommander.map((x) => x.id)) : new Set())}
               />
-              Tout cocher
+              Cocher les reçues
             </label>
           ) : null
         }
@@ -324,11 +336,16 @@ export default function Commandes({
             {liste.map((c) => (
               <li key={c.id} className={cn("flex items-center gap-3 px-4", c.statut === "cancelled" && "opacity-50")}>
                 {peutEditer ? (
-                  <Checkbox
-                    checked={selection.has(c.id)}
-                    onCheckedChange={(coche) => basculer(c.id, coche === true)}
-                    aria-label={`Cocher la commande de ${c.personne}`}
-                  />
+                  c.statut === "received" ? (
+                    <Checkbox
+                      checked={selection.has(c.id)}
+                      onCheckedChange={(coche) => basculer(c.id, coche === true)}
+                      aria-label={`Cocher la commande de ${c.personne}`}
+                    />
+                  ) : (
+                    // Deja passee, livree ou annulee : rien a commander, la place reste pour l'alignement.
+                    <span className="size-4 shrink-0" aria-hidden="true" />
+                  )
                 ) : null}
                 <button
                   type="button"
@@ -357,10 +374,10 @@ export default function Commandes({
           </ul>
         )}
 
-        {peutEditer && selection.size > 0 ? (
+        {peutEditer && cochees.length > 0 ? (
           <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3">
             <span className="text-sm">
-              {pluriel(selection.size, "commande")} cochée{selection.size > 1 ? "s" : ""}
+              {pluriel(cochees.length, "commande")} cochée{cochees.length > 1 ? "s" : ""}
             </span>
             <Button type="button" variant="hub" size="sm" onClick={() => setJoma(true)}>
               <FileDown aria-hidden="true" />
@@ -370,7 +387,7 @@ export default function Commandes({
         ) : null}
 
         <PreparationJoma
-          key={[...selection].sort().join(",")}
+          key={cochees.map((c) => c.id).join(",")}
           commandes={cochees}
           catalogue={catalogue}
           ouvert={joma}
