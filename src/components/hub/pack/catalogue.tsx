@@ -546,6 +546,7 @@ function FicheArticle({
   const [nom, setNom] = useState(article?.nom ?? "");
   const [confirmation, setConfirmation] = useState(false);
   const [reference, setReference] = useState(article?.reference ?? "");
+  const [nomJoma, setNomJoma] = useState(article?.nomJoma ?? "");
   const [description, setDescription] = useState(article?.description ?? "");
   const [prixCatalogue, setPrixCatalogue] = useState(article ? String(article.prixCatalogue).replace(".", ",") : "");
   const [modeRemise, setModeRemise] = useState<ModeRemise>(article?.remise.mode ?? "general");
@@ -604,6 +605,7 @@ function FicheArticle({
       id: article?.id ?? null,
       nom,
       reference,
+      nomJoma,
       description,
       prixCatalogue: nombreSaisi(prixCatalogue),
       modeRemise,
@@ -640,7 +642,7 @@ function FicheArticle({
             <div className="flex flex-col gap-4 p-4">
               <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="article-nom">Nom</Label>
+                  <Label htmlFor="article-nom">Nom affiché</Label>
                   <Input id="article-nom" value={nom} onChange={(e) => setNom(e.target.value)} required className="h-10" />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -654,6 +656,17 @@ function FicheArticle({
                     className="h-10"
                   />
                 </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="article-nom-joma">Nom Joma</Label>
+                <Input
+                  id="article-nom-joma"
+                  value={nomJoma}
+                  onChange={(e) => setNomJoma(e.target.value)}
+                  placeholder="T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII"
+                  className="h-10"
+                />
+                <p className="text-xs text-muted-foreground">Le nom chez Joma, celui du PDF de commande. Vide, le nom affiché le remplace.</p>
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="article-description">Description</Label>

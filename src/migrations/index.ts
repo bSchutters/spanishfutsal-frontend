@@ -19,6 +19,7 @@ import * as migration_20261003_163143_pack_remise from './20261003_163143_pack_r
 import * as migration_20261003_164148_pack_photos from './20261003_164148_pack_photos';
 import * as migration_20261004_111729_pack_apercu_flocage from './20261004_111729_pack_apercu_flocage';
 import * as migration_20261006_144326_pack_logo_variante from './20261006_144326_pack_logo_variante';
+import * as migration_20261006_181503_pack_nom_joma from './20261006_181503_pack_nom_joma';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20261006_144326_pack_logo_variante.up,
     down: migration_20261006_144326_pack_logo_variante.down,
-    name: '20261006_144326_pack_logo_variante'
+    name: '20261006_144326_pack_logo_variante',
+  },
+  {
+    up: migration_20261006_181503_pack_nom_joma.up,
+    down: migration_20261006_181503_pack_nom_joma.down,
+    name: '20261006_181503_pack_nom_joma'
   },
 ];

@@ -45,6 +45,7 @@ export async function enregistrerArticle(saisie: unknown): Promise<Resultat<Arti
 
   const data = {
     name: s.nom,
+    joma_name: s.nomJoma ?? "",
     reference: s.reference,
     description: s.description,
     price: s.prixCatalogue,

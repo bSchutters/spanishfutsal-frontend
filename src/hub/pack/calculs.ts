@@ -67,6 +67,25 @@ export function avancementJoma(montant: number): { atteint: boolean; reste: numb
   return { atteint: reste === 0, reste, part: Math.min(1, Math.max(0, montant / MINIMUM_JOMA)) };
 }
 
+/**
+ * Les commandes telles que Joma doit les lire : sans les articles ecartes
+ * (designes par leur nom affiche, celui que le club connait), et chaque ligne
+ * sous le nom Joma de son article, ou son nom affiche s'il n'en a pas.
+ */
+export function enNomsJoma(
+  commandes: readonly Commande[],
+  catalogue: readonly Pick<Article, "id" | "nomJoma">[],
+  articlesEcartes: ReadonlySet<string> = new Set(),
+): Commande[] {
+  const nomsJoma = new Map(catalogue.map((a) => [a.id, a.nomJoma.trim()]));
+  return commandes.map((c) => ({
+    ...c,
+    lignes: c.lignes
+      .filter((l) => !articlesEcartes.has(l.article))
+      .map((l) => ({ ...l, article: (l.articleId !== null && nomsJoma.get(l.articleId)) || l.article })),
+  }));
+}
+
 /** Le total d'une liste de lignes. */
 export function totalDes(lignes: readonly Pick<LigneCommande, "prixUnitaire" | "quantite">[]): number {
   return enEuros(lignes.reduce((somme, l) => somme + enCentimes(l.prixUnitaire) * l.quantite, 0));

@@ -5,6 +5,7 @@ import {
   construireLignes,
   avancementJoma,
   dateLimitePassee,
+  enNomsJoma,
   prixJoueur,
   prixUnitaire,
   recapJoma,
@@ -35,6 +36,7 @@ const FLOCAGE = { numero: 5, nom: 2.5 };
 const maillot: Article = {
   id: 1,
   nom: "Maillot de match",
+  nomJoma: "",
   reference: "104263",
   description: "",
   prixCatalogue: 35,
@@ -54,6 +56,7 @@ const maillot: Article = {
 const sac: Article = {
   id: 2,
   nom: "Sac",
+  nomJoma: "",
   reference: "400486",
   description: "",
   prixCatalogue: 19.9,
@@ -420,6 +423,45 @@ describe("article supprimé", () => {
       { inactifsAdmis: false },
     );
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("noms Joma du PDF", () => {
+  it("met chaque ligne sous le nom Joma de son article, sans les articles écartés", () => {
+    const ligne = (articleId: number | null, article: string) => ({
+      id: null,
+      articleId,
+      varianteId: null,
+      article,
+      couleur: "Marine",
+      reference: "104263.339",
+      taille: "M",
+      quantite: 1,
+      numero: "",
+      nom: "",
+      prixUnitaire: 12.8,
+    });
+    const commande = {
+      id: 1,
+      joueurId: 3,
+      personne: "Ruben",
+      autreNom: "",
+      telephone: "",
+      email: "",
+      remarque: "",
+      lignes: [ligne(2, "Maillot Joueurs"), ligne(6, "Sweat"), ligne(9, "Chaussettes"), ligne(null, "Ancien article")],
+      total: 51.2,
+      statut: "received" as const,
+      creeLe: "2026-10-06T10:00:00Z",
+      commandeeLe: null,
+    };
+    const catalogue = [
+      { id: 2, nomJoma: "T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII" },
+      { id: 6, nomJoma: "" },
+      { id: 9, nomJoma: "CHAUSSETTES" },
+    ];
+    const [joma] = enNomsJoma([commande], catalogue, new Set(["Chaussettes"]));
+    expect(joma.lignes.map((l) => l.article)).toEqual(["T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII", "Sweat", "Ancien article"]);
   });
 });
 

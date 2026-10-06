@@ -46,6 +46,12 @@ export const PackArticles: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'joma_name',
+      type: 'text',
+      label: 'Nom Joma',
+      admin: { description: 'Le nom de l article chez Joma, celui du PDF de commande. Vide, le nom affiche le remplace.' },
+    },
     { name: 'description', type: 'textarea', label: 'Description' },
     {
       type: 'row',

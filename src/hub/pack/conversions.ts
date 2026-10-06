@@ -70,6 +70,7 @@ export function articleDe(doc: Doc, remiseGenerale = 0): Article {
   return {
     id: Number(doc.id),
     nom: texte(doc.name),
+    nomJoma: texte(doc.joma_name),
     reference: texte(doc.reference),
     description: texte(doc.description),
     prixCatalogue,

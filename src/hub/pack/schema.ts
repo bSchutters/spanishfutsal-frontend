@@ -134,7 +134,10 @@ export type RemiseArticle = { mode: ModeRemise; /** En pourcentage, pour une rem
 
 export type Article = {
   id: number;
+  /** Le nom affiche aux joueurs et dans le Hub, « Maillot Joueurs ». */
   nom: string;
+  /** Le nom de l'article chez Joma, celui du PDF de commande ; vide, le nom affiche le remplace. */
+  nomJoma: string;
   /** La reference Joma du modele, « 104263 ». */
   reference: string;
   description: string;
@@ -276,7 +279,9 @@ export type SaisieCommandeHub = z.infer<typeof schemaCommandeHub>;
 export const schemaArticle = z
   .object({
     id: z.nullable(identifiant),
-    nom: obligatoire(80, "Le nom"),
+    nom: obligatoire(80, "Le nom affiché"),
+    // Absent d'une fiche ouverte avant son arrivee (06/10/2026) : vide.
+    nomJoma: z.optional(texteLibre(120, "Le nom Joma : 120 caractères au plus.")),
     reference: texteLibre(40, "La référence : 40 caractères au plus."),
     description: texteLibre(500, "La description : 500 caractères au plus."),
     prixCatalogue: prix("Le prix catalogue"),
