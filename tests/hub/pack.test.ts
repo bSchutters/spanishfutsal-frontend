@@ -424,10 +424,10 @@ describe("article supprimé", () => {
 });
 
 describe("menu du Pack", () => {
-  it("range Commandes et Catalogue en deux entrées sœurs, sans que l'une prolonge l'autre", async () => {
+  it("range Catalogue puis Commandes en deux entrées sœurs, sans que l'une prolonge l'autre", async () => {
     const { trouverModule } = await import("@/hub/modules");
     const routes = trouverModule("pack")?.navigation.map((e) => e.route) ?? [];
-    expect(routes).toEqual(["/hub/pack/commandes", "/hub/pack/catalogue"]);
+    expect(routes).toEqual(["/hub/pack/catalogue", "/hub/pack/commandes"]);
     expect(routes.some((r) => routes.some((autre) => autre !== r && r.startsWith(`${autre}/`)))).toBe(false);
   });
 });

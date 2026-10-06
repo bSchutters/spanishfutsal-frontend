@@ -79,8 +79,9 @@ export const MODULES = [
     route: "/hub/pack/commandes",
     icone: "shopping-bag",
     navigation: [
-      { nom: "Commandes", route: "/hub/pack/commandes", icone: "shopping-bag" },
+      // Catalogue en tete, a la demande de Bryan (06/10/2026) ; l'entree du module reste les commandes.
       { nom: "Catalogue", route: "/hub/pack/catalogue", icone: "shirt" },
+      { nom: "Commandes", route: "/hub/pack/commandes", icone: "shopping-bag" },
     ],
   },
 ] as const satisfies ReadonlyArray<ModuleHub>;
