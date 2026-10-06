@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { versChampDate } from "@/hub/dates";
 import { peutEditer } from "@/hub/droits";
-import { enNomsJoma, recapJoma } from "@/hub/pack/calculs";
+import { enNomsJoma, recapJoma, taillesSelonNomJoma } from "@/hub/pack/calculs";
 import { chargerCommandes, listerArticles } from "@/hub/pack/donnees";
 import { pdfCommandeJoma } from "@/hub/pack/pdf";
 import { lireSession } from "@/hub/session";
@@ -32,9 +32,7 @@ export async function POST(request: NextRequest) {
 
   const [commandes, catalogue] = await Promise.all([chargerCommandes(ids), listerArticles({ actifsSeulement: false })]);
   // Le PDF parle a Joma : chaque article sous son nom Joma.
-  const recap = recapJoma(enNomsJoma(commandes, catalogue, new Set(ecartes)), new Set(), (nom) =>
-    catalogue.find((a) => (a.nomJoma.trim() || a.nom) === nom)?.tailles ?? [],
-  );
+  const recap = recapJoma(enNomsJoma(commandes, catalogue, new Set(ecartes)), new Set(), taillesSelonNomJoma(catalogue));
   if (recap.pieces === 0) return NextResponse.json({ erreur: "Rien à commander dans cette sélection." }, { status: 400 });
 
   const maintenant = new Date();

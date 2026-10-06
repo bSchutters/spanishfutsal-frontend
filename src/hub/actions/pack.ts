@@ -8,6 +8,7 @@ import { construireLignes } from "@/hub/pack/calculs";
 import { dispositionDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
 import { chargerArticle, chargerCommande, chargerReglagesPack, listerArticles } from "@/hub/pack/donnees";
 import {
+  lireOrdre,
   premiereErreur,
   schemaArticle,
   schemaCommandeHub,
@@ -133,16 +134,8 @@ export async function supprimerCommande(id: unknown): Promise<Resultat> {
  */
 export async function reordonnerArticles(ids: unknown): Promise<Resultat> {
   await exigerModule("pack", "edit");
-  if (
-    !Array.isArray(ids) ||
-    ids.length === 0 ||
-    ids.length > 300 ||
-    !ids.every((id) => Number.isInteger(id) && id > 0) ||
-    new Set(ids).size !== ids.length
-  ) {
-    return { ok: false, erreur: "Cet ordre n'est pas valable." };
-  }
-  const liste = ids as number[];
+  const liste = lireOrdre(ids);
+  if (!liste) return { ok: false, erreur: "Cet ordre n'est pas valable." };
   const payload = await getPayloadClient();
   try {
     const { docs } = await payload.find({

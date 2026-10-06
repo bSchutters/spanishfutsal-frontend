@@ -277,6 +277,16 @@ export const schemaCommandeHub = z
   });
 export type SaisieCommandeHub = z.infer<typeof schemaCommandeHub>;
 
+/**
+ * L'ordre du catalogue envoye par le Hub : de 1 a 300 identifiants entiers
+ * positifs, sans doublon. Autre chose : rien.
+ */
+export function lireOrdre(ids: unknown): number[] | null {
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > 300) return null;
+  if (!ids.every((id): id is number => typeof id === "number" && Number.isInteger(id) && id > 0)) return null;
+  return new Set(ids).size === ids.length ? ids : null;
+}
+
 /** Un article du catalogue, tel que le Hub le cree ou le modifie. */
 export const schemaArticle = z
   .object({

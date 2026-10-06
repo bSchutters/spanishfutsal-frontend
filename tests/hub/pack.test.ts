@@ -8,6 +8,7 @@ import {
   enNomsJoma,
   filtrerParTag,
   tagsDuCatalogue,
+  taillesSelonNomJoma,
   prixJoueur,
   prixUnitaire,
   recapJoma,
@@ -19,6 +20,7 @@ import { articleDe, dispositionDe, tagsDe } from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
+  lireOrdre,
   lireTailles,
   schemaArticle,
   schemaCommandeJoueur,
@@ -255,6 +257,17 @@ describe("saisies", () => {
     expect(schemaArticle.safeParse({ ...article, remiseParticuliere: 15 }).success).toBe(true);
   });
 
+  it("n'accepte comme ordre du catalogue que des identifiants entiers, sans doublon", () => {
+    expect(lireOrdre([3, 1, 2])).toEqual([3, 1, 2]);
+    expect(lireOrdre([3, 1, 3])).toBeNull();
+    expect(lireOrdre([1, 2.5])).toBeNull();
+    expect(lireOrdre([1, -2])).toBeNull();
+    expect(lireOrdre(["1", 2])).toBeNull();
+    expect(lireOrdre([])).toBeNull();
+    expect(lireOrdre("1,2")).toBeNull();
+    expect(lireOrdre(Array.from({ length: 301 }, (_, i) => i + 1))).toBeNull();
+  });
+
   it("lit une liste de tailles séparées par des virgules ou des lignes", () => {
     expect(lireTailles("XS, S ,M\nL;; XL")).toEqual(["XS", "S", "M", "L", "XL"]);
   });
@@ -352,6 +365,31 @@ describe("PDF pour Joma", () => {
     const { PDFDocument } = await import("pdf-lib");
     expect((await PDFDocument.load(octets)).getPageCount()).toBeGreaterThan(1);
   });
+
+  it("n'écrit aucun flocage, même quand la commande en porte", async () => {
+    const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
+    const { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } = await import("pdf-lib");
+    const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
+    const octets = await pdfCommandeJoma(
+      { commandes: 1, pieces: 2, totaux: [total], flocages: [{ ...total, numero: "10", nom: "RUBEN" }] },
+      new Date("2026-10-07T10:00:00Z"),
+    );
+    // Le texte des polices standard s'ecrit en hexadecimal dans les flux des pages : on le cherche ainsi.
+    const doc = await PDFDocument.load(octets);
+    let flux = "";
+    for (const page of doc.getPages()) {
+      const contenu = page.node.Contents();
+      const morceaux = contenu instanceof PDFArray ? contenu.asArray().map((r) => doc.context.lookup(r)) : [contenu];
+      for (const m of morceaux) {
+        if (m instanceof PDFRawStream) flux += new TextDecoder("latin1").decode(decodePDFRawStream(m).decode());
+      }
+    }
+    const enHexa = (t: string) => [...t].map((c) => c.charCodeAt(0).toString(16).padStart(2, "0")).join("").toUpperCase();
+    flux = flux.toUpperCase();
+    expect(flux).toContain(enHexa("Maillot de match"));
+    expect(flux).not.toContain(enHexa("Flocages"));
+    expect(flux).not.toContain(enHexa("RUBEN"));
+  });
 });
 
 describe("photos d'une couleur", () => {
@@ -436,6 +474,28 @@ describe("tags du catalogue", () => {
     expect(tagsDe("Maillots")).toEqual([]);
   });
 
+  it("limite un article à dix tags de trente caractères", () => {
+    const article = {
+      id: null,
+      nom: "Maillot",
+      reference: "",
+      description: "",
+      prixCatalogue: 20,
+      modeRemise: "general" as const,
+      remiseParticuliere: null,
+      tailles: ["M"],
+      floquable: false,
+      dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
+      actif: true,
+      variantes: [{ id: null, couleur: "", codeCouleur: "", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
+    };
+    const dix = Array.from({ length: 10 }, (_, i) => `Tag ${i}`);
+    expect(schemaArticle.safeParse({ ...article, tags: dix }).success).toBe(true);
+    expect(schemaArticle.safeParse({ ...article, tags: [...dix, "Onze"] }).success).toBe(false);
+    expect(schemaArticle.safeParse({ ...article, tags: ["x".repeat(31)] }).success).toBe(false);
+    expect(schemaArticle.safeParse(article).success).toBe(true);
+  });
+
   it("liste les tags une fois chacun et filtre les articles", () => {
     const articles = [
       { id: 1, tags: ["Maillots", "Joueurs"] },
@@ -484,6 +544,57 @@ describe("noms Joma du PDF", () => {
     ];
     const [joma] = enNomsJoma([commande], catalogue, new Set(["Chaussettes"]));
     expect(joma.lignes.map((l) => l.article)).toEqual(["T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII", "Sweat", "Ancien article"]);
+  });
+
+  it("range les tailles dans l'ordre du catalogue, sous le nom Joma comme sous le nom affiché", () => {
+    const catalogue = [
+      { nom: "Maillot Joueurs", nomJoma: "T-SHIRT CHAMPIONSHIP VIII", tailles: ["S", "M", "L", "XL"] },
+      { nom: "Sweat", nomJoma: " ", tailles: ["XS", "S", "M"] },
+    ];
+    const ordre = taillesSelonNomJoma(catalogue);
+    expect(ordre("T-SHIRT CHAMPIONSHIP VIII")).toEqual(["S", "M", "L", "XL"]);
+    expect(ordre("Sweat")).toEqual(["XS", "S", "M"]);
+    expect(ordre("Maillot Joueurs")).toEqual([]);
+    const l = (taille: string): LigneCommande => ({
+      id: null,
+      articleId: 2,
+      varianteId: null,
+      article: "Maillot Joueurs",
+      couleur: "Marine",
+      reference: "104263.339",
+      taille,
+      quantite: 1,
+      numero: "",
+      nom: "",
+      prixUnitaire: 12.8,
+    });
+    const commande = {
+      id: 1,
+      joueurId: 3,
+      personne: "Ruben",
+      autreNom: "",
+      telephone: "",
+      email: "",
+      remarque: "",
+      lignes: [l("XL"), l("S"), l("M")],
+      total: 38.4,
+      statut: "received" as const,
+      creeLe: "2026-10-07T10:00:00Z",
+      commandeeLe: null,
+    };
+    const recap = recapJoma(enNomsJoma([commande], [{ id: 2, ...catalogue[0] }]), new Set(), ordre);
+    expect(recap.totaux.map((t) => [t.article, t.taille])).toEqual([
+      ["T-SHIRT CHAMPIONSHIP VIII", "S"],
+      ["T-SHIRT CHAMPIONSHIP VIII", "M"],
+      ["T-SHIRT CHAMPIONSHIP VIII", "XL"],
+    ]);
+  });
+
+  it("lit le nom Joma d'un article, vide s'il n'en a pas", () => {
+    expect(articleDe({ id: 20, name: "Maillot Joueurs", joma_name: " T-SHIRT CHAMPIONSHIP VIII ", price: 16, variants: [] }).nomJoma).toBe(
+      "T-SHIRT CHAMPIONSHIP VIII",
+    );
+    expect(articleDe({ id: 21, name: "Sweat", price: 30, variants: [] }).nomJoma).toBe("");
   });
 });
 

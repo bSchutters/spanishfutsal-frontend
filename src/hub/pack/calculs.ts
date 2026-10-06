@@ -100,6 +100,14 @@ export function filtrerParTag<T extends Pick<Article, "tags">>(articles: readonl
   return articles.filter((a) => a.tags.some((t) => t.toLowerCase() === cherche));
 }
 
+/**
+ * L'ordre des tailles d'un article retrouve par le nom que sa ligne porte dans
+ * le PDF : son nom Joma, ou son nom affiche s'il n'en a pas. Pour recapJoma.
+ */
+export function taillesSelonNomJoma(catalogue: readonly Pick<Article, "nom" | "nomJoma" | "tailles">[]): (nom: string) => readonly string[] {
+  return (nom) => catalogue.find((a) => (a.nomJoma.trim() || a.nom) === nom)?.tailles ?? [];
+}
+
 /** Le total d'une liste de lignes. */
 export function totalDes(lignes: readonly Pick<LigneCommande, "prixUnitaire" | "quantite">[]): number {
   return enEuros(lignes.reduce((somme, l) => somme + enCentimes(l.prixUnitaire) * l.quantite, 0));

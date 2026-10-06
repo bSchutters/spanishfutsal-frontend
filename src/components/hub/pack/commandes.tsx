@@ -19,7 +19,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { passerCommandeesChezJoma } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
-import { avancementJoma, enNomsJoma, formaterPrix, MINIMUM_JOMA, recapJoma, totalDes } from "@/hub/pack/calculs";
+import { avancementJoma, enNomsJoma, formaterPrix, MINIMUM_JOMA, recapJoma, taillesSelonNomJoma, totalDes } from "@/hub/pack/calculs";
 import {
   COULEURS_STATUT_COMMANDE,
   LIBELLES_STATUT_COMMANDE,
@@ -112,8 +112,7 @@ function PreparationJoma({
   }, [commandes]);
 
   // L'apercu du PDF, comme lui : sous les noms Joma ; les cases a cocher gardent les noms affiches.
-  const ordreDesTailles = (nom: string) => catalogue.find((a) => (a.nomJoma.trim() || a.nom) === nom)?.tailles ?? [];
-  const recap = recapJoma(enNomsJoma(commandes, catalogue, ecartes), new Set(), ordreDesTailles);
+  const recap = recapJoma(enNomsJoma(commandes, catalogue, ecartes), new Set(), taillesSelonNomJoma(catalogue));
   const ids = commandes.map((c) => c.id);
   // Ce qui part vraiment chez Joma : les lignes des commandes cochees, sans les articles ecartes.
   const montant = totalDes(commandes.flatMap((c) => c.lignes).filter((l) => !ecartes.has(l.article)));

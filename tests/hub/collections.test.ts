@@ -149,6 +149,8 @@ describe("module Pack", () => {
     expect(await PackOrders.access?.read?.(packLecture)).toBe(true);
     expect(await PackArticles.access?.update?.(packLecture)).toBe(false);
     expect(await PackOrders.access?.update?.(packLecture)).toBe(false);
+    expect(await PackOrders.access?.delete?.(packLecture)).toBe(false);
+    expect(await PackArticles.access?.delete?.(packLecture)).toBe(false);
     expect(await PackSettings.access?.update?.(packLecture)).toBe(false);
   });
 
