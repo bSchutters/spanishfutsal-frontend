@@ -11,8 +11,10 @@ import { adminHub } from './partage'
  * couleur, la reference et le prix du moment : le catalogue peut changer
  * sans reecrire une commande deja passee.
  *
- * Rien ne se supprime depuis le Hub : une commande abandonnee passe en
- * Annulee.
+ * Une commande abandonnee passe en Annulee : elle reste, hors des totaux.
+ * Depuis le 06/10/2026, le Hub peut aussi la supprimer pour de bon, apres
+ * confirmation ; les commandes Joma gardees (pack-joma-orders) gardent ce
+ * qui est parti.
  */
 export const PackOrders: CollectionConfig = {
   slug: 'pack-orders',

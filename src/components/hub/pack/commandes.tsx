@@ -22,13 +22,12 @@ import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import {
   aCommanderChezJoma,
   avancementJoma,
-  enNomsJoma,
   formaterPrix,
-  lotsJoma,
   MINIMUM_JOMA,
-  recapJoma,
-  taillesSelonNomJoma,
+  montantPourJoma,
+  recapPourJoma,
   totalDes,
+  type CommandeJoma,
 } from "@/hub/pack/calculs";
 import {
   COULEURS_STATUT_COMMANDE,
@@ -42,6 +41,28 @@ import FicheCommande from "./fiche-commande";
 
 const pieces = (c: Pick<Commande, "lignes">) => c.lignes.reduce((n, l) => n + l.quantite, 0);
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+
+/** Un PDF de la route des commandes Joma, enregistre sous le nom qu'elle donne. */
+async function telechargerPdf(corps: Record<string, unknown>): Promise<void> {
+  const reponse = await fetch("/api/hub/pack/pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(corps),
+    credentials: "include",
+  });
+  if (!reponse.ok) {
+    const json = (await reponse.json().catch(() => ({}))) as { erreur?: string };
+    throw new Error(json.erreur ?? `${reponse.status}`);
+  }
+  const fichier = await reponse.blob();
+  const nom = /filename="([^"]+)"/.exec(reponse.headers.get("Content-Disposition") ?? "")?.[1] ?? "commande-joma.pdf";
+  const url = URL.createObjectURL(fichier);
+  const lien = document.createElement("a");
+  lien.href = url;
+  lien.download = nom;
+  lien.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
 
 /** Une barre qui se remplit jusqu'au minimum Joma, verte une fois atteint. */
 function BarreMinimum({ montant, libelle }: { montant: number; libelle: string }) {
@@ -96,24 +117,21 @@ function MinimumJoma({ montant }: { montant: number }) {
 /**
  * La preparation de la commande Joma : les articles des commandes cochees,
  * a garder ou a ecarter, le PDF a envoyer, puis le passage des commandes en
- * « commandee chez Joma ». Avec `copieDu`, la meme fenetre retelecharge le
- * PDF d'une commande deja passee ce jour-la, sans rien changer.
+ * « commandee chez Joma », qui garde ce qui part pour en retelecharger une
+ * copie a l'identique.
  */
 function PreparationJoma({
   commandes,
   catalogue,
   ouvert,
-  copieDu = null,
   onFermer,
   onPassees,
 }: {
   commandes: Commande[];
   catalogue: Article[];
   ouvert: boolean;
-  /** Le jour ou la commande copiee est partie chez Joma. */
-  copieDu?: string | null;
   onFermer: () => void;
-  onPassees?: (ids: number[]) => void;
+  onPassees: (ids: number[]) => void;
 }) {
   const [ecartes, setEcartes] = useState<Set<string>>(new Set());
   const [telechargement, setTelechargement] = useState(false);
@@ -125,34 +143,17 @@ function PreparationJoma({
     return [...compte.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr"));
   }, [commandes]);
 
-  // L'apercu du PDF, comme lui : sous les noms Joma ; les cases a cocher gardent les noms affiches.
-  const recap = recapJoma(enNomsJoma(commandes, catalogue, ecartes), new Set(), taillesSelonNomJoma(catalogue));
+  // L'apercu du PDF, comme lui et comme la copie gardee : sous les noms Joma ; les cases a cocher gardent les noms affiches.
+  const recap = recapPourJoma(commandes, catalogue, ecartes);
   const ids = commandes.map((c) => c.id);
   // Ce qui part vraiment chez Joma : les lignes des commandes cochees, sans les articles ecartes.
-  const montant = totalDes(commandes.flatMap((c) => c.lignes).filter((l) => !ecartes.has(l.article)));
+  const montant = montantPourJoma(commandes, ecartes);
   const minimum = avancementJoma(montant);
 
   const telecharger = async () => {
     setTelechargement(true);
     try {
-      const reponse = await fetch("/api/hub/pack/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids, ecartes: [...ecartes], copie: copieDu !== null }),
-        credentials: "include",
-      });
-      if (!reponse.ok) {
-        const json = (await reponse.json().catch(() => ({}))) as { erreur?: string };
-        throw new Error(json.erreur ?? `${reponse.status}`);
-      }
-      const fichier = await reponse.blob();
-      const nom = /filename="([^"]+)"/.exec(reponse.headers.get("Content-Disposition") ?? "")?.[1] ?? "commande-joma.pdf";
-      const url = URL.createObjectURL(fichier);
-      const lien = document.createElement("a");
-      lien.href = url;
-      lien.download = nom;
-      lien.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      await telechargerPdf({ ids, ecartes: [...ecartes] });
     } catch (erreur) {
       toast.error(erreur instanceof Error && erreur.message ? erreur.message : "Le PDF n'a pas pu être créé.");
     } finally {
@@ -162,11 +163,11 @@ function PreparationJoma({
 
   const passer = () =>
     lancer(async () => {
-      const r = await passerCommandeesChezJoma(ids);
+      const r = await passerCommandeesChezJoma(ids, [...ecartes]);
       if (!r.ok) return void toast.error(r.erreur);
       const passees = r.donnees ?? ids;
       toast.success(`${pluriel(passees.length, "commande")} passée${passees.length > 1 ? "s" : ""} en « commandée chez Joma ».`);
-      onPassees?.(passees);
+      onPassees(passees);
     });
 
   return (
@@ -174,12 +175,10 @@ function PreparationJoma({
       {/* Une seule colonne qui ne s'elargit jamais au contenu : les longs noms Joma passent a la ligne. */}
       <DialogContent className="max-h-[90dvh] grid-cols-[minmax(0,1fr)] overflow-x-hidden overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{copieDu ? `Commande Joma du ${formaterDateCourte(copieDu)}` : "Commande Joma"}</DialogTitle>
+          <DialogTitle>Commande Joma</DialogTitle>
           <DialogDescription>
-            {copieDu
-              ? `${pluriel(commandes.length, "commande")} passée${commandes.length > 1 ? "s" : ""} ce jour-là. Une copie du PDF, marquée comme telle : rien ne change dans les commandes.`
-              : `${pluriel(commandes.length, "commande")} cochée${commandes.length > 1 ? "s" : ""}.`}{" "}
-            Décochez un article pour le laisser hors du PDF.
+            {pluriel(commandes.length, "commande")} cochée{commandes.length > 1 ? "s" : ""}. Décochez un article pour le laisser hors du PDF ;
+            une commande dont tout est écarté reste « Reçue ».
           </DialogDescription>
         </DialogHeader>
 
@@ -218,7 +217,7 @@ function PreparationJoma({
               </span>
             </p>
             <BarreMinimum montant={montant} libelle="Montant de la commande Joma" />
-            {minimum.atteint || copieDu ? null : (
+            {minimum.atteint ? null : (
               <p className="text-xs" style={{ color: COULEURS_STATUT_COMMANDE.received }}>
                 Il manque {formaterPrix(minimum.reste)} pour atteindre le minimum Joma.
               </p>
@@ -237,21 +236,62 @@ function PreparationJoma({
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
-          {copieDu ? (
-            <span />
-          ) : (
-            <Button type="button" variant="hubSecondary" disabled={enCours || recap.pieces === 0} onClick={passer}>
-              <PackageCheck aria-hidden="true" />
-              Marquer commandées
-            </Button>
-          )}
+          <Button type="button" variant="hubSecondary" disabled={enCours || recap.pieces === 0} onClick={passer}>
+            <PackageCheck aria-hidden="true" />
+            Marquer commandées
+          </Button>
           <Button type="button" variant="hub" disabled={telechargement || recap.pieces === 0} onClick={() => void telecharger()}>
             <FileDown aria-hidden="true" />
-            {telechargement ? "Création…" : copieDu ? "Retélécharger le PDF" : "Télécharger le PDF"}
+            {telechargement ? "Création…" : "Télécharger le PDF"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Les commandes passees chez Joma, gardees telles quelles : la copie du PDF
+ * se refait depuis ce qui a ete garde, a l'identique.
+ */
+function CommandesJoma({ commandesJoma }: { commandesJoma: CommandeJoma[] }) {
+  const [enCours, setEnCours] = useState<number | null>(null);
+
+  const copier = async (id: number) => {
+    setEnCours(id);
+    try {
+      await telechargerPdf({ copieDe: id });
+    } catch (erreur) {
+      toast.error(erreur instanceof Error && erreur.message ? erreur.message : "La copie n'a pas pu être créée.");
+    } finally {
+      setEnCours(null);
+    }
+  };
+
+  return (
+    <Panneau titre="Commandes Joma passées" description="La copie du PDF de chaque commande, telle qu'elle est partie. Rien ne change dans les commandes.">
+      <ul className="divide-y divide-border">
+        {commandesJoma.map((cj) => (
+          <li key={cj.id} className="flex items-center gap-3 px-4 py-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium first-letter:uppercase">
+                {cj.passeeLe ? formaterDateCourte(cj.passeeLe) : formaterDateCourte(cj.creeLe)} à {formaterHeure(cj.creeLe)}
+              </span>
+              <span className="block text-xs text-muted-foreground tabular-nums">
+                {pluriel(cj.recap.commandes, "commande")} · {pluriel(cj.recap.pieces, "pièce")} · {formaterPrix(cj.montant)}
+              </span>
+              {cj.ecartes.length > 0 ? (
+                <span className="block truncate text-xs text-muted-foreground">Sans : {cj.ecartes.join(", ")}</span>
+              ) : null}
+            </span>
+            <Button type="button" variant="hubSecondary" size="sm" disabled={enCours !== null} onClick={() => void copier(cj.id)}>
+              <FileDown aria-hidden="true" />
+              {enCours === cj.id ? "Création…" : "PDF"}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Panneau>
   );
 }
 
@@ -263,7 +303,7 @@ function PreparationJoma({
 export default function Commandes({
   montantRecues,
   commandes,
-  dejaPassees,
+  commandesJoma,
   catalogue,
   flocage,
   peutEditer,
@@ -271,8 +311,8 @@ export default function Commandes({
   /** Le montant des commandes recues, pour le minimum Joma, calcule par la page quel que soit le filtre. */
   montantRecues: number;
   commandes: Commande[];
-  /** Les commandes deja passees chez Joma, quel que soit le filtre : leur PDF se retelecharge. */
-  dejaPassees: Commande[];
+  /** Les commandes passees chez Joma, gardees telles quelles, quel que soit le filtre. */
+  commandesJoma: CommandeJoma[];
   catalogue: Article[];
   flocage: PrixFlocage;
   peutEditer: boolean;
@@ -281,8 +321,6 @@ export default function Commandes({
   const [selection, setSelection] = useState<Set<number>>(new Set());
   const [ouverture, setOuverture] = useState<{ ouvert: boolean; id: number | null; cle: number }>({ ouvert: false, id: null, cle: 0 });
   const [joma, setJoma] = useState(false);
-  // La copie ouverte garde son jour pendant que la fenetre se ferme.
-  const [copie, setCopie] = useState<{ ouvert: boolean; date: string | null }>({ ouvert: false, date: null });
   // Le minimum Joma se recalcule au serveur quand une commande change de statut ou de contenu.
   const router = useRouter();
 
@@ -292,8 +330,6 @@ export default function Commandes({
   const cochees = aCommander.filter((c) => selection.has(c.id));
   const actives = liste.filter((c) => c.statut !== "cancelled");
   const toutesCochees = aCommander.length > 0 && cochees.length === aCommander.length;
-  const lots = lotsJoma(dejaPassees);
-  const lotOuvert = lots.find((l) => l.date === copie.date) ?? null;
 
   const basculer = (id: number, coche: boolean) =>
     setSelection((x) => {
@@ -438,34 +474,7 @@ export default function Commandes({
         </Sheet>
       </Panneau>
 
-      {peutEditer && lots.length > 0 ? (
-        <Panneau titre="Commandes Joma passées" description="Le PDF de chaque commande déjà passée, à retélécharger. Rien ne change dans les commandes.">
-          <ul className="divide-y divide-border">
-            {lots.map((lot) => (
-              <li key={lot.date} className="flex items-center gap-3 px-4 py-3">
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium first-letter:uppercase">{formaterDateCourte(lot.date)}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {pluriel(lot.commandes.length, "commande")} · {pluriel(lot.commandes.reduce((n, c) => n + pieces(c), 0), "pièce")}
-                  </span>
-                </span>
-                <Button type="button" variant="hubSecondary" size="sm" onClick={() => setCopie({ ouvert: true, date: lot.date })}>
-                  <FileDown aria-hidden="true" />
-                  PDF
-                </Button>
-              </li>
-            ))}
-          </ul>
-          <PreparationJoma
-            key={copie.date ?? ""}
-            commandes={lotOuvert?.commandes ?? []}
-            catalogue={catalogue}
-            ouvert={copie.ouvert && lotOuvert !== null}
-            copieDu={copie.date}
-            onFermer={() => setCopie((x) => ({ ...x, ouvert: false }))}
-          />
-        </Panneau>
-      ) : null}
+      {peutEditer && commandesJoma.length > 0 ? <CommandesJoma commandesJoma={commandesJoma} /> : null}
     </>
   );
 }

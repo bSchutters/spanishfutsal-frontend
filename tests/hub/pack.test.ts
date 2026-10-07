@@ -7,9 +7,10 @@ import {
   avancementJoma,
   dateLimitePassee,
   enNomsJoma,
+  commandesPourJoma,
   filtrerParTag,
-  lotsJoma,
-  passeesChezJoma,
+  montantPourJoma,
+  recapPourJoma,
   tagsDuCatalogue,
   taillesSelonNomJoma,
   prixJoueur,
@@ -19,7 +20,7 @@ import {
   tauxRemise,
   totalDes,
 } from "@/hub/pack/calculs";
-import { articleDe, dispositionDe, tagsDe } from "@/hub/pack/conversions";
+import { articleDe, commandeJomaDe, dispositionDe, tagsDe } from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -202,6 +203,28 @@ describe("construction d'une commande", () => {
     });
     expect(floquee.ok && floquee.lignes[0].prixUnitaire).toBe(40);
   });
+
+  it("garde telle quelle une ligne que le club n'a pas touchée, même si le catalogue a perdu sa taille et sa couleur", () => {
+    const ancienne: LigneCommande = {
+      id: "l1",
+      articleId: 1,
+      varianteId: "vert",
+      article: "Maillot de match",
+      couleur: "Vert",
+      reference: "104263.500",
+      taille: "XXL",
+      quantite: 1,
+      numero: "10",
+      nom: "RUBEN",
+      prixUnitaire: 42.5,
+    };
+    const options = { inactifsAdmis: true, anciennes: [ancienne] };
+    // Ni la couleur verte ni le XXL ne sont plus au catalogue : la commande reste modifiable, annulable, livrable.
+    const r = construireLignes([ligne({ id: "l1", varianteId: "vert", taille: "XXL", quantite: 3, numero: "10", nom: "ruben" })], CATALOGUE, FLOCAGE, options);
+    expect(r).toEqual({ ok: true, total: 127.5, lignes: [{ ...ancienne, quantite: 3 }] });
+    // Touchee, elle repasse par le catalogue.
+    expect(construireLignes([ligne({ id: "l1", varianteId: "bleu", taille: "XXL" })], CATALOGUE, FLOCAGE, options).ok).toBe(false);
+  });
 });
 
 describe("saisies", () => {
@@ -292,7 +315,7 @@ describe("récapitulatif pour Joma", () => {
     ...partiel,
   });
 
-  it("additionne par référence, couleur et taille, et détaille les flocages", () => {
+  it("additionne par référence, couleur et taille, sans rien dire des flocages", () => {
     const recap = recapJoma(
       [
         { lignes: [l({ quantite: 2 }), l({ taille: "S", numero: "10", nom: "RUBEN" })] },
@@ -308,9 +331,7 @@ describe("récapitulatif pour Joma", () => {
       ["JOMA-101", "M", 2],
       ["JOMA-900", "Unique", 1],
     ]);
-    expect(recap.flocages.map((f) => [f.reference, f.taille, f.numero, f.nom, f.quantite])).toEqual([
-      ["JOMA-101", "S", "10", "RUBEN", 2],
-    ]);
+    expect(Object.keys(recap).sort()).toEqual(["commandes", "pieces", "totaux"]);
   });
 
   it("laisse de côté les articles écartés, et une commande qui n'a plus rien", () => {
@@ -360,7 +381,7 @@ describe("PDF pour Joma", () => {
       quantite: 1,
     }));
     const octets = await pdfCommandeJoma(
-      { commandes: 3, pieces: 80, totaux, flocages: [{ ...totaux[0], numero: "10", nom: "RUBEN" }] },
+      { commandes: 3, pieces: 80, totaux },
       new Date("2026-10-03T10:00:00Z"),
     );
     const texte = new TextDecoder("latin1").decode(octets.slice(0, 8));
@@ -387,13 +408,20 @@ describe("PDF pour Joma", () => {
 
   it("n'écrit aucun flocage, même quand la commande en porte", async () => {
     const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
-    const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
-    const flux = await fluxDesPages(
-      await pdfCommandeJoma(
-        { commandes: 1, pieces: 2, totaux: [total], flocages: [{ ...total, numero: "10", nom: "RUBEN" }] },
-        new Date("2026-10-07T10:00:00Z"),
-      ),
-    );
+    const floquee: LigneCommande = {
+      id: null,
+      articleId: 1,
+      varianteId: "bleu",
+      article: "Maillot de match",
+      couleur: "Bleu",
+      reference: "104263.339",
+      taille: "M",
+      quantite: 2,
+      numero: "10",
+      nom: "RUBEN",
+      prixUnitaire: 42.5,
+    };
+    const flux = await fluxDesPages(await pdfCommandeJoma(recapJoma([{ lignes: [floquee] }]), new Date("2026-10-07T10:00:00Z")));
     expect(flux).toContain(enHexa("Maillot de match"));
     expect(flux).not.toContain(enHexa("Flocages"));
     expect(flux).not.toContain(enHexa("RUBEN"));
@@ -419,7 +447,7 @@ describe("PDF pour Joma", () => {
     expect(lignesDe("", police, 9, 82)).toEqual([""]);
 
     const total = { reference: "104263.339", article: nom, couleur: "Bleu", taille: "M", quantite: 2 };
-    const flux = await fluxDesPages(await pdfCommandeJoma({ commandes: 1, pieces: 2, totaux: [total], flocages: [] }));
+    const flux = await fluxDesPages(await pdfCommandeJoma({ commandes: 1, pieces: 2, totaux: [total] }));
     for (const l of lignes) expect(flux).toContain(enHexa(l));
     expect(flux).not.toContain(enHexa("..."));
   });
@@ -427,7 +455,7 @@ describe("PDF pour Joma", () => {
   it("marque la copie d'une commande déjà passée, à la date de sa commande", async () => {
     const { pdfCommandeJoma } = await import("@/hub/pack/pdf");
     const total = { reference: "104263.339", article: "Maillot de match", couleur: "Bleu", taille: "M", quantite: 2 };
-    const recap = { commandes: 1, pieces: 2, totaux: [total], flocages: [] };
+    const recap = { commandes: 1, pieces: 2, totaux: [total] };
     const maintenant = new Date("2026-10-07T10:00:00Z");
     const copie = await fluxDesPages(await pdfCommandeJoma(recap, maintenant, { copie: true, passeeLe: "2026-10-06" }));
     expect(copie).toContain(enHexa("mardi 6 octobre 2026"));
@@ -651,21 +679,76 @@ describe("commandes à passer chez Joma", () => {
     expect(aCommanderChezJoma(commandes).map((c) => c.id)).toEqual([0, 4]);
   });
 
-  it("regroupe les commandes déjà passées par jour, la plus récente en tête, pour retélécharger leur PDF", () => {
-    const c = (id: number, statut: "received" | "ordered" | "delivered" | "cancelled", commandeeLe: string | null) => ({ id, statut, commandeeLe });
-    const commandes = [
-      c(1, "ordered", "2026-09-20"),
-      c(2, "delivered", "2026-10-06"),
-      c(3, "ordered", "2026-10-06"),
-      c(4, "cancelled", "2026-10-06"),
-      c(5, "received", null),
-      c(6, "ordered", null),
+  it("fait partir les reçues dont une ligne reste, et le même récapitulatif pour le PDF et pour la copie gardée", () => {
+    const ligneDe = (articleId: number, article: string, taille: string, quantite: number, prixUnitaire: number): LigneCommande => ({
+      id: null,
+      articleId,
+      varianteId: "marine",
+      article,
+      couleur: "Marine",
+      reference: articleId === 1 ? "104263.339" : "400028.300",
+      taille,
+      quantite,
+      numero: "",
+      nom: "",
+      prixUnitaire,
+    });
+    const commande = (id: number, statut: "received" | "ordered", lignes: LigneCommande[]) => ({
+      id,
+      joueurId: 3,
+      personne: "Ruben",
+      autreNom: "",
+      telephone: "",
+      email: "",
+      remarque: "",
+      lignes,
+      total: totalDes(lignes),
+      statut,
+      creeLe: "2026-10-07T10:00:00Z",
+      commandeeLe: null,
+    });
+    const catalogue = [
+      { id: 1, nom: "Maillot Joueurs", nomJoma: "T-SHIRT CHAMPIONSHIP VIII", tailles: ["S", "M", "L"] },
+      { id: 2, nom: "Chaussettes", nomJoma: "", tailles: ["39-42"] },
     ];
-    expect(passeesChezJoma(commandes).map((x) => x.id)).toEqual([1, 2, 3]);
-    expect(lotsJoma(commandes).map((l) => [l.date, l.commandes.map((x) => x.id)])).toEqual([
-      ["2026-10-06", [2, 3]],
-      ["2026-09-20", [1]],
-    ]);
+    const commandes = [
+      commande(1, "received", [ligneDe(1, "Maillot Joueurs", "L", 1, 16), ligneDe(2, "Chaussettes", "39-42", 2, 5)]),
+      // Tout est ecarte : elle reste recue, pour la prochaine commande Joma.
+      commande(2, "received", [ligneDe(2, "Chaussettes", "39-42", 1, 5)]),
+      // Deja passee : elle ne repart pas.
+      commande(3, "ordered", [ligneDe(1, "Maillot Joueurs", "S", 4, 16)]),
+    ];
+    const ecartes = new Set(["Chaussettes"]);
+    expect(commandesPourJoma(commandes, ecartes).map((c) => c.id)).toEqual([1]);
+    expect(montantPourJoma(commandes, ecartes)).toBe(16);
+    expect(recapPourJoma(commandes, catalogue, ecartes)).toEqual({
+      commandes: 1,
+      pieces: 1,
+      totaux: [{ reference: "104263.339", article: "T-SHIRT CHAMPIONSHIP VIII", couleur: "Marine", taille: "L", quantite: 1 }],
+    });
+  });
+
+  it("relit une commande Joma gardée telle quelle, sans ce qui serait illisible", () => {
+    const totale = { reference: "104263.339", article: "T-SHIRT CHAMPIONSHIP VIII", couleur: "Marine", taille: "L", quantite: 5 };
+    expect(
+      commandeJomaDe({
+        id: 4,
+        ordered_at: "2026-10-06T12:00:00.000Z",
+        createdAt: "2026-10-06T18:30:00.000Z",
+        amount: 183.4,
+        recap: { commandes: 3, pieces: 5, totaux: [totale, { article: "Sans quantité" }, "rien"] },
+        order_ids: [7, "8", 9],
+        excluded: ["Chaussettes", 3],
+      }),
+    ).toEqual({
+      id: 4,
+      passeeLe: "2026-10-06",
+      creeLe: "2026-10-06T18:30:00.000Z",
+      recap: { commandes: 3, pieces: 5, totaux: [totale] },
+      montant: 183.4,
+      commandeIds: [7, 9],
+      ecartes: ["Chaussettes"],
+    });
   });
 });
 

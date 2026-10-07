@@ -209,11 +209,15 @@ export default function FicheCommande({
                   </Button>
                 </div>
                 <div className="grid grid-cols-[1fr_1fr_4.5rem] gap-2">
-                  <Select value={l.varianteId} onValueChange={(varianteId) => changer(l.cle, { varianteId })} disabled={article.variantes.length < 2}>
+                  <Select value={l.varianteId} onValueChange={(varianteId) => changer(l.cle, { varianteId })} disabled={article.variantes.length < 2 && article.variantes.some((v) => v.id === l.varianteId)}>
                     <SelectTrigger aria-label="Couleur" className="w-full">
                       <SelectValue placeholder="Couleur" />
                     </SelectTrigger>
                     <SelectContent>
+                      {/* Une couleur retiree du catalogue depuis la commande reste choisie, sous son nom d'alors. */}
+                      {l.varianteId && !article.variantes.some((v) => v.id === l.varianteId) ? (
+                        <SelectItem value={l.varianteId}>{figee?.couleur || "Couleur retirée"}</SelectItem>
+                      ) : null}
                       {article.variantes.map((v) => (
                         <SelectItem key={v.id} value={v.id}>
                           {v.couleur || "Couleur unique"}

@@ -3,7 +3,7 @@ import { listerLesDiffusions, evolution, type Diffusion } from "@/hub/direct/don
 import { modulesAccessibles, peutEditer } from "@/hub/droits";
 import { compterIdeesAVoter } from "@/hub/idees/donnees";
 import { listerEffectif, listerMatchsSaison, type MatchDate } from "@/hub/joueurs/donnees";
-import { listerCommandes } from "@/hub/pack/donnees";
+import { compterCommandes } from "@/hub/pack/donnees";
 import type { UtilisateurSession } from "@/hub/session";
 import { anniversairesDeLaSemaine, type Anniversaire } from "./anniversaires";
 
@@ -110,7 +110,7 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     blocs.joueurs ? listerEffectif() : [],
     blocs.saisieStats ? listerMatchsSaison().then((r) => r.matchs) : [],
     blocs.direct ? chargerDernierDirect() : null,
-    blocs.pack ? listerCommandes("received").then((c) => c.length) : 0,
+    blocs.pack ? compterCommandes("received") : 0,
   ]);
 
   return {

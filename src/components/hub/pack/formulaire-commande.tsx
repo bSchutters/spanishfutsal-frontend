@@ -573,17 +573,22 @@ export default function FormulaireCommande({
   const fermer = () => setFiche((f) => ({ ...f, ouvert: false }));
 
   const ajouter = (ligne: LignePanier) => {
-    setPanier((liste) => {
-      // La meme piece, meme couleur, meme taille et meme flocage, s'ajoute a sa ligne.
-      const meme = liste.find(
-        (l) => l.articleId === ligne.articleId && l.varianteId === ligne.varianteId && l.taille === ligne.taille && l.numero === ligne.numero && l.nom === ligne.nom,
-      );
-      return meme
-        ? liste.map((l) => (l === meme ? { ...l, quantite: Math.min(QUANTITE_MAX, l.quantite + ligne.quantite) } : l))
-        : [...liste, ligne];
-    });
+    // La meme piece, meme couleur, meme taille et meme flocage, s'ajoute a sa ligne, vingt pieces au plus.
+    const meme = panier.find(
+      (l) => l.articleId === ligne.articleId && l.varianteId === ligne.varianteId && l.taille === ligne.taille && l.numero === ligne.numero && l.nom === ligne.nom,
+    );
+    const ajoutees = meme ? Math.min(QUANTITE_MAX, meme.quantite + ligne.quantite) - meme.quantite : ligne.quantite;
     const article = articles.find((a) => a.id === ligne.articleId);
-    toast.success(`${article?.nom ?? "Article"} ajouté à votre commande.`);
+    if (ajoutees <= 0) {
+      toast.error(`Vous avez déjà ${QUANTITE_MAX} pièces de cet article dans votre commande, le maximum.`);
+      return;
+    }
+    setPanier((liste) => (meme ? liste.map((l) => (l.cle === meme.cle ? { ...l, quantite: l.quantite + ajoutees } : l)) : [...liste, ligne]));
+    if (ajoutees < ligne.quantite) {
+      toast.warning(`${QUANTITE_MAX} pièces au plus par article : ${ajoutees} ajoutée${ajoutees > 1 ? "s" : ""} sur ${ligne.quantite}.`);
+    } else {
+      toast.success(`${article?.nom ?? "Article"} ajouté à votre commande.`);
+    }
     setErreur(null);
     fermer();
   };

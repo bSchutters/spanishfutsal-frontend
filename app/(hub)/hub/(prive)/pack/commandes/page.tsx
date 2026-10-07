@@ -4,8 +4,7 @@ import Link from "next/link";
 import { EnTetePage } from "@/components/hub/mise-en-page";
 import Commandes from "@/components/hub/pack/commandes";
 import { peutEditer } from "@/hub/droits";
-import { totalDes } from "@/hub/pack/calculs";
-import { chargerReglagesPack, listerArticles, listerCommandes, listerCommandesPasseesChezJoma } from "@/hub/pack/donnees";
+import { chargerReglagesPack, listerArticles, listerCommandes, listerCommandesJoma, montantDesCommandes } from "@/hub/pack/donnees";
 import { LIBELLES_STATUT_COMMANDE, STATUTS_COMMANDE, type StatutCommande } from "@/hub/pack/schema";
 import { exigerModule } from "@/hub/session";
 import { cn } from "@/lib/utils";
@@ -32,16 +31,15 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
 
   const edition = peutEditer(user, "pack");
 
-  const [commandes, catalogue, reglages, recues, passees] = await Promise.all([
+  const [commandes, catalogue, reglages, montantRecues, commandesJoma] = await Promise.all([
     listerCommandes(filtre === "toutes" ? null : filtre),
     listerArticles({ actifsSeulement: false }),
     chargerReglagesPack(),
-    // Les commandes qui attendent Joma comptent pour le minimum, meme sous un autre filtre.
-    filtre === "received" ? null : listerCommandes("received"),
-    // Leur PDF se retelecharge, pour qui peut editer seulement.
-    edition ? listerCommandesPasseesChezJoma() : [],
+    // Les commandes qui attendent Joma comptent pour le minimum, meme sous un autre filtre : leurs totaux suffisent.
+    montantDesCommandes("received"),
+    // La copie de leur PDF, pour qui peut editer seulement.
+    edition ? listerCommandesJoma() : [],
   ]);
-  const montantRecues = totalDes((recues ?? commandes).flatMap((c) => c.lignes));
 
   return (
     <>
@@ -70,7 +68,7 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
         commandes={commandes}
         catalogue={catalogue}
         flocage={reglages.flocage}
-        dejaPassees={passees}
+        commandesJoma={commandesJoma}
         peutEditer={edition}
       />
     </>

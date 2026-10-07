@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 /** Les fleches des cartes : petites, et seulement au survol de la souris ou au clavier. */
 const FLECHE_COMPACTE =
-  "size-7 opacity-0 [@media(hover:hover)]:group-hover/diapo:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:hidden";
+  "size-7 opacity-0 group-hover/diapo:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:hidden";
 
 /**
  * Les photos d'une couleur en diaporama : on glisse du doigt, on clique sur

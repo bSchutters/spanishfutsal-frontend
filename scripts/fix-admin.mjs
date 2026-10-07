@@ -5,12 +5,20 @@
  * etant reservee aux admins, plus personne ne peut corriger depuis l'interface.
  *
  *   node scripts/fix-admin.mjs bryan021@hotmail.be
+ *
+ * Avec --super-admin, coche en plus la case du super administrateur, le seul
+ * a donner un nouveau mot de passe a un membre depuis le Hub. Ni le Hub ni
+ * l'administration ne l'ecrivent : sur une nouvelle base, c'est ici qu'elle
+ * se pose, par l'adresse du compte.
+ *
+ *   node scripts/fix-admin.mjs bryan021@hotmail.be --super-admin
  */
 import { readFileSync, readdirSync } from 'node:fs'
 
 const email = process.argv[2]
-if (!email) {
-  console.error('Usage : node scripts/fix-admin.mjs <email>')
+const superAdmin = process.argv.includes('--super-admin')
+if (!email || email.startsWith('--')) {
+  console.error('Usage : node scripts/fix-admin.mjs <email> [--super-admin]')
   process.exit(1)
 }
 
@@ -36,7 +44,8 @@ const client = new pg.Client({ connectionString: uri })
 await client.connect()
 console.log('Base :', new URL(uri).host, '\n')
 
-const before = await client.query('SELECT id, email, role FROM users ORDER BY id')
+const colonnes = superAdmin ? 'id, email, role, super_admin' : 'id, email, role'
+const before = await client.query(`SELECT ${colonnes} FROM users ORDER BY id`)
 console.log('Avant :')
 console.table(before.rows)
 
@@ -47,17 +56,25 @@ if (!target) {
   process.exit(1)
 }
 
-if (target.role === 'admin') {
-  console.log(`\n${email} est deja admin, rien a faire.`)
+if (target.role === 'admin' && (!superAdmin || target.super_admin === true)) {
+  console.log(`\n${email} est deja ${superAdmin ? 'super administrateur' : 'admin'}, rien a faire.`)
   await client.end()
   process.exit(0)
 }
 
-await client.query('UPDATE users SET role = $1 WHERE email = $2', ['admin', email])
+if (superAdmin) {
+  await client.query('UPDATE users SET role = $1, super_admin = true WHERE email = $2', ['admin', email])
+} else {
+  await client.query('UPDATE users SET role = $1 WHERE email = $2', ['admin', email])
+}
 
-const after = await client.query('SELECT id, email, role FROM users ORDER BY id')
+const after = await client.query(`SELECT ${colonnes} FROM users ORDER BY id`)
 console.log('\nApres :')
 console.table(after.rows)
-console.log(`\n${email} est de nouveau admin. Recharge l'onglet de l'administration.`)
+console.log(
+  superAdmin
+    ? `\n${email} est super administrateur. Recharge la page Membres du Hub.`
+    : `\n${email} est de nouveau admin. Recharge l'onglet de l'administration.`,
+)
 
 await client.end()

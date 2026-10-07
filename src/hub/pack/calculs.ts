@@ -77,24 +77,6 @@ export function aCommanderChezJoma<T extends Pick<Commande, "statut">>(commandes
 }
 
 /**
- * Les commandes deja passees chez Joma, commandees ou livrees, avec leur
- * date : celles dont le PDF se retelecharge. Une annulee n'y est plus.
- */
-export function passeesChezJoma<T extends Pick<Commande, "statut" | "commandeeLe">>(commandes: readonly T[]): T[] {
-  return commandes.filter((c) => c.commandeeLe !== null && (c.statut === "ordered" || c.statut === "delivered"));
-}
-
-/** Les commandes passees chez Joma, une liste par jour de commande, la plus recente en tete. */
-export function lotsJoma<T extends Pick<Commande, "statut" | "commandeeLe">>(commandes: readonly T[]): { date: string; commandes: T[] }[] {
-  const parDate = new Map<string, T[]>();
-  for (const c of passeesChezJoma(commandes)) {
-    const date = c.commandeeLe as string;
-    parDate.set(date, [...(parDate.get(date) ?? []), c]);
-  }
-  return [...parDate.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([date, liste]) => ({ date, commandes: liste }));
-}
-
-/**
  * Les commandes telles que Joma doit les lire : sans les articles ecartes
  * (designes par leur nom affiche, celui que le club connait), et chaque ligne
  * sous le nom Joma de son article, ou son nom affiche s'il n'en a pas.
@@ -147,11 +129,23 @@ export type Construction = { ok: true; lignes: LigneCommande[]; total: number } 
  * ce que le navigateur envoie : nom, reference et prix viennent de la base.
  *
  * Depuis la page des joueurs, seuls les articles actifs passent. Depuis le
- * Hub, `anciennes` porte les lignes deja enregistrees : une ligne dont
- * l'article, la couleur et la presence du numero et du nom n'ont pas change
- * garde son prix d'origine, meme si le catalogue a bouge depuis. Les autres
- * prennent le prix du moment.
+ * Hub, `anciennes` porte les lignes deja enregistrees : une ligne que le
+ * club n'a pas touchee se garde telle quelle, quantite mise a part ; une
+ * ligne dont l'article, la couleur et la presence du numero et du nom n'ont
+ * pas change garde son prix d'origine, meme si le catalogue a bouge depuis.
+ * Les autres prennent le prix du moment.
  */
+/** La ligne saisie est-elle celle qui etait enregistree, quantite mise a part ? */
+function inchangee(ancienne: LigneCommande, saisie: LigneSaisie): boolean {
+  return (
+    ancienne.articleId === saisie.articleId &&
+    (ancienne.varianteId ?? "") === saisie.varianteId &&
+    ancienne.taille === saisie.taille.trim() &&
+    ancienne.numero === saisie.numero.trim() &&
+    ancienne.nom === saisie.nom.trim().toUpperCase()
+  );
+}
+
 export function construireLignes(
   saisies: readonly LigneSaisie[],
   catalogue: readonly Article[],
@@ -160,6 +154,14 @@ export function construireLignes(
 ): Construction {
   const lignes: LigneCommande[] = [];
   for (const saisie of saisies) {
+    const ancienne = saisie.id ? options.anciennes?.find((l) => l.id === saisie.id) : undefined;
+    // Une ligne deja enregistree que le club n'a pas touchee (meme article, couleur,
+    // taille et flocage) reste telle quelle, quantite mise a part : le catalogue a pu
+    // perdre sa taille ou sa couleur depuis, la commande doit rester modifiable.
+    if (ancienne && inchangee(ancienne, saisie)) {
+      lignes.push({ ...ancienne, quantite: saisie.quantite });
+      continue;
+    }
     const article = catalogue.find((a) => a.id === saisie.articleId);
     // L'article d'une ligne deja enregistree a ete supprime : la ligne garde
     // sa copie (nom, couleur, reference, prix), seule la quantite peut changer.
@@ -182,7 +184,6 @@ export function construireLignes(
       return { ok: false, erreur: `${article.nom} ne se floque pas.` };
     }
 
-    const ancienne = saisie.id ? options.anciennes?.find((l) => l.id === saisie.id) : undefined;
     const prixInchange =
       ancienne &&
       ancienne.articleId === article.id &&
@@ -221,24 +222,34 @@ export type TotalJoma = {
   quantite: number;
 };
 
-/** Une piece a floquer, regroupee quand le meme flocage revient sur la meme piece. */
-export type FlocageJoma = TotalJoma & { numero: string; nom: string };
-
 export type RecapJoma = {
   commandes: number;
   pieces: number;
   totaux: TotalJoma[];
-  flocages: FlocageJoma[];
+};
+
+/**
+ * Une commande passee chez Joma, gardee telle quelle a « Marquer commandees » :
+ * son PDF se retelecharge a l'identique, quoi qu'il arrive ensuite.
+ */
+export type CommandeJoma = {
+  id: number;
+  /** « 2026-10-06 », le jour ou elle est partie. */
+  passeeLe: string;
+  creeLe: string;
+  recap: RecapJoma;
+  montant: number;
+  commandeIds: number[];
+  ecartes: string[];
 };
 
 const comparer = (a: string, b: string) => a.localeCompare(b, "fr", { numeric: true });
 
 /**
  * Ce qu'il faut commander chez Joma pour un ensemble de commandes : les
- * quantites par article, couleur et taille, puis le detail des flocages,
- * parce que Joma doit savoir quoi imprimer sur chaque piece. Les articles
- * ecartes (par leur nom) ne comptent pas. Ni prix ni noms de joueurs : ce
- * document part chez le fournisseur.
+ * quantites par article, couleur et taille. Les articles ecartes (par leur
+ * nom) ne comptent pas. Ni prix, ni noms de joueurs, ni flocages : ce
+ * document part chez le fournisseur, qui ne floque pas.
  */
 export function recapJoma(
   commandes: readonly Pick<Commande, "lignes">[],
@@ -246,7 +257,6 @@ export function recapJoma(
   ordreDesTailles: (article: string) => readonly string[] = () => [],
 ): RecapJoma {
   const totaux = new Map<string, TotalJoma>();
-  const flocages = new Map<string, FlocageJoma>();
   let pieces = 0;
   let retenues = 0;
 
@@ -259,12 +269,6 @@ export function recapJoma(
       const total = totaux.get(cle) ?? { reference: l.reference, article: l.article, couleur: l.couleur, taille: l.taille, quantite: 0 };
       total.quantite += l.quantite;
       totaux.set(cle, total);
-      if (l.numero || l.nom) {
-        const cleFlocage = [cle, l.numero, l.nom].join("\u0000");
-        const flocage = flocages.get(cleFlocage) ?? { ...total, quantite: 0, numero: l.numero, nom: l.nom };
-        flocage.quantite += l.quantite;
-        flocages.set(cleFlocage, flocage);
-      }
     }
   }
 
@@ -272,16 +276,39 @@ export function recapJoma(
     const rang = ordreDesTailles(article).indexOf(taille);
     return rang === -1 ? Number.MAX_SAFE_INTEGER : rang;
   };
-  const trier = <T extends TotalJoma>(a: T, b: T) =>
+  const trier = (a: TotalJoma, b: TotalJoma) =>
     comparer(a.article, b.article) ||
     comparer(a.couleur, b.couleur) ||
     rangTaille(a.article, a.taille) - rangTaille(b.article, b.taille) ||
     comparer(a.taille, b.taille);
 
-  return {
-    commandes: retenues,
-    pieces,
-    totaux: [...totaux.values()].sort(trier),
-    flocages: [...flocages.values()].sort((a, b) => trier(a, b) || comparer(a.numero, b.numero) || comparer(a.nom, b.nom)),
-  };
+  return { commandes: retenues, pieces, totaux: [...totaux.values()].sort(trier) };
+}
+
+/**
+ * Ce qui part chez Joma pour une selection : les commandes recues, sans les
+ * articles ecartes, chaque article sous son nom Joma, les tailles dans
+ * l'ordre du catalogue. Le PDF, son apercu et la copie gardee a « Marquer
+ * commandees » passent tous par ici, pour dire la meme chose.
+ */
+export function recapPourJoma(
+  commandes: readonly Commande[],
+  catalogue: readonly Pick<Article, "id" | "nom" | "nomJoma" | "tailles">[],
+  articlesEcartes: ReadonlySet<string>,
+): RecapJoma {
+  return recapJoma(enNomsJoma(aCommanderChezJoma(commandes), catalogue, articlesEcartes), new Set(), taillesSelonNomJoma(catalogue));
+}
+
+/** Le montant de ce qui part chez Joma : les lignes des commandes recues, sans les articles ecartes. */
+export function montantPourJoma(commandes: readonly Commande[], articlesEcartes: ReadonlySet<string>): number {
+  return totalDes(aCommanderChezJoma(commandes).flatMap((c) => c.lignes.filter((l) => !articlesEcartes.has(l.article))));
+}
+
+/**
+ * Les commandes que la selection fait vraiment partir : les recues dont au
+ * moins une ligne n'est pas ecartee. Une commande dont tout est ecarte reste
+ * « recue », pour la prochaine commande Joma.
+ */
+export function commandesPourJoma<T extends Pick<Commande, "statut" | "lignes">>(commandes: readonly T[], articlesEcartes: ReadonlySet<string>): T[] {
+  return aCommanderChezJoma(commandes).filter((c) => c.lignes.some((l) => !articlesEcartes.has(l.article)));
 }

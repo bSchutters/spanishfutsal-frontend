@@ -22,6 +22,7 @@ import * as migration_20261006_144326_pack_logo_variante from './20261006_144326
 import * as migration_20261006_181503_pack_nom_joma from './20261006_181503_pack_nom_joma';
 import * as migration_20261006_223637_pack_tags from './20261006_223637_pack_tags';
 import * as migration_20261006_230941_super_admin from './20261006_230941_super_admin';
+import * as migration_20261007_091431_pack_commandes_joma from './20261007_091431_pack_commandes_joma';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20261006_230941_super_admin.up,
     down: migration_20261006_230941_super_admin.down,
-    name: '20261006_230941_super_admin'
+    name: '20261006_230941_super_admin',
+  },
+  {
+    up: migration_20261007_091431_pack_commandes_joma.up,
+    down: migration_20261007_091431_pack_commandes_joma.down,
+    name: '20261007_091431_pack_commandes_joma'
   },
 ];

@@ -3,7 +3,8 @@ import type { Payload, Where } from "payload";
 import { versChampDate } from "@/hub/dates";
 import { getPayloadClient } from "@/lib/payload";
 import { genererJeton } from "@/payload/collections/hub/Feeds";
-import { articleDe, commandeDe } from "./conversions";
+import type { CommandeJoma } from "./calculs";
+import { articleDe, commandeDe, commandeJomaDe } from "./conversions";
 import type { Article, Commande, ReglagesPack, StatutCommande } from "./schema";
 
 /**
@@ -83,17 +84,41 @@ export async function listerCommandes(statut?: StatutCommande | null, payload?: 
   return (docs as Doc[]).map(commandeDe);
 }
 
-/** Les commandes deja passees chez Joma, commandees ou livrees, pour retelecharger leur PDF. */
-export async function listerCommandesPasseesChezJoma(payload?: Payload): Promise<Commande[]> {
+/** Le nombre de commandes d'un statut, sans les charger. */
+export async function compterCommandes(statut: StatutCommande, payload?: Payload): Promise<number> {
+  const client = payload ?? (await getPayloadClient());
+  const { totalDocs } = await client.count({ collection: "pack-orders", where: { status: { equals: statut } } });
+  return totalDocs;
+}
+
+/** Le montant des commandes d'un statut : leurs totaux seuls, sans lignes ni joueurs. */
+export async function montantDesCommandes(statut: StatutCommande, payload?: Payload): Promise<number> {
   const client = payload ?? (await getPayloadClient());
   const { docs } = await client.find({
     collection: "pack-orders",
-    where: { status: { in: ["ordered", "delivered"] } },
-    sort: "-createdAt",
-    limit: 1000,
-    depth: 1,
+    where: { status: { equals: statut } },
+    select: { total: true },
+    pagination: false,
+    depth: 0,
   });
-  return (docs as Doc[]).map(commandeDe);
+  // Par les centimes, comme totalDes.
+  return Math.round((docs as Doc[]).reduce((somme, d) => somme + Math.round(Number(d.total ?? 0) * 100), 0)) / 100;
+}
+
+/** Les commandes passees chez Joma, gardees telles quelles, la plus recente en tete. */
+export async function listerCommandesJoma(payload?: Payload): Promise<CommandeJoma[]> {
+  const client = payload ?? (await getPayloadClient());
+  const { docs } = await client.find({ collection: "pack-joma-orders", sort: "-createdAt", limit: 200, depth: 0 });
+  return (docs as Doc[]).map(commandeJomaDe);
+}
+
+export async function chargerCommandeJoma(id: number, payload?: Payload): Promise<CommandeJoma | null> {
+  const client = payload ?? (await getPayloadClient());
+  try {
+    return commandeJomaDe((await client.findByID({ collection: "pack-joma-orders", id, depth: 0 })) as Doc);
+  } catch {
+    return null;
+  }
 }
 
 /** Les commandes demandees par identifiant, dans l'ordre de reception. */

@@ -1,5 +1,5 @@
 import { versChampDate } from "@/hub/dates";
-import { prixJoueur } from "./calculs";
+import { prixJoueur, type CommandeJoma, type TotalJoma } from "./calculs";
 import {
   MODES_REMISE,
   STATUTS_COMMANDE,
@@ -152,6 +152,37 @@ export function commandeDe(doc: Doc): Commande {
     statut,
     creeLe: String(doc.createdAt ?? ""),
     commandeeLe: typeof doc.ordered_at === "string" ? versChampDate(doc.ordered_at) || null : null,
+  };
+}
+
+/** Une ligne du recapitulatif gardee, ou rien si elle est illisible. */
+function totalDe(v: unknown): TotalJoma | null {
+  if (!v || typeof v !== "object") return null;
+  const t = v as Record<string, unknown>;
+  const quantite = nombre(t.quantite);
+  if (!Number.isInteger(quantite) || quantite <= 0) return null;
+  return { reference: texte(t.reference), article: texte(t.article), couleur: texte(t.couleur), taille: texte(t.taille), quantite };
+}
+
+const entiers = (v: unknown) => (Array.isArray(v) ? v.filter((n): n is number => Number.isInteger(n)) : []);
+const textes = (v: unknown) => (Array.isArray(v) ? v.filter((t): t is string => typeof t === "string") : []);
+
+/** Une commande Joma gardee, relue telle qu'elle a ete rangee a « Marquer commandees ». */
+export function commandeJomaDe(doc: Doc): CommandeJoma {
+  const recap = doc.recap && typeof doc.recap === "object" ? (doc.recap as Record<string, unknown>) : {};
+  const totaux = (Array.isArray(recap.totaux) ? recap.totaux : []).map(totalDe).filter((t): t is TotalJoma => t !== null);
+  return {
+    id: Number(doc.id),
+    passeeLe: typeof doc.ordered_at === "string" ? versChampDate(doc.ordered_at) : "",
+    creeLe: String(doc.createdAt ?? ""),
+    recap: {
+      commandes: nombre(recap.commandes),
+      pieces: nombre(recap.pieces) || totaux.reduce((n, t) => n + t.quantite, 0),
+      totaux,
+    },
+    montant: nombre(doc.amount),
+    commandeIds: entiers(doc.order_ids),
+    ecartes: textes(doc.excluded),
   };
 }
 

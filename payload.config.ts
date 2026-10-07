@@ -30,6 +30,7 @@ import { Ideas } from '@/payload/collections/hub/Ideas'
 import { Networks } from '@/payload/collections/hub/Networks'
 import { NotificationLog } from '@/payload/collections/hub/NotificationLog'
 import { PackArticles } from '@/payload/collections/hub/PackArticles'
+import { PackJomaOrders } from '@/payload/collections/hub/PackJomaOrders'
 import { PackOrders } from '@/payload/collections/hub/PackOrders'
 import { PostTemplates } from '@/payload/collections/hub/PostTemplates'
 import { PushSubscriptions } from '@/payload/collections/hub/PushSubscriptions'
@@ -88,6 +89,7 @@ export default buildConfig({
     HubMedia,
     PackArticles,
     PackOrders,
+    PackJomaOrders,
   ],
   globals: [Settings, HubSettings, PackSettings],
   i18n: {

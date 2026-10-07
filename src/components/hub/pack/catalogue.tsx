@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown, GripVertical, ImagePlus, Loader2, Plus, Shirt, Star, Trash2, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Etiquette, Panneau } from "@/components/hub/mise-en-page";
@@ -96,7 +96,8 @@ function deplacer(photos: PhotoDeposee[], id: number, rang: number): PhotoDepose
  * Les photos d'une couleur, par la route des photos du Hub. La premiere est
  * la photo principale, celle de la vignette ; l'etoile en fait passer une
  * autre en tete, et l'ordre se change en glissant les vignettes. Plusieurs
- * fichiers se deposent d'un coup, l'un apres l'autre.
+ * fichiers se deposent d'un coup, par le bouton ou laches sur le bloc,
+ * l'un apres l'autre.
  */
 function PhotosCouleur({
   photos,
@@ -116,13 +117,23 @@ function PhotosCouleur({
   const [enCours, setEnCours] = useState(0);
   // La photo qu'on glisse : la liste se reordonne en direct sous le pointeur.
   const [tiree, setTiree] = useState<number | null>(null);
+  // Des fichiers survolent le bloc, venus du bureau.
+  const [survole, setSurvole] = useState(false);
   const triable = photos.length > 1;
+  // Les photos du moment : un depot long ne doit pas defaire ce qu'on retire ou reordonne pendant qu'il part.
+  const actuelles = useRef(photos);
+  useEffect(() => {
+    actuelles.current = photos;
+  }, [photos]);
 
   const deposer = async (fichiers: FileList | null) => {
-    const liste = Array.from(fichiers ?? []).slice(0, PHOTOS_MAX - photos.length);
+    const liste = Array.from(fichiers ?? []).filter((fichier) => fichier.type.startsWith("image/"));
     if (liste.length === 0) return;
-    let suite = photos;
     for (const fichier of liste) {
+      if (actuelles.current.length >= PHOTOS_MAX) {
+        toast.error(`${PHOTOS_MAX} photos au plus par couleur.`);
+        break;
+      }
       setEnCours((n) => n + 1);
       try {
         const corps = new FormData();
@@ -131,7 +142,8 @@ function PhotosCouleur({
         const reponse = await fetch("/api/hub/photos", { method: "POST", body: corps, credentials: "include" });
         const json = (await reponse.json()) as { id?: number; url?: string; erreur?: string };
         if (!reponse.ok || typeof json.id !== "number") throw new Error(json.erreur ?? `${reponse.status}`);
-        suite = [...suite, { id: json.id, url: json.url ?? "" }];
+        const suite = [...actuelles.current, { id: json.id, url: json.url ?? "" }];
+        actuelles.current = suite;
         onChange(suite);
       } catch (erreur) {
         toast.error(erreur instanceof Error && erreur.message ? erreur.message : `${fichier.name} n'a pas pu être déposée.`);
@@ -142,8 +154,27 @@ function PhotosCouleur({
     if (entree.current) entree.current.value = "";
   };
 
+  const fichiers = (e: React.DragEvent) => tiree === null && e.dataTransfer.types.includes("Files");
+
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      className={cn("-m-1 flex flex-col gap-2 rounded-md p-1", survole && "bg-accent/40 outline-2 outline-primary outline-dashed")}
+      onDragOver={(e) => {
+        if (!fichiers(e) || photos.length >= PHOTOS_MAX) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        setSurvole(true);
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setSurvole(false);
+      }}
+      onDrop={(e) => {
+        if (!fichiers(e)) return;
+        e.preventDefault();
+        setSurvole(false);
+        void deposer(e.dataTransfer.files);
+      }}
+    >
       {photos.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {photos.map((p, rang) => (
@@ -208,7 +239,9 @@ function PhotosCouleur({
           ))}
         </ul>
       ) : null}
-      {triable ? <p className="text-xs text-muted-foreground">Glissez les photos pour changer leur ordre.</p> : null}
+      <p className="text-xs text-muted-foreground">
+        {triable ? "Glissez les photos pour changer leur ordre ; déposez-en de nouvelles ici." : "Déposez des photos ici, ou choisissez-les."}
+      </p>
       <input
         ref={entree}
         type="file"
@@ -1110,6 +1143,22 @@ export default function Catalogue({
   const triable = peutEditer && articles.length > 1;
 
   const tri = (a: Article, b: Article) => Number(b.actif) - Number(a.actif) || a.ordre - b.ordre || a.nom.localeCompare(b.nom, "fr");
+
+  // Fiche ouverte, une photo lachee hors du bloc d'une couleur ne doit pas ouvrir le fichier a la place de la fiche.
+  useEffect(() => {
+    if (!ouverture.ouvert) return;
+    const garder = (e: DragEvent) => {
+      if (e.defaultPrevented || !e.dataTransfer?.types.includes("Files")) return;
+      e.preventDefault();
+      if (e.type === "drop") toast.info("Déposez les photos sur le bloc d'une couleur.");
+    };
+    window.addEventListener("dragover", garder);
+    window.addEventListener("drop", garder);
+    return () => {
+      window.removeEventListener("dragover", garder);
+      window.removeEventListener("drop", garder);
+    };
+  }, [ouverture.ouvert]);
 
   const ouvrir = (article: Article | null) => setOuverture((o) => ({ ouvert: true, article, cle: o.cle + 1 }));
   const fermer = () => setOuverture((o) => ({ ...o, ouvert: false }));

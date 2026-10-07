@@ -9,6 +9,7 @@ import { Ideas } from "@/payload/collections/hub/Ideas";
 import { Networks } from "@/payload/collections/hub/Networks";
 import { NotificationLog } from "@/payload/collections/hub/NotificationLog";
 import { PackArticles } from "@/payload/collections/hub/PackArticles";
+import { PackJomaOrders } from "@/payload/collections/hub/PackJomaOrders";
 import { PackOrders } from "@/payload/collections/hub/PackOrders";
 import { PostTemplates } from "@/payload/collections/hub/PostTemplates";
 import { PushSubscriptions } from "@/payload/collections/hub/PushSubscriptions";
@@ -33,6 +34,7 @@ const collections = [
   NotificationLog,
   PackArticles,
   PackOrders,
+  PackJomaOrders,
 ];
 
 const anonyme = { req: { user: null } } as never;
@@ -166,5 +168,17 @@ describe("module Pack", () => {
     expect(await PackArticles.access?.update?.(packEdition)).toBe(true);
     expect(await PackArticles.access?.delete?.(packEdition)).toBe(true);
     expect(await PackArticles.access?.delete?.(packLecture)).toBe(false);
+  });
+
+  it("une commande Joma gardée ne se modifie jamais, pas même avec l'édition", async () => {
+    const packEdition = {
+      req: { user: { id: 5, role: "manager", hub: { access: true, modules: [{ module: "pack", level: "edit" }], feeds: [] } } },
+    } as never;
+    const admin = { req: { user: { id: 2, role: "admin" } } } as never;
+    expect(await PackJomaOrders.access?.read?.(packLecture)).toBe(true);
+    expect(await PackJomaOrders.access?.create?.(packLecture)).toBe(false);
+    expect(await PackJomaOrders.access?.create?.(packEdition)).toBe(true);
+    expect(await PackJomaOrders.access?.update?.(packEdition)).toBe(false);
+    expect(await PackJomaOrders.access?.update?.(admin)).toBe(false);
   });
 });
