@@ -184,6 +184,11 @@ export type LigneCommande = {
   numero: string;
   nom: string;
   prixUnitaire: number;
+  /**
+   * La commande Joma gardee qui a emporte la ligne, ou null : la ligne reste a
+   * commander. Une commande reste « recue » tant qu'une ligne reste a commander.
+   */
+  commandeJoma: number | null;
 };
 
 export type Commande = {

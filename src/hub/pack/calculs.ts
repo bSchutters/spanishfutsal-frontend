@@ -77,6 +77,33 @@ export function aCommanderChezJoma<T extends Pick<Commande, "statut">>(commandes
 }
 
 /**
+ * Ce qui reste a commander : les commandes recues, reduites a leurs lignes
+ * qu'aucune commande Joma n'a encore emportees (Bryan, 07/10/2026 : une
+ * commande reste recue jusqu'a ce que tout soit commande).
+ */
+export function resteACommander<T extends Pick<Commande, "statut" | "lignes">>(commandes: readonly T[]): T[] {
+  return aCommanderChezJoma(commandes)
+    .map((c) => ({ ...c, lignes: c.lignes.filter((l) => l.commandeJoma === null) }))
+    .filter((c) => c.lignes.length > 0);
+}
+
+/** Une commande recue dont une partie est deja partie chez Joma. */
+export function enPartieCommandee(commande: Pick<Commande, "statut" | "lignes">): boolean {
+  return commande.statut === "received" && commande.lignes.some((l) => l.commandeJoma !== null);
+}
+
+/**
+ * Le statut d'une commande annulee qu'on retablit : commandee si tout est
+ * deja parti chez Joma, ou si elle avait ete passee en « commandee » sans
+ * suivi par ligne ; recue s'il reste une ligne a commander.
+ */
+export function statutRetabli(commande: Pick<Commande, "lignes" | "commandeeLe">): "ordered" | "received" {
+  const restantes = commande.lignes.filter((l) => l.commandeJoma === null).length;
+  if (restantes === 0) return "ordered";
+  return commande.commandeeLe && restantes === commande.lignes.length ? "ordered" : "received";
+}
+
+/**
  * Les commandes telles que Joma doit les lire : sans les articles ecartes
  * (designes par leur nom affiche, celui que le club connait), et chaque ligne
  * sous le nom Joma de son article, ou son nom affiche s'il n'en a pas.
@@ -203,6 +230,8 @@ export function construireLignes(
       numero,
       nom,
       prixUnitaire: prixInchange ? ancienne.prixUnitaire : prixUnitaire(article.prix, flocage, numero, nom),
+      // Deja partie chez Joma, une ligne corrigee ne repart pas d'elle-meme.
+      commandeJoma: ancienne?.commandeJoma ?? null,
     });
   }
   return { ok: true, lignes, total: totalDes(lignes) };
@@ -296,19 +325,21 @@ export function recapPourJoma(
   catalogue: readonly Pick<Article, "id" | "nom" | "nomJoma" | "tailles">[],
   articlesEcartes: ReadonlySet<string>,
 ): RecapJoma {
-  return recapJoma(enNomsJoma(aCommanderChezJoma(commandes), catalogue, articlesEcartes), new Set(), taillesSelonNomJoma(catalogue));
+  return recapJoma(enNomsJoma(resteACommander(commandes), catalogue, articlesEcartes), new Set(), taillesSelonNomJoma(catalogue));
 }
 
-/** Le montant de ce qui part chez Joma : les lignes des commandes recues, sans les articles ecartes. */
+/** Le montant de ce qui part chez Joma : les lignes qui restent a commander, sans les articles ecartes. */
 export function montantPourJoma(commandes: readonly Commande[], articlesEcartes: ReadonlySet<string>): number {
-  return totalDes(aCommanderChezJoma(commandes).flatMap((c) => c.lignes.filter((l) => !articlesEcartes.has(l.article))));
+  return totalDes(resteACommander(commandes).flatMap((c) => c.lignes.filter((l) => !articlesEcartes.has(l.article))));
 }
 
 /**
- * Les commandes que la selection fait vraiment partir : les recues dont au
- * moins une ligne n'est pas ecartee. Une commande dont tout est ecarte reste
- * « recue », pour la prochaine commande Joma.
+ * Les commandes que la selection fait vraiment partir, chacune reduite a ses
+ * lignes qui partent : celles qui restaient a commander, sans les articles
+ * ecartes. Une commande dont tout est ecarte n'y est pas.
  */
 export function commandesPourJoma<T extends Pick<Commande, "statut" | "lignes">>(commandes: readonly T[], articlesEcartes: ReadonlySet<string>): T[] {
-  return aCommanderChezJoma(commandes).filter((c) => c.lignes.some((l) => !articlesEcartes.has(l.article)));
+  return resteACommander(commandes)
+    .map((c) => ({ ...c, lignes: c.lignes.filter((l) => !articlesEcartes.has(l.article)) }))
+    .filter((c) => c.lignes.length > 0);
 }

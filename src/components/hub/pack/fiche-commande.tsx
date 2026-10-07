@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerCommande, supprimerCommande } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
-import { construireLignes, formaterPrix, resumeLigne } from "@/hub/pack/calculs";
+import { construireLignes, formaterPrix, resumeLigne, statutRetabli } from "@/hub/pack/calculs";
 import {
   LIBELLES_STATUT_COMMANDE,
   STATUTS_COMMANDE,
@@ -183,6 +183,7 @@ export default function FicheCommande({
                     {peutEditer && !article ? (
                       <span className="block text-xs text-muted-foreground">Article supprimé du catalogue : la ligne garde son nom, sa référence et son prix.</span>
                     ) : null}
+                    {figee?.commandeJoma ? <span className="block text-xs text-muted-foreground">Déjà partie chez Joma.</span> : null}
                   </span>
                   {peutEditer ? (
                     <Button type="button" variant="hubSecondary" size="sm" aria-label="Retirer la ligne" onClick={() => setLignes((x) => x.filter((y) => y.cle !== l.cle))}>
@@ -203,6 +204,7 @@ export default function FicheCommande({
                     <span className="block text-xs text-muted-foreground tabular-nums">
                       {calculee ? `${l.quantite} × ${formaterPrix(calculee.prixUnitaire)}` : ""}
                     </span>
+                    {figee?.commandeJoma ? <span className="block text-xs text-muted-foreground">Déjà partie chez Joma.</span> : null}
                   </span>
                   <Button type="button" variant="hubSecondary" size="sm" aria-label={`Retirer ${article.nom}`} onClick={() => setLignes((x) => x.filter((y) => y.cle !== l.cle))}>
                     <Trash2 aria-hidden="true" />
@@ -306,8 +308,8 @@ export default function FicheCommande({
               <div>
                 <p className="text-sm font-medium">Annuler ou supprimer</p>
                 <p className="text-xs text-muted-foreground">
-                  Annulée, la commande reste dans la liste, estompée, et sort des totaux ; elle se rétablit, en « Commandée » si elle était déjà
-                  passée chez Joma, en « Reçue » sinon. Supprimée, elle disparaît pour de bon.
+                  Annulée, la commande reste dans la liste, estompée, et sort des totaux ; elle se rétablit, en « Commandée » si tout est déjà
+                  parti chez Joma, en « Reçue » s&apos;il reste à commander. Supprimée, elle disparaît pour de bon.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -317,8 +319,8 @@ export default function FicheCommande({
                     variant="hubSecondary"
                     size="sm"
                     disabled={enCours || !apercu.ok}
-                    // Deja passee chez Joma, elle n'y repart pas : elle revient en « Commandee ».
-                    onClick={() => void enregistrer(commande.commandeeLe ? "ordered" : "received")}
+                    // Ce qui est deja parti chez Joma n'y repart pas : « Commandee » si tout est parti, « Recue » sinon.
+                    onClick={() => void enregistrer(statutRetabli(commande))}
                   >
                     <RotateCcw aria-hidden="true" />
                     Rétablir la commande

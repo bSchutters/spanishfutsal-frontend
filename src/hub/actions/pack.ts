@@ -225,11 +225,12 @@ export async function regenererLienPack(): Promise<Resultat<ReglagesPack>> {
  * Les commandes cochees, passees chez Joma d'un coup. Ce qui part est garde
  * tel quel (collection pack-joma-orders) : le recapitulatif du PDF, avec les
  * memes articles ecartes, pour en retelecharger une vraie copie plus tard.
- * Les commandes recues dont au moins une ligne part passent en « commandee »,
- * avec la date du jour ; une commande dont tout est ecarte reste recue. Le
- * tout d'un seul tenant. Rend les commandes passees.
+ * Chaque ligne qui part retient cette commande Joma ; une commande passe en
+ * « commandee », date du jour, quand plus aucune de ses lignes ne reste a
+ * commander, et reste recue sinon (Bryan, 07/10/2026). Le tout d'un seul
+ * tenant. Rend les commandes touchees, relues.
  */
-export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = []): Promise<Resultat<number[]>> {
+export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = []): Promise<Resultat<Commande[]>> {
   await exigerModule("pack", "edit");
   if (!Array.isArray(ids) || ids.length === 0 || ids.length > 500 || !ids.every((id) => Number.isInteger(id) && id > 0)) {
     return { ok: false, erreur: "Aucune commande valable n'est cochée." };
@@ -239,35 +240,43 @@ export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = 
   const aujourdHui = jourEnDate(versChampDate(new Date()));
   try {
     const [commandes, catalogue] = await Promise.all([chargerCommandes(ids as number[], payload), listerArticles({ actifsSeulement: false }, payload)]);
+    // Chaque commande reduite a ses lignes qui partent maintenant.
     const parties = commandesPourJoma(commandes, articlesEcartes);
     if (parties.length === 0) return { ok: false, erreur: "Rien à commander dans cette sélection. Rechargez la page." };
-    const recap = recapPourJoma(parties, catalogue, articlesEcartes);
 
     await enTransaction(payload, async (req) => {
-      await payload.create({
+      const gardee = await payload.create({
         collection: "pack-joma-orders",
         data: {
           ordered_at: aujourdHui,
           amount: montantPourJoma(parties, articlesEcartes),
-          recap,
-          order_ids: parties.map((c) => c.id),
+          recap: recapPourJoma(parties, catalogue, articlesEcartes),
+          order_ids: parties.map((p) => p.id),
           excluded: [...articlesEcartes],
         },
         depth: 0,
         req,
       });
-      for (const commande of parties) {
+      for (const partie of parties) {
+        const commande = commandes.find((x) => x.id === partie.id);
+        if (!commande) continue;
+        const quiPartent = new Set(partie.lignes.map((l) => l.id));
+        const lignes = commande.lignes.map((l) => (quiPartent.has(l.id) ? { ...l, commandeJoma: Number(gardee.id) } : l));
+        const complete = lignes.every((l) => l.commandeJoma !== null);
         await payload.update({
           collection: "pack-orders",
           id: commande.id,
-          data: { status: "ordered", ...(commande.commandeeLe ? {} : { ordered_at: aujourdHui }) },
+          data: {
+            lines: versLignesCollection(lignes),
+            ...(complete ? { status: "ordered", ...(commande.commandeeLe ? {} : { ordered_at: aujourdHui }) } : {}),
+          },
           depth: 0,
           req,
         });
       }
     });
     revalidatePath("/hub/pack", "layout");
-    return { ok: true, donnees: parties.map((c) => c.id) };
+    return { ok: true, donnees: await chargerCommandes(parties.map((p) => p.id), payload) };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

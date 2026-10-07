@@ -83,6 +83,15 @@ export const PackOrders: CollectionConfig = {
           ],
         },
         { name: 'unit_price', type: 'number', min: 0, label: 'Prix unitaire (EUR)' },
+        {
+          name: 'joma_order_id',
+          type: 'number',
+          label: 'Commande Joma n°',
+          admin: {
+            readOnly: true,
+            description: 'La commande Joma gardee qui a emporte cette ligne. Vide : la ligne reste a commander.',
+          },
+        },
       ],
     },
     { name: 'note', type: 'textarea', label: 'Remarque du joueur' },

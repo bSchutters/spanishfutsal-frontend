@@ -23,6 +23,7 @@ import * as migration_20261006_181503_pack_nom_joma from './20261006_181503_pack
 import * as migration_20261006_223637_pack_tags from './20261006_223637_pack_tags';
 import * as migration_20261006_230941_super_admin from './20261006_230941_super_admin';
 import * as migration_20261007_091431_pack_commandes_joma from './20261007_091431_pack_commandes_joma';
+import * as migration_20261007_125944_pack_ligne_commande_joma from './20261007_125944_pack_ligne_commande_joma';
 
 export const migrations = [
   {
@@ -148,6 +149,11 @@ export const migrations = [
   {
     up: migration_20261007_091431_pack_commandes_joma.up,
     down: migration_20261007_091431_pack_commandes_joma.down,
-    name: '20261007_091431_pack_commandes_joma'
+    name: '20261007_091431_pack_commandes_joma',
+  },
+  {
+    up: migration_20261007_125944_pack_ligne_commande_joma.up,
+    down: migration_20261007_125944_pack_ligne_commande_joma.down,
+    name: '20261007_125944_pack_ligne_commande_joma'
   },
 ];

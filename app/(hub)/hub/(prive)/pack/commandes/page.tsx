@@ -4,7 +4,7 @@ import Link from "next/link";
 import { EnTetePage } from "@/components/hub/mise-en-page";
 import Commandes from "@/components/hub/pack/commandes";
 import { peutEditer } from "@/hub/droits";
-import { chargerReglagesPack, listerArticles, listerCommandes, listerCommandesJoma, montantDesCommandes } from "@/hub/pack/donnees";
+import { chargerReglagesPack, listerArticles, listerCommandes, listerCommandesJoma, montantACommander } from "@/hub/pack/donnees";
 import { LIBELLES_STATUT_COMMANDE, STATUTS_COMMANDE, type StatutCommande } from "@/hub/pack/schema";
 import { exigerModule } from "@/hub/session";
 import { cn } from "@/lib/utils";
@@ -35,8 +35,8 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
     listerCommandes(filtre === "toutes" ? null : filtre),
     listerArticles({ actifsSeulement: false }),
     chargerReglagesPack(),
-    // Les commandes qui attendent Joma comptent pour le minimum, meme sous un autre filtre : leurs totaux suffisent.
-    montantDesCommandes("received"),
+    // Ce qui attend Joma compte pour le minimum, meme sous un autre filtre : les lignes qui restent a commander.
+    montantACommander(),
     // La copie de leur PDF, pour qui peut editer seulement.
     edition ? listerCommandesJoma() : [],
   ]);

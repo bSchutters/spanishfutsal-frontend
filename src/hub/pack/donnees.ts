@@ -3,7 +3,7 @@ import type { Payload, Where } from "payload";
 import { versChampDate } from "@/hub/dates";
 import { getPayloadClient } from "@/lib/payload";
 import { genererJeton } from "@/payload/collections/hub/Feeds";
-import type { CommandeJoma } from "./calculs";
+import { montantPourJoma, type CommandeJoma } from "./calculs";
 import { articleDe, commandeDe, commandeJomaDe } from "./conversions";
 import type { Article, Commande, ReglagesPack, StatutCommande } from "./schema";
 
@@ -91,18 +91,21 @@ export async function compterCommandes(statut: StatutCommande, payload?: Payload
   return totalDocs;
 }
 
-/** Le montant des commandes d'un statut : leurs totaux seuls, sans lignes ni joueurs. */
-export async function montantDesCommandes(statut: StatutCommande, payload?: Payload): Promise<number> {
+/**
+ * Ce qui reste a commander chez Joma, pour le minimum : les lignes des
+ * commandes recues qu'aucune commande Joma n'a encore emportees. Les lignes
+ * seules, sans joueurs ni catalogue.
+ */
+export async function montantACommander(payload?: Payload): Promise<number> {
   const client = payload ?? (await getPayloadClient());
   const { docs } = await client.find({
     collection: "pack-orders",
-    where: { status: { equals: statut } },
-    select: { total: true },
+    where: { status: { equals: "received" } },
+    select: { status: true, lines: true },
     pagination: false,
     depth: 0,
   });
-  // Par les centimes, comme totalDes.
-  return Math.round((docs as Doc[]).reduce((somme, d) => somme + Math.round(Number(d.total ?? 0) * 100), 0)) / 100;
+  return montantPourJoma((docs as Doc[]).map(commandeDe), new Set());
 }
 
 /** Les commandes passees chez Joma, gardees telles quelles, la plus recente en tete. */

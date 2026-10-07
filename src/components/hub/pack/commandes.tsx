@@ -22,10 +22,12 @@ import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import {
   aCommanderChezJoma,
   avancementJoma,
+  enPartieCommandee,
   formaterPrix,
   MINIMUM_JOMA,
   montantPourJoma,
   recapPourJoma,
+  resteACommander,
   totalDes,
   type CommandeJoma,
 } from "@/hub/pack/calculs";
@@ -131,15 +133,16 @@ function PreparationJoma({
   catalogue: Article[];
   ouvert: boolean;
   onFermer: () => void;
-  onPassees: (ids: number[]) => void;
+  onPassees: (commandes: Commande[]) => void;
 }) {
   const [ecartes, setEcartes] = useState<Set<string>>(new Set());
   const [telechargement, setTelechargement] = useState(false);
   const [enCours, lancer] = useTransition();
 
+  // Les articles qui restent a commander : une ligne deja partie chez Joma n'y revient pas.
   const articles = useMemo(() => {
     const compte = new Map<string, number>();
-    for (const c of commandes) for (const l of c.lignes) compte.set(l.article, (compte.get(l.article) ?? 0) + l.quantite);
+    for (const c of resteACommander(commandes)) for (const l of c.lignes) compte.set(l.article, (compte.get(l.article) ?? 0) + l.quantite);
     return [...compte.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr"));
   }, [commandes]);
 
@@ -165,9 +168,20 @@ function PreparationJoma({
     lancer(async () => {
       const r = await passerCommandeesChezJoma(ids, [...ecartes]);
       if (!r.ok) return void toast.error(r.erreur);
-      const passees = r.donnees ?? ids;
-      toast.success(`${pluriel(passees.length, "commande")} passée${passees.length > 1 ? "s" : ""} en « commandée chez Joma ».`);
-      onPassees(passees);
+      const touchees = r.donnees ?? [];
+      const enPartie = touchees.filter((x) => x.statut === "received").length;
+      const completes = touchees.length - enPartie;
+      toast.success(
+        [
+          completes > 0 ? `${pluriel(completes, "commande")} passée${completes > 1 ? "s" : ""} en « commandée chez Joma »` : "",
+          enPartie > 0
+            ? `${pluriel(enPartie, "commande")} en partie : ${enPartie > 1 ? "elles restent « Reçues »" : "elle reste « Reçue »"} pour le reste`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ; ") + ".",
+      );
+      onPassees(touchees);
     });
 
   return (
@@ -356,11 +370,9 @@ export default function Commandes({
     router.refresh();
   };
 
-  const passees = (ids: number[]) => {
-    const aujourdHui = new Date().toISOString();
-    setListe((x) =>
-      x.map((c) => (ids.includes(c.id) ? { ...c, statut: "ordered", commandeeLe: c.commandeeLe ?? aujourdHui.slice(0, 10) } : c)),
-    );
+  // Les commandes relues apres la commande Joma : statut et lignes deja parties.
+  const passees = (touchees: Commande[]) => {
+    setListe((x) => x.map((c) => touchees.find((t) => t.id === c.id) ?? c));
     setSelection(new Set());
     setJoma(false);
     router.refresh();
@@ -420,7 +432,10 @@ export default function Commandes({
                   <span className="shrink-0 text-right">
                     <span className="block text-sm font-semibold tabular-nums">{formaterPrix(c.total)}</span>
                     <span className="block text-[11px] text-muted-foreground">
-                      <PastilleStatut couleur={COULEURS_STATUT_COMMANDE[c.statut]} libelle={LIBELLES_STATUT_COMMANDE[c.statut]} />
+                      <PastilleStatut
+                        couleur={COULEURS_STATUT_COMMANDE[c.statut]}
+                        libelle={enPartieCommandee(c) ? `${LIBELLES_STATUT_COMMANDE[c.statut]}, en partie chez Joma` : LIBELLES_STATUT_COMMANDE[c.statut]}
+                      />
                     </span>
                   </span>
                 </button>

@@ -132,6 +132,7 @@ function ligneDe(l: Doc): LigneCommande {
     numero: texte(l.flock_number),
     nom: texte(l.flock_name),
     prixUnitaire: nombre(l.unit_price),
+    commandeJoma: l.joma_order_id === null || l.joma_order_id === undefined || l.joma_order_id === "" ? null : nombre(l.joma_order_id) || null,
   };
 }
 
@@ -200,5 +201,6 @@ export function versLignesCollection(lignes: readonly LigneCommande[]) {
     flock_number: l.numero,
     flock_name: l.nom,
     unit_price: l.prixUnitaire,
+    joma_order_id: l.commandeJoma,
   }));
 }

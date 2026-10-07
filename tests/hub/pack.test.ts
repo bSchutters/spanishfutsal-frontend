@@ -8,9 +8,12 @@ import {
   dateLimitePassee,
   enNomsJoma,
   commandesPourJoma,
+  enPartieCommandee,
   filtrerParTag,
   montantPourJoma,
   recapPourJoma,
+  resteACommander,
+  statutRetabli,
   tagsDuCatalogue,
   taillesSelonNomJoma,
   prixJoueur,
@@ -20,7 +23,7 @@ import {
   tauxRemise,
   totalDes,
 } from "@/hub/pack/calculs";
-import { articleDe, commandeJomaDe, dispositionDe, tagsDe } from "@/hub/pack/conversions";
+import { articleDe, commandeDe, commandeJomaDe, dispositionDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -157,6 +160,7 @@ describe("construction d'une commande", () => {
           numero: "10",
           nom: "RUBEN",
           prixUnitaire: 42.5,
+          commandeJoma: null,
         },
       ],
     });
@@ -191,6 +195,7 @@ describe("construction d'une commande", () => {
       numero: "",
       nom: "",
       prixUnitaire: 30,
+      commandeJoma: null,
     };
     const tailleChangee = construireLignes([ligne({ id: "l1", taille: "L", quantite: 2 })], CATALOGUE, FLOCAGE, {
       inactifsAdmis: true,
@@ -217,6 +222,7 @@ describe("construction d'une commande", () => {
       numero: "10",
       nom: "RUBEN",
       prixUnitaire: 42.5,
+      commandeJoma: null,
     };
     const options = { inactifsAdmis: true, anciennes: [ancienne] };
     // Ni la couleur verte ni le XXL ne sont plus au catalogue : la commande reste modifiable, annulable, livrable.
@@ -312,6 +318,7 @@ describe("récapitulatif pour Joma", () => {
     numero: "",
     nom: "",
     prixUnitaire: 35,
+    commandeJoma: null,
     ...partiel,
   });
 
@@ -420,6 +427,7 @@ describe("PDF pour Joma", () => {
       numero: "10",
       nom: "RUBEN",
       prixUnitaire: 42.5,
+      commandeJoma: null,
     };
     const flux = await fluxDesPages(await pdfCommandeJoma(recapJoma([{ lignes: [floquee] }]), new Date("2026-10-07T10:00:00Z")));
     expect(flux).toContain(enHexa("Maillot de match"));
@@ -518,6 +526,7 @@ describe("article supprimé", () => {
     numero: "",
     nom: "",
     prixUnitaire: 28,
+    commandeJoma: null,
   };
 
   it("garde la ligne d'une commande avec sa copie, seule la quantité change", () => {
@@ -596,6 +605,7 @@ describe("noms Joma du PDF", () => {
       numero: "",
       nom: "",
       prixUnitaire: 12.8,
+      commandeJoma: null,
     });
     const commande = {
       id: 1,
@@ -641,6 +651,7 @@ describe("noms Joma du PDF", () => {
       numero: "",
       nom: "",
       prixUnitaire: 12.8,
+      commandeJoma: null,
     });
     const commande = {
       id: 1,
@@ -692,6 +703,7 @@ describe("commandes à passer chez Joma", () => {
       numero: "",
       nom: "",
       prixUnitaire,
+      commandeJoma: null,
     });
     const commande = (id: number, statut: "received" | "ordered", lignes: LigneCommande[]) => ({
       id,
@@ -726,6 +738,71 @@ describe("commandes à passer chez Joma", () => {
       pieces: 1,
       totaux: [{ reference: "104263.339", article: "T-SHIRT CHAMPIONSHIP VIII", couleur: "Marine", taille: "L", quantite: 1 }],
     });
+  });
+
+  it("une commande reste reçue tant qu'une ligne reste à commander, et seules ces lignes repartent", () => {
+    const ligneDe = (id: string, article: string, commandeJoma: number | null): LigneCommande => ({
+      id,
+      articleId: 1,
+      varianteId: "marine",
+      article,
+      couleur: "Marine",
+      reference: "104263.339",
+      taille: "L",
+      quantite: 1,
+      numero: "",
+      nom: "",
+      prixUnitaire: 16,
+      commandeJoma,
+    });
+    // Le maillot est parti avec la commande Joma n° 5, les chaussettes avaient ete ecartees.
+    const partielle = {
+      id: 1,
+      joueurId: 3,
+      personne: "Ruben",
+      autreNom: "",
+      telephone: "",
+      email: "",
+      remarque: "",
+      lignes: [ligneDe("a", "Maillot Joueurs", 5), ligneDe("b", "Chaussettes", null)],
+      total: 32,
+      statut: "received" as const,
+      creeLe: "2026-10-07T10:00:00Z",
+      commandeeLe: null,
+    };
+    expect(enPartieCommandee(partielle)).toBe(true);
+    expect(resteACommander([partielle]).map((x) => x.lignes.map((l) => l.id))).toEqual([["b"]]);
+    expect(montantPourJoma([partielle], new Set())).toBe(16);
+    expect(recapPourJoma([partielle], [{ id: 1, nom: "Maillot Joueurs", nomJoma: "", tailles: ["L"] }], new Set()).totaux.map((t) => t.article)).toEqual([
+      "Chaussettes",
+    ]);
+    expect(commandesPourJoma([partielle], new Set(["Chaussettes"]))).toEqual([]);
+
+    // Retablie apres une annulation : recue s'il reste a commander, commandee si tout est parti.
+    expect(statutRetabli(partielle)).toBe("received");
+    expect(statutRetabli({ ...partielle, lignes: partielle.lignes.map((l) => ({ ...l, commandeJoma: 5 })) })).toBe("ordered");
+    // Passee en « commandee » a la main, sans suivi par ligne : elle le redevient.
+    expect(statutRetabli({ ...partielle, commandeeLe: "2026-10-06", lignes: partielle.lignes.map((l) => ({ ...l, commandeJoma: null })) })).toBe("ordered");
+    expect(statutRetabli({ ...partielle, lignes: partielle.lignes.map((l) => ({ ...l, commandeJoma: null })) })).toBe("received");
+  });
+
+  it("une ligne retient sa commande Joma, en base comme une fois corrigée par le club", () => {
+    const relue = commandeDe({
+      id: 1,
+      status: "received",
+      lines: [
+        { id: "a", article: 1, variant_id: "bleu", article_name: "Maillot de match", size: "M", quantity: 1, unit_price: 35, joma_order_id: 5 },
+        { id: "b", article: 1, variant_id: "bleu", article_name: "Maillot de match", size: "L", quantity: 1, unit_price: 35, joma_order_id: null },
+      ],
+    });
+    expect(relue.lignes.map((l) => l.commandeJoma)).toEqual([5, null]);
+    expect(versLignesCollection(relue.lignes).map((l) => l.joma_order_id)).toEqual([5, null]);
+    // Corrigee (une autre taille), la ligne deja partie ne repart pas d'elle-meme ; une ligne nouvelle reste a commander.
+    const r = construireLignes([ligne({ id: "a", taille: "L" }), ligne({ taille: "S" })], CATALOGUE, FLOCAGE, {
+      inactifsAdmis: true,
+      anciennes: relue.lignes,
+    });
+    expect(r.ok && r.lignes.map((l) => l.commandeJoma)).toEqual([5, null]);
   });
 
   it("relit une commande Joma gardée telle quelle, sans ce qui serait illisible", () => {
