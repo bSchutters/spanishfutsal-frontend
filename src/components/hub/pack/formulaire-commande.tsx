@@ -8,18 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
 import { avancementJoma, construireLignes, filtrerParTag, formaterPrix, MINIMUM_JOMA, prixUnitaire, tagsDuCatalogue, totalDes } from "@/hub/pack/calculs";
-import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PrixFlocage } from "@/hub/pack/schema";
+import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PersonnePack, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
 import { tanker } from "./police-tanker";
 
-type Personne = { id: number; nom: string };
 type LignePanier = LigneSaisie & { cle: string };
 
 let compteur = 0;
@@ -534,13 +533,14 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
 export default function FormulaireCommande({
   jeton,
   articles,
-  effectif,
+  personnes,
   flocage,
   montantGroupe,
 }: {
   jeton: string;
   articles: Article[];
-  effectif: Personne[];
+  /** La liste « Qui commande ? » reglee dans le Hub : l'effectif, puis les noms ajoutes. */
+  personnes: PersonnePack[];
   flocage: PrixFlocage;
   /** Le montant des commandes recues, qui attendent la commande groupee chez Joma. */
   montantGroupe: number;
@@ -615,7 +615,8 @@ export default function FormulaireCommande({
     }
     setEnCours(true);
     const r = await envoyerCommande(jeton, {
-      joueurId: Number(personne),
+      joueurId: null,
+      personne,
       autreNom: "",
       telephone: "",
       email: "",
@@ -747,14 +748,26 @@ export default function FormulaireCommande({
                   <SelectValue placeholder="Choisissez votre nom…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {effectif.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {p.nom}
-                    </SelectItem>
-                  ))}
+                  {[
+                    { libelle: "L'effectif", liste: personnes.filter((p) => p.origine === "effectif") },
+                    { libelle: "Les autres", liste: personnes.filter((p) => p.origine === "ajout") },
+                  ]
+                    .filter((groupe) => groupe.liste.length > 0)
+                    .map((groupe, rang, groupes) => (
+                      <SelectGroup key={groupe.libelle}>
+                        {/* Les titres n'apparaissent que s'il y a deux groupes. */}
+                        {groupes.length > 1 ? <SelectLabel>{groupe.libelle}</SelectLabel> : null}
+                        {groupe.liste.map((p) => (
+                          <SelectItem key={p.cle} value={p.cle}>
+                            {p.nom}
+                          </SelectItem>
+                        ))}
+                        {rang < groupes.length - 1 ? <SelectSeparator /> : null}
+                      </SelectGroup>
+                    ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">Votre nom dans l&apos;effectif. Pour vos proches, commandez à votre nom.</p>
+              <p className="text-xs text-muted-foreground">Votre nom dans la liste. Pour vos proches, commandez à votre nom.</p>
             </div>
 
             {panier.length === 0 ? (

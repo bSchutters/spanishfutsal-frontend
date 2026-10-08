@@ -210,6 +210,18 @@ export type Commande = {
   payeeLe: string | null;
 };
 
+/**
+ * Une personne de la liste « Qui commande ? » : un joueur de l'effectif
+ * actif du site (cle « j:12 ») ou un nom ajoute dans le Hub (cle « a:3f9c1e2a »).
+ */
+export type PersonnePack = { cle: string; nom: string; origine: "effectif" | "ajout" };
+
+/** La liste « Qui commande ? », et a part les joueurs de l'effectif qui en sont retires. */
+export type PersonnesPack = { liste: PersonnePack[]; retires: PersonnePack[] };
+
+/** Un nom ajoute a la liste : 2 a 60 caracteres. */
+export const NOM_PERSONNE_MAX = 60;
+
 /** Le filtre des paiements de la page Commandes : celles a payer, ou celles payees. */
 export const FILTRES_PAIEMENT = ["a-payer", "payees"] as const;
 export type FiltrePaiement = (typeof FILTRES_PAIEMENT)[number];
@@ -260,7 +272,9 @@ const emailOuVide = z
 /** La commande envoyee depuis la page des joueurs. */
 export const schemaCommandeJoueur = z
   .object({
+    // Une page ouverte avant le 08/10/2026 envoie encore l'identifiant du joueur ; depuis, la cle de la personne.
     joueurId: z.nullable(identifiant),
+    personne: z.optional(z.string().check(z.maxLength(40))),
     autreNom: texteLibre(80, "Le nom est trop long."),
     telephone: texteLibre(30, "Le téléphone est trop long."),
     email: emailOuVide,
@@ -268,8 +282,8 @@ export const schemaCommandeJoueur = z
     lignes: z.array(schemaLigneSaisie).check(z.minLength(1, "Ajoutez au moins un article."), z.maxLength(40, "Quarante lignes au plus.")),
   })
   .check(
-    // Plus d'« Autre » (06/10/2026) : un joueur qui commande pour ses proches le fait a son nom.
-    z.refine((s) => s.joueurId !== null, {
+    // Plus d'« Autre » (06/10/2026) : un nom de la liste, que le club regle dans le Hub.
+    z.refine((s) => s.joueurId !== null || (s.personne ?? "") !== "", {
       message: "Choisissez votre nom dans la liste.",
       path: ["joueurId"],
     }),
