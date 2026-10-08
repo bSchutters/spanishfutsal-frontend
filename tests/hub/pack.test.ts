@@ -962,16 +962,16 @@ describe("qui peut commander", () => {
     { id: 3, nom: "Hugo Zorn" },
   ];
 
-  it("garde l'effectif dans son ordre, sans les joueurs retirés, puis les noms ajoutés par ordre alphabétique", () => {
+  it("met les noms ajoutés en tête, par ordre alphabétique, puis l'effectif dans son ordre, sans les joueurs retirés", () => {
     const { liste, retires } = personnesPack(effectif, [7], [
       { id: "b2b2b2b2", nom: "Sponsor Wabee" },
       { id: "a1a1a1a1", nom: "Papa de Ruben" },
     ]);
     expect(liste.map((p) => [p.cle, p.nom, p.origine])).toEqual([
-      ["j:12", "Ruben Alvarez", "effectif"],
-      ["j:3", "Hugo Zorn", "effectif"],
       ["a:a1a1a1a1", "Papa de Ruben", "ajout"],
       ["a:b2b2b2b2", "Sponsor Wabee", "ajout"],
+      ["j:12", "Ruben Alvarez", "effectif"],
+      ["j:3", "Hugo Zorn", "effectif"],
     ]);
     expect(retires).toEqual([{ cle: "j:7", nom: "Bryan Schutters", origine: "effectif" }]);
   });

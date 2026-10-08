@@ -239,9 +239,9 @@ export function retiresDe(v: unknown): number[] {
 }
 
 /**
- * La liste « Qui commande ? » : l'effectif actif du site, dans son ordre,
- * moins les joueurs retires, puis les noms ajoutes, par ordre alphabetique.
- * A part, les joueurs retires, pour les remettre.
+ * La liste « Qui commande ? » : les noms ajoutes, par ordre alphabetique, en
+ * tete (Bryan, 08/10/2026), puis l'effectif actif du site, dans son ordre,
+ * moins les joueurs retires. A part, les joueurs retires, pour les remettre.
  */
 export function personnesPack(
   effectif: readonly { id: number; nom: string }[],
@@ -252,10 +252,10 @@ export function personnesPack(
   const joueur = (p: { id: number; nom: string }): PersonnePack => ({ cle: `j:${p.id}`, nom: p.nom, origine: "effectif" });
   return {
     liste: [
-      ...effectif.filter((p) => !exclus.has(p.id)).map(joueur),
       ...[...ajouts]
         .sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
         .map((a): PersonnePack => ({ cle: `a:${a.id}`, nom: a.nom, origine: "ajout" })),
+      ...effectif.filter((p) => !exclus.has(p.id)).map(joueur),
     ],
     retires: effectif.filter((p) => exclus.has(p.id)).map(joueur),
   };

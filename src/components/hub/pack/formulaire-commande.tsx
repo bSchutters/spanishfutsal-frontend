@@ -539,7 +539,7 @@ export default function FormulaireCommande({
 }: {
   jeton: string;
   articles: Article[];
-  /** La liste « Qui commande ? » reglee dans le Hub : l'effectif, puis les noms ajoutes. */
+  /** La liste « Qui commande ? » reglee dans le Hub : les noms ajoutes, puis l'effectif. */
   personnes: PersonnePack[];
   flocage: PrixFlocage;
   /** Le montant des commandes recues, qui attendent la commande groupee chez Joma. */
@@ -749,8 +749,8 @@ export default function FormulaireCommande({
                 </SelectTrigger>
                 <SelectContent>
                   {[
+                    { libelle: "Hors effectif", liste: personnes.filter((p) => p.origine === "ajout") },
                     { libelle: "L'effectif", liste: personnes.filter((p) => p.origine === "effectif") },
-                    { libelle: "Les autres", liste: personnes.filter((p) => p.origine === "ajout") },
                   ]
                     .filter((groupe) => groupe.liste.length > 0)
                     .map((groupe, rang, groupes) => (
