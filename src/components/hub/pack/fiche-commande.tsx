@@ -14,6 +14,7 @@ import { enregistrerCommande, enregistrerPaiement, supprimerCommande } from "@/h
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import { construireLignes, formaterPrix, resumeLigne, statutRetabli } from "@/hub/pack/calculs";
 import {
+  COULEURS_STATUT_COMMANDE,
   LIBELLES_STATUT_COMMANDE,
   STATUTS_COMMANDE,
   type Article,
@@ -151,7 +152,7 @@ export default function FicheCommande({
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-sm font-medium">
-              {commande.payeeLe ? <Check className="size-4 text-[#7bd389]" aria-hidden="true" /> : null}
+              {commande.payeeLe ? <Check className="size-4" style={{ color: COULEURS_STATUT_COMMANDE.delivered }} aria-hidden="true" /> : null}
               {commande.payeeLe ? `Payée le ${formaterDateCourte(commande.payeeLe)}` : commande.statut === "cancelled" ? "Rien à payer" : "À payer"}
             </p>
             <p className="text-xs text-muted-foreground">

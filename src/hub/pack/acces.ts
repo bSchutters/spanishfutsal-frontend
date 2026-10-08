@@ -34,6 +34,16 @@ export function motDePasseCorrect(saisi: string, attendu: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+/**
+ * Le premier jeton du lien, tire du secret du serveur plutot qu'au hasard :
+ * le meme a chaque calcul, imprevisible sans le secret. Deux premiers
+ * chargements simultanes ecrivent donc le meme, et aucun lien deja montre ne
+ * meurt. « Nouveau lien » en tire ensuite un au hasard.
+ */
+export function jetonInitial(secret: string): string {
+  return createHmac("sha256", secret).update("pack:lien:initial").digest("base64url");
+}
+
 /** Un jeton de lien bien forme, avant toute lecture en base. */
 export function jetonBienForme(jeton: string): boolean {
   return /^[A-Za-z0-9_-]{20,}$/.test(jeton);

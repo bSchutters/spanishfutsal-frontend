@@ -1,3 +1,5 @@
+import type { Where } from "payload";
+
 import { versChampDate } from "@/hub/dates";
 import { prixJoueur, type CommandeJoma, type TotalJoma } from "./calculs";
 import {
@@ -11,6 +13,7 @@ import {
   VERSIONS_LOGO,
   type CoteDisposition,
   type DispositionFlocage,
+  type FiltrePaiement,
   type ModeRemise,
   type Photo,
   type StatutCommande,
@@ -186,6 +189,31 @@ export function commandeJomaDe(doc: Doc): CommandeJoma {
     commandeIds: entiers(doc.order_ids),
     ecartes: textes(doc.excluded),
   };
+}
+
+/**
+ * Le filtre des paiements, dans la forme d'une requete : a payer (ni payee,
+ * ni annulee), payees, ou rien sans filtre.
+ */
+export function wherePaiement(filtre: FiltrePaiement | null): Where | null {
+  if (filtre === "a-payer") return { and: [{ status: { not_equals: "cancelled" } }, { paid_at: { exists: false } }] };
+  if (filtre === "payees") return { paid_at: { exists: true } };
+  return null;
+}
+
+/**
+ * Les lignes d'une commande, telles que rangees, une fois la commande Joma
+ * `commandeJoma` supprimee : celles qu'elle avait emportees redeviennent a
+ * commander. `liberees` dit si une ligne a change.
+ */
+export function libererLignes(lignes: unknown, commandeJoma: number): { lignes: Doc[]; liberees: boolean } {
+  let liberees = false;
+  const suite = (Array.isArray(lignes) ? (lignes as Doc[]) : []).map((l) => {
+    if (l.joma_order_id === null || l.joma_order_id === undefined || Number(l.joma_order_id) !== commandeJoma) return l;
+    liberees = true;
+    return { ...l, joma_order_id: null };
+  });
+  return { lignes: suite, liberees };
 }
 
 /** Les lignes dans la forme que la collection range. */

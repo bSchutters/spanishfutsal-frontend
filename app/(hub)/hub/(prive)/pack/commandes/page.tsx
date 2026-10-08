@@ -4,7 +4,6 @@ import Link from "next/link";
 import { EnTetePage } from "@/components/hub/mise-en-page";
 import Commandes from "@/components/hub/pack/commandes";
 import { peutEditer } from "@/hub/droits";
-import { selonPaiement } from "@/hub/pack/calculs";
 import { chargerReglagesPack, listerArticles, listerCommandes, listerCommandesJoma, montantACommander } from "@/hub/pack/donnees";
 import {
   FILTRES_PAIEMENT,
@@ -58,7 +57,7 @@ export default async function PageCommandes({ searchParams }: { searchParams: Pr
   const edition = peutEditer(user, "pack");
 
   const [commandes, catalogue, reglages, montantRecues, commandesJoma] = await Promise.all([
-    listerCommandes(filtre === "toutes" ? null : filtre).then((liste) => selonPaiement(liste, filtrePaiement)),
+    listerCommandes(filtre === "toutes" ? null : filtre, undefined, { paiement: filtrePaiement }),
     listerArticles({ actifsSeulement: false }),
     chargerReglagesPack(),
     // Ce qui attend Joma compte pour le minimum, meme sous un autre filtre : les lignes qui restent a commander.

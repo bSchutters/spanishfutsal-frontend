@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { accesValide, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
+import { accesValide, jetonBienForme, jetonInitial, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
 import {
   aCommanderChezJoma,
   construireLignes,
   avancementJoma,
   bilanPaiements,
-  estAPayer,
-  selonPaiement,
   dateLimitePassee,
   enNomsJoma,
   commandesPourJoma,
@@ -26,7 +24,16 @@ import {
   tauxRemise,
   totalDes,
 } from "@/hub/pack/calculs";
-import { articleDe, commandeDe, commandeJomaDe, dispositionDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
+import {
+  articleDe,
+  commandeDe,
+  commandeJomaDe,
+  dispositionDe,
+  libererLignes,
+  tagsDe,
+  versLignesCollection,
+  wherePaiement,
+} from "@/hub/pack/conversions";
 import {
   COULEURS_FLOCAGE_DEFAUT,
   DISPOSITION_FLOCAGE_DEFAUT,
@@ -882,11 +889,10 @@ describe("paiements", () => {
     c(5, "cancelled", "2026-10-02", 25),
   ];
 
-  it("ne demande rien à une commande annulée, et suit les autres jusqu'au virement", () => {
-    expect(commandes.filter(estAPayer).map((x) => x.id)).toEqual([1, 3]);
-    expect(selonPaiement(commandes, "a-payer").map((x) => x.id)).toEqual([1, 3]);
-    expect(selonPaiement(commandes, "payees").map((x) => x.id)).toEqual([2, 5]);
-    expect(selonPaiement(commandes, null)).toHaveLength(5);
+  it("cherche en base les commandes à payer, ni payées ni annulées, ou celles payées", () => {
+    expect(wherePaiement("a-payer")).toEqual({ and: [{ status: { not_equals: "cancelled" } }, { paid_at: { exists: false } }] });
+    expect(wherePaiement("payees")).toEqual({ paid_at: { exists: true } });
+    expect(wherePaiement(null)).toBeNull();
   });
 
   it("fait le compte de ce qui est payé et de ce qui reste, annulées à part", () => {
@@ -896,6 +902,57 @@ describe("paiements", () => {
   it("lit le jour du paiement, vide tant qu'il manque", () => {
     expect(commandeDe({ id: 1, status: "ordered", paid_at: "2026-10-08T12:00:00.000Z", lines: [] }).payeeLe).toBe("2026-10-08");
     expect(commandeDe({ id: 2, status: "received", paid_at: null, lines: [] }).payeeLe).toBeNull();
+  });
+});
+
+describe("commande Joma supprimée", () => {
+  it("rend à commander les lignes qu'elle avait emportées, et elles seules", () => {
+    const lignes = [
+      { id: "a", article_name: "Maillot", joma_order_id: 5 },
+      { id: "b", article_name: "Short", joma_order_id: 4 },
+      { id: "c", article_name: "Sac", joma_order_id: null },
+    ];
+    expect(libererLignes(lignes, 5)).toEqual({
+      liberees: true,
+      lignes: [
+        { id: "a", article_name: "Maillot", joma_order_id: null },
+        { id: "b", article_name: "Short", joma_order_id: 4 },
+        { id: "c", article_name: "Sac", joma_order_id: null },
+      ],
+    });
+    expect(libererLignes(lignes, 9).liberees).toBe(false);
+    expect(libererLignes(undefined, 5)).toEqual({ lignes: [], liberees: false });
+  });
+
+  it("remet en « reçue » une commande qu'elle avait passée, dans la même transaction", async () => {
+    const { PackJomaOrders } = await import("@/payload/collections/hub/PackJomaOrders");
+    const ecritures: Array<{ id: unknown; data: Record<string, unknown>; req: unknown }> = [];
+    const req = {
+      payload: {
+        find: async () => ({
+          docs: [
+            { id: 7, status: "ordered", lines: [{ id: "a", joma_order_id: 5 }] },
+            { id: 8, status: "received", lines: [{ id: "b", joma_order_id: 4 }] },
+          ],
+        }),
+        update: async (args: { id: unknown; data: Record<string, unknown>; req: unknown }) => {
+          ecritures.push(args);
+        },
+      },
+    };
+    const accroche = PackJomaOrders.hooks?.afterDelete?.[0];
+    await accroche?.({ doc: { id: 5, order_ids: [7, 8] }, id: 5, req } as never);
+    expect(ecritures).toEqual([
+      { collection: "pack-orders", id: 7, data: { lines: [{ id: "a", joma_order_id: null }], status: "received", ordered_at: null }, depth: 0, req },
+    ]);
+  });
+});
+
+describe("premier lien de la page des joueurs", () => {
+  it("vient du secret du serveur : le même à chaque fois, bien formé, différent d'un secret à l'autre", () => {
+    expect(jetonInitial("secret-a")).toBe(jetonInitial("secret-a"));
+    expect(jetonBienForme(jetonInitial("secret-a"))).toBe(true);
+    expect(jetonInitial("secret-a")).not.toBe(jetonInitial("secret-b"));
   });
 });
 

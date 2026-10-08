@@ -1,11 +1,12 @@
-import type { Payload, Where } from "payload";
+import type { Payload, PayloadRequest, Where } from "payload";
 
 import { versChampDate } from "@/hub/dates";
 import { getPayloadClient } from "@/lib/payload";
 import { genererJeton } from "@/payload/collections/hub/Feeds";
+import { jetonInitial } from "./acces";
 import { montantPourJoma, type CommandeJoma } from "./calculs";
-import { articleDe, commandeDe, commandeJomaDe } from "./conversions";
-import type { Article, Commande, ReglagesPack, StatutCommande } from "./schema";
+import { articleDe, commandeDe, commandeJomaDe, wherePaiement } from "./conversions";
+import type { Article, Commande, FiltrePaiement, ReglagesPack, StatutCommande } from "./schema";
 
 /**
  * La lecture des donnees du Pack, en systeme : chaque page qui s'en sert a
@@ -52,13 +53,16 @@ export async function chargerArticle(id: number, payload?: Payload): Promise<Art
 
 /**
  * Les reglages, avec un lien toujours pret : au premier passage, le jeton
- * n'existe pas encore et il est tire ici.
+ * n'existe pas encore et il est pose ici.
  */
 export async function chargerReglagesPack(payload?: Payload): Promise<ReglagesPack> {
   const client = payload ?? (await getPayloadClient());
   let doc = (await client.findGlobal({ slug: "pack-settings", depth: 0 })) as Record<string, unknown>;
   if (typeof doc.token !== "string" || doc.token === "") {
-    doc = (await client.updateGlobal({ slug: "pack-settings", data: { token: genererJeton() }, depth: 0 })) as Record<
+    // Le premier jeton vient du secret : deux premiers chargements simultanes ecrivent le meme.
+    const secret = process.env.PAYLOAD_SECRET;
+    const token = secret ? jetonInitial(secret) : genererJeton();
+    doc = (await client.updateGlobal({ slug: "pack-settings", data: { token }, depth: 0 })) as Record<
       string,
       unknown
     >;
@@ -76,10 +80,15 @@ export async function chargerReglagesPack(payload?: Payload): Promise<ReglagesPa
   };
 }
 
-/** Les commandes, les plus recentes en tete, filtrees par statut si on le demande. */
-export async function listerCommandes(statut?: StatutCommande | null, payload?: Payload): Promise<Commande[]> {
+/** Les commandes, les plus recentes en tete, filtrees par statut et par paiement si on le demande. */
+export async function listerCommandes(
+  statut?: StatutCommande | null,
+  payload?: Payload,
+  { paiement = null }: { paiement?: FiltrePaiement | null } = {},
+): Promise<Commande[]> {
   const client = payload ?? (await getPayloadClient());
-  const where: Where | undefined = statut ? { status: { equals: statut } } : undefined;
+  const conditions = [statut ? { status: { equals: statut } } : null, wherePaiement(paiement)].filter((c): c is Where => c !== null);
+  const where: Where | undefined = conditions.length === 0 ? undefined : conditions.length === 1 ? conditions[0] : { and: conditions };
   const { docs } = await client.find({ collection: "pack-orders", where, sort: "-createdAt", limit: 1000, depth: 1 });
   return (docs as Doc[]).map(commandeDe);
 }
@@ -94,10 +103,7 @@ export async function compterCommandes(statut: StatutCommande, payload?: Payload
 /** Le nombre de commandes a payer : ni payees, ni annulees. */
 export async function compterAPayer(payload?: Payload): Promise<number> {
   const client = payload ?? (await getPayloadClient());
-  const { totalDocs } = await client.count({
-    collection: "pack-orders",
-    where: { and: [{ status: { not_equals: "cancelled" } }, { paid_at: { exists: false } }] },
-  });
+  const { totalDocs } = await client.count({ collection: "pack-orders", where: wherePaiement("a-payer") ?? undefined });
   return totalDocs;
 }
 
@@ -134,8 +140,11 @@ export async function chargerCommandeJoma(id: number, payload?: Payload): Promis
   }
 }
 
-/** Les commandes demandees par identifiant, dans l'ordre de reception. */
-export async function chargerCommandes(ids: readonly number[], payload?: Payload): Promise<Commande[]> {
+/**
+ * Les commandes demandees par identifiant, dans l'ordre de reception. Avec
+ * `req`, lues dans la transaction qu'il porte.
+ */
+export async function chargerCommandes(ids: readonly number[], payload?: Payload, req?: PayloadRequest): Promise<Commande[]> {
   if (ids.length === 0) return [];
   const client = payload ?? (await getPayloadClient());
   const { docs } = await client.find({
@@ -144,6 +153,7 @@ export async function chargerCommandes(ids: readonly number[], payload?: Payload
     sort: "createdAt",
     limit: ids.length,
     depth: 1,
+    ...(req ? { req } : {}),
   });
   return (docs as Doc[]).map(commandeDe);
 }

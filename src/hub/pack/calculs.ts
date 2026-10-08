@@ -1,4 +1,4 @@
-import type { Article, Commande, FiltrePaiement, LigneCommande, LigneSaisie, PrixFlocage, RemiseArticle } from "./schema";
+import type { Article, Commande, LigneCommande, LigneSaisie, PrixFlocage, RemiseArticle } from "./schema";
 
 /**
  * Les calculs du Pack : le prix d'une ligne, la commande construite depuis
@@ -241,21 +241,9 @@ export function construireLignes(
 }
 
 /**
- * Une commande a payer : ni payee, ni annulee. Le club suit les virements
- * dans le Hub, plutot que dans un tableur a cote (Bryan, 08/10/2026).
+ * Ce qui est paye et ce qui reste a payer, annulees mises a part. Le club
+ * suit les virements dans le Hub, plutot que dans un tableur (Bryan, 08/10/2026).
  */
-export function estAPayer(commande: Pick<Commande, "statut" | "payeeLe">): boolean {
-  return commande.statut !== "cancelled" && commande.payeeLe === null;
-}
-
-/** Les commandes selon leur paiement : a payer, payees, ou toutes sans filtre. */
-export function selonPaiement<T extends Pick<Commande, "statut" | "payeeLe">>(commandes: readonly T[], filtre: FiltrePaiement | null): T[] {
-  if (filtre === "a-payer") return commandes.filter(estAPayer);
-  if (filtre === "payees") return commandes.filter((c) => c.payeeLe !== null);
-  return [...commandes];
-}
-
-/** Ce qui est paye et ce qui reste a payer, annulees mises a part. */
 export function bilanPaiements(commandes: readonly Pick<Commande, "statut" | "payeeLe" | "total">[]): { paye: number; aPayer: number } {
   const actives = commandes.filter((c) => c.statut !== "cancelled");
   const somme = (liste: typeof actives) => enEuros(liste.reduce((n, c) => n + enCentimes(c.total), 0));

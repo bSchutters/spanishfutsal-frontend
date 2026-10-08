@@ -243,7 +243,7 @@ function PreparationJoma({
               <li key={[t.reference, t.article, t.couleur, t.taille].join("|")} className="flex items-center gap-2 px-3 py-1.5">
                 <span className="w-24 shrink-0 truncate font-mono text-muted-foreground">{t.reference || "sans réf."}</span>
                 <span className="min-w-0 flex-1 break-words">{[t.article, t.couleur].filter(Boolean).join(" ")}</span>
-                <span className="shrink-0">{t.taille}</span>
+                <span className="shrink-0">{t.taille || "-"}</span>
                 <span className="w-8 shrink-0 text-right font-semibold tabular-nums">{t.quantite}</span>
               </li>
             ))}

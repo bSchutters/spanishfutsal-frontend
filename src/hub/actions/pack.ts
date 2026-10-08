@@ -239,12 +239,16 @@ export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = 
   const payload = await getPayloadClient();
   const aujourdHui = jourEnDate(versChampDate(new Date()));
   try {
-    const [commandes, catalogue] = await Promise.all([chargerCommandes(ids as number[], payload), listerArticles({ actifsSeulement: false }, payload)]);
-    // Chaque commande reduite a ses lignes qui partent maintenant.
-    const parties = commandesPourJoma(commandes, articlesEcartes);
-    if (parties.length === 0) return { ok: false, erreur: "Rien à commander dans cette sélection. Rechargez la page." };
+    const catalogue = await listerArticles({ actifsSeulement: false }, payload);
+    const passees = await enTransaction(payload, async (req) => {
+      // Lues dans la transaction, juste avant d'ecrire : une correction enregistree
+      // entre-temps n'est pas ecrasee, et une ligne deja partie (un second clic, une
+      // autre personne) ne repart pas.
+      const commandes = await chargerCommandes(ids as number[], payload, req);
+      // Chaque commande reduite a ses lignes qui partent maintenant.
+      const parties = commandesPourJoma(commandes, articlesEcartes);
+      if (parties.length === 0) return null;
 
-    await enTransaction(payload, async (req) => {
       const gardee = await payload.create({
         collection: "pack-joma-orders",
         data: {
@@ -274,9 +278,11 @@ export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = 
           req,
         });
       }
+      return parties.map((p) => p.id);
     });
+    if (!passees) return { ok: false, erreur: "Rien à commander dans cette sélection. Rechargez la page." };
     revalidatePath("/hub/pack", "layout");
-    return { ok: true, donnees: await chargerCommandes(parties.map((p) => p.id), payload) };
+    return { ok: true, donnees: await chargerCommandes(passees, payload) };
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }

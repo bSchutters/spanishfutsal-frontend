@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { editionModule, lectureModule } from '@/hub/droits'
+import { libererLignes } from '@/hub/pack/conversions'
 import { adminHub } from './partage'
 
 /**
@@ -11,6 +12,9 @@ import { adminHub } from './partage'
  * l'identique, quoi qu'il arrive ensuite au catalogue ou aux commandes.
  *
  * Rien ne s'y modifie : une copie qui changerait ne serait plus une copie.
+ * La supprimer annule la commande Joma pour le Hub : les lignes qu'elle avait
+ * emportees redeviennent a commander, et une commande passee par elle en
+ * « commandee » revient en « recue ».
  */
 export const PackJomaOrders: CollectionConfig = {
   slug: 'pack-joma-orders',
@@ -27,6 +31,27 @@ export const PackJomaOrders: CollectionConfig = {
     delete: editionModule('pack'),
   },
   defaultSort: '-createdAt',
+  hooks: {
+    afterDelete: [
+      async ({ doc, id, req }) => {
+        const ids = Array.isArray(doc?.order_ids) ? (doc.order_ids as unknown[]).filter((n): n is number => Number.isInteger(n)) : []
+        if (ids.length === 0) return
+        // Dans la meme transaction que la suppression : tout passe, ou rien.
+        const { docs } = await req.payload.find({ collection: 'pack-orders', where: { id: { in: ids } }, pagination: false, depth: 0, req })
+        for (const commande of docs) {
+          const { lignes, liberees } = libererLignes(commande.lines, Number(id))
+          if (!liberees) continue
+          await req.payload.update({
+            collection: 'pack-orders',
+            id: commande.id,
+            data: { lines: lignes, ...(commande.status === 'ordered' ? { status: 'received', ordered_at: null } : {}) },
+            depth: 0,
+            req,
+          })
+        }
+      },
+    ],
+  },
   fields: [
     {
       name: 'ordered_at',
