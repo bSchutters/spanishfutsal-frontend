@@ -179,6 +179,36 @@ describe("construction d'une commande", () => {
     ).toBe(false);
   });
 
+  it("commande un article sans taille sans en choisir, et en demande une aux autres", () => {
+    const gourde: Article = { ...sac, id: 3, nom: "Gourde", tailles: [], actif: true };
+    const r = construireLignes([ligne({ articleId: 3, varianteId: "noir", taille: "" })], [maillot, gourde], FLOCAGE, { inactifsAdmis: false });
+    expect(r.ok && r.lignes[0].taille).toBe("");
+    // Une taille restee d'avant, quand l'article avait encore des tailles, ne compte plus.
+    const ancienne = construireLignes([ligne({ articleId: 3, varianteId: "noir", taille: "Unique" })], [maillot, gourde], FLOCAGE, { inactifsAdmis: false });
+    expect(ancienne.ok && ancienne.lignes[0].taille).toBe("");
+    const sansChoix = construireLignes([ligne({ taille: "" })], CATALOGUE, FLOCAGE, { inactifsAdmis: false });
+    expect(sansChoix).toEqual({ ok: false, erreur: "Maillot de match : choisissez une taille." });
+  });
+
+  it("enregistre un article sans aucune taille", () => {
+    const saisie = {
+      id: null,
+      nom: "Sac de sport",
+      reference: "400486",
+      description: "",
+      prixCatalogue: 19.9,
+      modeRemise: "none" as const,
+      remiseParticuliere: null,
+      tailles: [],
+      floquable: false,
+      dispositionFlocage: DISPOSITION_FLOCAGE_DEFAUT,
+      actif: true,
+      variantes: [{ id: null, couleur: "", codeCouleur: "100", photoIds: [], photoDosId: null, couleursFlocage: COULEURS_FLOCAGE_DEFAUT }],
+    };
+    expect(schemaArticle.safeParse(saisie).success).toBe(true);
+    expect(articleDe({ id: 3, name: "Sac de sport", price: 19.9, sizes: [], variants: [] }).tailles).toEqual([]);
+  });
+
   it("n'accepte un article retiré que depuis le Hub", () => {
     const sacSaisi = ligne({ articleId: 2, varianteId: "noir", taille: "Unique" });
     expect(construireLignes([sacSaisi], CATALOGUE, FLOCAGE, { inactifsAdmis: false }).ok).toBe(false);

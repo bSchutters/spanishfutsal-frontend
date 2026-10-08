@@ -146,6 +146,7 @@ export type Article = {
   remise: RemiseArticle;
   /** Le prix que paie le joueur, calcule depuis le prix catalogue et la remise. */
   prix: number;
+  /** Les tailles proposees, dans l'ordre ; vide, l'article se commande sans taille (un sac, une gourde). */
   tailles: string[];
   /** Des mots pour ranger l'article, « Maillots », « Lifestyle » : les joueurs filtrent la page par tag. */
   tags: string[];
@@ -238,7 +239,8 @@ export const schemaLigneSaisie = z.object({
   // Nul pour une ligne deja enregistree dont l'article a ete supprime depuis.
   articleId: z.nullable(identifiant),
   varianteId: z.string(),
-  taille: obligatoire(20, "La taille"),
+  // Vide pour un article sans taille ; construireLignes verifie la taille face au catalogue.
+  taille: texteLibre(20, "La taille : 20 caractères au plus."),
   quantite: z.number().check(z.int(), z.gte(1, "Au moins une pièce."), z.lte(20, "Vingt pièces au plus par ligne.")),
   numero: z
     .string()
@@ -312,7 +314,8 @@ export const schemaArticle = z
     remiseParticuliere: z.nullable(pourcentage("La remise particulière")),
     tailles: z
       .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille : 20 caractères au plus.")))
-      .check(z.minLength(1, "Indiquez au moins une taille."), z.maxLength(40, "Quarante tailles au plus.")),
+      // Aucune taille : un article sans taille.
+      .check(z.maxLength(40, "Quarante tailles au plus.")),
     // Absents d'une fiche ouverte avant leur arrivee (07/10/2026) : aucun tag.
     tags: z.optional(
       z

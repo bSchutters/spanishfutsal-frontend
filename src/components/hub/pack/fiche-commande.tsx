@@ -22,6 +22,7 @@ import {
   type PrixFlocage,
   type StatutCommande,
 } from "@/hub/pack/schema";
+import { cn } from "@/lib/utils";
 
 type LigneEdition = LigneSaisie & { cle: string };
 
@@ -240,7 +241,7 @@ export default function FicheCommande({
                     <Trash2 aria-hidden="true" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-[1fr_1fr_4.5rem] gap-2">
+                <div className={cn("grid gap-2", article.tailles.length > 0 ? "grid-cols-[1fr_1fr_4.5rem]" : "grid-cols-[1fr_4.5rem]")}>
                   <Select value={l.varianteId} onValueChange={(varianteId) => changer(l.cle, { varianteId })} disabled={article.variantes.length < 2 && article.variantes.some((v) => v.id === l.varianteId)}>
                     <SelectTrigger aria-label="Couleur" className="w-full">
                       <SelectValue placeholder="Couleur" />
@@ -257,6 +258,7 @@ export default function FicheCommande({
                       ))}
                     </SelectContent>
                   </Select>
+                  {article.tailles.length > 0 ? (
                   <Select value={l.taille} onValueChange={(taille) => changer(l.cle, { taille })}>
                     <SelectTrigger aria-label="Taille" className="w-full">
                       <SelectValue placeholder="Taille" />
@@ -271,6 +273,7 @@ export default function FicheCommande({
                       ))}
                     </SelectContent>
                   </Select>
+                  ) : null}
                   <Input
                     aria-label="Quantité"
                     type="number"

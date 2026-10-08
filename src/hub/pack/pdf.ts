@@ -193,7 +193,7 @@ export async function pdfCommandeJoma(
   mise.espace(2);
   mise.tableau(
     COLONNES_TOTAUX,
-    recap.totaux.map((t) => [t.reference || "-", t.article, t.couleur || "-", t.taille, String(t.quantite)]),
+    recap.totaux.map((t) => [t.reference || "-", t.article, t.couleur || "-", t.taille || "-", String(t.quantite)]),
   );
   mise.espace(6);
   mise.texte(`Total : ${pluriel(recap.pieces, "pièce")}`, 10, true);

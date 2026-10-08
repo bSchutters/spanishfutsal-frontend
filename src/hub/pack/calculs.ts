@@ -202,8 +202,11 @@ export function construireLignes(
     }
     const variante = article.variantes.find((v) => v.id === saisie.varianteId);
     if (!variante) return { ok: false, erreur: `${article.nom} : cette couleur n'existe plus.` };
-    if (!article.tailles.includes(saisie.taille)) {
-      return { ok: false, erreur: `${article.nom} : la taille ${saisie.taille} n'est pas proposée.` };
+    // Sans taille, rien a choisir : une taille restee d'avant, d'un panier ou d'une fiche ouverte, ne compte pas.
+    const sansTaille = article.tailles.length === 0;
+    const taille = sansTaille ? "" : saisie.taille;
+    if (!sansTaille && !article.tailles.includes(taille)) {
+      return { ok: false, erreur: taille ? `${article.nom} : la taille ${taille} n'est pas proposée.` : `${article.nom} : choisissez une taille.` };
     }
     const numero = article.floquable ? saisie.numero : "";
     const nom = article.floquable ? saisie.nom.toUpperCase() : "";
@@ -225,7 +228,7 @@ export function construireLignes(
       article: article.nom,
       couleur: variante.couleur,
       reference: referenceComplete(article.reference, variante.codeCouleur),
-      taille: saisie.taille,
+      taille,
       quantite: saisie.quantite,
       numero,
       nom,

@@ -310,7 +310,8 @@ function FicheProduit({
   const flocageIncomplet = avecFlocage && numero === "" && nom.trim() === "";
   const unitaire = prixUnitaire(article.prix, flocage, avecFlocage ? numero : "", avecFlocage ? nom.trim() : "");
   const total = totalDes([{ prixUnitaire: unitaire, quantite }]);
-  const manque = !taille ? "Choisissez une taille" : flocageIncomplet ? "Indiquez un numéro ou un nom" : !numeroValide ? "Deux chiffres au plus" : null;
+  const sansTaille = article.tailles.length === 0;
+  const manque = !sansTaille && !taille ? "Choisissez une taille" : flocageIncomplet ? "Indiquez un numéro ou un nom" : !numeroValide ? "Deux chiffres au plus" : null;
 
   const blocFlocage = useRef<HTMLDivElement>(null);
 
@@ -374,9 +375,11 @@ function FicheProduit({
                 />
               </Champ>
             ) : null}
-            <Champ libelle="Taille">
-              <Pastilles libelle="Taille" options={article.tailles.map((t) => ({ valeur: t, libelle: t }))} valeur={taille} onChange={setTaille} carre />
-            </Champ>
+            {sansTaille ? null : (
+              <Champ libelle="Taille">
+                <Pastilles libelle="Taille" options={article.tailles.map((t) => ({ valeur: t, libelle: t }))} valeur={taille} onChange={setTaille} carre />
+              </Champ>
+            )}
             {article.floquable ? (
               <div ref={blocFlocage} className="scroll-mb-4 rounded-xl border border-border bg-background/40 p-4">
                 <label className="flex cursor-pointer items-center justify-between gap-4">
@@ -487,7 +490,7 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
               <span className="min-w-0">
                 <span className="block font-medium">{l.article}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {[l.couleur, `Taille ${l.taille}`, l.numero ? `N° ${l.numero}` : "", l.nom].filter(Boolean).join(" · ")}
+                  {[l.couleur, l.taille ? `Taille ${l.taille}` : "", l.numero ? `N° ${l.numero}` : "", l.nom].filter(Boolean).join(" · ")}
                 </span>
               </span>
               <span className="shrink-0 text-end tabular-nums">
@@ -787,7 +790,7 @@ export default function FormulaireCommande({
                             <X className="size-4" aria-hidden="true" />
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground">{[ligne?.couleur, `Taille ${l.taille}`].filter(Boolean).join(" · ")}</p>
+                        <p className="text-xs text-muted-foreground">{[ligne?.couleur, l.taille ? `Taille ${l.taille}` : ""].filter(Boolean).join(" · ")}</p>
                         {l.numero || l.nom ? (
                           <p className="text-xs">
                             <span className="text-muted-foreground">Flocage </span>

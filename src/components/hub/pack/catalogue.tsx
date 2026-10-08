@@ -699,7 +699,9 @@ function FicheArticle({
     mode: modeRemise,
     taux: Number.isFinite(nombreSaisi(remiseParticuliere)) ? nombreSaisi(remiseParticuliere) : null,
   };
-  const [tailles, setTailles] = useState(article ? article.tailles.join(", ") : "S, M, L, XL, XXL");
+  const [tailles, setTailles] = useState(article && article.tailles.length > 0 ? article.tailles.join(", ") : "S, M, L, XL, XXL");
+  // Un sac, une gourde : rien a choisir pour le joueur.
+  const [sansTaille, setSansTaille] = useState(article ? article.tailles.length === 0 : false);
   const [tags, setTags] = useState<string[]>(article?.tags ?? []);
   const [floquable, setFloquable] = useState(article?.floquable ?? false);
   const [disposition, setDisposition] = useState<DispositionFlocage>({ ...DISPOSITION_FLOCAGE_DEFAUT, ...article?.dispositionFlocage });
@@ -743,6 +745,9 @@ function FicheArticle({
 
   const enregistrer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!sansTaille && lireTailles(tailles).length === 0) {
+      return void toast.error("Indiquez au moins une taille, ou choisissez « Sans taille ».");
+    }
     setEnCours(true);
     const r = await enregistrerArticle({
       id: article?.id ?? null,
@@ -753,7 +758,7 @@ function FicheArticle({
       prixCatalogue: nombreSaisi(prixCatalogue),
       modeRemise,
       remiseParticuliere: modeRemise === "custom" ? nombreSaisi(remiseParticuliere) : null,
-      tailles: lireTailles(tailles),
+      tailles: sansTaille ? [] : lireTailles(tailles),
       tags,
       floquable,
       actif,
@@ -818,9 +823,25 @@ function FicheArticle({
                 <p className="text-xs text-muted-foreground">Facultative, visible sur la page des joueurs.</p>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="article-tailles">Tailles</Label>
-                <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
-                <p className="text-xs text-muted-foreground">Séparées par des virgules, dans l&apos;ordre.</p>
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="article-tailles">Tailles</Label>
+                  <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                    Sans taille
+                    <Switch checked={sansTaille} onCheckedChange={setSansTaille} aria-label="Sans taille" />
+                  </label>
+                </div>
+                {sansTaille ? (
+                  <p className="rounded-md bg-secondary/40 px-3 py-2.5 text-xs text-muted-foreground">
+                    Un sac, une gourde : le joueur n&apos;a pas de taille à choisir, et le PDF Joma n&apos;en indique pas.
+                  </p>
+                ) : (
+                  <>
+                    <Input id="article-tailles" value={tailles} onChange={(e) => setTailles(e.target.value)} className="h-10" />
+                    <p className="text-xs text-muted-foreground">
+                      Séparées par des virgules, dans l&apos;ordre, comme Joma les nomme : « 35-38, 39-42 » pour des chaussettes.
+                    </p>
+                  </>
+                )}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="article-tags">Tags</Label>
@@ -1320,7 +1341,7 @@ export default function Catalogue({
                       {[
                         a.reference,
                         a.variantes.map((v) => v.couleur).filter(Boolean).join(", "),
-                        a.tailles.join(" "),
+                        a.tailles.length > 0 ? a.tailles.join(" ") : "sans taille",
                         a.floquable ? "floquable" : "",
                       ]
                         .filter(Boolean)
