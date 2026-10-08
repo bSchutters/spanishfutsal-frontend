@@ -3,7 +3,7 @@ import { listerLesDiffusions, evolution, type Diffusion } from "@/hub/direct/don
 import { modulesAccessibles, peutEditer } from "@/hub/droits";
 import { compterIdeesAVoter } from "@/hub/idees/donnees";
 import { listerEffectif, listerMatchsSaison, type MatchDate } from "@/hub/joueurs/donnees";
-import { compterCommandes } from "@/hub/pack/donnees";
+import { compterAPayer, compterCommandes } from "@/hub/pack/donnees";
 import type { UtilisateurSession } from "@/hub/session";
 import { anniversairesDeLaSemaine, type Anniversaire } from "./anniversaires";
 
@@ -57,6 +57,8 @@ export type Accueil = {
   anniversaires: Anniversaire[];
   dernierDirect: DernierDirect | null;
   commandesRecues: number;
+  /** Commandes du Pack dont le virement n'est pas encore arrive. */
+  commandesAPayer: number;
 };
 
 /** Le premier match a venir du calendrier, tel que la personne le voit, ou null s'il n'y en a pas. */
@@ -102,7 +104,7 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     pack: ouverts.has("pack"),
   };
 
-  const [tousLesPosts, mesPosts, prochainMatch, ideesAVoter, effectif, matchs, dernierDirect, commandesRecues] = await Promise.all([
+  const [tousLesPosts, mesPosts, prochainMatch, ideesAVoter, effectif, matchs, dernierDirect, commandesRecues, commandesAPayer] = await Promise.all([
     blocs.calendrier ? listerPostsAFaire(user, false) : [],
     blocs.calendrier ? listerPostsAFaire(user, true) : [],
     blocs.calendrier ? chargerProchainMatch(user, maintenant) : null,
@@ -111,6 +113,7 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     blocs.saisieStats ? listerMatchsSaison().then((r) => r.matchs) : [],
     blocs.direct ? chargerDernierDirect() : null,
     blocs.pack ? compterCommandes("received") : 0,
+    blocs.pack ? compterAPayer() : 0,
   ]);
 
   return {
@@ -123,5 +126,6 @@ export async function chargerAccueil(user: UtilisateurSession, maintenant = new 
     anniversaires: anniversairesDeLaSemaine(effectif, maintenant),
     dernierDirect,
     commandesRecues,
+    commandesAPayer,
   };
 }

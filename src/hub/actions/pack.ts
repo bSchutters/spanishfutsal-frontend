@@ -283,6 +283,31 @@ export async function passerCommandeesChezJoma(ids: unknown, ecartes: unknown = 
 }
 
 /**
+ * Le paiement d'une commande, vu sur le compte du club : payee ce jour, ou de
+ * nouveau a payer en cas d'erreur. Rien d'autre ne change dans la commande.
+ */
+export async function enregistrerPaiement(id: unknown, payee: unknown): Promise<Resultat<Commande>> {
+  await exigerModule("pack", "edit");
+  if (typeof id !== "number" || !Number.isInteger(id) || id <= 0 || typeof payee !== "boolean") {
+    return { ok: false, erreur: "Commande inconnue." };
+  }
+  const payload = await getPayloadClient();
+  try {
+    await payload.update({
+      collection: "pack-orders",
+      id,
+      data: { paid_at: payee ? jourEnDate(versChampDate(new Date())) : null },
+      depth: 0,
+    });
+    revalidatePath("/hub/pack", "layout");
+    const relue = await chargerCommande(id, payload);
+    return relue ? { ok: true, donnees: relue } : { ok: false, erreur: "Enregistré, mais impossible à relire." };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
+/**
  * Une commande corrigee par le club : lignes, coordonnees, statut. Les
  * lignes repassent par le catalogue, articles retires compris ; celles qui
  * n'ont pas change de nature gardent leur prix d'origine.

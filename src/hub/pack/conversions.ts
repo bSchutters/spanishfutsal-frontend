@@ -153,6 +153,7 @@ export function commandeDe(doc: Doc): Commande {
     statut,
     creeLe: String(doc.createdAt ?? ""),
     commandeeLe: typeof doc.ordered_at === "string" ? versChampDate(doc.ordered_at) || null : null,
+    payeeLe: typeof doc.paid_at === "string" ? versChampDate(doc.paid_at) || null : null,
   };
 }
 

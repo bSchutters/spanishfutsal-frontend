@@ -506,7 +506,9 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
         <ol className="flex flex-col gap-2 text-sm text-muted-foreground">
           <li className="flex gap-3">
             <NumeroEtape numero={1} />
-            <span className="pt-2">Le club vous contacte pour le virement : rien n&apos;est payé en ligne.</span>
+            <span className="pt-2">
+              Le club vous contacte pour le virement, avec en communication « Pack n° {commande.numero} » : rien n&apos;est payé en ligne.
+            </span>
           </li>
           <li className="flex gap-3">
             <NumeroEtape numero={2} />

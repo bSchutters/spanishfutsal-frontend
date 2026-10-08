@@ -1,6 +1,6 @@
 "use client";
 
-import { FileDown, PackageCheck } from "lucide-react";
+import { Check, FileDown, PackageCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -17,11 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { passerCommandeesChezJoma } from "@/hub/actions/pack";
+import { enregistrerPaiement, passerCommandeesChezJoma } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import {
   aCommanderChezJoma,
   avancementJoma,
+  bilanPaiements,
   enPartieCommandee,
   formaterPrix,
   MINIMUM_JOMA,
@@ -265,6 +266,59 @@ function PreparationJoma({
 }
 
 /**
+ * Le paiement d'une commande dans la liste. Celui qui verifie le compte du
+ * club la marque payee d'un toucher, ou la remet a payer en cas d'erreur.
+ * Une commande annulee et jamais payee n'a rien a payer.
+ */
+function Paiement({ commande, peutEditer, onChange }: { commande: Commande; peutEditer: boolean; onChange: (commande: Commande) => void }) {
+  const [enCours, setEnCours] = useState(false);
+  const payee = commande.payeeLe !== null;
+  if (!payee && commande.statut === "cancelled") return <span className="w-[5.5rem] shrink-0" aria-hidden="true" />;
+
+  // Les couleurs des statuts : vert comme une commande livree, orange comme une commande qui attend.
+  const couleur = payee ? COULEURS_STATUT_COMMANDE.delivered : COULEURS_STATUT_COMMANDE.received;
+  const style = { color: couleur, borderColor: `${couleur}66`, backgroundColor: payee ? `${couleur}1f` : "transparent" };
+  const classe = "inline-flex w-[5.5rem] shrink-0 items-center justify-center gap-1 rounded-full border px-2 py-1 text-[11px] font-medium";
+  const contenu = (
+    <>
+      {payee ? <Check className="size-3" aria-hidden="true" /> : null}
+      {payee ? "Payée" : "À payer"}
+    </>
+  );
+  if (!peutEditer) {
+    return (
+      <span className={classe} style={style} title={payee ? `Payée le ${formaterDateCourte(commande.payeeLe as string)}` : undefined}>
+        {contenu}
+      </span>
+    );
+  }
+
+  const changer = async () => {
+    setEnCours(true);
+    const r = await enregistrerPaiement(commande.id, !payee).catch(() => ({ ok: false as const, erreur: "Le paiement n'a pas pu être enregistré." }));
+    setEnCours(false);
+    if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
+    toast.success(payee ? `La commande de ${commande.personne} est de nouveau à payer.` : `La commande de ${commande.personne} est payée.`);
+    onChange(r.donnees);
+  };
+
+  return (
+    <button
+      type="button"
+      aria-pressed={payee}
+      aria-label={payee ? `Payée le ${formaterDateCourte(commande.payeeLe as string)} : remettre la commande de ${commande.personne} à payer` : `Marquer payée la commande de ${commande.personne}`}
+      title={payee ? `Payée le ${formaterDateCourte(commande.payeeLe as string)}. Toucher pour la remettre à payer.` : "Toucher quand le virement est arrivé sur le compte."}
+      disabled={enCours}
+      onClick={() => void changer()}
+      className={cn(classe, "transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50")}
+      style={style}
+    >
+      {contenu}
+    </button>
+  );
+}
+
+/**
  * Les commandes passees chez Joma, gardees telles quelles : la copie du PDF
  * se refait depuis ce qui a ete garde, a l'identique.
  */
@@ -344,6 +398,7 @@ export default function Commandes({
   const cochees = aCommander.filter((c) => selection.has(c.id));
   const actives = liste.filter((c) => c.statut !== "cancelled");
   const toutesCochees = aCommander.length > 0 && cochees.length === aCommander.length;
+  const paiements = bilanPaiements(liste);
 
   const basculer = (id: number, coche: boolean) =>
     setSelection((x) => {
@@ -356,6 +411,12 @@ export default function Commandes({
   const enregistree = (commande: Commande) => {
     setListe((x) => x.map((c) => (c.id === commande.id ? commande : c)));
     setOuverture((o) => ({ ...o, ouvert: false }));
+    router.refresh();
+  };
+
+  // Un paiement change d'un toucher : la ligne se met a jour, la page reste ouverte.
+  const paiementChange = (commande: Commande) => {
+    setListe((x) => x.map((c) => (c.id === commande.id ? commande : c)));
     router.refresh();
   };
 
@@ -383,7 +444,7 @@ export default function Commandes({
       <MinimumJoma montant={montantRecues} />
       <Panneau
         titre="Commandes"
-        description={`${pluriel(liste.length, "commande")} · ${pluriel(actives.reduce((n, c) => n + pieces(c), 0), "pièce")} · ${formaterPrix(totalDes(actives.flatMap((c) => c.lignes)))} hors annulées`}
+        description={`${pluriel(liste.length, "commande")} · ${pluriel(actives.reduce((n, c) => n + pieces(c), 0), "pièce")} · ${formaterPrix(totalDes(actives.flatMap((c) => c.lignes)))} hors annulées, dont ${formaterPrix(paiements.paye)} payés`}
         actions={
           peutEditer && aCommander.length > 0 ? (
             <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
@@ -439,6 +500,7 @@ export default function Commandes({
                     </span>
                   </span>
                 </button>
+                <Paiement commande={c} peutEditer={peutEditer} onChange={paiementChange} />
               </li>
             ))}
           </ul>
@@ -482,7 +544,8 @@ export default function Commandes({
                 peutEditer={peutEditer}
                 onFermer={() => setOuverture((x) => ({ ...x, ouvert: false }))}
                 onEnregistree={enregistree}
-              onSupprimee={supprimee}
+                onSupprimee={supprimee}
+                onPaiement={paiementChange}
               />
             ) : null}
           </SheetContent>

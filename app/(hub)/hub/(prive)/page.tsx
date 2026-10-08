@@ -1,4 +1,4 @@
-import { Cake, CalendarDays, ChevronRight, ClipboardList, Lightbulb, Radio, ShoppingBag, TriangleAlert } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, ClipboardList, Euro, Lightbulb, Radio, ShoppingBag, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -265,9 +265,19 @@ export default async function AccueilHub({ searchParams }: { searchParams: Promi
                 </span>
                 <Chevron />
               </Link>
-            ) : (
-              <Rien>Aucune commande en attente.</Rien>
-            )}
+            ) : null}
+            {accueil.commandesAPayer > 0 ? (
+              <Link href="/hub/pack/commandes?statut=toutes&paiement=a-payer" className={LIEN}>
+                <Icone>
+                  <Euro className="size-4" />
+                </Icone>
+                <span className="min-w-0 flex-1 text-sm">
+                  {pluriel(accueil.commandesAPayer, "commande")} à payer
+                </span>
+                <Chevron />
+              </Link>
+            ) : null}
+            {accueil.commandesRecues === 0 && accueil.commandesAPayer === 0 ? <Rien>Aucune commande en attente.</Rien> : null}
           </Panneau>
         ) : null}
       </div>

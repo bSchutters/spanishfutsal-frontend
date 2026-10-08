@@ -111,5 +111,15 @@ export const PackOrders: CollectionConfig = {
       label: 'Commandee chez Joma le',
       admin: { position: 'sidebar', date: { pickerAppearance: 'dayOnly' } },
     },
+    {
+      name: 'paid_at',
+      type: 'date',
+      label: 'Payee le',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayOnly' },
+        description: 'Le jour ou le club a vu le virement sur le compte. Vide : a payer.',
+      },
+    },
   ],
 }

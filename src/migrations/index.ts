@@ -24,6 +24,7 @@ import * as migration_20261006_223637_pack_tags from './20261006_223637_pack_tag
 import * as migration_20261006_230941_super_admin from './20261006_230941_super_admin';
 import * as migration_20261007_091431_pack_commandes_joma from './20261007_091431_pack_commandes_joma';
 import * as migration_20261007_125944_pack_ligne_commande_joma from './20261007_125944_pack_ligne_commande_joma';
+import * as migration_20261008_105929_pack_paiement from './20261008_105929_pack_paiement';
 
 export const migrations = [
   {
@@ -154,6 +155,11 @@ export const migrations = [
   {
     up: migration_20261007_125944_pack_ligne_commande_joma.up,
     down: migration_20261007_125944_pack_ligne_commande_joma.down,
-    name: '20261007_125944_pack_ligne_commande_joma'
+    name: '20261007_125944_pack_ligne_commande_joma',
+  },
+  {
+    up: migration_20261008_105929_pack_paiement.up,
+    down: migration_20261008_105929_pack_paiement.down,
+    name: '20261008_105929_pack_paiement'
   },
 ];

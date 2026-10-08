@@ -5,6 +5,9 @@ import {
   aCommanderChezJoma,
   construireLignes,
   avancementJoma,
+  bilanPaiements,
+  estAPayer,
+  selonPaiement,
   dateLimitePassee,
   enNomsJoma,
   commandesPourJoma,
@@ -620,6 +623,7 @@ describe("noms Joma du PDF", () => {
       statut: "received" as const,
       creeLe: "2026-10-06T10:00:00Z",
       commandeeLe: null,
+      payeeLe: null,
     };
     const catalogue = [
       { id: 2, nomJoma: "T-SHIRT MANCHES COURTES CHAMPIONSHIP VIII" },
@@ -666,6 +670,7 @@ describe("noms Joma du PDF", () => {
       statut: "received" as const,
       creeLe: "2026-10-07T10:00:00Z",
       commandeeLe: null,
+      payeeLe: null,
     };
     const recap = recapJoma(enNomsJoma([commande], [{ id: 2, ...catalogue[0] }]), new Set(), ordre);
     expect(recap.totaux.map((t) => [t.article, t.taille])).toEqual([
@@ -718,6 +723,7 @@ describe("commandes à passer chez Joma", () => {
       statut,
       creeLe: "2026-10-07T10:00:00Z",
       commandeeLe: null,
+      payeeLe: null,
     });
     const catalogue = [
       { id: 1, nom: "Maillot Joueurs", nomJoma: "T-SHIRT CHAMPIONSHIP VIII", tailles: ["S", "M", "L"] },
@@ -769,6 +775,7 @@ describe("commandes à passer chez Joma", () => {
       statut: "received" as const,
       creeLe: "2026-10-07T10:00:00Z",
       commandeeLe: null,
+      payeeLe: null,
     };
     expect(enPartieCommandee(partielle)).toBe(true);
     expect(resteACommander([partielle]).map((x) => x.lignes.map((l) => l.id))).toEqual([["b"]]);
@@ -826,6 +833,39 @@ describe("commandes à passer chez Joma", () => {
       commandeIds: [7, 9],
       ecartes: ["Chaussettes"],
     });
+  });
+});
+
+describe("paiements", () => {
+  const c = (id: number, statut: "received" | "ordered" | "delivered" | "cancelled", payeeLe: string | null, total: number) => ({
+    id,
+    statut,
+    payeeLe,
+    total,
+  });
+  const commandes = [
+    c(1, "received", null, 38.4),
+    c(2, "ordered", "2026-10-08", 16),
+    c(3, "delivered", null, 12.8),
+    // Annulee sans avoir ete payee : rien a payer. Payee puis annulee : le virement reste visible.
+    c(4, "cancelled", null, 30),
+    c(5, "cancelled", "2026-10-02", 25),
+  ];
+
+  it("ne demande rien à une commande annulée, et suit les autres jusqu'au virement", () => {
+    expect(commandes.filter(estAPayer).map((x) => x.id)).toEqual([1, 3]);
+    expect(selonPaiement(commandes, "a-payer").map((x) => x.id)).toEqual([1, 3]);
+    expect(selonPaiement(commandes, "payees").map((x) => x.id)).toEqual([2, 5]);
+    expect(selonPaiement(commandes, null)).toHaveLength(5);
+  });
+
+  it("fait le compte de ce qui est payé et de ce qui reste, annulées à part", () => {
+    expect(bilanPaiements(commandes)).toEqual({ paye: 16, aPayer: 51.2 });
+  });
+
+  it("lit le jour du paiement, vide tant qu'il manque", () => {
+    expect(commandeDe({ id: 1, status: "ordered", paid_at: "2026-10-08T12:00:00.000Z", lines: [] }).payeeLe).toBe("2026-10-08");
+    expect(commandeDe({ id: 2, status: "received", paid_at: null, lines: [] }).payeeLe).toBeNull();
   });
 });
 

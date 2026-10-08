@@ -1,6 +1,6 @@
 "use client";
 
-import { Ban, Mail, Phone, RotateCcw, Trash2 } from "lucide-react";
+import { Ban, Check, Mail, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { enregistrerCommande, supprimerCommande } from "@/hub/actions/pack";
+import { enregistrerCommande, enregistrerPaiement, supprimerCommande } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import { construireLignes, formaterPrix, resumeLigne, statutRetabli } from "@/hub/pack/calculs";
 import {
@@ -41,6 +41,7 @@ export default function FicheCommande({
   onFermer,
   onEnregistree,
   onSupprimee,
+  onPaiement,
 }: {
   commande: Commande;
   catalogue: Article[];
@@ -49,6 +50,8 @@ export default function FicheCommande({
   onFermer: () => void;
   onEnregistree: (commande: Commande) => void;
   onSupprimee: (id: number) => void;
+  /** Le paiement change sans fermer la fiche. */
+  onPaiement: (commande: Commande) => void;
 }) {
   const [statut, setStatut] = useState<StatutCommande>(commande.statut);
   const [telephone, setTelephone] = useState(commande.telephone);
@@ -116,6 +119,16 @@ export default function FicheCommande({
     onEnregistree(r.donnees);
   };
 
+  // Le paiement s'enregistre a part, aussitot : il ne touche ni aux lignes ni au statut.
+  const changerPaiement = async (payee: boolean) => {
+    setEnCours(true);
+    const r = await enregistrerPaiement(commande.id, payee).catch(() => ({ ok: false as const, erreur: "Le paiement n'a pas pu être enregistré." }));
+    setEnCours(false);
+    if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
+    toast.success(payee ? "Commande payée." : "Commande de nouveau à payer.");
+    onPaiement(r.donnees);
+  };
+
   const supprimer = async () => {
     setEnCours(true);
     const r = await supprimerCommande(commande.id).catch(() => ({ ok: false as const, erreur: "La commande n'a pas pu être supprimée." }));
@@ -133,6 +146,23 @@ export default function FicheCommande({
           Reçue le {formaterDateCourte(commande.creeLe)} à {formaterHeure(commande.creeLe)}
           {commande.commandeeLe ? ` · commandée chez Joma le ${formaterDateCourte(commande.commandeeLe)}` : ""}
         </p>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              {commande.payeeLe ? <Check className="size-4 text-[#7bd389]" aria-hidden="true" /> : null}
+              {commande.payeeLe ? `Payée le ${formaterDateCourte(commande.payeeLe)}` : commande.statut === "cancelled" ? "Rien à payer" : "À payer"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {formaterPrix(commande.total)} par virement, communication « Pack n° {commande.id} ».
+            </p>
+          </div>
+          {peutEditer && (commande.payeeLe || commande.statut !== "cancelled") ? (
+            <Button type="button" variant="hubSecondary" size="sm" disabled={enCours} onClick={() => void changerPaiement(!commande.payeeLe)}>
+              {commande.payeeLe ? "Remettre à payer" : "Marquer payée"}
+            </Button>
+          ) : null}
+        </div>
 
         {peutEditer ? (
           <div className="grid gap-4 sm:grid-cols-2">

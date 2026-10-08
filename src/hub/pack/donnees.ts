@@ -91,6 +91,16 @@ export async function compterCommandes(statut: StatutCommande, payload?: Payload
   return totalDocs;
 }
 
+/** Le nombre de commandes a payer : ni payees, ni annulees. */
+export async function compterAPayer(payload?: Payload): Promise<number> {
+  const client = payload ?? (await getPayloadClient());
+  const { totalDocs } = await client.count({
+    collection: "pack-orders",
+    where: { and: [{ status: { not_equals: "cancelled" } }, { paid_at: { exists: false } }] },
+  });
+  return totalDocs;
+}
+
 /**
  * Ce qui reste a commander chez Joma, pour le minimum : les lignes des
  * commandes recues qu'aucune commande Joma n'a encore emportees. Les lignes

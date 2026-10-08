@@ -205,7 +205,13 @@ export type Commande = {
   statut: StatutCommande;
   creeLe: string;
   commandeeLe: string | null;
+  /** « 2026-10-08 », le jour ou le club a vu le virement sur le compte, ou null : a payer. */
+  payeeLe: string | null;
 };
+
+/** Le filtre des paiements de la page Commandes : celles a payer, ou celles payees. */
+export const FILTRES_PAIEMENT = ["a-payer", "payees"] as const;
+export type FiltrePaiement = (typeof FILTRES_PAIEMENT)[number];
 
 const identifiant = z.number().check(z.int(), z.positive());
 const texteLibre = (max: number, message: string) => z.string().check(z.trim(), z.maxLength(max, message));
