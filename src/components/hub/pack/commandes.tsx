@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { enregistrerPaiement, passerCommandeesChezJoma } from "@/hub/actions/pack";
 import { formaterDateCourte, formaterHeure } from "@/hub/dates";
 import {
@@ -527,14 +527,14 @@ export default function Commandes({
           onPassees={passees}
         />
 
-        <Sheet open={ouverture.ouvert} onOpenChange={(o) => !o && setOuverture((x) => ({ ...x, ouvert: false }))}>
-          <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-            <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-              <SheetTitle>{ouverte ? ouverte.personne : "Commande"}</SheetTitle>
-              <SheetDescription>
+        <Fenetre open={ouverture.ouvert} onOpenChange={(o) => !o && setOuverture((x) => ({ ...x, ouvert: false }))}>
+          <FenetreContenu>
+            <FenetreEntete>
+              <FenetreTitre>{ouverte ? ouverte.personne : "Commande"}</FenetreTitre>
+              <FenetreDescription>
                 {ouverte ? `Commande n° ${ouverte.id} · ${LIBELLES_STATUT_COMMANDE[ouverte.statut]}` : ""}
-              </SheetDescription>
-            </SheetHeader>
+              </FenetreDescription>
+            </FenetreEntete>
             {ouverte ? (
               <FicheCommande
                 key={ouverture.cle}
@@ -548,8 +548,8 @@ export default function Commandes({
                 onPaiement={paiementChange}
               />
             ) : null}
-          </SheetContent>
-        </Sheet>
+          </FenetreContenu>
+        </Fenetre>
       </Panneau>
 
       {peutEditer && commandesJoma.length > 0 ? <CommandesJoma commandesJoma={commandesJoma} /> : null}

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerIdee } from "@/hub/actions/idees";
 import { formaterDateCourte } from "@/hub/dates";
@@ -94,12 +94,12 @@ export default function FormulaireIdee({
   };
 
   return (
-    <Sheet open={etat !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-          <SheetTitle>{etat?.mode === "modifier" ? "Modifier l'idée" : "Nouvelle idée"}</SheetTitle>
-          <SheetDescription>Un titre suffit, le reste peut venir plus tard.</SheetDescription>
-        </SheetHeader>
+    <Fenetre open={etat !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
+      <FenetreContenu>
+        <FenetreEntete>
+          <FenetreTitre>{etat?.mode === "modifier" ? "Modifier l'idée" : "Nouvelle idée"}</FenetreTitre>
+          <FenetreDescription>Un titre suffit, le reste peut venir plus tard.</FenetreDescription>
+        </FenetreEntete>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(envoyer)} className="flex min-h-0 flex-1 flex-col">
@@ -202,7 +202,7 @@ export default function FormulaireIdee({
             </div>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </FenetreContenu>
+    </Fenetre>
   );
 }

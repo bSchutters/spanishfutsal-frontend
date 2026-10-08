@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { enregistrerEvenement } from "@/hub/actions/evenements";
@@ -221,18 +221,18 @@ export default function FormulaireEvenement({
   };
 
   return (
-    <Sheet open={etat !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
-      {/* Le panneau ne defile pas lui-meme : l'en-tete et la barre des boutons
+    <Fenetre open={etat !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
+      {/* La fenetre ne defile pas elle-meme : l'en-tete et la barre des boutons
           restent en place, seul le corps du formulaire defile entre les deux. */}
-      <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
-        <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-          <SheetTitle>{etat?.mode === "modifier" ? "Modifier l'événement" : "Nouvel événement"}</SheetTitle>
-          <SheetDescription>
+      <FenetreContenu large>
+        <FenetreEntete>
+          <FenetreTitre>{etat?.mode === "modifier" ? "Modifier l'événement" : "Nouvel événement"}</FenetreTitre>
+          <FenetreDescription>
             {verrouille
               ? "Match synchronisé avec la LFFS : le titre, les dates et le lieu suivent la fédération."
               : "Titre, type, début et au moins un flux sont obligatoires."}
-          </SheetDescription>
-        </SheetHeader>
+          </FenetreDescription>
+        </FenetreEntete>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(envoyer)} className="flex min-h-0 flex-1 flex-col">
@@ -782,7 +782,7 @@ export default function FormulaireEvenement({
             </div>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </FenetreContenu>
+    </Fenetre>
   );
 }

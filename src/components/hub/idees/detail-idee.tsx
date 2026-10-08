@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatutIdee, lireIdee, supprimerIdee, voterIdee } from "@/hub/actions/idees";
 import { formaterDateCourte } from "@/hub/dates";
@@ -110,8 +110,8 @@ export default function DetailIdee({
   };
 
   return (
-    <Sheet open={id !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-lg">
+    <Fenetre open={id !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
+      <FenetreContenu defileEntiere>
         {detail ? (
           <>
             {peutEditer ? (
@@ -140,16 +140,16 @@ export default function DetailIdee({
                 </Button>
               </div>
             ) : null}
-            <SheetHeader className="border-b border-border px-5 py-4 pr-28">
+            <FenetreEntete className="pe-28">
               <div className="flex flex-wrap items-center gap-2">
                 <PastilleStatut couleur={COULEURS_STATUT_IDEE[detail.statut]} libelle={LIBELLES_STATUT_IDEE[detail.statut]} />
                 {detail.postPlanifie ? <Etiquette>Planifiée</Etiquette> : null}
               </div>
-              <SheetTitle>{detail.titre}</SheetTitle>
-              <SheetDescription>
+              <FenetreTitre>{detail.titre}</FenetreTitre>
+              <FenetreDescription>
                 {detail.auteur || "Membre"} · {formaterDateCourte(detail.creeLe)}
-              </SheetDescription>
-            </SheetHeader>
+              </FenetreDescription>
+            </FenetreEntete>
 
             <div className="flex flex-col gap-4 px-5 py-4">
               <Sondage
@@ -247,10 +247,10 @@ export default function DetailIdee({
           </>
         ) : (
           <div className="flex flex-col gap-3 px-5 py-6">
-            <SheetHeader className="p-0">
-              <SheetTitle className="sr-only">Idée</SheetTitle>
-              <SheetDescription className="sr-only">Chargement du ticket</SheetDescription>
-            </SheetHeader>
+            <FenetreEntete className="sr-only">
+              <FenetreTitre className="sr-only">Idée</FenetreTitre>
+              <FenetreDescription className="sr-only">Chargement du ticket</FenetreDescription>
+            </FenetreEntete>
             {erreur ? (
               <p className="text-sm text-destructive">{erreur}</p>
             ) : (
@@ -262,7 +262,7 @@ export default function DetailIdee({
             )}
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </FenetreContenu>
+    </Fenetre>
   );
 }

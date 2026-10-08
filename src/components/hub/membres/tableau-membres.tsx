@@ -9,7 +9,7 @@ import { Etiquette, Pastille, Vide } from "@/components/hub/mise-en-page";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { creerMembre, enregistrerDroitsMembre, nouveauMotDePasseMembre } from "@/hub/actions/membres";
 import {
   nomDuMembre,
@@ -76,7 +76,7 @@ function Resume({ membre, flux }: { membre: Membre; flux: FluxChoix[] }) {
 export type EtatPanneau = { mode: "modifier"; membre: Membre } | { mode: "creer" };
 
 /**
- * Le panneau d'un compte : son identite quand il se cree, puis l'acces au
+ * La fiche d'un compte : son identite quand il se cree, puis l'acces au
  * Hub, le niveau de chaque module et les flux ; pour un compte existant, un
  * nouveau mot de passe en cas d'oubli.
  */
@@ -413,19 +413,19 @@ export default function TableauMembres({
         Un compte créé ici est un membre. Le rôle d&apos;administrateur se donne dans l&apos;administration Payload.
       </p>
 
-      {/* Le panneau garde sa derniere fiche le temps de se refermer. */}
-      <Sheet open={ouvert.visible} onOpenChange={(o) => !o && fermer()}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-          <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-            <SheetTitle>
+      {/* La fenetre garde sa derniere fiche le temps de se refermer. */}
+      <Fenetre open={ouvert.visible} onOpenChange={(o) => !o && fermer()}>
+        <FenetreContenu>
+          <FenetreEntete>
+            <FenetreTitre>
               {ouvert.etat?.mode === "modifier" ? nomDuMembre(ouvert.etat.membre) : "Nouveau membre"}
-            </SheetTitle>
-            <SheetDescription>
+            </FenetreTitre>
+            <FenetreDescription>
               {ouvert.etat?.mode === "modifier"
                 ? ouvert.etat.membre.email
                 : "Son compte, et ce qu'il pourra faire dans le Hub."}
-            </SheetDescription>
-          </SheetHeader>
+            </FenetreDescription>
+          </FenetreEntete>
           {ouvert.etat ? (
             <Fiche
               key={ouvert.cle}
@@ -438,8 +438,8 @@ export default function TableauMembres({
               superAdmin={superAdmin}
             />
           ) : null}
-        </SheetContent>
-      </Sheet>
+        </FenetreContenu>
+      </Fenetre>
     </>
   );
 }

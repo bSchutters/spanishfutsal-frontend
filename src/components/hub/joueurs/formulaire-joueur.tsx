@@ -24,13 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { enregistrerJoueur } from "@/hub/actions/joueurs";
 import type { JoueurFiche } from "@/hub/joueurs/donnees";
 import {
@@ -198,8 +192,8 @@ function saisieDe(j: JoueurFiche): SaisieJoueur {
 }
 
 /**
- * La fiche d'un joueur, en panneau lateral : identite, poste, photo, date
- * de naissance, numero, capitaine, actif. Le panneau reste, le formulaire
+ * La fiche d'un joueur, dans une fenetre au centre : identite, poste, photo,
+ * date de naissance, numero, capitaine, actif. La fenetre reste, le formulaire
  * se recree pour chaque fiche ouverte : ses valeurs de depart viennent de
  * la fiche, sans effet.
  */
@@ -210,7 +204,7 @@ export default function FormulaireJoueur({
   onFermer,
   onEnregistre,
 }: {
-  /** La derniere fiche ouverte. Elle reste montee pendant la fermeture, sans quoi le panneau s'anime sur du vide et reste a l'ecran. */
+  /** La derniere fiche ouverte. Elle reste montee pendant la fermeture, sans quoi la fenetre s'anime sur du vide et reste a l'ecran. */
   etat: EtatFormulaireJoueur | null;
   ouvert: boolean;
   /** Change a chaque ouverture : le formulaire repart des valeurs de la fiche. */
@@ -219,23 +213,20 @@ export default function FormulaireJoueur({
   onEnregistre: (joueur: JoueurFiche) => void;
 }) {
   return (
-    <Sheet open={ouvert} onOpenChange={(o) => !o && onFermer()}>
-      <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
-      >
-        <SheetHeader className="shrink-0 border-b border-border px-5 py-4">
-          <SheetTitle>
+    <Fenetre open={ouvert} onOpenChange={(o) => !o && onFermer()}>
+      <FenetreContenu>
+        <FenetreEntete>
+          <FenetreTitre>
             {etat?.mode === "modifier"
               ? `${etat.joueur.prenom} ${etat.joueur.nom}`
               : "Nouvelle fiche"}
-          </SheetTitle>
-          <SheetDescription>
+          </FenetreTitre>
+          <FenetreDescription>
             {etat?.mode === "modifier"
               ? "La fiche de la collection Joueurs, celle du site."
               : "Un joueur, un gardien ou un membre du staff."}
-          </SheetDescription>
-        </SheetHeader>
+          </FenetreDescription>
+        </FenetreEntete>
         {etat ? (
           <Fiche
             key={cle}
@@ -244,8 +235,8 @@ export default function FormulaireJoueur({
             onEnregistre={onEnregistre}
           />
         ) : null}
-      </SheetContent>
-    </Sheet>
+      </FenetreContenu>
+    </Fenetre>
   );
 }
 

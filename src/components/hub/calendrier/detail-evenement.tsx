@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Fenetre, FenetreContenu, FenetreDescription, FenetreEntete, FenetreTitre } from "@/components/hub/fenetre";
 import { Skeleton } from "@/components/ui/skeleton";
 import { changerStatut, lireEvenement, regenererPosts, supprimerEvenement } from "@/hub/actions/evenements";
 import type { EvenementDetail, References } from "@/hub/calendrier/donnees";
@@ -42,8 +42,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
 }
 
 /**
- * Le panneau d'un evenement : feuille laterale sur grand ecran, plein
- * ecran sur mobile. Le detail est relu a l'ouverture, avec les droits de
+ * La fiche d'un evenement, dans une fenetre au centre de l'ecran. Le detail est relu a l'ouverture, avec les droits de
  * la personne, plutot que recopie depuis la grille.
  */
 export default function DetailEvenement({
@@ -148,12 +147,12 @@ export default function DetailEvenement({
   };
 
   return (
-    <Sheet open={id !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-lg">
+    <Fenetre open={id !== null} onOpenChange={(ouvert) => !ouvert && onFermer()}>
+      <FenetreContenu defileEntiere>
         {detail ? (
           <>
             {/* Les actions sur l'evenement vivent dans l'en-tete, a cote de la
-                croix, comme dans un panneau de tableau de bord. */}
+                croix, comme dans une fenetre de tableau de bord. */}
             {peutEditer ? (
               <div className="actions-panneau absolute right-11 top-2.5 flex items-center gap-0.5">
                 <Button
@@ -182,7 +181,7 @@ export default function DetailEvenement({
                 ) : null}
               </div>
             ) : null}
-            <SheetHeader className="border-b border-border px-5 py-4 pr-28">
+            <FenetreEntete className="pe-28">
               <div className="flex flex-wrap items-center gap-2">
                 <Pastille couleur={type?.couleur} />
                 <span className="text-xs text-muted-foreground">
@@ -197,13 +196,13 @@ export default function DetailEvenement({
                 ) : null}
                 {detail.recurrence.frequence !== "none" ? <Etiquette>Récurrent</Etiquette> : null}
               </div>
-              <SheetTitle className={detail.annule ? "line-through opacity-70" : undefined}>{detail.titre}</SheetTitle>
-              <SheetDescription>
+              <FenetreTitre className={detail.annule ? "line-through opacity-70" : undefined}>{detail.titre}</FenetreTitre>
+              <FenetreDescription>
                 {detail.journeeEntiere
                   ? formaterDate(detail.debut)
                   : `${formaterDateHeure(detail.debut)}${detail.fin ? ` à ${formaterHeure(detail.fin)}` : ""}`}
-              </SheetDescription>
-            </SheetHeader>
+              </FenetreDescription>
+            </FenetreEntete>
 
             <div className="flex flex-col gap-4 px-5 py-4">
               {detail.heureRdv ? <Bloc titre="Rendez-vous">{formaterHeure(detail.heureRdv)}</Bloc> : null}
@@ -434,10 +433,10 @@ export default function DetailEvenement({
           </>
         ) : (
           <div className="flex flex-col gap-3 px-5 py-6">
-            <SheetHeader className="p-0">
-              <SheetTitle className="sr-only">Événement</SheetTitle>
-              <SheetDescription className="sr-only">Chargement du détail</SheetDescription>
-            </SheetHeader>
+            <FenetreEntete className="sr-only">
+              <FenetreTitre className="sr-only">Événement</FenetreTitre>
+              <FenetreDescription className="sr-only">Chargement du détail</FenetreDescription>
+            </FenetreEntete>
             {erreur ? (
               <p className="text-sm text-destructive">{erreur}</p>
             ) : (
@@ -450,7 +449,7 @@ export default function DetailEvenement({
             )}
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </FenetreContenu>
+    </Fenetre>
   );
 }
