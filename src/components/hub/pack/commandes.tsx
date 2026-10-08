@@ -528,7 +528,8 @@ export default function Commandes({
         />
 
         <Fenetre open={ouverture.ouvert} onOpenChange={(o) => !o && setOuverture((x) => ({ ...x, ouvert: false }))}>
-          <FenetreContenu>
+          {/* Un peu plus large : chaque ligne porte la photo de l'article. */}
+          <FenetreContenu large>
             <FenetreEntete>
               <FenetreTitre>{ouverte ? ouverte.personne : "Commande"}</FenetreTitre>
               <FenetreDescription>
