@@ -5,8 +5,8 @@ import { getPayloadClient } from "@/lib/payload";
 import { genererJeton } from "@/payload/collections/hub/Feeds";
 import { jetonInitial } from "./acces";
 import { montantPourJoma, type CommandeJoma } from "./calculs";
-import { articleDe, commandeDe, commandeJomaDe, wherePaiement } from "./conversions";
-import type { Article, Commande, FiltrePaiement, ReglagesPack, StatutCommande } from "./schema";
+import { ajoutsDe, articleDe, commandeDe, commandeJomaDe, personnesPack, retiresDe, wherePaiement } from "./conversions";
+import type { Article, Commande, FiltrePaiement, PersonnesPack, ReglagesPack, StatutCommande } from "./schema";
 
 /**
  * La lecture des donnees du Pack, en systeme : chaque page qui s'en sert a
@@ -182,4 +182,15 @@ export async function listerEffectifActif(payload?: Payload): Promise<PersonneEf
     }))
     .sort((a, b) => a.nom.localeCompare(b.nom, "fr") || a.prenom.localeCompare(b.prenom, "fr"))
     .map((p) => ({ id: p.id, nom: [p.prenom, p.nom].filter(Boolean).join(" ") }));
+}
+
+/**
+ * La liste « Qui commande ? » de la page des joueurs, reglee dans le Hub :
+ * l'effectif actif du site, moins les joueurs retires, plus les noms ajoutes.
+ */
+export async function chargerPersonnesPack(payload?: Payload): Promise<PersonnesPack> {
+  const client = payload ?? (await getPayloadClient());
+  const [effectif, doc] = await Promise.all([listerEffectifActif(client), client.findGlobal({ slug: "pack-settings", depth: 0 })]);
+  const reglages = doc as Record<string, unknown>;
+  return personnesPack(effectif, retiresDe(reglages.hidden_players), ajoutsDe(reglages.people));
 }

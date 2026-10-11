@@ -8,8 +8,8 @@ import { versChampDate } from "@/hub/dates";
 import { adresseIp, limiteAtteinte, verifierLimite, type Limite } from "@/hub/limiteur";
 import { accesValide, COOKIE_ACCES_PACK, DUREE_ACCES_PACK_SECONDES, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
 import { construireLignes, dateLimitePassee } from "@/hub/pack/calculs";
-import { versLignesCollection } from "@/hub/pack/conversions";
-import { chargerReglagesPack, listerArticles, listerEffectifActif } from "@/hub/pack/donnees";
+import { lireCle, versLignesCollection } from "@/hub/pack/conversions";
+import { chargerPersonnesPack, chargerReglagesPack, listerArticles } from "@/hub/pack/donnees";
 import { premiereErreur, schemaCommandeJoueur, type LigneCommande } from "@/hub/pack/schema";
 import { getPayloadClient } from "@/lib/payload";
 
@@ -79,9 +79,13 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
   if (!lecture.success) return { ok: false, erreur: premiereErreur(lecture.error) };
   const s = lecture.data;
 
-  const [catalogue, effectif] = await Promise.all([listerArticles({ actifsSeulement: true }, payload), listerEffectifActif(payload)]);
-  const personne = s.joueurId !== null ? effectif.find((p) => p.id === s.joueurId) : null;
-  if (s.joueurId !== null && !personne) return { ok: false, erreur: "Ce nom n'est plus dans la liste. Rechargez la page." };
+  const [catalogue, personnes] = await Promise.all([listerArticles({ actifsSeulement: true }, payload), chargerPersonnesPack(payload)]);
+  // Une page ouverte avant le 08/10/2026 envoie encore l'identifiant du joueur.
+  const cle = s.personne || (s.joueurId !== null ? `j:${s.joueurId}` : "");
+  const personne = personnes.liste.find((p) => p.cle === cle);
+  if (!personne) return { ok: false, erreur: "Ce nom n'est plus dans la liste. Rechargez la page." };
+  const lue = lireCle(personne.cle);
+  const joueurId = lue && "joueur" in lue ? lue.joueur : null;
 
   const construction = construireLignes(
     s.lignes.map((l) => ({ ...l, id: null })),
@@ -99,8 +103,9 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
     const doc = await payload.create({
       collection: "pack-orders",
       data: {
-        player: s.joueurId,
-        other_name: s.joueurId === null ? s.autreNom : "",
+        // Un joueur de l'effectif se rattache a sa fiche ; un nom ajoute dans le Hub s'ecrit tel quel.
+        player: joueurId,
+        other_name: joueurId === null ? personne.nom : "",
         phone: s.telephone,
         email: s.email,
         note: s.remarque,
@@ -114,7 +119,7 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
       ok: true,
       donnees: {
         numero: Number(doc.id),
-        personne: personne ? personne.nom : s.autreNom,
+        personne: personne.nom,
         lignes: construction.lignes,
         total: construction.total,
       },

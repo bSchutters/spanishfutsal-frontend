@@ -25,11 +25,15 @@ import {
   totalDes,
 } from "@/hub/pack/calculs";
 import {
+  ajoutsDe,
   articleDe,
   commandeDe,
   commandeJomaDe,
   dispositionDe,
   libererLignes,
+  lireCle,
+  personnesPack,
+  retiresDe,
   tagsDe,
   versLignesCollection,
   wherePaiement,
@@ -281,6 +285,9 @@ describe("saisies", () => {
     expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null }).success).toBe(false);
     expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null, autreNom: "Papa de Ruben" }).success).toBe(false);
     expect(schemaCommandeJoueur.safeParse({ ...commande, telephone: "", email: "" }).success).toBe(true);
+    // Depuis le 08/10/2026, la personne se designe par sa cle dans la liste reglee dans le Hub.
+    expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null, personne: "a:3f9c1e2a" }).success).toBe(true);
+    expect(schemaCommandeJoueur.safeParse({ ...commande, joueurId: null, personne: "" }).success).toBe(false);
   });
 
   it("refuse un numéro qui n'en est pas un", () => {
@@ -945,6 +952,43 @@ describe("commande Joma supprimée", () => {
     expect(ecritures).toEqual([
       { collection: "pack-orders", id: 7, data: { lines: [{ id: "a", joma_order_id: null }], status: "received", ordered_at: null }, depth: 0, req },
     ]);
+  });
+});
+
+describe("qui peut commander", () => {
+  const effectif = [
+    { id: 12, nom: "Ruben Alvarez" },
+    { id: 7, nom: "Bryan Schutters" },
+    { id: 3, nom: "Hugo Zorn" },
+  ];
+
+  it("met les noms ajoutés en tête, par ordre alphabétique, puis l'effectif dans son ordre, sans les joueurs retirés", () => {
+    const { liste, retires } = personnesPack(effectif, [7], [
+      { id: "b2b2b2b2", nom: "Sponsor Wabee" },
+      { id: "a1a1a1a1", nom: "Papa de Ruben" },
+    ]);
+    expect(liste.map((p) => [p.cle, p.nom, p.origine])).toEqual([
+      ["a:a1a1a1a1", "Papa de Ruben", "ajout"],
+      ["a:b2b2b2b2", "Sponsor Wabee", "ajout"],
+      ["j:12", "Ruben Alvarez", "effectif"],
+      ["j:3", "Hugo Zorn", "effectif"],
+    ]);
+    expect(retires).toEqual([{ cle: "j:7", nom: "Bryan Schutters", origine: "effectif" }]);
+  });
+
+  it("lit les réglages rangés en JSON sans se fier à leur forme", () => {
+    expect(ajoutsDe([{ id: "a1a1a1a1", nom: "  Papa   de Ruben " }, { id: "a1a1a1a1", nom: "Doublon" }, { id: "X!", nom: "Mauvais" }, { nom: "Sans id" }, "rien"])).toEqual([
+      { id: "a1a1a1a1", nom: "Papa de Ruben" },
+    ]);
+    expect(retiresDe([7, 7, "8", -1, 3.5, 12])).toEqual([7, 12]);
+    expect(ajoutsDe(null)).toEqual([]);
+    expect(retiresDe(undefined)).toEqual([]);
+  });
+
+  it("lit la clé d'une personne, et rien d'autre", () => {
+    expect(lireCle("j:12")).toEqual({ joueur: 12 });
+    expect(lireCle("a:a1a1a1a1")).toEqual({ ajout: "a1a1a1a1" });
+    for (const mauvaise of ["j:0", "j:abc", "a:X", "12", "", null, "j:12 OR 1=1"]) expect(lireCle(mauvaise)).toBeNull();
   });
 });
 

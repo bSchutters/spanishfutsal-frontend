@@ -1,13 +1,21 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { commitTransaction, createLocalReq, initTransaction, killTransaction, type Payload, type PayloadRequest } from "payload";
 
 import type { Resultat } from "@/hub/actions/evenements";
 import { versChampDate } from "@/hub/dates";
 import { commandesPourJoma, construireLignes, montantPourJoma, recapPourJoma } from "@/hub/pack/calculs";
-import { dispositionDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
-import { chargerArticle, chargerCommande, chargerCommandes, chargerReglagesPack, listerArticles } from "@/hub/pack/donnees";
+import { ajoutsDe, dispositionDe, lireCle, retiresDe, tagsDe, versLignesCollection } from "@/hub/pack/conversions";
+import {
+  chargerArticle,
+  chargerCommande,
+  chargerCommandes,
+  chargerPersonnesPack,
+  chargerReglagesPack,
+  listerArticles,
+} from "@/hub/pack/donnees";
 import {
   lireOrdre,
   premiereErreur,
@@ -16,7 +24,9 @@ import {
   schemaReglagesPack,
   type Article,
   type Commande,
+  type PersonnesPack,
   type ReglagesPack,
+  NOM_PERSONNE_MAX,
 } from "@/hub/pack/schema";
 import { exigerModule } from "@/hub/session";
 import { getPayloadClient } from "@/lib/payload";
@@ -206,6 +216,60 @@ export async function enregistrerReglagesPack(saisie: unknown): Promise<Resultat
   } catch (erreur) {
     return { ok: false, erreur: messageDe(erreur) };
   }
+}
+
+/**
+ * La liste « Qui commande ? » change : les noms ajoutes et les joueurs
+ * retires, lus puis reecrits dans les reglages. L'effectif du site, lui,
+ * ne bouge jamais d'ici. Chaque action verifie le droit avant d'appeler.
+ */
+async function changerPersonnes(
+  changer: (actuels: { ajouts: { id: string; nom: string }[]; retires: number[] }) => { ajouts: { id: string; nom: string }[]; retires: number[] } | string,
+): Promise<Resultat<PersonnesPack>> {
+  const payload = await getPayloadClient();
+  try {
+    const doc = (await payload.findGlobal({ slug: "pack-settings", depth: 0 })) as Record<string, unknown>;
+    const suite = changer({ ajouts: ajoutsDe(doc.people), retires: retiresDe(doc.hidden_players) });
+    if (typeof suite === "string") return { ok: false, erreur: suite };
+    await payload.updateGlobal({ slug: "pack-settings", data: { people: suite.ajouts, hidden_players: suite.retires }, depth: 0 });
+    revalidatePath("/hub/pack", "layout");
+    return { ok: true, donnees: await chargerPersonnesPack(payload) };
+  } catch (erreur) {
+    return { ok: false, erreur: messageDe(erreur) };
+  }
+}
+
+/** Un nom de plus dans la liste : un proche, un entraineur, un sponsor. */
+export async function ajouterPersonnePack(saisi: unknown): Promise<Resultat<PersonnesPack>> {
+  await exigerModule("pack", "edit");
+  const nom = typeof saisi === "string" ? saisi.trim().replace(/\s+/g, " ") : "";
+  if (nom.length < 2) return { ok: false, erreur: "Indiquez un nom." };
+  if (nom.length > NOM_PERSONNE_MAX) return { ok: false, erreur: `Un nom : ${NOM_PERSONNE_MAX} caractères au plus.` };
+  const { liste, retires } = await chargerPersonnesPack();
+  const meme = (p: { nom: string }) => p.nom.localeCompare(nom, "fr", { sensitivity: "base" }) === 0;
+  if (retires.some(meme)) return { ok: false, erreur: `${nom} est retiré de la liste : remettez-le plutôt.` };
+  if (liste.some(meme)) return { ok: false, erreur: `${nom} est déjà dans la liste.` };
+  return changerPersonnes(({ ajouts, retires: joueurs }) => ({ ajouts: [...ajouts, { id: randomBytes(4).toString("hex"), nom }], retires: joueurs }));
+}
+
+/** Quelqu'un sort de la liste : un nom ajoute s'efface, un joueur de l'effectif est mis de cote. */
+export async function retirerPersonnePack(cle: unknown): Promise<Resultat<PersonnesPack>> {
+  await exigerModule("pack", "edit");
+  const lue = lireCle(cle);
+  if (!lue) return { ok: false, erreur: "Personne inconnue." };
+  return changerPersonnes(({ ajouts, retires }) =>
+    "joueur" in lue
+      ? { ajouts, retires: retires.includes(lue.joueur) ? retires : [...retires, lue.joueur] }
+      : { ajouts: ajouts.filter((a) => a.id !== lue.ajout), retires },
+  );
+}
+
+/** Un joueur de l'effectif revient dans la liste. */
+export async function remettrePersonnePack(cle: unknown): Promise<Resultat<PersonnesPack>> {
+  await exigerModule("pack", "edit");
+  const lue = lireCle(cle);
+  if (!lue || !("joueur" in lue)) return { ok: false, erreur: "Personne inconnue." };
+  return changerPersonnes(({ ajouts, retires }) => ({ ajouts, retires: retires.filter((id) => id !== lue.joueur) }));
 }
 
 /** Un nouveau lien : l'ancien cesse aussitot de fonctionner. */

@@ -9,7 +9,7 @@ import { tanker } from "@/components/hub/pack/police-tanker";
 import { formaterDateSansAnnee, versChampDate } from "@/hub/dates";
 import { accesValide, COOKIE_ACCES_PACK, jetonBienForme } from "@/hub/pack/acces";
 import { dateLimitePassee } from "@/hub/pack/calculs";
-import { chargerReglagesPack, listerArticles, listerEffectifActif, montantACommander } from "@/hub/pack/donnees";
+import { chargerPersonnesPack, chargerReglagesPack, listerArticles, montantACommander } from "@/hub/pack/donnees";
 import { cn } from "@/lib/utils";
 
 // Le titre sans le suffixe du Hub : cette page est celle des joueurs.
@@ -48,12 +48,14 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
     contenu = <Carte>Les commandes sont fermées pour le moment. Le club vous préviendra à la prochaine ouverture.</Carte>;
   } else {
     // Ce qui attend la commande groupee chez Joma, sans rien dire de qui a commande quoi.
-    const [articles, effectif, montantGroupe] = await Promise.all([
+    const [articles, personnes, montantGroupe] = await Promise.all([
       listerArticles({ actifsSeulement: true }),
-      listerEffectifActif(),
+      chargerPersonnesPack(),
       montantACommander(),
     ]);
-    contenu = <FormulaireCommande jeton={jeton} articles={articles} effectif={effectif} flocage={reglages.flocage} montantGroupe={montantGroupe} />;
+    contenu = (
+      <FormulaireCommande jeton={jeton} articles={articles} personnes={personnes.liste} flocage={reglages.flocage} montantGroupe={montantGroupe} />
+    );
   }
 
   const sousTitre =

@@ -15,6 +15,8 @@ import {
   type DispositionFlocage,
   type FiltrePaiement,
   type ModeRemise,
+  type PersonnePack,
+  type PersonnesPack,
   type Photo,
   type StatutCommande,
   type VersionLogo,
@@ -214,6 +216,58 @@ export function libererLignes(lignes: unknown, commandeJoma: number): { lignes: 
     return { ...l, joma_order_id: null };
   });
   return { lignes: suite, liberees };
+}
+
+/** Les noms ajoutes a la liste, ranges en JSON : un identifiant et un nom, sans doublon d'identifiant. */
+export function ajoutsDe(v: unknown): { id: string; nom: string }[] {
+  const vus = new Set<string>();
+  const ajouts: { id: string; nom: string }[] = [];
+  for (const brut of Array.isArray(v) ? v : []) {
+    if (!brut || typeof brut !== "object") continue;
+    const id = texte((brut as { id?: unknown }).id);
+    const nom = texte((brut as { nom?: unknown }).nom).replace(/\s+/g, " ");
+    if (!/^[a-z0-9]{4,20}$/.test(id) || !nom || vus.has(id)) continue;
+    vus.add(id);
+    ajouts.push({ id, nom });
+  }
+  return ajouts;
+}
+
+/** Les joueurs retires de la liste, ranges en JSON : leurs identifiants. */
+export function retiresDe(v: unknown): number[] {
+  return [...new Set((Array.isArray(v) ? v : []).filter((n): n is number => Number.isInteger(n) && n > 0))];
+}
+
+/**
+ * La liste « Qui commande ? » : les noms ajoutes, par ordre alphabetique, en
+ * tete (Bryan, 08/10/2026), puis l'effectif actif du site, dans son ordre,
+ * moins les joueurs retires. A part, les joueurs retires, pour les remettre.
+ */
+export function personnesPack(
+  effectif: readonly { id: number; nom: string }[],
+  retires: readonly number[],
+  ajouts: readonly { id: string; nom: string }[],
+): PersonnesPack {
+  const exclus = new Set(retires);
+  const joueur = (p: { id: number; nom: string }): PersonnePack => ({ cle: `j:${p.id}`, nom: p.nom, origine: "effectif" });
+  return {
+    liste: [
+      ...[...ajouts]
+        .sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
+        .map((a): PersonnePack => ({ cle: `a:${a.id}`, nom: a.nom, origine: "ajout" })),
+      ...effectif.filter((p) => !exclus.has(p.id)).map(joueur),
+    ],
+    retires: effectif.filter((p) => exclus.has(p.id)).map(joueur),
+  };
+}
+
+/** La cle d'une personne lue : un joueur de l'effectif, un nom ajoute, ou rien. */
+export function lireCle(cle: unknown): { joueur: number } | { ajout: string } | null {
+  if (typeof cle !== "string") return null;
+  const joueur = /^j:([1-9]\d{0,9})$/.exec(cle);
+  if (joueur) return { joueur: Number(joueur[1]) };
+  const ajout = /^a:([a-z0-9]{4,20})$/.exec(cle);
+  return ajout ? { ajout: ajout[1] } : null;
 }
 
 /** Les lignes dans la forme que la collection range. */

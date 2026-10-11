@@ -75,5 +75,22 @@ export const PackSettings: GlobalConfig = {
         },
       ],
     },
+    {
+      name: 'people',
+      type: 'json',
+      label: 'Noms ajoutes a la liste',
+      admin: {
+        description:
+          'Se regle dans le Hub, page Catalogue : les personnes hors effectif qui peuvent commander, par exemple [{"id":"3f9c1e2a","nom":"Jean Dupont"}].',
+      },
+    },
+    {
+      name: 'hidden_players',
+      type: 'json',
+      label: 'Joueurs retires de la liste',
+      admin: {
+        description: 'Se regle dans le Hub, page Catalogue : les joueurs de l effectif qui ne commandent pas. L effectif du site ne change pas.',
+      },
+    },
   ],
 }
