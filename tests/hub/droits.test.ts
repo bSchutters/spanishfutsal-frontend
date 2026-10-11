@@ -64,7 +64,8 @@ describe("super administrateur", () => {
     expect(champ).toBeDefined();
     expect(await champ?.access?.create?.(admin)).toBe(false);
     expect(await champ?.access?.update?.(admin)).toBe(false);
-  });
+    // Le premier import de la collection Users tire celles du site : a froid, il depasse les 5 s par defaut.
+  }, 30_000);
 });
 
 describe("acces au Hub", () => {
