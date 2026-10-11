@@ -43,14 +43,20 @@ export default async function Footer() {
                   // Le bandeau n'affiche qu'un lien : le site s'il existe,
                   // sinon le premier reseau renseigne.
                   const href = sponsorLinks(sponsor.links)[0]?.url ?? null;
+                  // Chaque logo dans un cadre fixe, 108 x 36 puis 120 x 40, ou il tient
+                  // sans deformation. Avec une largeur et une hauteur de 120 x 40 donnees a
+                  // l'image, un logo carre ou en hauteur s'affichait a la hauteur prevue
+                  // mais pas a la largeur annoncee, et Next avertissait en console.
                   const logoEl = sponsor.logo ? (
-                    <Image
-                      src={sponsor.logo}
-                      alt={sponsor.name}
-                      width={120}
-                      height={40}
-                      className="h-9 sm:h-10 max-w-full lg:max-w-[120px] w-auto object-contain opacity-40 hover:opacity-100 transition-opacity"
-                    />
+                    <span className="relative block h-9 w-[108px] max-w-full sm:h-10 sm:w-[120px]">
+                      <Image
+                        src={sponsor.logo}
+                        alt={sponsor.name}
+                        fill
+                        sizes="120px"
+                        className="object-contain opacity-40 hover:opacity-100 transition-opacity"
+                      />
+                    </span>
                   ) : (
                     <span className="text-sm opacity-40 hover:opacity-100 transition-opacity">
                       {sponsor.name}
