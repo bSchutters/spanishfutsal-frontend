@@ -37,7 +37,11 @@ const CSP_PUBLIC = [
   // commandes natives du lecteur et de piloter la lecture depuis les notres.
   // C'est une ouverture plus large que `frame-src` : ce script s'execute dans
   // notre origine, la ou un cadre reste isole.
-  `script-src 'self' 'unsafe-inline' https://www.youtube.com${EN_DEV ? " 'unsafe-eval'" : ""}`,
+  //
+  // stats.sbryan.be sert le script d'Umami, les statistiques de visites (voir
+  // le gabarit app/(app)/layout.tsx). Il figure aussi dans `connect-src`, ou
+  // le script envoie chaque page vue.
+  `script-src 'self' 'unsafe-inline' https://www.youtube.com https://stats.sbryan.be${EN_DEV ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   // i.ytimg.com sert les images du lecteur une fois qu'il tourne. La vignette
   // de la facade, elle, passe par le proxy d'images du site : aucune requete
@@ -57,7 +61,7 @@ const CSP_PUBLIC = [
   // basculement de leur cote refuserait le flux sans aucun message. Le
   // caractere generique ne couvre qu'un niveau, les sous-domaines de
   // sous-domaines resteraient refuses.
-  `connect-src 'self' https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
+  `connect-src 'self' https://*.xbotgo.net https://stats.sbryan.be${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
   `media-src 'self' blob: https://*.xbotgo.net${EN_DEV ? ` ${ORIGINE_FLUX_ESSAI}` : ""}`,
   // hls.js decode les segments dans un worker pour laisser le fil principal
   // libre. Sans cette ligne, `script-src` sert de repli, le worker est refuse,

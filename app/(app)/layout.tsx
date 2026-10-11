@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 
 import { CLE_ACCORD } from "@/lib/identiteDurable";
 import { OG_IMAGE, SITE_URL } from "@/lib/site";
@@ -22,6 +23,25 @@ import { OG_IMAGE, SITE_URL } from "@/lib/site";
  * alors rien, et le bandeau s'affiche, ce qui est le comportement honnete.
  */
 const SCRIPT_BANDEAU = `try{if(localStorage.getItem(${JSON.stringify(CLE_ACCORD)})==="oui")document.documentElement.classList.add("mesure-lue")}catch(e){}`;
+
+/**
+ * Statistiques de visites, servies par Umami depuis stats.sbryan.be. Ni cookie,
+ * ni identifiant ecrit dans le navigateur, ni donnee personnelle conservee :
+ * rien a ajouter au bandeau, qui ne parle que du comptage des spectateurs du
+ * direct. Seul le site public est compte : le Hub et l'admin ont leur propre
+ * gabarit et ne chargent pas ce script.
+ *
+ * `data-domains` limite l'envoi au domaine de production. Les previews de
+ * Vercel et le developpement en local chargent le script mais n'envoient rien,
+ * les chiffres ne melangent donc pas les essais et les vraies visites. Le
+ * domaine nu redirige vers www, il est garde par prudence.
+ *
+ * L'adresse figure aussi dans `script-src` et `connect-src` de la politique de
+ * securite (next.config.ts) : sans elle, le navigateur bloque le script.
+ */
+const UMAMI_SCRIPT = "https://stats.sbryan.be/script.js";
+const UMAMI_SITE = "19b565d3-4024-4aa7-9283-2fdbdc93f539";
+const UMAMI_DOMAINES = "www.udasturiana.be,udasturiana.be";
 
 /**
  * Les polices du site, servies par next/font : memes fichiers qu'avant, mais
@@ -156,6 +176,11 @@ export default function AppLayout({
           <LiveDialog />
           <BandeauMesure />
         </ThemeProvider>
+        <Script
+          src={UMAMI_SCRIPT}
+          data-website-id={UMAMI_SITE}
+          data-domains={UMAMI_DOMAINES}
+        />
       </body>
     </html>
   );
