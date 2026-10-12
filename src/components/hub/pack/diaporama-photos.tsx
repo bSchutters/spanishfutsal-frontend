@@ -112,7 +112,7 @@ export default function DiaporamaPhotos({
             aria-label="Photo précédente"
             onClick={() => api?.scrollPrev()}
             className={cn(
-              "absolute top-1/2 start-2 flex -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
+              "absolute top-1/2 start-2 flex -translate-y-1/2 items-center justify-center rounded-lg bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
               compact ? FLECHE_COMPACTE : "size-8",
             )}
           >
@@ -123,7 +123,7 @@ export default function DiaporamaPhotos({
             aria-label="Photo suivante"
             onClick={() => api?.scrollNext()}
             className={cn(
-              "absolute top-1/2 end-2 flex -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
+              "absolute top-1/2 end-2 flex -translate-y-1/2 items-center justify-center rounded-lg bg-black/45 text-white transition-[background-color,opacity] hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-primary",
               compact ? FLECHE_COMPACTE : "size-8",
             )}
           >

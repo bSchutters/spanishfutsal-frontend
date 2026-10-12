@@ -115,7 +115,7 @@ function Quantite({ valeur, onChange, libelle, petit = false }: { valeur: number
  * ouvrir l'article), son nom et son prix. Toucher la photo, ou le nom et le
  * prix, ouvre sa fiche.
  */
-function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Article; rang: number; dansPanier: number; onOuvrir: () => void }) {
+function CarteProduit({ article, dansPanier, onOuvrir }: { article: Article; dansPanier: number; onOuvrir: () => void }) {
   const { variante, photos } = photosDe(article, article.variantes[0]?.id ?? "");
   const remise = remiseDe(article);
   const couleurs = article.variantes.map((v) => v.couleur).filter(Boolean);
@@ -136,10 +136,7 @@ function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Articl
   ].filter((c) => c !== null);
 
   return (
-    <li
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-[border-color,translate] duration-300 hover:border-primary/50 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-3 motion-safe:hover:-translate-y-0.5"
-      style={{ animationDelay: `${Math.min(rang, 8) * 60}ms`, animationDuration: "500ms", animationFillMode: "both" }}
-    >
+    <li className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-200 hover:border-primary/50">
       <div className="relative">
         <DiaporamaPhotos photos={photos} legende={[article.nom, variante?.couleur].filter(Boolean).join(" ")} calques={calques} onPhoto={onOuvrir} compact />
         {remise > 0 ? (
@@ -148,7 +145,7 @@ function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Articl
           </span>
         ) : null}
         {dansPanier > 0 ? (
-          <span className="pointer-events-none absolute end-2 top-2 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+          <span className="pointer-events-none absolute end-2 top-2 flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
             <Check className="size-3" strokeWidth={3} aria-hidden="true" />
             {dansPanier}
             <span className="sr-only"> dans votre commande</span>
@@ -165,7 +162,7 @@ function CarteProduit({ article, rang, dansPanier, onOuvrir }: { article: Articl
           <span className="text-sm leading-snug font-semibold sm:text-base">{article.nom}</span>
           {couleurs.length > 0 ? (
             <span className="line-clamp-1 text-xs text-muted-foreground">
-              {couleurs.length > 1 ? `${couleurs.length} couleurs · ${couleurs.join(", ")}` : couleurs[0]}
+              {couleurs.join(", ")}
             </span>
           ) : null}
           <span className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-2">
@@ -219,10 +216,10 @@ function CommandeGroupee({ montant, panier }: { montant: number; panier: number 
         />
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
-        {panier > 0 ? `Avec votre commande : ${formaterPrix(avec)}. ` : ""}
+        {panier > 0 ? `Votre commande y ajoute ${formaterPrix(panier)}. ` : ""}
         {atteint
-          ? "Le minimum de 150 € est atteint : le club peut passer la commande chez Joma."
-          : `Joma demande ${formaterPrix(MINIMUM_JOMA)} au minimum : encore ${formaterPrix(reste)} avant que le club puisse passer la commande.`}
+          ? `Minimum de ${formaterPrix(MINIMUM_JOMA)} atteint, le club peut commander chez Joma.`
+          : `Il manque ${formaterPrix(reste)} pour atteindre le minimum de Joma.`}
       </p>
     </section>
   );
@@ -350,7 +347,7 @@ function FicheProduit({
 
           <div className="mt-6 flex flex-col gap-5">
             {article.variantes.length > 1 ? (
-              <Champ libelle="Couleur" detail={variante?.couleur}>
+              <Champ libelle="Couleur">
                 <Pastilles
                   libelle="Couleur"
                   options={article.variantes.map((v) => ({ valeur: v.id, libelle: v.couleur || "Couleur unique" }))}
@@ -446,7 +443,7 @@ function FicheProduit({
         type="button"
         onClick={onFermer}
         aria-label="Fermer"
-        className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-primary lg:bg-transparent lg:text-muted-foreground lg:hover:bg-spanish-bg-lighter lg:hover:text-foreground"
+        className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-lg bg-black/55 text-white transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-primary lg:bg-transparent lg:text-muted-foreground lg:hover:bg-spanish-bg-lighter lg:hover:text-foreground"
       >
         <X className="size-5" aria-hidden="true" />
       </button>
@@ -457,17 +454,14 @@ function FicheProduit({
 /** La commande partie : son numero, son recapitulatif, et ce qui se passe ensuite. */
 function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onNouvelle: () => void }) {
   return (
-    <section className="mx-auto flex w-full max-w-xl flex-col gap-7 py-2 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <span className="flex size-16 items-center justify-center rounded-full bg-spanish-accent-2 text-spanish-bg-dark">
-          <Check className="size-8" strokeWidth={3} aria-hidden="true" />
-        </span>
+    <section className="mx-auto flex w-full max-w-xl flex-col gap-7 py-2">
+      <div className="flex flex-col gap-2">
         <h2 className={cn(tanker.className, "text-4xl leading-none uppercase sm:text-5xl")}>Commande envoyée</h2>
         <p className="text-muted-foreground">
           Commande n° {commande.numero} enregistrée au nom de {commande.personne}.
         </p>
       </div>
-      <div className="rounded-2xl border border-border bg-card">
+      <div className="rounded-xl border border-border bg-card">
         <ul className="divide-y divide-border">
           {commande.lignes.map((l, i) => (
             <li key={i} className="flex items-start justify-between gap-4 px-4 py-3 text-sm">
@@ -489,10 +483,10 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
         </div>
       </div>
       <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-        <p>Le club vous contacte pour le virement, avec en communication « Pack n° {commande.numero} » : rien n&apos;est payé en ligne.</p>
-        <p>Une erreur ? Prévenez le club : il corrige la commande de son côté.</p>
+        <p>Le club vous contactera pour le virement. En communication, indiquez « Pack n° {commande.numero} ».</p>
+        <p>Pour corriger une erreur, prévenez le club.</p>
       </div>
-      <Button type="button" variant="hubSecondary" className="h-11 self-center px-6" onClick={onNouvelle}>
+      <Button type="button" variant="hubSecondary" className="h-11 self-start px-6" onClick={onNouvelle}>
         Passer une autre commande
       </Button>
     </section>
@@ -559,14 +553,15 @@ export default function FormulaireCommande({
     const ajoutees = meme ? Math.min(QUANTITE_MAX, meme.quantite + ligne.quantite) - meme.quantite : ligne.quantite;
     const article = articles.find((a) => a.id === ligne.articleId);
     if (ajoutees <= 0) {
-      toast.error(`Vous avez déjà ${QUANTITE_MAX} pièces de cet article dans votre commande, le maximum.`);
+      toast.error(`${QUANTITE_MAX} pièces identiques au plus par ligne. Celle-ci est complète.`);
       return;
     }
     setPanier((liste) => (meme ? liste.map((l) => (l.cle === meme.cle ? { ...l, quantite: l.quantite + ajoutees } : l)) : [...liste, ligne]));
     if (ajoutees < ligne.quantite) {
-      toast.warning(`${QUANTITE_MAX} pièces au plus par article : ${ajoutees} ajoutée${ajoutees > 1 ? "s" : ""} sur ${ligne.quantite}.`);
+      const pluriel = ajoutees > 1 ? "s" : "";
+      toast.warning(`${ajoutees} pièce${pluriel} ajoutée${pluriel} sur ${ligne.quantite}, la ligne atteint ${QUANTITE_MAX}.`);
     } else {
-      toast.success(`${article?.nom ?? "Article"} ajouté à votre commande.`);
+      toast.success(`Ajouté à votre commande : ${article?.nom ?? "l'article"}.`);
     }
     setErreur(null);
     fermer();
@@ -581,7 +576,7 @@ export default function FormulaireCommande({
     e.preventDefault();
     setErreur(null);
     if (!personne) {
-      setErreur("Indiquez qui commande, en haut de votre commande.");
+      setErreur("Choisissez d'abord votre nom dans la liste.");
       const champ = document.getElementById("pack-qui");
       champ?.scrollIntoView({ behavior: "smooth", block: "center" });
       champ?.focus({ preventScroll: true });
@@ -635,7 +630,7 @@ export default function FormulaireCommande({
             <h2 id="pack-articles" className="text-lg leading-tight font-semibold">
               Les articles
             </h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">Touchez un article pour choisir sa couleur, sa taille et son flocage.</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">Ouvrez un article pour le commander.</p>
           </div>
           {tags.length > 0 ? (
             // Une rangee qui defile au doigt sur telephone, et passe a la ligne sur grand ecran.
@@ -654,7 +649,7 @@ export default function FormulaireCommande({
                     aria-pressed={actif}
                     onClick={() => setFiltre(tag)}
                     className={cn(
-                      "flex h-9 shrink-0 items-center gap-1.5 rounded-full border-2 px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                      "flex h-9 shrink-0 items-center gap-1.5 rounded-lg border-2 px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                       actif
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-spanish-bg-lighter bg-spanish-bg-light text-foreground hover:border-primary/60",
@@ -671,11 +666,10 @@ export default function FormulaireCommande({
             <p className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">Aucun article pour le moment.</p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 2xl:grid-cols-4">
-              {visibles.map((a, rang) => (
+              {visibles.map((a) => (
                 <CarteProduit
                   key={a.id}
                   article={a}
-                  rang={rang}
                   dansPanier={panier.filter((l) => l.articleId === a.id).reduce((n, l) => n + l.quantite, 0)}
                   onOuvrir={() => ouvrir(a)}
                 />
@@ -694,7 +688,7 @@ export default function FormulaireCommande({
           <div className="shrink-0">
             <CommandeGroupee montant={montantGroupe + montantEnvoye} panier={apercu.ok ? apercu.total : 0} />
           </div>
-          <form onSubmit={envoyer} className="flex flex-col rounded-2xl border border-border bg-card lg:min-h-0">
+          <form onSubmit={envoyer} className="flex flex-col rounded-xl border border-border bg-card lg:min-h-0">
             <div className="flex items-center gap-3 border-b border-border px-5 py-4">
               <ShoppingBag className="size-5 text-spanish-accent-2" aria-hidden="true" />
               <h2 id="pack-commande" className="text-lg font-semibold">
@@ -741,14 +735,11 @@ export default function FormulaireCommande({
                     ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">Votre nom dans la liste. Pour vos proches, commandez à votre nom.</p>
+              <p className="text-xs text-muted-foreground">Pour un proche, choisissez votre propre nom.</p>
             </div>
 
             {panier.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 px-6 py-10 text-center text-sm text-muted-foreground">
-                <ShoppingBag className="size-8" aria-hidden="true" />
-                <p>Votre commande est vide. Touchez un article pour l&apos;ajouter.</p>
-              </div>
+              <p className="px-5 py-6 text-sm text-muted-foreground">Votre commande est vide.</p>
             ) : (
               <ul className="divide-y divide-border px-5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto [scrollbar-color:var(--spanish-bg-lighter)_transparent] [scrollbar-width:thin]">
                 {panier.map((l, i) => {
@@ -825,7 +816,7 @@ export default function FormulaireCommande({
                   <Button type="submit" variant="hub" className="h-12 text-base" disabled={enCours || !apercu.ok}>
                     {enCours ? "Envoi…" : "Envoyer ma commande"}
                   </Button>
-                  <p className="text-center text-xs text-muted-foreground">Pas de paiement en ligne : le club vous contactera pour le virement.</p>
+                  <p className="text-xs text-muted-foreground">Paiement par virement, le club vous contactera.</p>
                 </div>
               </div>
             ) : null}
@@ -835,11 +826,11 @@ export default function FormulaireCommande({
 
       {/* Sur telephone, la commande en cours reste a portee de pouce. */}
       {panier.length > 0 && !panierVisible ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md motion-safe:animate-in motion-safe:slide-in-from-bottom-4 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] motion-safe:animate-in motion-safe:slide-in-from-bottom-4 lg:hidden">
           <button
             type="button"
             onClick={allerAuPanier}
-            className="flex h-12 w-full items-center justify-between gap-3 rounded-xl bg-primary px-4 font-semibold text-primary-foreground"
+            className="flex h-12 w-full items-center justify-between gap-3 rounded-lg bg-primary px-4 font-semibold text-primary-foreground"
           >
             <span className="flex items-center gap-2">
               <ShoppingBag className="size-5" aria-hidden="true" />

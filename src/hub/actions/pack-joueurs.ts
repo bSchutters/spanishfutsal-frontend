@@ -26,6 +26,13 @@ import { getPayloadClient } from "@/lib/payload";
 const LIMITE_MOT_DE_PASSE: Limite = { max: 20, fenetreMs: 15 * 60 * 1000 };
 const LIMITE_COMMANDES: Limite = { max: 60, fenetreMs: 60 * 60 * 1000 };
 
+/** L'attente d'une limite, dite comme on la dit : « 15 minutes », « une heure ». */
+function attente({ fenetreMs }: Limite): string {
+  const minutes = Math.round(fenetreMs / 60_000);
+  if (minutes % 60 !== 0) return `${minutes} minutes`;
+  return minutes === 60 ? "une heure" : `${minutes / 60} heures`;
+}
+
 function secret(): string {
   const valeur = process.env.PAYLOAD_SECRET;
   if (!valeur) throw new Error("PAYLOAD_SECRET manquant");
@@ -43,7 +50,7 @@ export async function entrerPack(jeton: string, _etat: EtatMotDePassePack, formD
   if (reglages.jeton !== jeton) return { erreur: "Ce lien n'est plus valable. Demandez le nouveau au club." };
 
   const cle = `pack:mot-de-passe:${await adresseIp()}`;
-  if (await limiteAtteinte(payload, cle, LIMITE_MOT_DE_PASSE)) return { erreur: "Trop de tentatives. Réessayez dans un quart d'heure." };
+  if (await limiteAtteinte(payload, cle, LIMITE_MOT_DE_PASSE)) return { erreur: `Trop de tentatives. Réessayez dans ${attente(LIMITE_MOT_DE_PASSE)}.` };
 
   if (!motDePasseCorrect(String(formData.get("motDePasse") ?? ""), reglages.motDePasse)) {
     await verifierLimite(payload, cle, LIMITE_MOT_DE_PASSE);
@@ -69,7 +76,7 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
   const reglages = await chargerReglagesPack(payload);
   const cookie = (await cookies()).get(COOKIE_ACCES_PACK)?.value;
   if (reglages.jeton !== jeton || !accesValide(cookie, secret(), reglages.jeton, reglages.motDePasse)) {
-    return { ok: false, erreur: "L'accès a changé. Rechargez la page et entrez le mot de passe." };
+    return { ok: false, erreur: "Le mot de passe a changé ou votre accès a expiré. Rechargez la page pour l'entrer." };
   }
   if (!reglages.ouvert || dateLimitePassee(reglages.dateLimite, versChampDate(new Date()))) {
     return { ok: false, erreur: "Les commandes sont fermées." };
@@ -97,7 +104,7 @@ export async function envoyerCommande(jeton: string, saisie: unknown): Promise<R
 
   // Comptee une fois lue et valable : une saisie refusee ne pese pas sur la limite.
   const limite = await verifierLimite(payload, `pack:commande:${await adresseIp()}`, LIMITE_COMMANDES);
-  if (!limite.ok) return { ok: false, erreur: "Trop de commandes envoyées d'ici. Réessayez dans une heure." };
+  if (!limite.ok) return { ok: false, erreur: `Trop de commandes depuis cette connexion. Réessayez dans ${attente(LIMITE_COMMANDES)}.` };
 
   try {
     const doc = await payload.create({

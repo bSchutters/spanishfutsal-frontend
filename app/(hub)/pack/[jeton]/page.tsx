@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: { absolute: "Pack UD Asturiana" } };
 export const dynamic = "force-dynamic";
 
 function Carte({ children }: { children: React.ReactNode }) {
-  return <p className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{children}</p>;
+  return <p className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{children}</p>;
 }
 
 /**
@@ -61,7 +61,7 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
   const sousTitre =
     entre && !ferme && reglages.dateLimite
       ? `Commandes ouvertes jusqu'au ${formaterDateSansAnnee(`${reglages.dateLimite}T12:00:00Z`)} inclus.`
-      : "Les articles Joma du club, logo compris.";
+      : "Le logo du club est compris dans le prix.";
 
   return (
     <div className="flex min-h-dvh flex-col">

@@ -14,7 +14,7 @@ export default function EntreePack({ jeton }: { jeton: string }) {
   const [etat, action, enCours] = useActionState(entrerPack.bind(null, jeton), ETAT_INITIAL);
 
   return (
-    <form action={action} className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
+    <form action={action} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="pack-mot-de-passe">Mot de passe</Label>
         <Input id="pack-mot-de-passe" name="motDePasse" type="password" autoComplete="off" required className="h-10" />
