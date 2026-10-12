@@ -252,12 +252,12 @@ export const schemaLigneSaisie = z.object({
   articleId: z.nullable(identifiant),
   varianteId: z.string(),
   // Vide pour un article sans taille ; construireLignes verifie la taille face au catalogue.
-  taille: texteLibre(20, "La taille : 20 caractères au plus."),
+  taille: texteLibre(20, "La taille fait 20 caractères au plus."),
   quantite: z.number().check(z.int(), z.gte(1, "Au moins une pièce."), z.lte(20, "Vingt pièces au plus par ligne.")),
   numero: z
     .string()
-    .check(z.trim(), z.refine((v) => v === "" || NUMERO_VALIDE.test(v), "Le numéro : un ou deux chiffres.")),
-  nom: texteLibre(LONGUEUR_NOM_FLOCAGE, `Le nom à floquer : ${LONGUEUR_NOM_FLOCAGE} caractères au plus.`),
+    .check(z.trim(), z.refine((v) => v === "" || NUMERO_VALIDE.test(v), "Le numéro a un ou deux chiffres.")),
+  nom: texteLibre(LONGUEUR_NOM_FLOCAGE, `Le nom à floquer fait ${LONGUEUR_NOM_FLOCAGE} caractères au plus.`),
 });
 export type LigneSaisie = z.infer<typeof schemaLigneSaisie>;
 
@@ -278,7 +278,7 @@ export const schemaCommandeJoueur = z
     autreNom: texteLibre(80, "Le nom est trop long."),
     telephone: texteLibre(30, "Le téléphone est trop long."),
     email: emailOuVide,
-    remarque: texteLibre(500, "La remarque : 500 caractères au plus."),
+    remarque: texteLibre(500, "La remarque fait 500 caractères au plus."),
     lignes: z.array(schemaLigneSaisie).check(z.minLength(1, "Ajoutez au moins un article."), z.maxLength(40, "Quarante lignes au plus.")),
   })
   .check(
@@ -299,7 +299,7 @@ export const schemaCommandeHub = z
     statut: z.enum(STATUTS_COMMANDE),
     telephone: texteLibre(30, "Le téléphone est trop long."),
     email: emailOuVide,
-    remarque: texteLibre(500, "La remarque : 500 caractères au plus."),
+    remarque: texteLibre(500, "La remarque fait 500 caractères au plus."),
     lignes: z.array(schemaLigneSaisie).check(z.minLength(1, "Une commande garde au moins un article."), z.maxLength(40, "Quarante lignes au plus.")),
   });
 export type SaisieCommandeHub = z.infer<typeof schemaCommandeHub>;
@@ -320,20 +320,20 @@ export const schemaArticle = z
     id: z.nullable(identifiant),
     nom: obligatoire(80, "Le nom affiché"),
     // Absent d'une fiche ouverte avant son arrivee (06/10/2026) : vide.
-    nomJoma: z.optional(texteLibre(120, "Le nom Joma : 120 caractères au plus.")),
-    reference: texteLibre(40, "La référence : 40 caractères au plus."),
-    description: texteLibre(500, "La description : 500 caractères au plus."),
+    nomJoma: z.optional(texteLibre(120, "Le nom Joma fait 120 caractères au plus.")),
+    reference: texteLibre(40, "La référence fait 40 caractères au plus."),
+    description: texteLibre(500, "La description fait 500 caractères au plus."),
     prixCatalogue: prix("Le prix catalogue"),
     modeRemise: z.enum(MODES_REMISE),
     remiseParticuliere: z.nullable(pourcentage("La remise particulière")),
     tailles: z
-      .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille : 20 caractères au plus.")))
+      .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(20, "Une taille fait 20 caractères au plus.")))
       // Aucune taille : un article sans taille.
       .check(z.maxLength(40, "Quarante tailles au plus.")),
     // Absents d'une fiche ouverte avant leur arrivee (07/10/2026) : aucun tag.
     tags: z.optional(
       z
-        .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(30, "Un tag : 30 caractères au plus.")))
+        .array(z.string().check(z.trim(), z.minLength(1), z.maxLength(30, "Un tag fait 30 caractères au plus.")))
         .check(z.maxLength(10, "Dix tags au plus.")),
     ),
     floquable: z.boolean(),
@@ -362,8 +362,8 @@ export const schemaArticle = z
       .array(
         z.object({
           id: z.nullable(z.string()),
-          couleur: texteLibre(40, "Une couleur : 40 caractères au plus."),
-          codeCouleur: texteLibre(20, "Un code couleur : 20 caractères au plus."),
+          couleur: texteLibre(40, "Une couleur fait 40 caractères au plus."),
+          codeCouleur: texteLibre(20, "Un code couleur fait 20 caractères au plus."),
           photoDosId: z.nullable(identifiant),
           couleursFlocage: z.object({ remplissage: couleurHex, contour: couleurHex, exterieur: couleurHex }),
           // Absent d'une fiche ouverte avant son arrivee : le logo du club.
