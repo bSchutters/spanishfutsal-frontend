@@ -40,21 +40,6 @@ function Prix({ euros, className }: { euros: number; className?: string }) {
   return <span className={cn(tanker.className, "tracking-wide tabular-nums", className)}>{formaterPrix(euros)}</span>;
 }
 
-/** Le numero d'une etape, rond comme un ecusson, dans la police des maillots. */
-function NumeroEtape({ numero }: { numero: number }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        tanker.className,
-        "flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-spanish-accent-2 pt-0.5 text-lg text-spanish-accent-2",
-      )}
-    >
-      {numero}
-    </span>
-  );
-}
-
 /** Un choix parmi des pastilles : la couleur, la taille. Assez grandes pour le pouce. */
 function Pastilles({
   libelle,
@@ -479,7 +464,7 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
         </span>
         <h2 className={cn(tanker.className, "text-4xl leading-none uppercase sm:text-5xl")}>Commande envoyée</h2>
         <p className="text-muted-foreground">
-          Merci {commande.personne} ! Le club a bien reçu votre commande n° {commande.numero}.
+          Commande n° {commande.numero} enregistrée au nom de {commande.personne}.
         </p>
       </div>
       <div className="rounded-2xl border border-border bg-card">
@@ -503,20 +488,9 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
           <Prix euros={commande.total} className="text-2xl text-spanish-accent-2" />
         </div>
       </div>
-      <div className="flex flex-col gap-3">
-        <p className="text-sm font-medium">Et maintenant ?</p>
-        <ol className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <li className="flex gap-3">
-            <NumeroEtape numero={1} />
-            <span className="pt-2">
-              Le club vous contacte pour le virement, avec en communication « Pack n° {commande.numero} » : rien n&apos;est payé en ligne.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <NumeroEtape numero={2} />
-            <span className="pt-2">Une erreur ? Prévenez le club : il corrige la commande de son côté.</span>
-          </li>
-        </ol>
+      <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+        <p>Le club vous contacte pour le virement, avec en communication « Pack n° {commande.numero} » : rien n&apos;est payé en ligne.</p>
+        <p>Une erreur ? Prévenez le club : il corrige la commande de son côté.</p>
       </div>
       <Button type="button" variant="hubSecondary" className="h-11 self-center px-6" onClick={onNouvelle}>
         Passer une autre commande
@@ -625,7 +599,7 @@ export default function FormulaireCommande({
     }).catch(() => ({ ok: false as const, erreur: "La commande n'est pas partie. Vérifiez votre connexion et réessayez." }));
     setEnCours(false);
     if (!r.ok || !r.donnees) {
-      setErreur(r.ok ? "La commande est partie, mais la confirmation n'a pas suivi." : r.erreur);
+      setErreur(r.ok ? "Votre commande est peut-être partie. Demandez au club avant d'en renvoyer une." : r.erreur);
       return;
     }
     const commande = r.donnees;

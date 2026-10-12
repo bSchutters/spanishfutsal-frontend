@@ -37,7 +37,7 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
 
   let contenu: React.ReactNode;
   if (!reglages.motDePasse) {
-    contenu = <Carte>Cette page n&apos;est pas encore prête. Le club vous préviendra quand elle sera ouverte.</Carte>;
+    contenu = <Carte>Les commandes ne sont pas encore ouvertes.</Carte>;
   } else if (!entre) {
     contenu = (
       <div className="mx-auto w-full max-w-md">
@@ -45,7 +45,7 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
       </div>
     );
   } else if (ferme) {
-    contenu = <Carte>Les commandes sont fermées pour le moment. Le club vous préviendra à la prochaine ouverture.</Carte>;
+    contenu = <Carte>Les commandes sont fermées.</Carte>;
   } else {
     // Ce qui attend la commande groupee chez Joma, sans rien dire de qui a commande quoi.
     const [articles, personnes, montantGroupe] = await Promise.all([
@@ -65,16 +65,8 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
 
   return (
     <div className="flex min-h-dvh flex-col">
-      {/* Un bandeau aux couleurs du club : le navy, l'or en fines rayures comme sur les epaules du maillot, le titre dans la police du flocage. */}
-      <header className="relative isolate overflow-hidden border-b border-border">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[radial-gradient(120%_140%_at_0%_0%,var(--spanish-bg)_0%,var(--spanish-bg-dark)_55%,var(--spanish-bg-dark-minus)_100%)]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 end-0 -z-10 w-3/4 bg-[repeating-linear-gradient(135deg,var(--spanish-accent-2)_0_2px,transparent_2px_16px)] opacity-[0.09] [mask-image:linear-gradient(to_left,black,transparent)]"
-        />
+      {/* Un bandeau marine fonce, sans motif (Bryan, 12/10/2026 : plus de rayures), le titre dans la police du flocage. */}
+      <header className="border-b border-border bg-spanish-bg-dark-minus">
         <div className="mx-auto flex w-full max-w-[90rem] items-center gap-4 px-4 pt-[calc(1.75rem+env(safe-area-inset-top))] pb-7 sm:gap-6 sm:px-6 sm:py-10 lg:px-8">
           <Image src="/assets/images/svg/logo-asturiana.svg" alt="" width={80} height={80} priority className="size-14 shrink-0 sm:size-20" />
           <div className="min-w-0">
