@@ -484,7 +484,7 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
       </div>
       <div className="flex flex-col gap-2 text-sm text-muted-foreground">
         <p>Le club vous contactera pour le virement.</p>
-        <p>Pour corriger une erreur, prévenez le club.</p>
+        <p>Vous ne pouvez plus modifier cette commande. En cas d&apos;erreur, prévenez le club, qui la corrigera.</p>
       </div>
       <Button type="button" variant="hubSecondary" className="h-11 self-start px-6" onClick={onNouvelle}>
         Passer une autre commande
