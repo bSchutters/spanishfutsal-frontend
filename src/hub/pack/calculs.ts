@@ -197,16 +197,20 @@ export function construireLignes(
       lignes.push({ ...orpheline, quantite: saisie.quantite });
       continue;
     }
-    if (!article || (!article.actif && !options.inactifsAdmis)) {
-      return { ok: false, erreur: "Un article n'est plus proposé. Rechargez la page." };
+    if (!article) return { ok: false, erreur: "Un article de votre commande n'est plus proposé. Retirez-le." };
+    if (!article.actif && !options.inactifsAdmis) {
+      return { ok: false, erreur: `${article.nom} n'est plus en vente. Retirez-le pour envoyer la commande.` };
     }
     const variante = article.variantes.find((v) => v.id === saisie.varianteId);
-    if (!variante) return { ok: false, erreur: `${article.nom} : cette couleur n'existe plus.` };
+    if (!variante) return { ok: false, erreur: `La couleur choisie pour ${article.nom} n'est plus proposée. Retirez la ligne.` };
     // Sans taille, rien a choisir : une taille restee d'avant, d'un panier ou d'une fiche ouverte, ne compte pas.
     const sansTaille = article.tailles.length === 0;
     const taille = sansTaille ? "" : saisie.taille;
     if (!sansTaille && !article.tailles.includes(taille)) {
-      return { ok: false, erreur: taille ? `${article.nom} : la taille ${taille} n'est pas proposée.` : `${article.nom} : choisissez une taille.` };
+      return {
+        ok: false,
+        erreur: taille ? `La taille ${taille} n'est plus proposée pour ${article.nom}. Retirez la ligne.` : `Choisissez une taille pour ${article.nom}.`,
+      };
     }
     const numero = article.floquable ? saisie.numero : "";
     const nom = article.floquable ? saisie.nom.toUpperCase() : "";

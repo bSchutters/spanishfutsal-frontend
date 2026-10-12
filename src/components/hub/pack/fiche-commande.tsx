@@ -225,7 +225,7 @@ export default function FicheCommande({
                 {payee ? <Check className="size-4" aria-hidden="true" /> : null}
                 {payee ? `Payée le ${formaterDateCourte(commande.payeeLe as string)}` : commande.statut === "cancelled" ? "Rien à payer" : "À payer"}
               </p>
-              <p className="text-xs text-muted-foreground">Virement, communication « Pack n° {commande.id} ».</p>
+              <p className="text-xs text-muted-foreground">Virement au nom de {commande.personne}.</p>
             </div>
             {peutEditer && (payee || commande.statut !== "cancelled") ? (
               <Button type="button" variant="hubSecondary" size="sm" disabled={enCours} onClick={() => void changerPaiement(!payee)}>

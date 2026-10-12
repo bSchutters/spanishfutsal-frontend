@@ -198,7 +198,7 @@ describe("construction d'une commande", () => {
     const ancienne = construireLignes([ligne({ articleId: 3, varianteId: "noir", taille: "Unique" })], [maillot, gourde], FLOCAGE, { inactifsAdmis: false });
     expect(ancienne.ok && ancienne.lignes[0].taille).toBe("");
     const sansChoix = construireLignes([ligne({ taille: "" })], CATALOGUE, FLOCAGE, { inactifsAdmis: false });
-    expect(sansChoix).toEqual({ ok: false, erreur: "Maillot de match : choisissez une taille." });
+    expect(sansChoix).toEqual({ ok: false, erreur: "Choisissez une taille pour Maillot de match." });
   });
 
   it("enregistre un article sans aucune taille", () => {
