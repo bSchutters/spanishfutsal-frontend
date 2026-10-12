@@ -129,6 +129,27 @@ async function verifierRefus(chemin: string) {
   }
 }
 
+/**
+ * L'ancienne route `/api/revalidate` videait le cache de n'importe quel tag,
+ * sans authentification. Elle est supprimee : les crochets de Payload
+ * invalident le cache eux-memes. Un POST ne doit plus aboutir.
+ */
+async function verifierRevalidateSupprimee() {
+  const nom = 'api /api/revalidate supprimee'
+  try {
+    const reponse = await demander('/api/revalidate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tags: ['sponsors'] }),
+    })
+    await reponse.arrayBuffer()
+    if (reponse.status !== 404 && reponse.status !== 405) return rate(nom, `statut ${reponse.status}, attendu 404 ou 405`)
+    ok(nom)
+  } catch (erreur) {
+    rate(nom, String(erreur))
+  }
+}
+
 async function verifierApi(chemin: string): Promise<unknown> {
   const nom = `api ${chemin}`
   try {
@@ -307,6 +328,7 @@ async function main() {
     const reponses: Record<string, unknown> = {}
     for (const chemin of APIS) reponses[chemin] = await verifierApi(chemin)
     for (const chemin of APIS_FERMEES) await verifierRefus(chemin)
+    await verifierRevalidateSupprimee()
 
     // Les routes a segment dynamique, avec un vrai identifiant de saison.
     const saison = premierId(reponses['/api/public/seasons'])
