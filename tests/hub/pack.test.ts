@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { accesValide, jetonBienForme, jetonInitial, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
+import { accesValide, genererJetonLien, jetonBienForme, jetonInitial, motDePasseCorrect, signatureAcces } from "@/hub/pack/acces";
+import { formaterIban, ibanValide, normaliserIban } from "@/hub/pack/iban";
 import {
   aCommanderChezJoma,
   construireLignes,
@@ -997,6 +998,39 @@ describe("premier lien de la page des joueurs", () => {
     expect(jetonInitial("secret-a")).toBe(jetonInitial("secret-a"));
     expect(jetonBienForme(jetonInitial("secret-a"))).toBe(true);
     expect(jetonInitial("secret-a")).not.toBe(jetonInitial("secret-b"));
+  });
+
+  it("est court : onze caractères, tirés au hasard à chaque nouveau lien", () => {
+    expect(jetonInitial("secret-a")).toHaveLength(11);
+    const lien = genererJetonLien();
+    expect(lien).toHaveLength(11);
+    expect(jetonBienForme(lien)).toBe(true);
+    expect(genererJetonLien()).not.toBe(lien);
+  });
+
+  it("garde valables les anciens liens longs, et refuse ce qui n'en est pas un", () => {
+    expect(jetonBienForme("UoefhseI9vY4CL88makY8xTh6DsLBb0n3KwCkcG3mN0")).toBe(true);
+    for (const mauvais of ["court", "abc/def-ghij", "a b c d e f g h", ""]) expect(jetonBienForme(mauvais)).toBe(false);
+  });
+});
+
+describe("IBAN du club", () => {
+  it("accepte un IBAN juste, avec ou sans espaces, en minuscules aussi", () => {
+    expect(ibanValide("BE68 5390 0754 7034")).toBe(true);
+    expect(ibanValide("be68539007547034")).toBe(true);
+    expect(ibanValide("GB82 WEST 1234 5698 7654 32")).toBe(true);
+  });
+
+  it("refuse une faute de frappe et ce qui n'est pas un IBAN", () => {
+    expect(ibanValide("BE68 5390 0754 7035")).toBe(false);
+    expect(ibanValide("BE86 5390 0754 7034")).toBe(false);
+    for (const mauvais of ["", "BE68", "1234 5678 9012 3456", "BE68-5390-0754-7034"]) expect(ibanValide(mauvais)).toBe(false);
+  });
+
+  it("se garde sans espaces et s'affiche par groupes de quatre", () => {
+    expect(normaliserIban(" be68 5390 0754 7034 ")).toBe("BE68539007547034");
+    expect(formaterIban("BE68539007547034")).toBe("BE68 5390 0754 7034");
+    expect(formaterIban("GB82WEST12345698765432")).toBe("GB82 WEST 1234 5698 7654 32");
   });
 });
 

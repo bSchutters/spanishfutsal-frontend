@@ -72,6 +72,19 @@ html.hub ::-webkit-scrollbar-thumb:hover {
   background-clip: padding-box;
 }
 
+/*
+ * Une rangee qui defile au doigt sans montrer de barre : les filtres de la
+ * page des joueurs du Pack. Une classe Tailwind ne suffit pas, la regle
+ * ci-dessus, hors couche, passe avant les utilitaires.
+ */
+html.hub .defile-sans-barre {
+  scrollbar-width: none;
+}
+
+html.hub .defile-sans-barre::-webkit-scrollbar {
+  display: none;
+}
+
 /* Les barres du mobile passent sous l'encoche et la barre d'accueil des iPhone. */
 html.hub .zone-sure-basse {
   padding-bottom: env(safe-area-inset-bottom);

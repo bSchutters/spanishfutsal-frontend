@@ -1,8 +1,8 @@
 import type { GlobalConfig } from 'payload'
 
 import { editionModule, lectureModule } from '@/hub/droits'
+import { genererJetonLien } from '@/hub/pack/acces'
 import { adminGlobalHub } from '../collections/hub/partage'
-import { genererJeton } from '../collections/hub/Feeds'
 
 /**
  * Les reglages du Pack : la page des joueurs (ouverte ou non, date limite,
@@ -47,7 +47,7 @@ export const PackSettings: GlobalConfig = {
       // Genere au premier enregistrement, jamais saisi a la main : le Hub le
       // remplace quand on regenere le lien.
       hooks: {
-        beforeValidate: [({ value }) => (typeof value === 'string' && value.length > 0 ? value : genererJeton())],
+        beforeValidate: [({ value }) => (typeof value === 'string' && value.length > 0 ? value : genererJetonLien())],
       },
       admin: { readOnly: true, description: 'Le secret du lien de la page des joueurs.' },
     },
@@ -73,6 +73,19 @@ export const PackSettings: GlobalConfig = {
           label: 'Flocage du nom (EUR)',
           admin: { width: '50%', step: 0.5 },
         },
+      ],
+    },
+    {
+      // Montres au joueur une fois sa commande envoyee, avec le montant (Bryan, 15/10/2026).
+      type: 'row',
+      fields: [
+        {
+          name: 'payment_iban',
+          type: 'text',
+          label: 'IBAN du club',
+          admin: { width: '50%', description: 'Se regle dans le Hub, page Catalogue. Garde sans espaces.' },
+        },
+        { name: 'payment_holder', type: 'text', label: 'Titulaire du compte', admin: { width: '50%' } },
       ],
     },
     {

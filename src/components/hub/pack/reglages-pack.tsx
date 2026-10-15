@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { enregistrerReglagesPack, regenererLienPack } from "@/hub/actions/pack";
+import { formaterIban } from "@/hub/pack/iban";
 import type { ReglagesPack } from "@/hub/pack/schema";
 
 const urlPage = (base: string, jeton: string) => `${base}/pack/${jeton}`;
@@ -36,6 +37,8 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
   const [remise, setRemise] = useState(String(reglages.remise).replace(".", ","));
   const [prixNumero, setPrixNumero] = useState(String(reglages.flocage.numero));
   const [prixNom, setPrixNom] = useState(String(reglages.flocage.nom));
+  const [iban, setIban] = useState(formaterIban(reglages.paiement.iban));
+  const [titulaire, setTitulaire] = useState(reglages.paiement.titulaire);
   const [confirmation, setConfirmation] = useState(false);
   const [enCours, lancer] = useTransition();
 
@@ -50,9 +53,12 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
         motDePasse,
         prixNumero: Number(prixNumero.replace(",", ".")),
         prixNom: Number(prixNom.replace(",", ".")),
+        iban,
+        titulaire,
       });
       if (!r.ok || !r.donnees) return void toast.error(r.ok ? "Enregistré, mais impossible à relire." : r.erreur);
       setActuels(r.donnees);
+      setIban(formaterIban(r.donnees.paiement.iban));
       toast.success(r.donnees.ouvert ? "Réglages enregistrés. Les commandes sont ouvertes." : "Réglages enregistrés.");
     });
 
@@ -66,7 +72,7 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
     });
 
   return (
-    <Panneau titre="Page des joueurs" description="Le lien à partager, son mot de passe et les prix des flocages.">
+    <Panneau titre="Page des joueurs" description="Le lien à partager, son mot de passe, les prix des flocages et le compte pour les virements.">
       <div className="flex flex-col gap-5 px-4 py-4">
         <label className="flex cursor-pointer items-center justify-between gap-4">
           <span>
@@ -115,6 +121,25 @@ export default function ReglagesPackForm({ reglages, baseUrl }: { reglages: Regl
             <Label htmlFor="pack-prix-nom">Flocage du nom (€)</Label>
             <Input id="pack-prix-nom" inputMode="decimal" value={prixNom} onChange={(e) => setPrixNom(e.target.value)} className="h-10" />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="pack-iban">IBAN du club</Label>
+            <Input
+              id="pack-iban"
+              value={iban}
+              onChange={(e) => setIban(e.target.value)}
+              placeholder="BE00 0000 0000 0000"
+              autoComplete="off"
+              spellCheck={false}
+              className="h-10 font-mono"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="pack-titulaire">Titulaire du compte</Label>
+            <Input id="pack-titulaire" value={titulaire} onChange={(e) => setTitulaire(e.target.value)} autoComplete="off" className="h-10" />
+          </div>
+          <p className="text-xs text-muted-foreground sm:col-span-2">
+            Montrés au joueur après l&apos;envoi de sa commande, avec le montant à virer. Sans IBAN, la page dit seulement que le club le contactera.
+          </p>
         </div>
 
         <div className="flex justify-end">

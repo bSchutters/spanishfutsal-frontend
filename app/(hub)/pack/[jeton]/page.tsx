@@ -54,7 +54,14 @@ export default async function PagePack({ params }: { params: Promise<{ jeton: st
       montantACommander(),
     ]);
     contenu = (
-      <FormulaireCommande jeton={jeton} articles={articles} personnes={personnes.liste} flocage={reglages.flocage} montantGroupe={montantGroupe} />
+      <FormulaireCommande
+        jeton={jeton}
+        articles={articles}
+        personnes={personnes.liste}
+        flocage={reglages.flocage}
+        paiement={reglages.paiement}
+        montantGroupe={montantGroupe}
+      />
     );
   }
 

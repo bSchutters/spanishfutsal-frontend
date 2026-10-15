@@ -1,5 +1,7 @@
 import * as z from "zod/mini";
 
+import { ibanValide } from "./iban";
+
 z.config({ jitless: true });
 
 /**
@@ -160,6 +162,9 @@ export type Article = {
 /** Les prix des flocages, les memes pour tout article floquable. */
 export type PrixFlocage = { numero: number; nom: number };
 
+/** Ou virer le montant d'une commande, montre au joueur une fois sa commande envoyee. Vide : pas encore regle. */
+export type Paiement = { iban: string; titulaire: string };
+
 export type ReglagesPack = {
   ouvert: boolean;
   /** La remise generale, en pourcentage. */
@@ -169,6 +174,7 @@ export type ReglagesPack = {
   jeton: string;
   motDePasse: string;
   flocage: PrixFlocage;
+  paiement: Paiement;
 };
 
 /** Une ligne de commande telle qu'elle est gardee : figee au moment de la commande. */
@@ -403,6 +409,14 @@ export const schemaReglagesPack = z.object({
     .check(z.trim(), z.minLength(4, "Le mot de passe : 4 caractères au moins."), z.maxLength(60, "Le mot de passe est trop long.")),
   prixNumero: prix("Le prix du numéro"),
   prixNom: prix("Le prix du nom"),
+  iban: z
+    .string()
+    .check(
+      z.trim(),
+      z.maxLength(42, "L'IBAN est trop long."),
+      z.refine((v) => v === "" || ibanValide(v), "L'IBAN n'est pas valide. Vérifiez-le chiffre par chiffre."),
+    ),
+  titulaire: texteLibre(70, "Le titulaire du compte fait 70 caractères au plus."),
 });
 export type SaisieReglagesPack = z.infer<typeof schemaReglagesPack>;
 

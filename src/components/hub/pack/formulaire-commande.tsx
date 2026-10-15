@@ -13,7 +13,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { envoyerCommande, type CommandeEnvoyee } from "@/hub/actions/pack-joueurs";
 import { avancementJoma, construireLignes, filtrerParTag, formaterPrix, MINIMUM_JOMA, prixUnitaire, tagsDuCatalogue, totalDes } from "@/hub/pack/calculs";
-import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type PersonnePack, type PrixFlocage } from "@/hub/pack/schema";
+import BoutonCopier from "@/components/hub/bouton-copier";
+import { formaterIban, normaliserIban } from "@/hub/pack/iban";
+import { LONGUEUR_NOM_FLOCAGE, type Article, type LigneSaisie, type Paiement, type PersonnePack, type PrixFlocage } from "@/hub/pack/schema";
 import { cn } from "@/lib/utils";
 import ApercuFlocage, { ApercuLogo } from "./apercu-flocage";
 import DiaporamaPhotos from "./diaporama-photos";
@@ -452,7 +454,40 @@ function FicheProduit({
 }
 
 /** La commande partie : son numero, son recapitulatif, et ce qui se passe ensuite. */
-function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onNouvelle: () => void }) {
+/** Une coordonnee du virement, avec de quoi la copier dans l'application de la banque. */
+function LigneVirement({ libelle, valeur, aCopier, chiffres = false }: { libelle: string; valeur: string; aCopier?: string; chiffres?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <dt className="text-xs text-muted-foreground">{libelle}</dt>
+        <dd className={cn("font-medium break-words", chiffres && "tabular-nums")}>{valeur}</dd>
+      </div>
+      {aCopier ? <BoutonCopier valeur={aCopier} libelle="Copier" libelleCopie="Copié" className="h-9 shrink-0" /> : null}
+    </div>
+  );
+}
+
+/**
+ * Ou virer le montant, des que la commande est envoyee (Bryan, 15/10/2026) :
+ * les coordonnees se reglent dans le Hub. Sans IBAN, le club reprend contact.
+ */
+function Virement({ total, paiement }: { total: number; paiement: Paiement }) {
+  if (!paiement.iban) return <p>Le club vous contactera pour le virement.</p>;
+  return (
+    <section aria-labelledby="pack-virement" className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-4 text-foreground">
+      <h3 id="pack-virement" className="text-sm font-semibold">
+        Paiement par virement
+      </h3>
+      <dl className="flex flex-col gap-3 text-sm">
+        <LigneVirement libelle="Montant" valeur={formaterPrix(total)} aCopier={total.toFixed(2).replace(".", ",")} chiffres />
+        <LigneVirement libelle="IBAN" valeur={formaterIban(paiement.iban)} aCopier={normaliserIban(paiement.iban)} chiffres />
+        {paiement.titulaire ? <LigneVirement libelle="Au nom de" valeur={paiement.titulaire} /> : null}
+      </dl>
+    </section>
+  );
+}
+
+function Confirmation({ commande, paiement, onNouvelle }: { commande: CommandeEnvoyee; paiement: Paiement; onNouvelle: () => void }) {
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col gap-7 py-2">
       <div className="flex flex-col gap-2">
@@ -482,8 +517,8 @@ function Confirmation({ commande, onNouvelle }: { commande: CommandeEnvoyee; onN
           <Prix euros={commande.total} className="text-2xl text-spanish-accent-2" />
         </div>
       </div>
-      <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-        <p>Le club vous contactera pour le virement.</p>
+      <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+        <Virement total={commande.total} paiement={paiement} />
         <p>Vous ne pouvez plus modifier cette commande. En cas d&apos;erreur, prévenez le club, qui la corrigera.</p>
       </div>
       <Button type="button" variant="hubSecondary" className="h-11 self-start px-6" onClick={onNouvelle}>
@@ -503,6 +538,7 @@ export default function FormulaireCommande({
   articles,
   personnes,
   flocage,
+  paiement,
   montantGroupe,
 }: {
   jeton: string;
@@ -510,6 +546,8 @@ export default function FormulaireCommande({
   /** La liste « Qui commande ? » reglee dans le Hub : les noms ajoutes, puis l'effectif. */
   personnes: PersonnePack[];
   flocage: PrixFlocage;
+  /** Le compte ou virer le montant, montre apres l'envoi. */
+  paiement: Paiement;
   /** Le montant des commandes recues, qui attendent la commande groupee chez Joma. */
   montantGroupe: number;
 }) {
@@ -607,6 +645,7 @@ export default function FormulaireCommande({
     return (
       <Confirmation
         commande={envoyee}
+        paiement={paiement}
         onNouvelle={() => {
           setEnvoyee(null);
           setPanier([]);
@@ -637,7 +676,7 @@ export default function FormulaireCommande({
             <div
               role="group"
               aria-label="Filtrer les articles"
-              className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+              className="defile-sans-barre -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
             >
               {[null, ...tags].map((tag) => {
                 const actif = (tag ?? "") === (filtre ?? "");
@@ -816,7 +855,9 @@ export default function FormulaireCommande({
                   <Button type="submit" variant="hub" className="h-12 text-base" disabled={enCours || !apercu.ok}>
                     {enCours ? "Envoi…" : "Envoyer ma commande"}
                   </Button>
-                  <p className="text-xs text-muted-foreground">Paiement par virement, le club vous contactera.</p>
+                  <p className="text-xs text-muted-foreground">
+                    {paiement.iban ? "Paiement par virement, les coordonnées s'affichent après l'envoi." : "Paiement par virement, le club vous contactera."}
+                  </p>
                 </div>
               </div>
             ) : null}
