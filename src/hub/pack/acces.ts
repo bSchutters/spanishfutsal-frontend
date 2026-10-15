@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /**
  * L'acces a la page des joueurs : le lien secret, puis le mot de passe.
@@ -35,16 +35,28 @@ export function motDePasseCorrect(saisi: string, attendu: string): boolean {
 }
 
 /**
+ * Un lien court, a envoyer dans un message (Bryan, 15/10/2026) : onze
+ * caracteres, 64 bits. Le lien seul ne fait pas entrer : le mot de passe et
+ * la limite des essais gardent la page.
+ */
+const LONGUEUR_JETON = 11;
+
+/** Un nouveau lien, tire au hasard (« Nouveau lien » dans le Hub). */
+export function genererJetonLien(): string {
+  return randomBytes(8).toString("base64url");
+}
+
+/**
  * Le premier jeton du lien, tire du secret du serveur plutot qu'au hasard :
  * le meme a chaque calcul, imprevisible sans le secret. Deux premiers
  * chargements simultanes ecrivent donc le meme, et aucun lien deja montre ne
  * meurt. « Nouveau lien » en tire ensuite un au hasard.
  */
 export function jetonInitial(secret: string): string {
-  return createHmac("sha256", secret).update("pack:lien:initial").digest("base64url");
+  return createHmac("sha256", secret).update("pack:lien:initial").digest("base64url").slice(0, LONGUEUR_JETON);
 }
 
-/** Un jeton de lien bien forme, avant toute lecture en base. */
+/** Un jeton de lien bien forme, avant toute lecture en base. Les anciens liens, plus longs, restent valables. */
 export function jetonBienForme(jeton: string): boolean {
-  return /^[A-Za-z0-9_-]{20,}$/.test(jeton);
+  return new RegExp(`^[A-Za-z0-9_-]{${LONGUEUR_JETON},}$`).test(jeton);
 }

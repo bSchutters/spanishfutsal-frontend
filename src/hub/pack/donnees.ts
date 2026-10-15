@@ -2,8 +2,7 @@ import type { Payload, PayloadRequest, Where } from "payload";
 
 import { versChampDate } from "@/hub/dates";
 import { getPayloadClient } from "@/lib/payload";
-import { genererJeton } from "@/payload/collections/hub/Feeds";
-import { jetonInitial } from "./acces";
+import { genererJetonLien, jetonInitial } from "./acces";
 import { montantPourJoma, type CommandeJoma } from "./calculs";
 import { ajoutsDe, articleDe, commandeDe, commandeJomaDe, personnesPack, retiresDe, wherePaiement } from "./conversions";
 import type { Article, Commande, FiltrePaiement, PersonnesPack, ReglagesPack, StatutCommande } from "./schema";
@@ -61,7 +60,7 @@ export async function chargerReglagesPack(payload?: Payload): Promise<ReglagesPa
   if (typeof doc.token !== "string" || doc.token === "") {
     // Le premier jeton vient du secret : deux premiers chargements simultanes ecrivent le meme.
     const secret = process.env.PAYLOAD_SECRET;
-    const token = secret ? jetonInitial(secret) : genererJeton();
+    const token = secret ? jetonInitial(secret) : genererJetonLien();
     doc = (await client.updateGlobal({ slug: "pack-settings", data: { token }, depth: 0 })) as Record<
       string,
       unknown
@@ -76,6 +75,10 @@ export async function chargerReglagesPack(payload?: Payload): Promise<ReglagesPa
     flocage: {
       numero: typeof doc.flock_number_price === "number" ? doc.flock_number_price : 5,
       nom: typeof doc.flock_name_price === "number" ? doc.flock_name_price : 2.5,
+    },
+    paiement: {
+      iban: typeof doc.payment_iban === "string" ? doc.payment_iban : "",
+      titulaire: typeof doc.payment_holder === "string" ? doc.payment_holder : "",
     },
   };
 }

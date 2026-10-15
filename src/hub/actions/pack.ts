@@ -29,8 +29,9 @@ import {
   NOM_PERSONNE_MAX,
 } from "@/hub/pack/schema";
 import { exigerModule } from "@/hub/session";
+import { genererJetonLien } from "@/hub/pack/acces";
+import { normaliserIban } from "@/hub/pack/iban";
 import { getPayloadClient } from "@/lib/payload";
-import { genererJeton } from "@/payload/collections/hub/Feeds";
 
 /**
  * Les actions du Pack cote Hub : le catalogue, les reglages de la page des
@@ -208,6 +209,8 @@ export async function enregistrerReglagesPack(saisie: unknown): Promise<Resultat
         password: s.motDePasse,
         flock_number_price: s.prixNumero,
         flock_name_price: s.prixNom,
+        payment_iban: normaliserIban(s.iban) || null,
+        payment_holder: s.titulaire || null,
       },
       depth: 0,
     });
@@ -277,7 +280,7 @@ export async function regenererLienPack(): Promise<Resultat<ReglagesPack>> {
   await exigerModule("pack", "edit");
   const payload = await getPayloadClient();
   try {
-    await payload.updateGlobal({ slug: "pack-settings", data: { token: genererJeton() }, depth: 0 });
+    await payload.updateGlobal({ slug: "pack-settings", data: { token: genererJetonLien() }, depth: 0 });
     revalidatePath("/hub/pack", "layout");
     return { ok: true, donnees: await chargerReglagesPack(payload) };
   } catch (erreur) {
