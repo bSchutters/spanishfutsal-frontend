@@ -52,10 +52,16 @@ const Nav = () => {
     { href: "/contact", label: "CONTACT" },
   ];
 
+  const icone =
+    "transition-[opacity,scale,filter] duration-200 ease-[var(--ease-out-strong)]";
+  const iconeCachee = "scale-50 opacity-0 blur-[2px]";
+
   return (
+    // L'en-tete s'efface au defilement vers le bas et revient des qu'on
+    // remonte : 250 ms, pas 700, sinon il arrive apres qu'on l'a cherche.
     <header
       className={cn(
-        "bg-spanish-bg-dark  z-50 font-bold fixed top-0 left-0 w-full transition-transform duration-700 ease-in-out",
+        "bg-spanish-bg-dark  z-50 font-bold fixed top-0 left-0 w-full transition-transform duration-250 ease-[var(--ease-out-strong)]",
         isVisible ? "translate-y-0" : "-translate-y-[150%]"
       )}
     >
@@ -87,11 +93,18 @@ const Nav = () => {
             aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={isMobileMenuOpen}
           >
-            {isMobileMenuOpen ? (
-              <X strokeWidth={3} />
-            ) : (
-              <Menu strokeWidth={3} />
-            )}
+            {/* Les deux icones sont superposees et se relaient en fondu, au
+                lieu que la croix remplace le burger d'un coup. */}
+            <span className="grid *:col-start-1 *:row-start-1" aria-hidden="true">
+              <Menu
+                strokeWidth={3}
+                className={cn(icone, isMobileMenuOpen && iconeCachee)}
+              />
+              <X
+                strokeWidth={3}
+                className={cn(icone, !isMobileMenuOpen && iconeCachee)}
+              />
+            </span>
           </Button>
 
           <nav
@@ -102,15 +115,15 @@ const Nav = () => {
             // `inert` plutot que `aria-hidden` : il retire aussi les liens de
             // l'ordre de tabulation, la ou `aria-hidden` les y laisserait.
             inert={!isMobileMenuOpen}
-            // `translate` et non `transform` : Tailwind v4 pose les
-            // deplacements sur la propriete CSS `translate`. Une transition sur
-            // `transform` ne les anime donc pas, le panneau apparaissait d un
-            // coup. `height` fait le deroule de la barre vers le plein ecran.
+            // Le panneau se deroule de la barre vers le plein ecran par un
+            // `clip-path`, qui ne recalcule pas la mise en page a chaque image
+            // comme le faisait `height`. Il s'ouvre en 250 ms et se referme en
+            // 200 : la duree est lue sur l'etat d'arrivee.
             className={cn(
-              "absolute top-16 right-0 bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-[opacity,translate,height] duration-700",
+              "absolute top-16 right-0 h-dvh bg-spanish-bg-dark w-full flex flex-col items-start p-8 transition-[opacity,clip-path] ease-[var(--ease-out-strong)]",
               isMobileMenuOpen
-                ? "opacity-100 translate-y-0 h-dvh pointer-events-auto"
-                : "opacity-0 -translate-y-4 h-full pointer-events-none"
+                ? "opacity-100 [clip-path:inset(0)] duration-250 pointer-events-auto"
+                : "opacity-0 [clip-path:inset(0_0_100%_0)] duration-200 pointer-events-none"
             )}
           >
             {links.map((link) => (
